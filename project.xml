@@ -1,0 +1,30 @@
+<project
+    name = "kgraph"
+    script = "project.gsl"
+    email = "kgraph@lists.k.org"
+    >
+
+    <!--
+        Includes are processed first, so XML in included files will be
+        part of the XML tree
+    -->
+    <include filename = "license.xml" />
+
+    <!-- Header Files -->
+    <header name = "kgraph" />
+    <header name = "kgraph_prelude" />
+
+    <!-- Classes that we use -->
+    <class name = "kdijkstra">Dijkstra</class>
+
+    <!-- Models that we build using GSL -->
+    <model name = "sockopts" />
+    <model name = "zgossip" />
+    <model name = "zgossip_msg" />
+
+    <!-- Other source files in src that we need to package -->
+    <extra name = "zgossip_engine.inc" />
+    <extra name = "zhash_primes.inc" />
+    <extra name = "zclass_example.xml" />
+
+</project>
