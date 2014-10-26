@@ -60,8 +60,8 @@ fi
 #
 project=$1
 if [ ! -f include/$project.h ]; then
-    echo "version.sh: error: include/$project.h does not exist" 1>&2
-    exit 1
+    echo $(project->version.major).$(project->version.minor).$(project->version.patch) | tr -d '\\n'
+    exit 0
 fi
 MAJOR=`egrep '^#define .*_VERSION_MAJOR +[0-9]+$' include/$project.h`
 MINOR=`egrep '^#define .*_VERSION_MINOR +[0-9]+$' include/$project.h`
@@ -73,7 +73,7 @@ fi
 MAJOR=`echo $MAJOR | awk '{ print $3 }'`
 MINOR=`echo $MINOR | awk '{ print $3 }'`
 PATCH=`echo $PATCH | awk '{ print $3 }'`
-echo $MAJOR.$MINOR.$PATCH | tr -d '\n'
+echo $MAJOR.$MINOR.$PATCH | tr -d '\\n'
 
 #################################################################
 #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
@@ -332,7 +332,11 @@ AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
 AC_SUBST([pkgconfigdir])
 
 # Specify output files
+.if (count (class) > 0)
 AC_CONFIG_FILES([Makefile src/Makefile src/lib$(project.name).pc])
+.else
+AC_CONFIG_FILES([Makefile])
+.endif 
 AC_OUTPUT
 
 #################################################################

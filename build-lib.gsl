@@ -4,6 +4,7 @@
 .#  language. See https://github.com/imatix/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
+.if (count (class) > 0)
 .echo "Generating src/lib$(project.name).pc.in..."
 .output "src/lib$(project.name).pc.in"
 #################################################################
@@ -27,3 +28,4 @@ Cflags: -I${includedir}
 #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
 #   Please read the README.txt file in the model directory.     #
 #################################################################
+.endif

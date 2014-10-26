@@ -20,6 +20,7 @@ function resolve_includes ()
     endfor
 endfunction
 .endtemplate
+.if (count (class) > 0)
 .resolve_includes ()
 .#
 .#  Build the project header file
@@ -855,3 +856,4 @@ $(class.name)_test (bool verbose)
 }
 .endif
 .endfor
+.endif

@@ -11,7 +11,11 @@ ACLOCAL_AMFLAGS = -I config
 AM_CPPFLAGS = \\
     -I\$(srcdir)/include
 
+.if (count (class) > 0)
 SUBDIRS = src
+.else
+SUBDIRS = 
+.endif
 
 EXTRA_DIST = \\
 .for project.extra  
@@ -29,6 +33,7 @@ include \$(srcdir)/src/Makefile.ams
 #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
 #   Please read the README.txt file in the model directory.     #
 #################################################################
+.if (count (class) > 0)
 lib_LTLIBRARIES = lib$(project.name).la
 
 pkgconfig_DATA = src/lib$(project.name).pc
@@ -71,6 +76,22 @@ $(project.name)_selftest_LDADD = \\
 $(project.name)_selftest_SOURCES = \\
     src/$(project.name)_selftest.c
 
+lib$(project.name)_la_LDFLAGS = \\
+    -version-info @LTVER@
+
+if ON_MINGW
+lib$(project.name)_la_LDFLAGS += \\
+    -no-undefined \\
+    -avoid-version
+endif
+
+TESTS = $(project.name)_selftest
+.else
+noinst_LTLIBRARIES = 
+noinst_PROGRAMS = 
+TESTS = 
+.endif
+
 .for bin
 .   if first() 
 # Install data into /usr/local/bin
@@ -83,24 +104,12 @@ $(project.name)_DATA = \\
     $(bin.name)
 .   endif    
 .endfor
-
-lib$(project.name)_la_LDFLAGS = \\
-    -version-info @LTVER@
-
-if ON_MINGW
-lib$(project.name)_la_LDFLAGS += \\
-    -no-undefined \\
-    -avoid-version
-endif
-
-TESTS = $(project.name)_selftest
-.for model
-.   if first ()
-
 #################################################################
 #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
 #   Please read the README.txt file in the model directory.     #
 #################################################################
+.for model
+.   if first ()
 .echo "Generating src/Makefile.am..."
 .output "src/Makefile.am"
 #################################################################
@@ -112,12 +121,14 @@ TESTS = $(project.name)_selftest
 code:
 .   endif
 \tgsl -q $(name).xml
-.endfor
 
+.   if last ()
 #################################################################
 #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
 #   Please read the README.txt file in the model directory.     #
 #################################################################
+.   endif    
+.endfor
 .echo "Generating doc/Makefile.ams..."
 .if !file.exists ("doc")
 .   directory.create("doc")
