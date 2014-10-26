@@ -21,6 +21,12 @@
     email = "mail@myproject.org"
     >
 
+    <!--
+        Includes are processed first, so XML in included files will be
+        part of the XML tree
+    -->
+    <include filename = "license.xml" />
+
     <!-- 
         Current version of your project. 
         This will be used to package your distribution 
@@ -30,39 +36,34 @@
     <!-- 
         The dependency are added to your project header file.
         *** Currently only dynamically linked libaries are supported ***
-    -->
     <dependency name="zmq" header="zmq.h" test="zmq_init" />
     <dependency name="czmq" header="czmq.h" test="zctx_test" />
-
-    <!--
-        Includes are processed first, so XML in included files will be
-        part of the XML tree
     -->
-    <include filename = "license.xml" />
 
-    <!-- Header Files -->
+    <!-- Header Files 
     <header name = "myproject_prelude" />
+    -->
 
     <!-- 
         Classes, if the class header or source file doesn't exist this will
                  generate a skeletons for them.
-    -->
     <class name = "myclass">My classes description</class>
+    -->
 
     <!-- 
         Models that we build using GSL 
         *** Not supported yet ***
-    -->
     <model name = "sockopts" />
     <model name = "zgossip" />
     <model name = "zgossip_msg" />
+    -->
 
     <!-- Other source files that we need to package
     <extra name = "some_ressource" />
     -->
 
     <!-- 
-        Stuff that need to be installed:
+        Stuff that needs to be installed:
         
         * Linux -> /usr/local/bin
     -->
