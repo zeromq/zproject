@@ -7,6 +7,9 @@
 
     <version major="2" minor="1" patch="14" />
 
+    <dependency name="zmq" header="zmq.h" test="zmq_init" />
+    <dependency name="czmq" header="czmq.h" test="zctx_test" />
+
     <!--
         Includes are processed first, so XML in included files will be
         part of the XML tree
@@ -28,6 +31,7 @@
     <extra name = "build-android.gsl" />
     <extra name = "build-autoconf.gsl" />
     <extra name = "build-automake.gsl" />
+    <extra name = "build-lib.gsl" />
     <extra name = "build-class.gsl" />
     <extra name = "build-cmake.gsl" />
     <extra name = "build-mingw32.gsl" />

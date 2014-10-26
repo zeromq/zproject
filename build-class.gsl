@@ -38,15 +38,20 @@ endfunction
 
     #################################################################
     #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
-    #   Please read the README.txt file                             #                                                                                                                                              #################################################################
+    #   Please read the README.txt file                             #
+    #################################################################
     =========================================================================
 */
 
 #ifndef __$(PROJECT.NAME)_H_INCLUDED__
 #define __$(PROJECT.NAME)_H_INCLUDED__
 
-//  Set up environment for the application
+//  External dependencies
+.for dependency
+#include <$(dependency.header)>
+.endfor
 
+//  Set up environment for the application
 .for project.header
 #include "$(header.name).h"
 .endfor
@@ -57,9 +62,9 @@ endfunction
 #define $(PROJECT.NAME)_VERSION_MINOR $(project->version.minor)
 #define $(PROJECT.NAME)_VERSION_PATCH $(project->version.patch)
 
-#define $(PROJECT.NAME)_MAKE_VERSION(major, minor, patch) \
+#define $(PROJECT.NAME)_MAKE_VERSION(major, minor, patch) \\
     ((major) * 10000 + (minor) * 100 + (patch))
-#define $(PROJECT.NAME)_VERSION \
+#define $(PROJECT.NAME)_VERSION \\
     $(PROJECT.NAME)_MAKE_VERSION(($(PROJECT.NAME)_VERSION_MAJOR, $(PROJECT.NAME)_VERSION_MINOR, $(PROJECT.NAME)_VERSION_PATCH)
 
 //  Opaque class structures to allow forward references
@@ -592,40 +597,6 @@ typedef struct sockaddr_in inaddr_t;    //  Internet socket address structure
 #   if (__STDC_VERSION__ >= 199901L)
     typedef unsigned int uint;
 #   endif
-#endif
-
-//- Memory allocations ------------------------------------------------------
-
-extern volatile uint64_t zsys_allocs;
-
-//  Replacement for malloc() which asserts if we run out of heap, and
-//  which zeroes the allocated block.
-static inline void *
-safe_malloc (size_t size, const char *file, unsigned line)
-{
-#if defined (__UTYPE_LINUX)
-    //  On GCC we count zmalloc memory allocations
-    __sync_add_and_fetch (&zsys_allocs, 1);
-#endif
-    void *mem = calloc (1, size);
-    if (mem == NULL) {
-        fprintf (stderr, "FATAL ERROR at %s:%u\\n", file, line);
-        fprintf (stderr, "OUT OF MEMORY (malloc returned NULL)\\n");
-        fflush (stderr);
-        abort ();
-    }
-    return mem;
-}
-
-//  Define _ZMALLOC_DEBUG if you need to trace memory leaks using e.g. mtrace,
-//  otherwise all allocations will claim to come from $(project.name)_prelude.h. For best
-//  results, compile all classes so you see dangling object allocations.
-//  _ZMALLOC_PEDANTIC does the same thing, but its intention is to propagate
-//  out of memory condition back up the call stack.
-#if defined _ZMALLOC_DEBUG || _ZMALLOC_PEDANTIC
-#   define zmalloc(size) calloc(1,(size))
-#else
-#   define zmalloc(size) safe_malloc((size), __FILE__, __LINE__)
 #endif
 
 //  GCC supports validating format strings for functions that act like printf

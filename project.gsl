@@ -9,7 +9,7 @@
 .include "build-vs2010.gsl"
 .include "build-vs2012.gsl"
 .include "build-vs2013.gsl"
-.include "build-automake.gsl"
 .include "build-autoconf.gsl"
+.include "build-automake.gsl"
 .include "build-lib.gsl"
 .include "build-class.gsl"
