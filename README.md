@@ -27,14 +27,17 @@ files according to http://rfc.zeromq.org/spec:21.
 
 # Install
 
+```
+./generate.sh
+```
+
 ## autotools
 
 ```
-./generate.sh
 ./autogen.sh
 ./configure
-./make
-./make install
+make
+make install
 ```
 
 # Generate 
