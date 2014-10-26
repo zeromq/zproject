@@ -27,6 +27,8 @@ files according to http://rfc.zeromq.org/spec:21.
 
 # Install
 
+Before you start you'll need to install the code generator GSL (https://github.com/imatix/gsl) on your system.
+
 ```
 ./generate.sh
 ```
@@ -45,3 +47,11 @@ make install
 Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly.
 
 Run `./generate.sh`
+
+# Uninstall
+
+## autotools
+
+```
+make uninstall
+```
