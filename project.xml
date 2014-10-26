@@ -1,12 +1,36 @@
+<!-- 
+    The project.xml generates build environments for:
+
+        * android
+        * autotool
+        * cmake
+        * mingw32
+        * vs2008
+        * vs2010
+        * vs2012
+        * vs2013
+
+    Classes are automatically added to all build environments. Further as you
+    add new classes to your project you can generate skeleton header and source 
+    files according to http://rfc.zeromq.org/spec:21.
+-->
 <project
-    name = "kgraph"
-    description = "Graphenbibliothek für Robotik"
+    name = "myproject"
+    description = "My Project that will change the world."
     script = "project.gsl"
-    email = "kgraph@lists.k.org"
+    email = "mail@myproject.org"
     >
 
-    <version major="2" minor="1" patch="14" />
+    <!-- 
+        Current version of your project. 
+        This will be used to package your distribution 
+    -->
+    <version major="1" minor="0" patch="0" />
 
+    <!-- 
+        The dependency are added to your project header file.
+        *** Currently only dynamically linked libaries are supported ***
+    -->
     <dependency name="zmq" header="zmq.h" test="zmq_init" />
     <dependency name="czmq" header="czmq.h" test="zctx_test" />
 
@@ -17,17 +41,23 @@
     <include filename = "license.xml" />
 
     <!-- Header Files -->
-    <header name = "kgraph_prelude" />
+    <header name = "myproject_prelude" />
 
-    <!-- Classes that we use -->
-    <class name = "kdijkstra">Dijkstra</class>
+    <!-- 
+        Classes, if the class header or source file doesn't exist this will
+                 generate a skeletons for them.
+    -->
+    <class name = "myclass">My classes description</class>
 
-    <!-- Models that we build using GSL -->
+    <!-- 
+        Models that we build using GSL 
+        *** Not supported yet ***
+    -->
     <model name = "sockopts" />
     <model name = "zgossip" />
     <model name = "zgossip_msg" />
 
-    <!-- Other source files in src that we need to package -->
+    <!-- Other source files that we need to package -->
     <extra name = "build-android.gsl" />
     <extra name = "build-autoconf.gsl" />
     <extra name = "build-automake.gsl" />
