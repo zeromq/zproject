@@ -57,17 +57,25 @@
     <model name = "zgossip" />
     <model name = "zgossip_msg" />
 
-    <!-- Other source files that we need to package -->
-    <extra name = "build-android.gsl" />
-    <extra name = "build-autoconf.gsl" />
-    <extra name = "build-automake.gsl" />
-    <extra name = "build-lib.gsl" />
-    <extra name = "build-class.gsl" />
-    <extra name = "build-cmake.gsl" />
-    <extra name = "build-mingw32.gsl" />
-    <extra name = "build-vs2008.gsl" />
-    <extra name = "build-vs2010.gsl" />
-    <extra name = "build-vs2012.gsl" />
-    <extra name = "build-vs2013.gsl" />
+    <!-- Other source files that we need to package
+    <extra name = "some_ressource" />
+    -->
+
+    <!-- 
+        Stuff that need to be installed:
+        
+        * Linux -> /usr/local/bin
+    -->
+    <bin name = "build-android.gsl" />
+    <bin name = "build-autoconf.gsl" />
+    <bin name = "build-automake.gsl" />
+    <bin name = "build-lib.gsl" />
+    <bin name = "build-class.gsl" />
+    <bin name = "build-cmake.gsl" />
+    <bin name = "build-mingw32.gsl" />
+    <bin name = "build-vs2008.gsl" />
+    <bin name = "build-vs2010.gsl" />
+    <bin name = "build-vs2012.gsl" />
+    <bin name = "build-vs2013.gsl" />
 
 </project>

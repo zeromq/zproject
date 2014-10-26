@@ -71,6 +71,19 @@ $(project.name)_selftest_LDADD = \\
 $(project.name)_selftest_SOURCES = \\
     src/$(project.name)_selftest.c
 
+.for bin
+.   if first() 
+# Install data into /usr/local/bin
+$(project.name)dir = @bindir@
+$(project.name)_DATA = \\
+.   endif    
+.   if !last()
+    $(bin.name) \\
+.   else
+    $(bin.name)
+.   endif    
+.endfor
+
 lib$(project.name)_la_LDFLAGS = \\
     -version-info @LTVER@
 
