@@ -1,9 +1,25 @@
-.#  Generate autoconf files for project
+.#  Generate automake files for project
 .#
 .#  This is a code generator built using the iMatix GSL code generation
 .#  language. See https://github.com/imatix/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
+.echo "Generating Makefile.am..."
+.output "Makefile.am"
+ACLOCAL_AMFLAGS = -I config
+
+AM_CPPFLAGS = \\
+    -I\$(srcdir)/include
+
+SUBDIRS = src
+
+EXTRA_DIST = \\
+.for project.extra  
+    $(extra.name) \\
+.endfor
+    version.sh
+
+include \$(srcdir)/src/Makefile.ams
 .echo "Generating src/Makefile.ams..."
 .if !file.exists ("src")
 .   directory.create("src")
@@ -82,7 +98,7 @@ TESTS = $(project.name)_selftest
 # Produce generated models; do this manually in src directory
 code:
 .   endif
-    gsl -q $(name).xml
+\tgsl -q $(name).xml
 .endfor
 
 #################################################################

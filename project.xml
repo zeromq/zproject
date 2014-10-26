@@ -1,8 +1,11 @@
 <project
     name = "kgraph"
+    description = "Graphenbibliothek für Robotik"
     script = "project.gsl"
     email = "kgraph@lists.k.org"
     >
+
+    <version major="2" minor="1" patch="14" />
 
     <!--
         Includes are processed first, so XML in included files will be
@@ -11,7 +14,6 @@
     <include filename = "license.xml" />
 
     <!-- Header Files -->
-    <header name = "kgraph" />
     <header name = "kgraph_prelude" />
 
     <!-- Classes that we use -->
@@ -23,8 +25,15 @@
     <model name = "zgossip_msg" />
 
     <!-- Other source files in src that we need to package -->
-    <extra name = "zgossip_engine.inc" />
-    <extra name = "zhash_primes.inc" />
-    <extra name = "zclass_example.xml" />
+    <extra name = "build-android.gsl" />
+    <extra name = "build-autoconf.gsl" />
+    <extra name = "build-automake.gsl" />
+    <extra name = "build-class.gsl" />
+    <extra name = "build-cmake.gsl" />
+    <extra name = "build-mingw32.gsl" />
+    <extra name = "build-vs2008.gsl" />
+    <extra name = "build-vs2010.gsl" />
+    <extra name = "build-vs2012.gsl" />
+    <extra name = "build-vs2013.gsl" />
 
 </project>

@@ -1,0 +1,29 @@
+.#  Generate libtool library file
+.#
+.#  This is a code generator built using the iMatix GSL code generation
+.#  language. See https://github.com/imatix/gsl for details. This script
+.#  is licensed under MIT/X11.
+.#
+.echo "Generating src/lib$(project.name).pc.in..."
+.output "src/lib$(project.name).pc.in"
+#################################################################
+#   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
+#   Please read the README.txt file in the model directory.     #
+#################################################################
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: lib$(project.name)
+Description: $(project.description)
+Version: @VERSION@
+Requires: libzmq
+Libs: -L${libdir} -l$(project.name)
+Cflags: -I${includedir}
+
+#################################################################
+#   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
+#   Please read the README.txt file in the model directory.     #
+#################################################################

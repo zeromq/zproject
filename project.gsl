@@ -11,4 +11,5 @@
 .include "build-vs2013.gsl"
 .include "build-automake.gsl"
 .include "build-autoconf.gsl"
+.include "build-lib.gsl"
 .include "build-class.gsl"
