@@ -11,7 +11,7 @@ ACLOCAL_AMFLAGS = -I config
 AM_CPPFLAGS = \\
     -I\$(srcdir)/include
 
-.if (count (class) > 0)
+.if (count (model) > 0)
 SUBDIRS = src
 .else
 SUBDIRS = 

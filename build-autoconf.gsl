@@ -332,8 +332,10 @@ AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
 AC_SUBST([pkgconfigdir])
 
 # Specify output files
-.if (count (class) > 0)
+.if (count (class) > 0 & count (model) > 0)
 AC_CONFIG_FILES([Makefile src/Makefile src/lib$(project.name).pc])
+.elsif (count (class) > 0 & count (model) = 0)
+AC_CONFIG_FILES([Makefile src/lib$(project.name).pc])
 .else
 AC_CONFIG_FILES([Makefile])
 .endif 
