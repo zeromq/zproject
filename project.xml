@@ -78,5 +78,6 @@
     <bin name = "build-vs2010.gsl" />
     <bin name = "build-vs2012.gsl" />
     <bin name = "build-vs2013.gsl" />
+    <bin name = "project.gsl" />
 
 </project>
