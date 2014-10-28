@@ -82,10 +82,10 @@ src_lib$(project.name)_la_LDFLAGS += \\
     -avoid-version
 endif
 
-bin_PROGRAMS = src/$(project.name)_selftest
+bin_PROGRAMS += src/$(project.name)_selftest
 
 src_$(project.name)_selftest_LDADD = \\
-    lib$(project.name).la
+    src/lib$(project.name).la
 
 src_$(project.name)_selftest_SOURCES = \\
     src/$(project.name)_selftest.c
@@ -109,12 +109,14 @@ $(project.name)_DATA = \\
     $(bin.name)
 .   endif    
 .endfor
+
+.if (count (class) > 0)
+# define custom target for all products of /src
+src: src/lib$(project.name).la src/$(project.name)_selftest
+.endif
+
 .for model
 .   if first ()
-
-# define custom target for all products of /src
-src: src/lib$(project.name).la src/$(project.name)_selftest    
-
 # Produce generated models; do this manually in src directory
 code:
 .   endif
@@ -150,7 +152,7 @@ MAN_TXT = $\(MAN1:%.1=%.txt)
 MAN_TXT += $\(MAN3:%.3=%.txt)
 MAN_TXT += $\(MAN7:%.7=%.txt)
 
-EXTRA_DIST += asciidoc.conf mkman $\(MAN_TXT)
+EXTRA_DIST = asciidoc.conf mkman $\(MAN_TXT)
 
 if BUILD_DOC
 if INSTALL_MAN
