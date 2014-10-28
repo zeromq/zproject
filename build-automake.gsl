@@ -11,11 +11,15 @@ ACLOCAL_AMFLAGS = -I config
 AM_CPPFLAGS = \\
     -I\$(srcdir)/include
 
-.if (count (model) > 0)
-SUBDIRS = src
-.else
-SUBDIRS = 
-.endif
+SUBDIRS =
+
+DIST_SUBDIRS =
+
+lib_LTLIBRARIES =
+
+bin_PROGRAMS =
+
+check_PROGRAMS =
 
 EXTRA_DIST = \\
 .for project.extra  
@@ -23,18 +27,19 @@ EXTRA_DIST = \\
 .endfor
     version.sh
 
-include \$(srcdir)/src/Makefile.ams
-.echo "Generating src/Makefile.ams..."
+include \$(srcdir)/src/Makemodule.am
+
+.echo "Generating src/Makemodule.am..."
 .if !file.exists ("src")
 .   directory.create("src")
 .endif    
-.output "src/Makefile.ams"
+.output "src/Makemodule.am"
 #################################################################
 #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
 #   Please read the README.txt file in the model directory.     #
 #################################################################
 .if (count (class) > 0)
-lib_LTLIBRARIES = lib$(project.name).la
+lib_LTLIBRARIES += src/lib$(project.name).la
 
 pkgconfig_DATA = src/lib$(project.name).pc
 
@@ -55,7 +60,7 @@ include_HEADERS = \\
 .   endif
 .endfor
 
-lib$(project.name)_la_SOURCES = \\
+src_lib$(project.name)_la_SOURCES = \\
     src/platform.h \\
 .for extra
     src/$(name) \\
@@ -68,24 +73,24 @@ lib$(project.name)_la_SOURCES = \\
 .   endif
 .endfor
 
-bin_PROGRAMS = $(project.name)_selftest
-
-$(project.name)_selftest_LDADD = \\
-    lib$(project.name).la
-
-$(project.name)_selftest_SOURCES = \\
-    src/$(project.name)_selftest.c
-
-lib$(project.name)_la_LDFLAGS = \\
+src_lib$(project.name)_la_LDFLAGS = \\
     -version-info @LTVER@
 
 if ON_MINGW
-lib$(project.name)_la_LDFLAGS += \\
+src_lib$(project.name)_la_LDFLAGS += \\
     -no-undefined \\
     -avoid-version
 endif
 
-TESTS = $(project.name)_selftest
+bin_PROGRAMS = src/$(project.name)_selftest
+
+src_$(project.name)_selftest_LDADD = \\
+    lib$(project.name).la
+
+src_$(project.name)_selftest_SOURCES = \\
+    src/$(project.name)_selftest.c
+
+TESTS = src/$(project.name)_selftest
 .else
 noinst_LTLIBRARIES = 
 noinst_PROGRAMS = 
@@ -104,36 +109,26 @@ $(project.name)_DATA = \\
     $(bin.name)
 .   endif    
 .endfor
-#################################################################
-#   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
-#   Please read the README.txt file in the model directory.     #
-#################################################################
 .for model
 .   if first ()
-.echo "Generating src/Makefile.am..."
-.output "src/Makefile.am"
-#################################################################
-#   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
-#   Please read the README.txt file in the model directory.     #
-#################################################################
+
+# define custom target for all products of /src
+src: src/lib$(project.name).la src/$(project.name)_selftest    
 
 # Produce generated models; do this manually in src directory
 code:
 .   endif
-\tgsl -q $(name).xml
-
-.   if last ()
+\tcd $\(srcdir/src); gsl -q $(name).xml
+.endfor
 #################################################################
 #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
 #   Please read the README.txt file in the model directory.     #
 #################################################################
-.   endif    
-.endfor
-.echo "Generating doc/Makefile.ams..."
+.echo "Generating doc/Makefile.am..."
 .if !file.exists ("doc")
 .   directory.create("doc")
 .endif    
-.output "doc/Makefile.ams"
+.output "doc/Makefile.am"
 #################################################################
 #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
 #   Please read the README.txt file in the model directory.     #
@@ -141,21 +136,21 @@ code:
 .project.manpage = "$(project.name).7"
 .manpages = ""
 .for class where private?0 = 0
-.   manpages += " $\(srcdir)/doc/$(name).3"
+.   manpages += " $(name).3"
 .   if class.name = project.name
 .       project.manpage = ""
 .   endif
 .endfor
 MAN1 =
 MAN3 =$(manpages)
-MAN7 = $\(srcdir)/doc/$(project.manpage)
+MAN7 = $\(srcdir)/$(project.manpage)
 MAN_DOC = $\(MAN1) $\(MAN3) $\(MAN7)
 
 MAN_TXT = $\(MAN1:%.1=%.txt)
 MAN_TXT += $\(MAN3:%.3=%.txt)
 MAN_TXT += $\(MAN7:%.7=%.txt)
 
-EXTRA_DIST += $\(srcdir)/doc/asciidoc.conf $\(srcdir)/doc/mkman $\(MAN_TXT)
+EXTRA_DIST += asciidoc.conf mkman $\(MAN_TXT)
 
 if BUILD_DOC
 if INSTALL_MAN
@@ -169,15 +164,15 @@ dist-hook : $\(MAN_DOC)
 SUFFIXES=.txt .xml .1 .3 .7
 
 \.txt.xml:
-    $\(srcdir)/doc/mkman $<
-    asciidoc -d manpage -b docbook -f $\(srcdir)/doc/asciidoc.conf \\
+    $\(srcdir)/mkman $<
+    asciidoc -d manpage -b docbook -f $\(srcdir)/asciidoc.conf \\
         -a$(project.name)_version=@PACKAGE_VERSION@ -o$@ $<
 \.xml.1:
-    xmlto -o $\(srcdir)/doc man $<
+    xmlto man $<
 \.xml.3:
-    xmlto -o $\(srcdir)/doc man $<
+    xmlto man $<
 \.xml.7:
-    xmlto -o $\(srcdir)/doc man $<
+    xmlto man $<
 endif
 #################################################################
 #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
