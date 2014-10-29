@@ -53,6 +53,7 @@ endfunction
 .endfor
 
 //  Set up environment for the application
+#include "$(project.name)_prelude.h"
 .for project.header
 #include "$(header.name).h"
 .endfor
