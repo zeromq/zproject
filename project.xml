@@ -13,6 +13,11 @@
     Classes are automatically added to all build environments. Further as you
     add new classes to your project you can generate skeleton header and source 
     files according to http://rfc.zeromq.org/spec:21.
+
+    name := The name of your project
+    description := A short description for your project
+    script := The gsl script to generate all the stuff !!! DO NOT CHANGE !!!
+    email := The email address where to reach you project e.g. mailinglist.
 -->
 <project
     name = "myproject"
@@ -41,7 +46,11 @@
     -->
 
     <!-- Header Files 
-    <header name = "myproject_prelude" />
+         name := The name the header file to include without file ending
+         placement := When to include the header file in main project header file
+             pre -> Before typedefs of structs and includes of classes headers (default)
+             post -> After typedefs of structs and includes of classes headers
+    <header name = "myproject_prelude" placement ="pre|post" />
     -->
 
     <!-- 

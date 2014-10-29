@@ -47,12 +47,8 @@ include_HEADERS = \\
 .for header
     include/$(name).h \\
 .endfor
-.for class
-.   if class.private ?= 1
-.       class.classdir = "src"
-.   else
-.       class.classdir = "include"
-.   endif
+.for class where !defined (class.private)
+.   class.classdir = "include"
 .   if last ()
     $(classdir)/$(name).h
 .   else
