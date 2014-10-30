@@ -74,6 +74,11 @@ endfunction
 typedef struct _$(class.name)_t $(class.name)_t;
 .endfor
 
+//  Public Constants
+.for project.constant where !defined (constant.private)
+#define $(CONSTANT.NAME)\t$(constant.value)\t//  $(string.trim ("$(constant.?'':)"))
+.endfor
+
 //  Public API classes
 
 .for project.header where defined (header.placement) & header.placement = "post"
@@ -745,7 +750,7 @@ typedef int SOCKET;
 
 .for constant where defined (constant.private)
 .   if first ()
-//  Private Constants    
+//  Private Constants
 .   endif
 #define $(CONSTANT.NAME)\t$(constant.value)\t//  $(string.trim ("$(constant.?'':)"))
 .endfor
