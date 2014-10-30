@@ -1,4 +1,4 @@
-#/bin/bash
+#!/usr/bin/sh
 
 gsl project.xml
 
