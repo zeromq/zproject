@@ -1,9 +1,20 @@
+.#  ===========================================================================
 .#  Generate class header/source skeletons
 .#
 .#   Generates a skeleton for a new class. Will not overwrite existing files.
 .#   See project.xml for instructions on how to specify a class.
 .#
+.#  This script will generate the following files:
+.#      * include/$(project.name).h - public project header
+.#      * src/$(project.name)_selftest.c - selftest class
+.#      * include/$(project.name)_prelude.h - cross platform settings
+.#      * src/$(project.name)_classes.h - private project header
+.#      * (include|src)$(class.name).h - public/private header file for classes
+.#      * src/$(class.name).c - source code file for classes
+.#  ===========================================================================
+.#
 .#   Template to resolve xml includes
+.#
 .template 0
 function resolve_includes ()
     for project.include
@@ -72,6 +83,13 @@ endfunction
 //  Opaque class structures to allow forward references
 .for project.class where !defined (class.private)
 typedef struct _$(class.name)_t $(class.name)_t;
+.endfor
+
+.for constant where !defined (constant.private)
+.   if first ()
+//  Public constants
+.   endif
+#define $(CONSTANT.NAME)\t$(constant.value) //  $(constant.?'')
 .endfor
 
 //  Public API classes
@@ -745,9 +763,9 @@ typedef int SOCKET;
 
 .for constant where defined (constant.private)
 .   if first ()
-//  Private Constants    
+//  Private constants    
 .   endif
-#define $(CONSTANT.NAME)\t$(constant.value)\t//  $(string.trim ("$(constant.?'':)"))
+#define $(CONSTANT.NAME)\t$(constant.value) //  $(constant.?'')
 .endfor
 #endif
 .endif
