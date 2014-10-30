@@ -1,9 +1,20 @@
+.#  ===========================================================================
 .#  Generate class header/source skeletons
 .#
 .#   Generates a skeleton for a new class. Will not overwrite existing files.
 .#   See project.xml for instructions on how to specify a class.
 .#
+.#  This script will generate the following files:
+.#      * include/$(project.name).h - public project header
+.#      * src/$(project.name)_selftest.c - selftest class
+.#      * include/$(project.name)_prelude.h - cross platform settings
+.#      * src/$(project.name)_classes.h - private project header
+.#      * (include|src)$(class.name).h - public/private header file for classes
+.#      * src/$(class.name).c - source code file for classes
+.#  ===========================================================================
+.#
 .#   Template to resolve xml includes
+.#
 .template 0
 function resolve_includes ()
     for project.include

@@ -1,9 +1,15 @@
+.#  ===========================================================================
 .#  Generate autoconf files for project
 .#
 .#  This is a code generator built using the iMatix GSL code generation
 .#  language. See https://github.com/imatix/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
+.#  This script will generate the following files:
+.#      * autogen.sh
+.#      * version.sh
+.#      * configure.ac
+.#  ===========================================================================
 .echo "Generating autogen.sh ..."
 .output "autogen.sh"
 #################################################################

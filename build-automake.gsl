@@ -1,9 +1,15 @@
+.#  ===========================================================================
 .#  Generate automake files for project
 .#
 .#  This is a code generator built using the iMatix GSL code generation
 .#  language. See https://github.com/imatix/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
+.#  This script will generate the following files:
+.#      * Makefile.am
+.#      * src/Makemodule.am
+.#      * doc/Makefile.am
+.#  ===========================================================================
 .echo "Generating Makefile.am..."
 .output "Makefile.am"
 ACLOCAL_AMFLAGS = -I config
