@@ -78,7 +78,7 @@ endfunction
 #define $(PROJECT.NAME)_MAKE_VERSION(major, minor, patch) \\
     ((major) * 10000 + (minor) * 100 + (patch))
 #define $(PROJECT.NAME)_VERSION \\
-    $(PROJECT.NAME)_MAKE_VERSION(($(PROJECT.NAME)_VERSION_MAJOR, $(PROJECT.NAME)_VERSION_MINOR, $(PROJECT.NAME)_VERSION_PATCH)
+    $(PROJECT.NAME)_MAKE_VERSION($(PROJECT.NAME)_VERSION_MAJOR, $(PROJECT.NAME)_VERSION_MINOR, $(PROJECT.NAME)_VERSION_PATCH)
 
 //  Opaque class structures to allow forward references
 .for project.class where !defined (class.private)
