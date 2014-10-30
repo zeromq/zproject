@@ -50,6 +50,7 @@ lib_LTLIBRARIES += src/lib$(project.name).la
 pkgconfig_DATA = src/lib$(project.name).pc
 
 include_HEADERS = \\
+    include/$(project.name)_prelude.h \\
 .for header
     include/$(name).h \\
 .endfor
