@@ -54,7 +54,7 @@ endfunction
 
 //  Set up environment for the application
 #include "$(project.name)_prelude.h"
-.for project.header
+.for project.header where !defined (header.placement) | header.placement = "pre"
 #include "$(header.name).h"
 .endfor
 
@@ -70,12 +70,16 @@ endfunction
     $(PROJECT.NAME)_MAKE_VERSION(($(PROJECT.NAME)_VERSION_MAJOR, $(PROJECT.NAME)_VERSION_MINOR, $(PROJECT.NAME)_VERSION_PATCH)
 
 //  Opaque class structures to allow forward references
-.for project.class
+.for project.class where !defined (class.private)
 typedef struct _$(class.name)_t $(class.name)_t;
 .endfor
 
 //  Public API classes
-.for project.class
+
+.for project.header where defined (header.placement) & header.placement = "post"
+#include "$(header.name).h"
+.endfor
+.for project.class where !defined (class.private) & class.name <> "$(project.name)"
 #include "$(class.name).h"
 .endfor
 
@@ -109,6 +113,9 @@ typedef struct _$(class.name)_t $(class.name)_t;
 */
 
 #include "../include/$(project.name).h"
+.if (count (class, defined(class.private)) > 0)
+#include "$(project.name)_classes.h"
+.endif
 
 int
 main (int argc, char *argv [])
@@ -715,10 +722,43 @@ typedef int SOCKET;
     #################################################################
 */
 .-
+.-  Build the classes header for private header files and constants
+.-
+.if (count (class, defined(class.private)) > 0)
+.   echo "Generating src/$(project.name)_classes.h..."
+.   output "src/$(project.name)_classes.h"
+/*  =========================================================================
+    $(project.name)_classes - all private classes
+
+.   for project.license
+    $(string.trim (license.):block                                         )
+.   endfor
+    =========================================================================
+*/
+
+#ifndef __$(PROJECT.NAME)_CLASSES_H_INCLUDED__
+#define __$(PROJECT.NAME)_CLASSES_H_INCLUDED__
+
+.for class where defined (class.private)
+#include "$(class.name).h"
+.endfor
+
+.for constant where defined (constant.private)
+.   if first ()
+//  Private Constants    
+.   endif
+#define $(CONSTANT.NAME)\t$(constant.value)\t//  $(string.trim ("$(constant.?'':)"))
+.endfor
+#endif
+.endif
+.-
 .-  Build the header file for a class
 .-
 .for class
-.header_file = "include/$(class.name).h"
+.   if class.private ?= 1
+.       class.classdir = "src"
+.   endif
+.header_file = "$(class.classdir)/$(class.name).h"
 .if !file.exists (header_file)
 .echo "Generating $(header_file)..."
 .   output header_file
@@ -737,6 +777,10 @@ typedef int SOCKET;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+.   if class.private ?= 1
+typedef struct _$(class.name)_t $(class.name)_t;
+.  endif
 
 //  @interface
 
@@ -792,6 +836,9 @@ struct _$(class.name)_t {
 };
 
 #include "../include/$(project.name).h"
+.   if (count (class, defined(class.private)) > 0)
+#include "$(project.name)_classes.h"
+.   endif
 
 //  --------------------------------------------------------------------------
 //  Create a new $(class.name)
