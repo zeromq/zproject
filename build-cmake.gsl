@@ -87,6 +87,7 @@ find_package(ZeroMQ REQUIRED)
 # includes
 ########################################################################
 set ($(project.name)_headers
+    include/$(project.name)_prelude.h
 .for header
     include/$(name).h
 .endfor

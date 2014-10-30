@@ -254,6 +254,7 @@
 .   endif
       <File RelativePath="..\\..\\..\\..\\$(classdir)\\$(name).h" />
 .endfor
+      <File RelativePath="..\\..\\..\\..\\include\\$(project.name)_prelude.h" />
 .for header
       <File RelativePath="..\\..\\..\\..\\include\\$(name).h" />
 .endfor
