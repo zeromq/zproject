@@ -15,6 +15,9 @@
 ACLOCAL_AMFLAGS = -I config
 
 AM_CPPFLAGS = \\
+.for package_dependency where defined (package_dependency.for_all)
+    \${$(package_dependency.name)_CFLAGS} \\
+.endfor
     -I\$(srcdir)/include
 
 SUBDIRS =
@@ -76,6 +79,17 @@ src_lib$(project.name)_la_SOURCES = \\
 .   endif
 .endfor
 
+src_lib$(project.name)_la_CPPFLAGS = \\
+.for package_dependency where defined (package_dependency.for_lib)
+.   if last()
+    \${$(package_dependency.name)_CFLAGS}
+.   else
+    \${$(package_dependency.name)_CFLAGS} \\
+.   endif
+.endfor
+    ${AM_CPPFLAGS}
+
+
 src_lib$(project.name)_la_LDFLAGS = \\
     -version-info @LTVER@
 
@@ -87,8 +101,25 @@ endif
 
 bin_PROGRAMS += src/$(project.name)_selftest
 
+src_$(project.name)_selftest_CPPFLAGS = \\
+.for package_dependency where defined (package_dependency.for_test)
+    \${$(package_dependency.name)_CFLAGS} \\
+.endfor
+    \${src_lib$(project.name)_la_CFLAGS}
+
 src_$(project.name)_selftest_LDADD = \\
+.if count (package_dependency, defined (count.for_lib) | defined (count.for_test) | defined (count.for_all)) > 0
+    src/lib$(project.name).la \\
+.else
     src/lib$(project.name).la
+.endif
+.for package_dependency where defined (package_dependency.for_lib) | defined (package_dependency.for_test) | defined (package_dependency.for_all)
+.   if last()
+    \${$(package_dependency.name)_LIBS}
+.   else
+    \${$(package_dependency.name)_LIBS} \\
+.endif
+.endfor
 
 src_$(project.name)_selftest_SOURCES = \\
     src/$(project.name)_selftest.c

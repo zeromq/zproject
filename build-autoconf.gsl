@@ -194,11 +194,15 @@ AC_MSG_CHECKING([whether $(lib_name) installation works])
 
 .endfor
 
+.for package_dependency
+PKG_CHECK_MODULES([$(package_dependency.name)], [$(package_dependency.pkg_name)])
+.endfor
+
 # Platform specific checks
 $(project.name)_on_mingw32="no"
 $(project.name)_on_android="no"
 
-# Host speciffic checks
+# Host specific checks
 AC_CANONICAL_HOST
 
 # Determine whether or not documentation should be built and installed.
