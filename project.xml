@@ -45,6 +45,11 @@
     <dependency name="czmq" header="czmq.h" test="zctx_test" />
     -->
 
+    <!-- 
+        The pkg-config based dependencies are added to _CPPFLAGS and _LDADD
+    <package_dependency name="zmq" pkg_name="libzmq" for_all="1" />
+    -->
+
     <!-- Header Files 
          name := The name the header file to include without file ending
          placement := When to include the header file in main project header file
