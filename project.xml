@@ -20,11 +20,10 @@
     email := The email address where to reach you project e.g. mailinglist.
 -->
 <project
-    name = "myproject"
-    description = "My Project that will change the world."
+    name = "zproject"
+    description = "a project skeleton generator."
     script = "project.gsl"
-    email = "mail@myproject.org"
-    >
+    email = "zeromq-dev@lists.zeromq.org"  >
 
     <!--
         Includes are processed first, so XML in included files will be
