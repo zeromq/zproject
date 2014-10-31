@@ -5,7 +5,7 @@ zproject does several things:
 
 * generate files for cross-platform build environments
 * generate a main header for your library (e.g. czmq.h, zyre.h)
-* generate a prelude header for cross-platform settings (e.g. czmq_prelude.h)
+* ~~generate a prelude header for cross-platform settings (e.g. czmq_prelude.h)~~
 * generate a header for private classes (e.g. src/zyre_classes.h)
 * generate header and source skeletons for new class
 
