@@ -10,6 +10,26 @@
 .#      * version.sh
 .#      * configure.ac
 .#  ===========================================================================
+.#
+.macro depends_on (name)
+.   if count (project.use, use.project = my.name) = 0
+.       new use to project as child before use
+.           child.project = my.name
+.           child.implied = 1
+.       endnew
+.   endif
+.endmacro
+.include "class_projects.gsl"
+.#
+.#  These are the projects we know about (expand this list as needed)
+.#
+.for use
+.   resolve_dependency (use)
+.endfor
+.for use
+.   resolve_dependency (use)
+.endfor
+.#
 .echo "Generating autogen.sh ..."
 .output "autogen.sh"
 #!/usr/bin/env sh
@@ -168,8 +188,8 @@ if test "x${$(PROJECT.NAME)_GCOV}" == "xyes"; then
     fi
 fi
 
-.for dependency
-.lib_name = "lib$(dependency.name)"
+.for use
+.lib_name = "lib$(use.project)"
 # $(lib_name) integration
 AC_ARG_WITH([$(lib_name)],
             [AS_HELP_STRING([--with-$(lib_name)],
@@ -178,26 +198,23 @@ AC_ARG_WITH([$(lib_name)],
             [])
 
 if test "x$search_$(lib_name)" = "xyes"; then
-    if test -r "${with_$(lib_name)}/include/$(dependency.header)"; then
+    if test -r "${with_$(lib_name)}/include/$(use.project).h"; then
         CFLAGS="-I${with_$(lib_name)}/include ${CFLAGS}"
         LDFLAGS="-L${with_$(lib_name)}/lib ${LDFLAGS}"
     else
-        AC_MSG_ERROR([${with_$(lib_name)}/include/$(dependency.header) not found. Please check $(lib_name) prefix])
+        AC_MSG_ERROR([${with_$(lib_name)}/include/$(use.project).h not found. Please check $(lib_name) prefix])
     fi
 fi
 
-AC_CHECK_LIB($(dependency.name), $(dependency.test),
-    LIBS="-l$(dependency.name) $LIBS",
-    [AC_MSG_ERROR([cannot link with -l$(dependency.name), install $(lib_name).])])
-
-AC_MSG_CHECKING([whether $(lib_name) installation works])
+AC_CHECK_LIB($(use.project), $(use.test),
+    LIBS="-l$(use.project) $LIBS",
+    [AC_MSG_ERROR([cannot link with -l$(use.project), install $(lib_name).])])
 
 .endfor
-
 .for package_dependency
 PKG_CHECK_MODULES([$(package_dependency.name)], [$(package_dependency.pkg_name)])
-.endfor
 
+.endfor
 # Platform specific checks
 $(project.name)_on_mingw32="no"
 $(project.name)_on_android="no"
