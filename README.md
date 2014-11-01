@@ -52,8 +52,10 @@ Headers for classes are automatically added, there's no need to add them by head
 Dependencies to other libraries need three attributes. The name of the library (without lib prefix), their header file to be included and a test method to check if the library is installed. (Currently only dynamic linked libraries are supported). Below is an example for zeromq/libzmq:
 
 ```
-<dependency name="zmq" header="zmq.h" test="zmq_init" />
+<use project = "zmq" />
 ```
+
+The known/allowed projects are "zyre", "czmq", and "zmq". You can add more by patching class_projects.gsl.
 
 ## more is comming ...
 

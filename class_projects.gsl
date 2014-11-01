@@ -1,0 +1,18 @@
+.#  ===========================================================================
+.#  Resolve standard CLASS projects
+.#
+.#  ===========================================================================
+.#
+.macro resolve_dependency (use)
+.   if my.use.project ?= "zyre"
+.       depends_on ("czmq")
+.       my.use.test ?= "zsys_test"
+.   elsif my.use.project ?= "czmq"
+.       depends_on ("zmq")
+.       my.use.test ?= "zctx_test"
+.   elsif my.use.project ?= "zmq"
+.       my.use.test ?= "zmq_init"
+.   else
+.       echo "Unknown or missing 'project' for <use>"
+.   endif
+.endmacro

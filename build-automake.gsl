@@ -80,14 +80,9 @@ src_lib$(project.name)_la_SOURCES = \\
 
 src_lib$(project.name)_la_CPPFLAGS = \\
 .for package_dependency where defined (package_dependency.for_lib)
-.   if last()
-    \${$(package_dependency.name)_CFLAGS}
-.   else
     \${$(package_dependency.name)_CFLAGS} \\
-.   endif
 .endfor
     ${AM_CPPFLAGS}
-
 
 src_lib$(project.name)_la_LDFLAGS = \\
     -version-info @LTVER@ \\

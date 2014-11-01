@@ -12,7 +12,7 @@
 .#      * src/$(class.name).c - source code file for classes
 .#  ===========================================================================
 .#
-.#   Template to resolve xml includes
+.#   Resolve XML includes
 .#
 .template 0
 function resolve_includes ()
@@ -58,8 +58,8 @@ endfunction
 #define __$(PROJECT.NAME)_H_INCLUDED__
 
 //  External dependencies
-.for dependency
-#include <$(dependency.header)>
+.for use where !defined (implied)
+#include <$(use.project).h>
 .endfor
 
 //  $(PROJECT.NAME) version macros for compile-time API detection

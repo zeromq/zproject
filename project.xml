@@ -36,13 +36,13 @@
         Current version of your project. 
         This will be used to package your distribution 
     -->
-    <version major="1" minor="0" patch="0" />
+    <version major = "1" minor = "0" patch = "0" />
 
-    <!-- 
-        The dependency are added to your project header file.
-        *** Currently only dynamically linked libaries are supported ***
-    <dependency name="zmq" header="zmq.h" test="zmq_init" />
-    <dependency name="czmq" header="czmq.h" test="zctx_test" />
+    <!--
+        Specify which other projects this depends on; these projects must be
+        known by zproject, and you do not have to specify subdependencies.
+        Known projects are zyre, czmq, and zmq.
+    <use project = "zyre" />
     -->
 
     <!-- 
@@ -93,5 +93,6 @@
     <bin name = "build-vs2012.gsl" />
     <bin name = "build-vs2013.gsl" />
     <bin name = "project.gsl" />
+    <bin name = "class_projects.gsl" />
 
 </project>
