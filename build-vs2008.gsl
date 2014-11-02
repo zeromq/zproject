@@ -254,6 +254,9 @@
 .   endif
       <File RelativePath="..\\..\\..\\..\\$(classdir)\\$(name).h" />
 .endfor
+.if count (class, class.name = project.name) = 0
+      <File RelativePath="..\\..\\..\\..\\include\\$(project.name).h" />
+.endif
 .for header
       <File RelativePath="..\\..\\..\\..\\include\\$(name).h" />
 .endfor
