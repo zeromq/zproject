@@ -11,21 +11,19 @@
 .#      * configure.ac
 .#  ===========================================================================
 .#
-.macro depends_on (name)
+.function depends_on (name)
 .   if count (project.use, use.project = my.name) = 0
 .       new use to project as child before use
 .           child.project = my.name
 .           child.implied = 1
+.           return child
 .       endnew
 .   endif
-.endmacro
+.endfunction
 .include "class_projects.gsl"
 .#
 .#  These are the projects we know about (expand this list as needed)
 .#
-.for use
-.   resolve_dependency (use)
-.endfor
 .for use
 .   resolve_dependency (use)
 .endfor
