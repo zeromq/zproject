@@ -2,6 +2,28 @@
 .#  language. See https://github.com/imatix/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
+.#   Resolve XML includes
+.#
+.template 0
+function resolve_includes ()
+    for project.include
+        if defined (include.filename)
+            my.include_file = project.load_file (filename)
+            if defined (my.include_file)
+                move my.include_file after include
+            else
+                echo "E: error loading include file: $(filename): $(xml.error?)"
+            endif
+        else
+            echo "E: required attribute 'filename' not defined"
+        endif
+    endfor
+endfunction
+.endtemplate
+.resolve_includes ()
+.#
+.#
+.#
 .include "build-cmake.gsl"
 .include "build-android.gsl"
 .include "build-mingw32.gsl"
