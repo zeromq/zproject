@@ -5,15 +5,12 @@
 .#
 .macro resolve_dependency (use)
 .   if my.use.project ?= "zyre"
-.       echo "zyre"
 .       my.use.test ?= "zsys_test"
 .       resolve_dependency (depends_on ("czmq"))
 .   elsif my.use.project ?= "czmq"
-.       echo "czmq"
 .       my.use.test ?= "zctx_test"
 .       resolve_dependency (depends_on ("zmq"))
 .   elsif my.use.project ?= "zmq"
-.       echo "zmq"
 .       my.use.test ?= "zmq_init"
 .   else
 .       echo "Unknown or missing 'project' for <use>"
