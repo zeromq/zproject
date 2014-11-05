@@ -65,8 +65,8 @@
     -->
 
     <!-- 
-        Models that we build using GSL 
-        *** Not supported yet ***
+        Models that we build using GSL. 
+        This will generate a 'make code' target to build the models.
     <model name = "sockopts" />
     <model name = "zgossip" />
     <model name = "zgossip_msg" />
