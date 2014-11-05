@@ -22,7 +22,7 @@ endfunction
 .endtemplate
 .resolve_includes ()
 .#
-.#
+.include "class_projects.gsl"
 .#
 .include "build-cmake.gsl"
 .include "build-android.gsl"

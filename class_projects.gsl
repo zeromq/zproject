@@ -3,9 +3,19 @@
 .#
 .#  ===========================================================================
 .#
+.function depends_on (name)
+.   if count (project.use, use.project = my.name) = 0
+.       new use to project as child before use
+.           child.project = my.name
+.           child.implied = 1
+.           return child
+.       endnew
+.   endif
+.endfunction
+.#
 .macro resolve_dependency (use)
 .   if my.use.project ?= "zyre"
-.       my.use.test ?= "zsys_test"
+.       my.use.test ?= "zyre_test"
 .       resolve_dependency (depends_on ("czmq"))
 .   elsif my.use.project ?= "czmq"
 .       my.use.test ?= "zctx_test"
@@ -16,3 +26,7 @@
 .       echo "Unknown or missing 'project' for <use>"
 .   endif
 .endmacro
+.#
+.for use
+.   resolve_dependency (use)
+.endfor
