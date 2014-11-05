@@ -22,7 +22,7 @@
 .if !file.exists ("include")
 .   directory.create ("include")
 .endif
-.output "include/$(project.name).h"
+.output "include/$(project.name)_library.h"
 /*  =========================================================================
     $(project.name) - $(PROJECT.NAME) wrapper
 
@@ -208,6 +208,11 @@ main (int argc, char *argv [])
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+.   if class.name = project.name
+//  Include the library file with typdefs, public includes and public constants    
+#include "$(class.name)_library.h"
+.   endif  
 
 .   if class.private ?= 1
 typedef struct _$(class.name)_t $(class.name)_t;
