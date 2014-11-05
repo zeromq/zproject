@@ -20,7 +20,11 @@ includedir=@includedir@
 Name: lib$(project.name)
 Description: $(project.description)
 Version: @VERSION@
-Requires: libzmq
+Requires:\
+.for use
+ lib$(use.project)\
+.endfor
+
 Libs: -L${libdir} -l$(project.name)
 Cflags: -I${includedir}
 
