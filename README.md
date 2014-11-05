@@ -16,10 +16,11 @@ All you need is a project.xml file which is your
 The following build environments are currently supported:
  
 * android (not tested)
-* autotools (tested)                                                                                   
-* cmake (not tested)                                                                                
-* mingw32 (not tested)                                                                                    
-* vs2008 (not tested)                                                                                     
+* autotools (tested)
+* cmake (not tested)
+* mingw32 (not tested)
+* qt-android (tested)
+* vs2008 (not tested)
 * vs2010 (not tested)
 * vs2012 (not tested)
 * vs2013 (not tested)

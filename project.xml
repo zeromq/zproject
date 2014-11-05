@@ -65,8 +65,8 @@
     -->
 
     <!-- 
-        Models that we build using GSL. 
-        This wil generate a 'make code' target to build the models.
+        Models that we build using GSL 
+        *** Not supported yet ***
     <model name = "sockopts" />
     <model name = "zgossip" />
     <model name = "zgossip_msg" />
@@ -88,6 +88,7 @@
     <bin name = "build-class.gsl" />
     <bin name = "build-cmake.gsl" />
     <bin name = "build-mingw32.gsl" />
+    <bin name = "build-qt-android.gsl" />
     <bin name = "build-vs2008.gsl" />
     <bin name = "build-vs2010.gsl" />
     <bin name = "build-vs2012.gsl" />
