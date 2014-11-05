@@ -26,6 +26,7 @@ endfunction
 .#
 .include "build-cmake.gsl"
 .include "build-android.gsl"
+.include "build-qt-android.gsl"
 .include "build-mingw32.gsl"
 .include "build-vs2008.gsl"
 .include "build-vs2010.gsl"

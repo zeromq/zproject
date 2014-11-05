@@ -15,12 +15,15 @@
 .#
 .macro resolve_dependency (use)
 .   if my.use.project ?= "zyre"
+.       my.use.repository ?= "https://github.com/zeromq/zyre"
 .       my.use.test ?= "zyre_test"
 .       resolve_dependency (depends_on ("czmq"))
 .   elsif my.use.project ?= "czmq"
+.       my.use.repository ?= "https://github.com/zeromq/czmq"
 .       my.use.test ?= "zctx_test"
 .       resolve_dependency (depends_on ("zmq"))
 .   elsif my.use.project ?= "zmq"
+.       my.use.repository ?= "https://github.com/zeromq/libzmq"
 .       my.use.test ?= "zmq_init"
 .   else
 .       echo "Unknown or missing 'project' for <use>"
