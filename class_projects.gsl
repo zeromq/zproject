@@ -15,7 +15,7 @@
 .#
 .macro resolve_dependency (use)
 .   if my.use.project ?= "zyre"
-.       my.use.test ?= "zsys_test"
+.       my.use.test ?= "zyre_test"
 .       resolve_dependency (depends_on ("czmq"))
 .   elsif my.use.project ?= "czmq"
 .       my.use.test ?= "zctx_test"
