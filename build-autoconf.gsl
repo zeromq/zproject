@@ -360,7 +360,7 @@ AC_SUBST([pkgconfigdir])
 .if (count (class) > 0)
 AC_CONFIG_FILES([Makefile doc/Makefile src/lib$(project.name).pc])
 .else
-AC_CONFIG_FILES([Makefile doc/Makefile])
+AC_CONFIG_FILES([Makefile])
 .endif 
 AC_OUTPUT
 
