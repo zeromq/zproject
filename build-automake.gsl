@@ -66,6 +66,7 @@ lib_LTLIBRARIES += src/lib$(project.name).la
 pkgconfig_DATA = src/lib$(project.name).pc
 
 include_HEADERS = \\
+    include/$(project.name)_library.h \\
 .if count (class, class.name = project.name) = 0
     include/$(project.name).h \\
 .endif
