@@ -88,6 +88,7 @@
     <ClInclude Include="..\\..\\resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\\..\\..\\..\\include\\$(project.name)_library.h" />
 .if count (class, class.name = project.name) = 0
     <ClInclude Include="..\\..\\..\\..\\include\\$(project.name).h" />
 .endif
@@ -142,6 +143,9 @@
 .endfor
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\\..\\..\\..\\include\\$(project.name)_library.h">
+      <Filter>include</Filter>
+    </ClInclude>
 .if count (class, class.name = project.name) = 0
     <ClInclude Include="..\\..\\..\\..\\include\\$(project.name).h">
       <Filter>include</Filter>
