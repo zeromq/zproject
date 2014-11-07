@@ -64,7 +64,6 @@ lib_LTLIBRARIES += src/lib$(project.name).la
 pkgconfig_DATA = src/lib$(project.name).pc
 
 include_HEADERS = \\
-    include/$(project.name)_library.h \\
 .if count (class, class.name = project.name) = 0
     include/$(project.name).h \\
 .endif
@@ -73,25 +72,21 @@ include_HEADERS = \\
 .endfor
 .for class where !defined (class.private)
 .   class.classdir = "include"
-.   if last ()
-    $(classdir)/$(name).h
-.   else
     $(classdir)/$(name).h \\
-.   endif
 .endfor
+    include/$(project.name)_library.h
 
 src_lib$(project.name)_la_SOURCES = \\
-    src/platform.h \\
+.for class
+    src/$(name).c \\
+.endfor
+.for main
+    src/$(name).c \\
+.endfor
 .for extra
     src/$(name) \\
 .endfor
-.for class
-.   if last ()
-    src/$(name).c
-.   else
-    src/$(name).c \\
-.   endif
-.endfor
+    src/platform.h
 
 src_lib$(project.name)_la_CPPFLAGS = \\
 .for package_dependency where defined (package_dependency.for_lib)
@@ -108,6 +103,10 @@ src_lib$(project.name)_la_LDFLAGS += \\
     -no-undefined \\
     -avoid-version
 endif
+
+.for project.main
+bin_PROGRAMS += src/$(main.name)
+.endfor
 
 check_PROGRAMS += src/$(project.name)_selftest
 
@@ -131,9 +130,25 @@ src_$(project.name)_selftest_LDADD = \\
 .endif
 .endfor
 
-src_$(project.name)_selftest_SOURCES = \\
-    src/$(project.name)_selftest.c
+src_$(project.name)_selftest_SOURCES = src/$(project.name)_selftest.c
 
+.for project.main
+src_$(name)_SOURCES = src/$(name).c
+src_$(name)_LDADD = \\
+.if count (package_dependency, defined (count.for_lib) | defined (count.for_test) | defined (count.for_all)) > 0
+    src/lib$(project.name).la \\
+.else
+    src/lib$(project.name).la
+.endif
+.for package_dependency where defined (package_dependency.for_lib) | defined (package_dependency.for_test) | defined (package_dependency.for_all)
+.   if last()
+    \${$(package_dependency.name)_LIBS}
+.   else
+    \${$(package_dependency.name)_LIBS} \\
+.endif
+.endfor
+
+.endfor
 TESTS = src/$(project.name)_selftest
 .else
 noinst_LTLIBRARIES = 

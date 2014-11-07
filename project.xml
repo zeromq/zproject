@@ -52,16 +52,22 @@
 
     <!-- Header Files 
          name := The name the header file to include without file ending
-         placement := When to include the header file in main project header file
-             pre -> Before typedefs of structs and includes of classes headers (default)
-             post -> After typedefs of structs and includes of classes headers
-    <header name = "myproject_prelude" placement ="pre|post" />
+    <header name = "myproject_prelude" />
     -->
 
     <!-- 
         Classes, if the class header or source file doesn't exist this will
                  generate a skeletons for them.
-    <class name = "myclass">My classes description</class>
+                 use private = "1" for internal classes
+    <class name = "myclass">Public class description</class>
+    <class name = "someother" private = "1">Private class description</class>
+    -->
+
+    <!--
+        Main programs built by the project
+                 use private = "1" for internal tools
+    <main name = "progname">Exported public tool</class>
+    <main name = "progname" private = "1">Internal tool</class>
     -->
 
     <!-- 

@@ -5,7 +5,7 @@
 .#   See project.xml for instructions on how to specify a class.
 .#
 .#  This script will generate the following files:
-.#      * include/$(project.name).h - public project header
+.#      * include/$(project.name).h - public project header (once)
 .#      * src/$(project.name)_selftest.c - selftest class
 .#      * src/$(project.name)_classes.h - private project header
 .#      * (include|src)$(class.name).h - public/private header file for classes
@@ -20,6 +20,28 @@
 .#
 .if !file.exists ("include")
 .   directory.create ("include")
+.endif
+.if !file.exists ("include/$(project.name).h")
+.echo "Generating include/$(project.name).h..."
+.   output "include/$(project.name).h"
+/*  =========================================================================
+    $(project.name) - $(project.description?'':)
+
+.   for project.license
+    $(string.trim (license.):block                                         )
+.   endfor
+    =========================================================================
+*/
+
+#ifndef __$(PROJECT.NAME)_H_INCLUDED__
+#define __$(PROJECT.NAME)_H_INCLUDED__
+
+//  Include the project library file
+#include "$(project.name)_library.h"
+
+//  Add your own public definitions here, if you need them
+
+#endif
 .endif
 .output "include/$(project.name)_library.h"
 /*  =========================================================================
@@ -191,7 +213,7 @@ main (int argc, char *argv [])
 .echo "Generating $(header_file)..."
 .   output header_file
 /*  =========================================================================
-    $(class.name) - $(class.description?'':)
+    $(class.name) - $(class.?'':)
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -247,7 +269,7 @@ $(PROJECT.NAME)_EXPORT int
 .echo "Generating $(source_file)..."
 .   output source_file
 /*  =========================================================================
-    $(class.name) - $(class.description?'':)
+    $(class.name) - $(class.?'':)
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -257,7 +279,7 @@ $(PROJECT.NAME)_EXPORT int
 
 /*
 @header
-    $(class.name) - $(class.description?'':)
+    $(class.name) - $(class.?'':)
 @discuss
 @end
 */

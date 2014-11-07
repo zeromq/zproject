@@ -20,15 +20,22 @@
 #   Please read the README.txt file if you like to do permanent changes.    #
 #############################################################################
 .project.manpage = "$(project.name).7"
-.manpages = ""
-.for class where private?0 = 0
-.   manpages += " $(name).3"
+.man3 = ""
+.for project.class where private?0 = 0
+.   man3 += " $(name).3"
 .   if class.name = project.name
 .       project.manpage = ""
 .   endif
 .endfor
-MAN1 =
-MAN3 =$(manpages)
+.man1 = ""
+.for project.main where private?0 = 0
+.   man1 += " $(name).1"
+.   if main.name = project.name
+.       project.manpage = ""
+.   endif
+.endfor
+MAN1 =$(man1)
+MAN3 =$(man3)
 MAN7 = $\(srcdir)/$(project.manpage)
 MAN_DOC = $\(MAN1) $\(MAN3) $\(MAN7)
 
@@ -151,10 +158,17 @@ Classes
 
 Something.
 .endif
-.for project.class
-.if !file.exists ("doc/$(class.name).txt")
-.echo "Generating doc/$(class.name).txt..."
-.output "doc/$(class.name).txt"
-$(class.name)(3)
+.for project.class where private?0 = 0
+.if !file.exists ("doc/$(name).txt")
+.echo "Generating doc/$(name).txt..."
+.output "doc/$(name).txt"
+$(name)(3)
+.endif
+.endfor
+.for project.main where private?0 = 0
+.if !file.exists ("doc/$(name).txt")
+.echo "Generating doc/$(name).txt..."
+.output "doc/$(name).txt"
+$(name)(1)
 .endif
 .endfor
