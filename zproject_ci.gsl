@@ -1,0 +1,40 @@
+.#  Generate continuous integration test files
+.#
+.#  This is a code generator built using the iMatix GSL code generation
+.#  language. See https://github.com/imatix/gsl for details. This script
+.#  is licensed under MIT/X11.
+.#
+.if !file.exists (".travis.yml")
+.echo "Generating .travis.yml..."
+.output ".travis.yml"
+# Travis CI script
+language: c
+
+env:
+- BUILD_TYPE=default
+- BUILD_TYPE=qt-android
+
+# Build and check this project according to the BUILD_TYPE
+script: ./ci_build.sh
+.
+.# Don't want to generate ci_build.sh if travis config exists,
+.# as the existing travis config may not use ci_build.sh at all.
+.if !file.exists ("ci_build.sh")
+.echo "Generating ci_build.sh..."
+.output "ci_build.sh"
+#!/usr/bin/env bash
+
+if [ $BUILD_TYPE == "default" ]; then
+    # Clone and build dependencies
+.for use
+    git clone $(use.repository) $(use.project)
+    ( cd $(use.project) && ./autogen.sh && ./configure && make check && sudo make install && sudo ldconfig )
+
+.endfor
+    # Build and check this project
+    ./autogen.sh && ./configure && make && make check && sudo make install
+else
+    cd ./builds/${BUILD_TYPE} && ./ci_build.sh
+fi
+.endif # !file.exists ("ci_build.sh")
+.endif # !file.exists (".travis.yml")
