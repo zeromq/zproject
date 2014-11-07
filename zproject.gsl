@@ -34,5 +34,6 @@ endfunction
 .include "zproject_vs2013.gsl"
 .include "zproject_autoconf.gsl"
 .include "zproject_automake.gsl"
+.include "zproject_docs.gsl"
 .include "zproject_lib.gsl"
 .include "zproject_class.gsl"
