@@ -22,7 +22,7 @@
 <project
     name = "myproject"
     description = "My Project that will change the world."
-    script = "project.gsl"
+    script = "zproject.gsl"
     email = "mail@myproject.org"
     >
 
@@ -81,19 +81,19 @@
         
         * Linux -> /usr/local/bin
     -->
-    <bin name = "build-android.gsl" />
-    <bin name = "build-autoconf.gsl" />
-    <bin name = "build-automake.gsl" />
-    <bin name = "build-lib.gsl" />
-    <bin name = "build-class.gsl" />
-    <bin name = "build-cmake.gsl" />
-    <bin name = "build-mingw32.gsl" />
-    <bin name = "build-qt-android.gsl" />
-    <bin name = "build-vs2008.gsl" />
-    <bin name = "build-vs2010.gsl" />
-    <bin name = "build-vs2012.gsl" />
-    <bin name = "build-vs2013.gsl" />
-    <bin name = "project.gsl" />
-    <bin name = "class_projects.gsl" />
+    <bin name = "zproject.gsl" />
+    <bin name = "zproject_android.gsl" />
+    <bin name = "zproject_autoconf.gsl" />
+    <bin name = "zproject_automake.gsl" />
+    <bin name = "zproject_lib.gsl" />
+    <bin name = "zproject_class.gsl" />
+    <bin name = "zproject_cmake.gsl" />
+    <bin name = "zproject_mingw32.gsl" />
+    <bin name = "zproject_qt_android.gsl" />
+    <bin name = "zproject_vs2008.gsl" />
+    <bin name = "zproject_vs2010.gsl" />
+    <bin name = "zproject_vs2012.gsl" />
+    <bin name = "zproject_vs2013.gsl" />
+    <bin name = "zproject_projects.gsl" />
 
 </project>

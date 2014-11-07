@@ -44,9 +44,9 @@ And classes can be private, in which case header files are expected or generated
 Public classes will be included in the main header file which equals your projects name. Private classes will be included into a different header file in the `src` directory which in named "project name + _classes.h".
 
 ## header
-Headers for classes are automatically added, there's no need to add them by header tag. If you've other headers besides the one for your classes, you can add them by specifying the name and optionally a placement option. The header file will be assumed to be in the `include` directory and will the included into the main header files. By default it is put on the top after the dependencies. If you like to put it below the typedef's of the classes structs in the main header file you can specify `placement="post"`.
+Headers for classes are automatically added, there's no need to add them by header tag. If you've other headers besides the one for your classes, you can add them by specifying the name. The header file will be assumed to be in the `include` directory and will the included into the main header files.
 ```
- <header name = "myproject_magic" placement ="pre|post" />
+ <header name = "myproject_magic" />
 ```
 
 ##  dependency
