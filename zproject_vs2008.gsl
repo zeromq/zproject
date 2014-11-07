@@ -254,7 +254,7 @@
 .   endif
       <File RelativePath="..\\..\\..\\..\\$(classdir)\\$(name).h" />
 .endfor
-      <File RelativePath="..\\..\\..\\..\\include\\$(project.name)_library.h" />
+      <File RelativePath="..\\..\\..\\..\\include\\$(project.prefix)_library.h" />
 .if count (class, class.name = project.name) = 0
       <File RelativePath="..\\..\\..\\..\\include\\$(project.name).h" />
 .endif

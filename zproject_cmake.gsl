@@ -87,7 +87,7 @@ find_package(ZeroMQ REQUIRED)
 # includes
 ########################################################################
 set ($(project.name)_headers
-    include/$(project.name)_library.h
+    include/$(project.prefix)_library.h
 .if count (class, class.name = project.name) = 0
     include/$(project.name).h
 .endif
@@ -152,9 +152,9 @@ install(
 ########################################################################
 # tests
 ########################################################################
-add_executable($(project.name)_selftest ${SOURCE_DIR}/src/$(project.name)_selftest.c)
-target_link_libraries($(project.name)_selftest $(project.name) ${ZEROMQ_LIBRARIES})
-add_test($(project.name)_selftest $(project.name)_selftest)
+add_executable($(project.prefix)_selftest ${SOURCE_DIR}/src/$(project.prefix)_selftest.c)
+target_link_libraries($(project.prefix)_selftest $(project.name) ${ZEROMQ_LIBRARIES})
+add_test($(project.prefix)_selftest $(project.prefix)_selftest)
 
 ########################################################################
 # summary
