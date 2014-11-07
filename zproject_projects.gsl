@@ -3,9 +3,9 @@
 .#
 .#  ===========================================================================
 .#
-.function depends_on (name)
+.function depends_on (dependent, name)
 .   if count (project.use, use.project = my.name) = 0
-.       new use to project as child before use
+.       new use to project as child before my.dependent
 .           child.project = my.name
 .           child.implied = 1
 .           return child
@@ -17,11 +17,11 @@
 .   if my.use.project ?= "zyre"
 .       my.use.repository ?= "https://github.com/zeromq/zyre"
 .       my.use.test ?= "zyre_test"
-.       resolve_dependency (depends_on ("czmq"))
+.       resolve_dependency (depends_on (my.use, "czmq"))
 .   elsif my.use.project ?= "czmq"
 .       my.use.repository ?= "https://github.com/zeromq/czmq"
 .       my.use.test ?= "zctx_test"
-.       resolve_dependency (depends_on ("zmq"))
+.       resolve_dependency (depends_on (my.use, "zmq"))
 .   elsif my.use.project ?= "zmq"
 .       my.use.repository ?= "https://github.com/zeromq/libzmq"
 .       my.use.test ?= "zmq_init"
