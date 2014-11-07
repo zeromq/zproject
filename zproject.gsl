@@ -21,6 +21,7 @@ function resolve_includes ()
 endfunction
 .endtemplate
 .resolve_includes ()
+.project.prefix ?= project.name
 .#
 .include "zproject_projects.gsl"
 .#

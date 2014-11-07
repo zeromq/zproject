@@ -6,8 +6,8 @@
 .#
 .#  This script will generate the following files:
 .#      * include/$(project.name).h - public project header (once)
-.#      * src/$(project.name)_selftest.c - selftest class
-.#      * src/$(project.name)_classes.h - private project header
+.#      * src/$(project.prefix)_selftest.c - selftest class
+.#      * src/$(project.prefix)_classes.h - private project header
 .#      * (include|src)$(class.name).h - public/private header file for classes
 .#      * src/$(class.name).c - source code file for classes
 .#  ===========================================================================
@@ -37,13 +37,13 @@
 #define __$(PROJECT.NAME)_H_INCLUDED__
 
 //  Include the project library file
-#include "$(project.name)_library.h"
+#include "$(project.prefix)_library.h"
 
 //  Add your own public definitions here, if you need them
 
 #endif
 .endif
-.output "include/$(project.name)_library.h"
+.output "include/$(project.prefix)_library.h"
 /*  =========================================================================
     $(project.name) - $(PROJECT.NAME) wrapper
 
@@ -58,8 +58,8 @@
     =========================================================================
 */
 
-#ifndef __$(PROJECT.NAME)_LIBRARY_H_INCLUDED__
-#define __$(PROJECT.NAME)_LIBRARY_H_INCLUDED__
+#ifndef __$(project.prefix)_library_H_INCLUDED__
+#define __$(project.prefix)_library_H_INCLUDED__
 
 //  External dependencies
 .for use where !defined (implied)
@@ -78,15 +78,15 @@
     $(PROJECT.NAME)_MAKE_VERSION($(PROJECT.NAME)_VERSION_MAJOR, $(PROJECT.NAME)_VERSION_MINOR, $(PROJECT.NAME)_VERSION_PATCH)
 
 #if defined (__WINDOWS__)
-#   if defined LIB$(PROJECT.NAME)_STATIC
-#       define $(PROJECT.NAME)_EXPORT
-#   elif defined LIB$(PROJECT.NAME)_EXPORTS
-#       define $(PROJECT.NAME)_EXPORT __declspec(dllexport)
+#   if defined LIB$(PROJECT.PREFIX)_STATIC
+#       define $(PROJECT.PREFIX)_EXPORT
+#   elif defined LIB$(PROJECT.PREFIX)_EXPORTS
+#       define $(PROJECT.PREFIX)_EXPORT __declspec(dllexport)
 #   else
-#       define $(PROJECT.NAME)_EXPORT __declspec(dllimport)
+#       define $(PROJECT.PREFIX)_EXPORT __declspec(dllimport)
 #   endif
 #else
-#   define $(PROJECT.NAME)_EXPORT
+#   define $(PROJECT.PREFIX)_EXPORT
 #endif
 
 //  Opaque class structures to allow forward references
@@ -120,10 +120,10 @@ typedef struct _$(class.name)_t $(class.name)_t;
 .#
 .#  Build the project selftest file
 .#
-.echo "Generating src/$(project.name)_selftest.c..."
-.output "src/$(project.name)_selftest.c"
+.echo "Generating src/$(project.prefix)_selftest.c..."
+.output "src/$(project.prefix)_selftest.c"
 /*  =========================================================================
-    $(project.name)_selftest.c - run selftests
+    $(project.prefix)_selftest.c - run selftests
 
     Runs all selftests.
 
@@ -139,7 +139,7 @@ typedef struct _$(class.name)_t $(class.name)_t;
     =========================================================================
 */
 
-#include "$(project.name)_classes.h"
+#include "$(project.prefix)_classes.h"
 
 int
 main (int argc, char *argv [])
@@ -150,7 +150,7 @@ main (int argc, char *argv [])
     else
         verbose = false;
 
-    printf ("Running $(PROJECT.NAME) selftests...\\n");
+    printf ("Running $(project.name) selftests...\\n");
 
 .for class
     $(class.name)_test (verbose); 
@@ -168,10 +168,10 @@ main (int argc, char *argv [])
 .-
 .-  Build the classes header for private header files and constants
 .-
-.echo "Generating src/$(project.name)_classes.h..."
-.output "src/$(project.name)_classes.h"
+.echo "Generating src/$(project.prefix)_classes.h..."
+.output "src/$(project.prefix)_classes.h"
 /*  =========================================================================
-    $(project.name)_classes - private header file
+    $(project.prefix)_classes - private header file
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -183,8 +183,8 @@ main (int argc, char *argv [])
     =========================================================================
 */
 
-#ifndef __$(PROJECT.NAME)_CLASSES_H_INCLUDED__
-#define __$(PROJECT.NAME)_CLASSES_H_INCLUDED__
+#ifndef __$(PROJECT.PREFIX)_CLASSES_H_INCLUDED__
+#define __$(PROJECT.PREFIX)_CLASSES_H_INCLUDED__
 
 //  External API
 #include "../include/$(project.name).h"
@@ -239,19 +239,19 @@ typedef struct _$(class.name)_t $(class.name)_t;
 
 //  @interface
 //  Create a new $(class.name)
-$(PROJECT.NAME)_EXPORT $(class.name)_t *
+$(PROJECT.PREFIX)_EXPORT $(class.name)_t *
     $(class.name)_new ();
 
 //  Destroy the $(class.name)
-$(PROJECT.NAME)_EXPORT void
+$(PROJECT.PREFIX)_EXPORT void
     $(class.name)_destroy ($(class.name)_t **self_p);
 
 //  Print properties of object
-$(PROJECT.NAME)_EXPORT void
+$(PROJECT.PREFIX)_EXPORT void
     $(class.name)_print ($(class.name)_t *self);
 
 //  Self test of this class
-$(PROJECT.NAME)_EXPORT int
+$(PROJECT.PREFIX)_EXPORT int
     $(class.name)_test (bool verbose);
 //  @end
 
@@ -291,7 +291,7 @@ struct _$(class.name)_t {
 
 #include "../include/$(project.name).h"
 .   if (count (class, defined (class.private)) > 0)
-#include "$(project.name)_classes.h"
+#include "$(project.prefix)_classes.h"
 .   endif
 
 //  --------------------------------------------------------------------------

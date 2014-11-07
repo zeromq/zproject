@@ -59,9 +59,9 @@ include \$(srcdir)/src/Makemodule.am
 #   Please read the README.txt file if you like to do permanent changes.    #
 #############################################################################
 .if (count (class) > 0)
-lib_LTLIBRARIES += src/lib$(project.name).la
+lib_LTLIBRARIES += src/lib$(project.prefix).la
 
-pkgconfig_DATA = src/lib$(project.name).pc
+pkgconfig_DATA = src/lib$(project.prefix).pc
 
 include_HEADERS = \\
 .if count (class, class.name = project.name) = 0
@@ -74,13 +74,10 @@ include_HEADERS = \\
 .   class.classdir = "include"
     $(classdir)/$(name).h \\
 .endfor
-    include/$(project.name)_library.h
+    include/$(project.prefix)_library.h
 
-src_lib$(project.name)_la_SOURCES = \\
+src_lib$(project.prefix)_la_SOURCES = \\
 .for class
-    src/$(name).c \\
-.endfor
-.for main
     src/$(name).c \\
 .endfor
 .for extra
@@ -88,18 +85,18 @@ src_lib$(project.name)_la_SOURCES = \\
 .endfor
     src/platform.h
 
-src_lib$(project.name)_la_CPPFLAGS = \\
+src_lib$(project.prefix)_la_CPPFLAGS = \\
 .for package_dependency where defined (package_dependency.for_lib)
     \${$(package_dependency.name)_CFLAGS} \\
 .endfor
     ${AM_CPPFLAGS}
 
-src_lib$(project.name)_la_LDFLAGS = \\
+src_lib$(project.prefix)_la_LDFLAGS = \\
     -version-info @LTVER@ \\
     \$(LIBTOOL_EXTRA_LDFLAGS)
 
 if ON_MINGW
-src_lib$(project.name)_la_LDFLAGS += \\
+src_lib$(project.prefix)_la_LDFLAGS += \\
     -no-undefined \\
     -avoid-version
 endif
@@ -108,19 +105,19 @@ endif
 bin_PROGRAMS += src/$(main.name)
 .endfor
 
-check_PROGRAMS += src/$(project.name)_selftest
+check_PROGRAMS += src/$(project.prefix)_selftest
 
-src_$(project.name)_selftest_CPPFLAGS = \\
+src_$(project.prefix)_selftest_CPPFLAGS = \\
 .for package_dependency where defined (package_dependency.for_test)
     \${$(package_dependency.name)_CFLAGS} \\
 .endfor
-    \${src_lib$(project.name)_la_CFLAGS}
+    \${src_lib$(project.prefix)_la_CFLAGS}
 
-src_$(project.name)_selftest_LDADD = \\
+src_$(project.prefix)_selftest_LDADD = \\
 .if count (package_dependency, defined (count.for_lib) | defined (count.for_test) | defined (count.for_all)) > 0
-    src/lib$(project.name).la \\
+    src/lib$(project.prefix).la \\
 .else
-    src/lib$(project.name).la
+    src/lib$(project.prefix).la
 .endif
 .for package_dependency where defined (package_dependency.for_lib) | defined (package_dependency.for_test) | defined (package_dependency.for_all)
 .   if last()
@@ -130,15 +127,15 @@ src_$(project.name)_selftest_LDADD = \\
 .endif
 .endfor
 
-src_$(project.name)_selftest_SOURCES = src/$(project.name)_selftest.c
+src_$(project.prefix)_selftest_SOURCES = src/$(project.prefix)_selftest.c
 
 .for project.main
 src_$(name)_SOURCES = src/$(name).c
 src_$(name)_LDADD = \\
 .if count (package_dependency, defined (count.for_lib) | defined (count.for_test) | defined (count.for_all)) > 0
-    src/lib$(project.name).la \\
+    src/lib$(project.prefix).la \\
 .else
-    src/lib$(project.name).la
+    src/lib$(project.prefix).la
 .endif
 .for package_dependency where defined (package_dependency.for_lib) | defined (package_dependency.for_test) | defined (package_dependency.for_all)
 .   if last()
@@ -149,7 +146,7 @@ src_$(name)_LDADD = \\
 .endfor
 
 .endfor
-TESTS = src/$(project.name)_selftest
+TESTS = src/$(project.prefix)_selftest
 .else
 noinst_LTLIBRARIES = 
 noinst_PROGRAMS = 
@@ -171,7 +168,7 @@ $(project.name)_SCRIPTS = \\
 
 .if (count (class) > 0)
 # define custom target for all products of /src
-src: src/lib$(project.name).la src/$(project.name)_selftest
+src: src/lib$(project.prefix).la src/$(project.prefix)_selftest
 .endif
 
 .for model
