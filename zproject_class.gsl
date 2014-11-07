@@ -18,7 +18,6 @@
 .#
 .#  Build the project header file
 .#
-.echo "Generating $(project.name).h..."
 .if !file.exists ("include")
 .   directory.create ("include")
 .endif
@@ -37,8 +36,8 @@
     =========================================================================
 */
 
-#ifndef __$(PROJECT.NAME)_H_INCLUDED__
-#define __$(PROJECT.NAME)_H_INCLUDED__
+#ifndef __$(PROJECT.NAME)_LIBRARY_H_INCLUDED__
+#define __$(PROJECT.NAME)_LIBRARY_H_INCLUDED__
 
 //  External dependencies
 .for use where !defined (implied)
@@ -82,7 +81,6 @@ typedef struct _$(class.name)_t $(class.name)_t;
 .endfor
 
 //  Public API classes
-
 .for project.header
 #include "$(header.name).h"
 .endfor
@@ -119,10 +117,7 @@ typedef struct _$(class.name)_t $(class.name)_t;
     =========================================================================
 */
 
-#include "../include/$(project.name).h"
-.if (count (class, defined (class.private)) > 0)
 #include "$(project.name)_classes.h"
-.endif
 
 int
 main (int argc, char *argv [])
@@ -151,11 +146,10 @@ main (int argc, char *argv [])
 .-
 .-  Build the classes header for private header files and constants
 .-
-.if (count (class, defined (class.private)) > 0)
-.   echo "Generating src/$(project.name)_classes.h..."
-.   output "src/$(project.name)_classes.h"
+.echo "Generating src/$(project.name)_classes.h..."
+.output "src/$(project.name)_classes.h"
 /*  =========================================================================
-    $(project.name)_classes - all private classes
+    $(project.name)_classes - private header file
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -170,6 +164,10 @@ main (int argc, char *argv [])
 #ifndef __$(PROJECT.NAME)_CLASSES_H_INCLUDED__
 #define __$(PROJECT.NAME)_CLASSES_H_INCLUDED__
 
+//  External API
+#include "../include/$(project.name).h"
+
+//  Internal API
 .for class where defined (class.private)
 #include "$(class.name).h"
 .endfor
@@ -181,7 +179,6 @@ main (int argc, char *argv [])
 #define $(CONSTANT.NAME)\t$(constant.value) //  $(constant.?'')
 .endfor
 #endif
-.endif
 .-
 .-  Build the header file for a class
 .-
@@ -194,7 +191,7 @@ main (int argc, char *argv [])
 .echo "Generating $(header_file)..."
 .   output header_file
 /*  =========================================================================
-    $(class.name) - $(class.?'':)
+    $(class.name) - $(class.description?'':)
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -212,14 +209,13 @@ extern "C" {
 .   if class.name = project.name
 //  Include the library file with typdefs, public includes and public constants    
 #include "$(class.name)_library.h"
-.   endif  
 
+.   endif  
 .   if class.private ?= 1
 typedef struct _$(class.name)_t $(class.name)_t;
 .  endif
 
 //  @interface
-
 //  Create a new $(class.name)
 $(PROJECT.NAME)_EXPORT $(class.name)_t *
     $(class.name)_new ();
@@ -242,12 +238,6 @@ $(PROJECT.NAME)_EXPORT int
 #endif
 
 #endif
-/*
-    #################################################################
-    #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
-    #   Please read the README.txt file in the model directory.     #
-    #################################################################
-*/
 .endif
 .-
 .-  Build the source file for a class
@@ -257,7 +247,7 @@ $(PROJECT.NAME)_EXPORT int
 .echo "Generating $(source_file)..."
 .   output source_file
 /*  =========================================================================
-    $(class.name) - $(class.?'':)
+    $(class.name) - $(class.description?'':)
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -267,7 +257,7 @@ $(PROJECT.NAME)_EXPORT int
 
 /*
 @header
-    $(class.name) - $(class.?'':)
+    $(class.name) - $(class.description?'':)
 @discuss
 @end
 */
