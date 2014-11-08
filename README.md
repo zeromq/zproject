@@ -1,16 +1,42 @@
-zproject - a project skeleton generator
-=======================================
 
-zproject does several things:
+<A name="toc1-3" title="zproject - rfc/21 project generator" />
+# zproject - rfc/21 project generator
 
-* generate files for cross-platform build environments
-* generate a main header for your library (e.g. czmq.h, zyre.h)
-* generate a header for private classes (e.g. src/zyre_classes.h)
-* generate header and source skeletons for new class
+<A name="toc2-6" title="Contents" />
+## Contents
 
-All you need is a project.xml file which is your 
 
-```One file to rule them all```
+**<a href="#toc2-11">Overview</a>**
+&emsp;<a href="#toc3-14">Scope and Goals</a>
+
+**<a href="#toc2-44">Sample configuration</a>**
+
+**<a href="#toc2-159">Installation</a>**
+&emsp;<a href="#toc3-168">autotools</a>
+
+**<a href="#toc2-178">Generate build environment in your project</a>**
+
+**<a href="#toc2-185">Removal</a>**
+&emsp;<a href="#toc3-188">autotools</a>
+
+<A name="toc2-11" title="Overview" />
+## Overview
+
+<A name="toc3-14" title="Scope and Goals" />
+### Scope and Goals
+
+zproject has these goals:
+
+* generate files for cross-platform build environments.
+* generate public and private headers. 
+* generate rfc/21 compliant header and source skeletons for new classes
+* generate CI setup for travis.
+
+zproject grew out of the work that has been done to automatically generate the build environment in CZMQ.
+
+All you need is a project.xml in the project's root directory which is your 
+
+    One file to rule them all
 
 The following build environments are currently supported:
  
@@ -24,71 +50,154 @@ The following build environments are currently supported:
 * vs2012 (not tested)
 * vs2013 (not tested)
  
-All classes in the project.xml are automatically added to all build environments. Further as you
-add new classes to your project you can generate skeleton header and source files according to http://rfc.zeromq.org/spec:21.
+All classes in the project.xml are automatically added to all build environments. Further as you add new classes to your project you can generate skeleton header and source files according to [rfc/21](http://rfc.zeromq.org/spec:21).
 
-# project.xml tags
+<A name="toc2-44" title="Sample configuration" />
+## Sample configuration
 
-## class
-Classes can be public, in which case header files are expected or generated into `include` directory.
-```
-<class name = "myclass" >My class's description</class>
-```
+The following snippet is the project.xml from zproject with explains all available tags and attributes.
 
-And classes can be private, in which case header files are expected or generated into `src` directory.
+<!-- 
+    The project.xml generates build environments for:
 
-```
-<class name = "myclass" priavte = "1" >My private class's description</class>
-```
-Public classes will be included in the main header file which equals your projects name. Private classes will be included into a different header file in the `src` directory which in named "project name + _classes.h".
+        * android
+        * autotool
+        * cmake
+        * mingw32
+        * vs2008
+        * vs2010
+        * vs2012
+        * vs2013
 
-## header
-Headers for classes are automatically added, there's no need to add them by header tag. If you've other headers besides the one for your classes, you can add them by specifying the name. The header file will be assumed to be in the `include` directory and will the included into the main header files.
-```
- <header name = "myproject_magic" />
-```
+    Classes are automatically added to all build environments. Further as you
+    add new classes to your project you can generate skeleton header and source 
+    files according to http://rfc.zeromq.org/spec:21.
 
-##  dependency
-Dependencies to other libraries need three attributes. The name of the library (without lib prefix), their header file to be included and a test method to check if the library is installed. (Currently only dynamic linked libraries are supported). Below is an example for zeromq/libzmq:
+    name := The name of your project
+    description := A short description for your project
+    script := The gsl script to generate all the stuff !!! DO NOT CHANGE !!!
+    email := The email address where to reach you project e.g. mailinglist.
+-->
+<project
+    name = "myproject"
+    description = "My Project that will change the world."
+    script = "zproject.gsl"
+    email = "mail@myproject.org"
+    >
 
-```
-<use project = "zmq" />
-```
+    <!--
+        Includes are processed first, so XML in included files will be
+        part of the XML tree
+    -->
+    <include filename = "license.xml" />
 
-The known/allowed projects are "zyre", "czmq", and "zmq". You can add more by patching class_projects.gsl.
+    <!-- 
+        Current version of your project. 
+        This will be used to package your distribution 
+    -->
+    <version major = "1" minor = "0" patch = "0" />
 
-## more is comming ...
+    <!--
+        Specify which other projects this depends on; these projects must be
+        known by zproject, and you do not have to specify subdependencies.
+        Known projects are zyre, czmq, and zmq.
+    <use project = "zyre" />
+    -->
 
-Have a look at the project.xml which has further information.
+    <!-- 
+        The pkg-config based dependencies are added to _CPPFLAGS and _LDADD
+    <package_dependency name="zmq" pkg_name="libzmq" for_all="1" />
+    -->
 
-# Install
+    <!-- Header Files 
+         name := The name the header file to include without file ending
+    <header name = "myproject_prelude" />
+    -->
+
+    <!-- 
+        Classes, if the class header or source file doesn't exist this will
+                 generate a skeletons for them.
+                 use private = "1" for internal classes
+    <class name = "myclass">Public class description</class>
+    <class name = "someother" private = "1">Private class description</class>
+    -->
+
+    <!--
+        Main programs built by the project
+                 use private = "1" for internal tools
+    <main name = "progname">Exported public tool</class>
+    <main name = "progname" private = "1">Internal tool</class>
+    -->
+
+    <!-- 
+        Models that we build using GSL. 
+        This will generate a 'make code' target to build the models.
+    <model name = "sockopts" />
+    <model name = "zgossip" />
+    <model name = "zgossip_msg" />
+    -->
+
+    <!-- Other source files that we need to package
+    <extra name = "some_ressource" />
+    -->
+
+    <!-- 
+        Stuff that needs to be installed:
+        
+        * Linux -> /usr/local/bin
+    -->
+    <bin name = "zproject.gsl" />
+    <bin name = "zproject_projects.gsl" />
+    
+    <bin name = "zproject_android.gsl" />
+    <bin name = "zproject_autoconf.gsl" />
+    <bin name = "zproject_automake.gsl" />
+    <bin name = "zproject_ci.gsl" />
+    <bin name = "zproject_class.gsl" />
+    <bin name = "zproject_cmake.gsl" />
+    <bin name = "zproject_docs.gsl" />
+    <bin name = "zproject_lib.gsl" />
+    <bin name = "zproject_mingw32.gsl" />
+    <bin name = "zproject_mkman" />
+    <bin name = "zproject_qt_android.gsl" />
+    <bin name = "zproject_vs2008.gsl" />
+    <bin name = "zproject_vs2010.gsl" />
+    <bin name = "zproject_vs2012.gsl" />
+    <bin name = "zproject_vs2013.gsl" />
+
+</project>
+
+<A name="toc2-159" title="Installation" />
+## Installation
 
 Before you start you'll need to install the code generator GSL (https://github.com/imatix/gsl) on your system. Then execute the generate.sh script to generate the build environment files for zproject.
 
-```
-./generate.sh
-```
+    ./generate.sh
+
 After that proceed with your favorite build environment. (Currently only autotools!)
 
-## autotools
-The following will install the `build-*.gsl` files to `/usr/local/bin` where gsl will find them if you use zproject in your project.
-```
-./autogen.sh
-./configure
-make
-make install
-```
+<A name="toc3-168" title="autotools" />
+### autotools
 
-# Generate build environment in your project
+The following will install the `zproject-*.gsl` files to `/usr/local/bin` where gsl will find them if you use zproject in your project.
+
+    ./autogen.sh
+    ./configure
+    make
+    make install
+
+<A name="toc2-178" title="Generate build environment in your project" />
+## Generate build environment in your project
 
 Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly.
 
 Run `./generate.sh`
 
-# Uninstall
+<A name="toc2-185" title="Removal" />
+## Removal
 
-## autotools
+<A name="toc3-188" title="autotools" />
+### autotools
 
-```
-make uninstall
-```
+    make uninstall
+
