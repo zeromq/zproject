@@ -32,6 +32,7 @@ endfunction
 .include "zproject_class.gsl"
 .include "zproject_cmake.gsl"
 .include "zproject_docs.gsl"
+.include "zproject_git.gsl"
 .include "zproject_lib.gsl"
 .include "zproject_mingw32.gsl"
 .include "zproject_qt_android.gsl"

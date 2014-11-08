@@ -89,6 +89,7 @@
     -->
     <bin name = "zproject.gsl" />
     <bin name = "zproject_projects.gsl" />
+    <bin name = "zproject_mkman" />
     
     <bin name = "zproject_android.gsl" />
     <bin name = "zproject_autoconf.gsl" />
@@ -97,13 +98,12 @@
     <bin name = "zproject_class.gsl" />
     <bin name = "zproject_cmake.gsl" />
     <bin name = "zproject_docs.gsl" />
+    <bin name = "zproject_git.gsl" />
     <bin name = "zproject_lib.gsl" />
     <bin name = "zproject_mingw32.gsl" />
-    <bin name = "zproject_mkman" />
     <bin name = "zproject_qt_android.gsl" />
     <bin name = "zproject_vs2008.gsl" />
     <bin name = "zproject_vs2010.gsl" />
     <bin name = "zproject_vs2012.gsl" />
     <bin name = "zproject_vs2013.gsl" />
-
 </project>
