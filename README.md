@@ -7,20 +7,17 @@
 
 
 **<a href="#toc2-11">Overview</a>**
-
-**<a href="#toc3-14">Scope and Goals</a>**
+&emsp;<a href="#toc3-14">Scope and Goals</a>
 
 **<a href="#toc2-44">Sample configuration</a>**
 
-**<a href="#toc2-157">Installation</a>**
+**<a href="#toc2-159">Installation</a>**
+&emsp;<a href="#toc3-168">autotools</a>
 
-**<a href="#toc3-166">autotools</a>**
+**<a href="#toc2-178">Generate build environment in your project</a>**
 
-**<a href="#toc2-176">Generate build environment in your project</a>**
-
-**<a href="#toc2-183">Removal</a>**
-
-**<a href="#toc3-186">autotools</a>**
+**<a href="#toc2-185">Removal</a>**
+&emsp;<a href="#toc3-188">autotools</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -57,6 +54,8 @@ All classes in the project.xml are automatically added to all build environments
 
 <A name="toc2-44" title="Sample configuration" />
 ## Sample configuration
+
+The following snippet is the project.xml from zproject with explains all available tags and attributes.
 
 <!-- 
     The project.xml generates build environments for:
@@ -168,7 +167,7 @@ All classes in the project.xml are automatically added to all build environments
 
 </project>
 
-<A name="toc2-157" title="Installation" />
+<A name="toc2-159" title="Installation" />
 ## Installation
 
 Before you start you'll need to install the code generator GSL (https://github.com/imatix/gsl) on your system. Then execute the generate.sh script to generate the build environment files for zproject.
@@ -177,29 +176,28 @@ Before you start you'll need to install the code generator GSL (https://github.c
 
 After that proceed with your favorite build environment. (Currently only autotools!)
 
-<A name="toc3-166" title="autotools" />
+<A name="toc3-168" title="autotools" />
 ### autotools
 
-The following will install the `build-*.gsl` files to `/usr/local/bin` where gsl will find them if you use zproject in your project.
+The following will install the `zproject-*.gsl` files to `/usr/local/bin` where gsl will find them if you use zproject in your project.
 
     ./autogen.sh
     ./configure
     make
     make install
 
-<A name="toc2-176" title="Generate build environment in your project" />
+<A name="toc2-178" title="Generate build environment in your project" />
 ## Generate build environment in your project
 
 Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly.
 
 Run `./generate.sh`
 
-<A name="toc2-183" title="Removal" />
+<A name="toc2-185" title="Removal" />
 ## Removal
 
-<A name="toc3-186" title="autotools" />
+<A name="toc3-188" title="autotools" />
 ### autotools
-
 
     make uninstall
 

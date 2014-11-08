@@ -5,7 +5,7 @@
 
 ## Contents
 
-.toc 3
+.toc 2
 
 ## Overview
 
@@ -40,6 +40,8 @@ All classes in the project.xml are automatically added to all build environments
 
 ## Sample configuration
 
+The following snippet is the project.xml from zproject with explains all available tags and attributes.
+
 .pull project.xml, code
 
 ## Installation
@@ -52,7 +54,7 @@ After that proceed with your favorite build environment. (Currently only autotoo
 
 ### autotools
 
-The following will install the `build-*.gsl` files to `/usr/local/bin` where gsl will find them if you use zproject in your project.
+The following will install the `zproject-*.gsl` files to `/usr/local/bin` where gsl will find them if you use zproject in your project.
 
     ./autogen.sh
     ./configure
@@ -68,7 +70,6 @@ Run `./generate.sh`
 ## Removal
 
 ### autotools
-
 
     make uninstall
 
