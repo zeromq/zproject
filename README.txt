@@ -20,7 +20,7 @@ zproject has these goals:
 
 zproject grew out of the work that has been done to automatically generate the build environment in CZMQ.
 
-All you need is a project.xml in the root directory project which is your 
+All you need is a project.xml in the project's root directory which is your 
 
     One file to rule them all
 
