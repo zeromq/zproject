@@ -177,7 +177,11 @@ src: src/lib$(project.prefix).la src/$(project.prefix)_selftest
 code:
 .   endif
 .   if defined (model.script)
-\tcd $\(srcdir)/src; gsl -topdir:.. -script:$(script:) -q $(name).xml
+\tcd $\(srcdir)/src; gsl -topdir:.. -script:$(script:) \
+. for model.param
+-$(param.name):$(param.value) \
+. endfor
+-q $(name).xml
 .   else
 \tcd $\(srcdir)/src; gsl -q $(name).xml
 .   endif
