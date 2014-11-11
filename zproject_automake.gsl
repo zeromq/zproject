@@ -46,7 +46,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .echo "Generating src/Makemodule.am..."
 .if !file.exists ("src")
 .   directory.create("src")
-.endif    
+.endif
 .output "src/Makemodule.am"
 $(project.GENERATED_WARNING_HEADER:)
 .if (count (class) > 0)
@@ -164,7 +164,7 @@ src: src/lib$(project.prefix).la src/$(project.prefix)_selftest
 .for model
 .   if first ()
 
-# Produce generated models; do this manually in src directory
+# Produce generated code from models in the src directory
 code:
 .   endif
 .   if defined (model.script)
@@ -178,3 +178,15 @@ code:
 .   endif
 .endfor
 $(project.GENERATED_WARNING_HEADER:)
+
+# Run the selftest binary under valgrind to check for memory leaks
+memcheck:
+\tlibtool --mode=execute valgrind \\
+\t\t--tool=memcheck --leak-check=full --show-reachable=yes \\
+\t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
+\t\t$\(srcdir)/src/$(project.prefix)_selftest
+
+# Run the selftest binary under gdb for debugging
+debug:
+\tlibtool --mode=execute gdb -q \\
+\t\t$\(srcdir)/src/$(project.prefix)_selftest

@@ -42,6 +42,7 @@ project.generated_warning_header ?= "\
 .include "zproject_lib.gsl"
 .include "zproject_mingw32.gsl"
 .include "zproject_qt_android.gsl"
+.include "zproject_tools.gsl"
 .include "zproject_vs2008.gsl"
 .include "zproject_vs2010.gsl"
 .include "zproject_vs2012.gsl"
