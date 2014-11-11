@@ -15,7 +15,7 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: lib$(project.name)
-Description: $(project.description)
+Description: $(project.description:)
 Version: @VERSION@
 Requires:\
 .for use
