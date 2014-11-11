@@ -177,16 +177,17 @@ code:
 \tcd $\(srcdir)/src; gsl -q $(name).xml
 .   endif
 .endfor
-$(project.GENERATED_WARNING_HEADER:)
 
 # Run the selftest binary under valgrind to check for memory leaks
-memcheck:
+memcheck: src/$(project.prefix)_selftest
 \tlibtool --mode=execute valgrind --tool=memcheck \\
 \t\t--leak-check=full --show-reachable=yes --error-exitcode=1 \\
 \t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
 \t\t$\(srcdir)/src/$(project.prefix)_selftest
 
 # Run the selftest binary under gdb for debugging
-debug:
+debug: src/$(project.prefix)_selftest
 \tlibtool --mode=execute gdb -q \\
 \t\t$\(srcdir)/src/$(project.prefix)_selftest
+
+$(project.GENERATED_WARNING_HEADER:)
