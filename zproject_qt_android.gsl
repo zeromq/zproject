@@ -114,9 +114,9 @@ $(project.GENERATED_WARNING_HEADER:)
 .#
 .echo "Generating builds/qt-android/android_build_helper.sh..."
 .output "builds/qt-android/android_build_helper.sh"
-.literal << .endliteral
 #!/usr/bin/env bash
 $(project.GENERATED_WARNING_HEADER:)
+.literal << .endliteral
 #
 # Courtesy of Joe Eli McIlvain; original code at:
 # https://github.com/jemc/android_build_helper
@@ -395,5 +395,6 @@ function android_build_verify_so {
     
     android_build_check_fail
 }
-$(project.GENERATED_WARNING_HEADER:)
+
 .endliteral
+$(project.GENERATED_WARNING_HEADER:)
