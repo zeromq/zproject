@@ -51,10 +51,7 @@
     $(string.trim (license.):block                                         )
 .       endfor
 
-    #################################################################
-    #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
-    #   Please read the README.txt file                             #
-    #################################################################
+$(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
@@ -112,11 +109,8 @@ typedef struct _$(class.name)_t $(class.name)_t;
 
 #endif
 /*
-    #################################################################
-    #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
-    #   Please read the README.txt file in the model directory.     #
-    #################################################################
-*/    
+$(project.GENERATED_WARNING_HEADER:)
+*/
 .#
 .#  Build the project selftest file
 .#
@@ -132,10 +126,7 @@ typedef struct _$(class.name)_t $(class.name)_t;
     $(string.trim (license.):block                                         )
 .   endfor
 
-    #################################################################
-    #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
-    #   Please read the README.txt file in the model directory.     #
-    #################################################################
+$(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
@@ -160,10 +151,7 @@ main (int argc, char *argv [])
     return 0;
 }
 /*
-    #################################################################
-    #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
-    #   Please read the README.txt file in the model directory.     #
-    #################################################################
+$(project.GENERATED_WARNING_HEADER:)
 */
 .-
 .-  Build the classes header for private header files and constants
@@ -176,10 +164,7 @@ main (int argc, char *argv [])
 .   for project.license
     $(string.trim (license.):block                                         )
 .   endfor
-    #################################################################
-    #   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
-    #   Please read the README.txt file in the model directory.     #
-    #################################################################
+$(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
