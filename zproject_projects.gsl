@@ -27,8 +27,8 @@ function resolve_dependency (use)
         my.use.repository ?= "https://github.com/zeromq/libzmq"
         my.use.test ?= "zmq_init"
     else
-        if (!defined(my.use.repository) | \
-            !defined(my.use.test))
+        if (!defined (my.use.repository) | \
+            !defined (my.use.test))
             echo "Unknown project for <use project = \"$(my.use.project)\"/>"
         endif
     endif
