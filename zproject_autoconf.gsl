@@ -147,6 +147,7 @@ fi
 
 .for use
 .lib_name = "lib$(use.project)"
+.min_version = "$(min_major?'0').$(min_minor?'0').$(min_patch?'0')"
 # $(lib_name) integration
 AC_ARG_WITH([$(lib_name)],
             [AS_HELP_STRING([--with-$(lib_name)],
@@ -167,11 +168,16 @@ AC_CHECK_LIB($(use.project), $(use.test),
     LIBS="-l$(use.project) $LIBS",
     [AC_MSG_ERROR([cannot link with -l$(use.project), install $(lib_name).])])
 
+.   if (min_version <> '0.0.0')
+PKG_CHECK_MODULES([$(use.project)], [$(lib_name) >= $(min_version)])
+
+.   endif   
 .endfor
+
 .for package_dependency
 PKG_CHECK_MODULES([$(package_dependency.name)], [$(package_dependency.pkg_name)])
+.endfor   
 
-.endfor
 # Platform specific checks
 $(project.name)_on_mingw32="no"
 $(project.name)_on_android="no"
