@@ -4,10 +4,13 @@
 #
 #  ===========================================================================
 
-function depends_on (dependent, name)
+function depends_on (dependent, name, major, minor, patch)
     if count (project.use, use.project = my.name) = 0
         new use to project as child before my.dependent
             child.project = my.name
+            child.min_major = my.major
+            child.min_minor = my.minor
+            child.min_patch = my.patch
             child.implied = 1
             return child
         endnew
@@ -18,11 +21,11 @@ function resolve_dependency (use)
     if my.use.project ?= "zyre"
         my.use.repository ?= "https://github.com/zeromq/zyre"
         my.use.test ?= "zyre_test"
-        resolve_dependency (depends_on (my.use, "czmq"))
+        resolve_dependency (depends_on (my.use, "czmq", 3, 0, 0))
     elsif my.use.project ?= "czmq"
         my.use.repository ?= "https://github.com/zeromq/czmq"
         my.use.test ?= "zctx_test"
-        resolve_dependency (depends_on (my.use, "zmq"))
+        resolve_dependency (depends_on (my.use, "zmq", 2, 2, 0))
     elsif my.use.project ?= "zmq"
         my.use.repository ?= "https://github.com/zeromq/libzmq"
         my.use.test ?= "zmq_init"

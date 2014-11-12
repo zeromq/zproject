@@ -11,13 +11,13 @@
 
 **<a href="#toc2-44">Sample configuration</a>**
 
-**<a href="#toc2-159">Installation</a>**
-&emsp;<a href="#toc3-168">autotools</a>
+**<a href="#toc2-51">Installation</a>**
+&emsp;<a href="#toc3-60">autotools</a>
 
-**<a href="#toc2-178">Generate build environment in your project</a>**
+**<a href="#toc2-70">Generate build environment in your project</a>**
 
-**<a href="#toc2-185">Removal</a>**
-&emsp;<a href="#toc3-188">autotools</a>
+**<a href="#toc2-77">Removal</a>**
+&emsp;<a href="#toc3-80">autotools</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -101,7 +101,7 @@ The following snippet is the project.xml from zproject with explains all availab
         Specify which other projects this depends on; these projects must be
         known by zproject, and you do not have to specify subdependencies.
         Known projects are zyre, czmq, and zmq.
-    <use project = "zyre" />
+    <use project = "zyre" min_major= "1" min_minor = "1" min_patch = "0" />
     -->
 
     <!-- 
@@ -148,6 +148,7 @@ The following snippet is the project.xml from zproject with explains all availab
     -->
     <bin name = "zproject.gsl" />
     <bin name = "zproject_projects.gsl" />
+    <bin name = "zproject_mkman" />
     
     <bin name = "zproject_android.gsl" />
     <bin name = "zproject_autoconf.gsl" />
@@ -156,18 +157,18 @@ The following snippet is the project.xml from zproject with explains all availab
     <bin name = "zproject_class.gsl" />
     <bin name = "zproject_cmake.gsl" />
     <bin name = "zproject_docs.gsl" />
+    <bin name = "zproject_git.gsl" />
     <bin name = "zproject_lib.gsl" />
     <bin name = "zproject_mingw32.gsl" />
-    <bin name = "zproject_mkman" />
     <bin name = "zproject_qt_android.gsl" />
+    <bin name = "zproject_tools.gsl" />
     <bin name = "zproject_vs2008.gsl" />
     <bin name = "zproject_vs2010.gsl" />
     <bin name = "zproject_vs2012.gsl" />
     <bin name = "zproject_vs2013.gsl" />
-
 </project>
 
-<A name="toc2-159" title="Installation" />
+<A name="toc2-51" title="Installation" />
 ## Installation
 
 Before you start you'll need to install the code generator GSL (https://github.com/imatix/gsl) on your system. Then execute the generate.sh script to generate the build environment files for zproject.
@@ -176,7 +177,7 @@ Before you start you'll need to install the code generator GSL (https://github.c
 
 After that proceed with your favorite build environment. (Currently only autotools!)
 
-<A name="toc3-168" title="autotools" />
+<A name="toc3-60" title="autotools" />
 ### autotools
 
 The following will install the `zproject-*.gsl` files to `/usr/local/bin` where gsl will find them if you use zproject in your project.
@@ -186,17 +187,17 @@ The following will install the `zproject-*.gsl` files to `/usr/local/bin` where 
     make
     make install
 
-<A name="toc2-178" title="Generate build environment in your project" />
+<A name="toc2-70" title="Generate build environment in your project" />
 ## Generate build environment in your project
 
 Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly.
 
 Run `./generate.sh`
 
-<A name="toc2-185" title="Removal" />
+<A name="toc2-77" title="Removal" />
 ## Removal
 
-<A name="toc3-188" title="autotools" />
+<A name="toc3-80" title="autotools" />
 ### autotools
 
     make uninstall
