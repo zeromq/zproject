@@ -135,6 +135,16 @@ The following snippet is the project.xml from zproject with explains all availab
     <model name = "sockopts" />
     <model name = "zgossip" />
     <model name = "zgossip_msg" />
+
+        If a model should be generated using a specific gsl script,
+        this can be set through the script attribute:
+    <model name = "hydra_msg" script = "zproto_codec_java.gsl" />
+
+        Additional parameters to the script can be set via nested
+        param elements:
+    <model name = "hydra_msg" script = "zproto_codec_java.gsl">
+      <param name = "root_path" value = "../main" />
+    </model>
     -->
 
     <!-- Other source files that we need to package
