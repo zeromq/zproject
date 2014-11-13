@@ -40,7 +40,7 @@ All classes in the project.xml are automatically added to all build environments
 
 ## Sample configuration
 
-The following snippet is the project.xml from zproject with explains all available tags and attributes.
+The following snippet is the `project.xml` from zproject:
 
 .pull project.xml, code
 
@@ -73,3 +73,6 @@ Run `./generate.sh`
 
     make uninstall
 
+### This Document
+
+This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).

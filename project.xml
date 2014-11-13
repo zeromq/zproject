@@ -57,8 +57,8 @@
 
     <!-- 
         Classes, if the class header or source file doesn't exist this will
-                 generate a skeletons for them.
-                 use private = "1" for internal classes
+        generate a skeletons for them.
+        use private = "1" for internal classes
     <class name = "myclass">Public class description</class>
     <class name = "someother" private = "1">Private class description</class>
     -->
@@ -76,6 +76,16 @@
     <model name = "sockopts" />
     <model name = "zgossip" />
     <model name = "zgossip_msg" />
+
+        If a model should be generated using a specific gsl script,
+        this can be set through the script attribute:
+    <model name = "hydra_msg" script = "zproto_codec_java.gsl" />
+
+        Additional parameters to the script can be set via nested
+        param elements:
+    <model name = "hydra_msg" script = "zproto_codec_java.gsl">
+        <param name = "root_path" value = "../main" />
+    </model>
     -->
 
     <!-- Other source files that we need to package
