@@ -40,7 +40,7 @@ All classes in the project.xml are automatically added to all build environments
 
 ## Sample configuration
 
-The following snippet is the project.xml from zproject with explains all available tags and attributes.
+The following snippet is the `project.xml` from zproject:
 
 .pull project.xml, code
 
@@ -73,3 +73,12 @@ Run `./generate.sh`
 
     make uninstall
 
+### Hints to Contributors
+
+Before you commit code please make sure that the project model hides all details of backend scripts.
+
+For example don't make a user enter a header file because autoconf needs it to do AC_CHECK_LIB.
+
+### This Document
+
+This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).

@@ -11,13 +11,14 @@
 
 **<a href="#toc2-44">Sample configuration</a>**
 
-**<a href="#toc2-51">Installation</a>**
-&emsp;<a href="#toc3-60">autotools</a>
+**<a href="#toc2-170">Installation</a>**
+&emsp;<a href="#toc3-179">autotools</a>
 
-**<a href="#toc2-70">Generate build environment in your project</a>**
+**<a href="#toc2-189">Generate build environment in your project</a>**
 
-**<a href="#toc2-77">Removal</a>**
-&emsp;<a href="#toc3-80">autotools</a>
+**<a href="#toc2-196">Removal</a>**
+&emsp;<a href="#toc3-199">autotools</a>
+&emsp;<a href="#toc3-204">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -55,7 +56,7 @@ All classes in the project.xml are automatically added to all build environments
 <A name="toc2-44" title="Sample configuration" />
 ## Sample configuration
 
-The following snippet is the project.xml from zproject with explains all available tags and attributes.
+The following snippet is the `project.xml` from zproject:
 
 <!-- 
     The project.xml generates build environments for:
@@ -116,8 +117,8 @@ The following snippet is the project.xml from zproject with explains all availab
 
     <!-- 
         Classes, if the class header or source file doesn't exist this will
-                 generate a skeletons for them.
-                 use private = "1" for internal classes
+        generate a skeletons for them.
+        use private = "1" for internal classes
     <class name = "myclass">Public class description</class>
     <class name = "someother" private = "1">Private class description</class>
     -->
@@ -143,7 +144,7 @@ The following snippet is the project.xml from zproject with explains all availab
         Additional parameters to the script can be set via nested
         param elements:
     <model name = "hydra_msg" script = "zproto_codec_java.gsl">
-      <param name = "root_path" value = "../main" />
+        <param name = "root_path" value = "../main" />
     </model>
     -->
 
@@ -178,7 +179,7 @@ The following snippet is the project.xml from zproject with explains all availab
     <bin name = "zproject_vs2013.gsl" />
 </project>
 
-<A name="toc2-51" title="Installation" />
+<A name="toc2-170" title="Installation" />
 ## Installation
 
 Before you start you'll need to install the code generator GSL (https://github.com/imatix/gsl) on your system. Then execute the generate.sh script to generate the build environment files for zproject.
@@ -187,7 +188,7 @@ Before you start you'll need to install the code generator GSL (https://github.c
 
 After that proceed with your favorite build environment. (Currently only autotools!)
 
-<A name="toc3-60" title="autotools" />
+<A name="toc3-179" title="autotools" />
 ### autotools
 
 The following will install the `zproject-*.gsl` files to `/usr/local/bin` where gsl will find them if you use zproject in your project.
@@ -197,18 +198,22 @@ The following will install the `zproject-*.gsl` files to `/usr/local/bin` where 
     make
     make install
 
-<A name="toc2-70" title="Generate build environment in your project" />
+<A name="toc2-189" title="Generate build environment in your project" />
 ## Generate build environment in your project
 
 Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly.
 
 Run `./generate.sh`
 
-<A name="toc2-77" title="Removal" />
+<A name="toc2-196" title="Removal" />
 ## Removal
 
-<A name="toc3-80" title="autotools" />
+<A name="toc3-199" title="autotools" />
 ### autotools
 
     make uninstall
 
+<A name="toc3-204" title="This Document" />
+### This Document
+
+This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).
