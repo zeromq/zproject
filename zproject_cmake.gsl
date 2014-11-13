@@ -23,7 +23,7 @@ set(BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 # determine version
 ########################################################################
 foreach(which MAJOR MINOR PATCH)
-    file(STRINGS "${SOURCE_DIR}/include/$(project.name).h" $(PROJECT.NAME)_VERSION_STRING REGEX "#define $(PROJECT.NAME)_VERSION_${which}")
+    file(STRINGS "${SOURCE_DIR}/include/$(project.name)_library.h" $(PROJECT.NAME)_VERSION_STRING REGEX "#define $(PROJECT.NAME)_VERSION_${which}")
     string(REGEX MATCH "#define $(PROJECT.NAME)_VERSION_${which} ([0-9_]+)" $(PROJECT.NAME)_REGEX_MATCH "${$(PROJECT.NAME)_VERSION_STRING}")
     if (NOT $(PROJECT.NAME)_REGEX_MATCH)
         message(FATAL_ERROR "failed to parse $(PROJECT.NAME)_VERSION_${which} from $(project.name).h")
@@ -74,11 +74,31 @@ if (MINGW)
     set(MORE_LIBRARIES -lws2_32 -lrpcrt4 -liphlpapi)
 endif()
 
-########################################################################
-# ZeroMQ depedency
-########################################################################
+
 list(APPEND CMAKE_MODULE_PATH ${SOURCE_DIR})
+.for use
+
+########################################################################
+# $(.PROJECT) dependency
+########################################################################
+.  if .project ?= "zyre"
+find_package(Zyre REQUIRED)
+include_directories(${ZYRE_INCLUDE_DIRS})
+list(APPEND MORE_LIBRARIES ${ZYRE_LIBRARIES})
+.  elsif .project ?= "czmq"
+find_package(CZMQ REQUIRED)
+include_directories(${CZMQ_INCLUDE_DIRS})
+list(APPEND MORE_LIBRARIES ${CZMQ_LIBRARIES})
+.  elsif .project ?= "zmq"
 find_package(ZeroMQ REQUIRED)
+include_directories(${ZEROMQ_INCLUDE_DIRS})
+list(APPEND MORE_LIBRARIES ${ZEROMQ_LIBRARIES})
+.  else
+find_package($(.Project) REQUIRED)
+include_directories(${$(.PROJECT)_INCLUDE_DIRS})
+list(APPEND MORE_LIBRARIES ${$(.PROJECT)_LIBRARIES})
+.  endif
+.endfor
 
 ########################################################################
 # includes
@@ -111,7 +131,6 @@ install(FILES ${$(project.name)_headers} DESTINATION include)
 ########################################################################
 include_directories(${BINARY_DIR})
 include_directories(${SOURCE_DIR}/include)
-include_directories(${ZEROMQ_INCLUDE_DIRS})
 set ($(project.name)_sources
 .for class
     src/$(name).c
