@@ -73,6 +73,12 @@ Run `./generate.sh`
 
     make uninstall
 
+### Hints to Contributors
+
+Before you commit code please make sure that the project model hides all details of backend scripts.
+
+For example don't make a user enter a header file because autoconf needs it to do AC_CHECK_LIB.
+
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).
