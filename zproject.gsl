@@ -28,22 +28,25 @@ project.generated_warning_header ?= "\
 ################################################################################"
 
 .endtemplate
+.#  These scripts must be run first to resolve missing or
+.#  implicit details in the model before code generation.
+.gsl from "zproject_projects.gsl"
 .#
-.include "zproject_projects.gsl"
-.#
-.include "zproject_android.gsl"
-.include "zproject_autoconf.gsl"
-.include "zproject_automake.gsl"
-.include "zproject_ci.gsl"
-.include "zproject_class.gsl"
-.include "zproject_cmake.gsl"
-.include "zproject_docs.gsl"
-.include "zproject_git.gsl"
-.include "zproject_lib.gsl"
-.include "zproject_mingw32.gsl"
-.include "zproject_qt_android.gsl"
-.include "zproject_tools.gsl"
-.include "zproject_vs2008.gsl"
-.include "zproject_vs2010.gsl"
-.include "zproject_vs2012.gsl"
-.include "zproject_vs2013.gsl"
+.#  These scripts generate code independently from one another
+.#  so are not run in any particular order other than alphabetically.
+.gsl from "zproject_android.gsl"
+.gsl from "zproject_autoconf.gsl"
+.gsl from "zproject_automake.gsl"
+.gsl from "zproject_ci.gsl"
+.gsl from "zproject_class.gsl"
+.gsl from "zproject_cmake.gsl"
+.gsl from "zproject_docs.gsl"
+.gsl from "zproject_git.gsl"
+.gsl from "zproject_lib.gsl"
+.gsl from "zproject_mingw32.gsl"
+.gsl from "zproject_qt_android.gsl"
+.gsl from "zproject_tools.gsl"
+.gsl from "zproject_vs2008.gsl"
+.gsl from "zproject_vs2010.gsl"
+.gsl from "zproject_vs2012.gsl"
+.gsl from "zproject_vs2013.gsl"
