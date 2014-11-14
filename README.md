@@ -7,26 +7,28 @@
 
 
 **<a href="#toc2-11">Overview</a>**
-&emsp;<a href="#toc3-14">Scope and Goals</a>
+&emsp;<a href="#toc3-16">Scope and Goals</a>
 
-**<a href="#toc2-44">Sample configuration</a>**
+**<a href="#toc2-46">Sample configuration</a>**
 
-**<a href="#toc2-171">Installation</a>**
-&emsp;<a href="#toc3-180">autotools</a>
+**<a href="#toc2-173">Installation</a>**
+&emsp;<a href="#toc3-182">autotools</a>
 
-**<a href="#toc2-190">Generate build environment in your project</a>**
+**<a href="#toc2-192">Generate build environment in your project</a>**
 
-**<a href="#toc2-197">Ownership and License</a>**
+**<a href="#toc2-199">Ownership and License</a>**
 
-**<a href="#toc2-206">Removal</a>**
-&emsp;<a href="#toc3-209">autotools</a>
-&emsp;<a href="#toc3-214">Hints to Contributors</a>
-&emsp;<a href="#toc3-221">This Document</a>
+**<a href="#toc2-208">Removal</a>**
+&emsp;<a href="#toc3-211">autotools</a>
+&emsp;<a href="#toc3-216">Hints to Contributors</a>
+&emsp;<a href="#toc3-223">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
 
-<A name="toc3-14" title="Scope and Goals" />
+zproject is a community project, like most ZeroMQ projects, built using the C4.1 process, and licensed under MPL v2. It solves the Makefile problem really well. It is unashamedly for C, and more pointedly, for that modern C dialect we call CLASS. CLASS is the Minecraft of C: fun, easy, playful, mind-opening, and social. [hintjens#79](http://hintjens.com/blog:79)
+
+<A name="toc3-16" title="Scope and Goals" />
 ### Scope and Goals
 
 zproject has these goals:
@@ -56,7 +58,7 @@ The following build environments are currently supported:
  
 All classes in the project.xml are automatically added to all build environments. Further as you add new classes to your project you can generate skeleton header and source files according to [the CLASS RFC](http://rfc.zeromq.org/spec:21).
 
-<A name="toc2-44" title="Sample configuration" />
+<A name="toc2-46" title="Sample configuration" />
 ## Sample configuration
 
 The following snippet is the `project.xml` from zproject:
@@ -183,7 +185,7 @@ The following snippet is the `project.xml` from zproject:
     <bin name = "zproject_vs2013.gsl" />
 </project>
 
-<A name="toc2-171" title="Installation" />
+<A name="toc2-173" title="Installation" />
 ## Installation
 
 Before you start you'll need to install the code generator GSL (https://github.com/imatix/gsl) on your system. Then execute the generate.sh script to generate the build environment files for zproject.
@@ -192,7 +194,7 @@ Before you start you'll need to install the code generator GSL (https://github.c
 
 After that proceed with your favorite build environment. (Currently only autotools!)
 
-<A name="toc3-180" title="autotools" />
+<A name="toc3-182" title="autotools" />
 ### autotools
 
 The following will install the `zproject-*.gsl` files to `/usr/local/bin` where gsl will find them if you use zproject in your project.
@@ -202,14 +204,14 @@ The following will install the `zproject-*.gsl` files to `/usr/local/bin` where 
     make
     make install
 
-<A name="toc2-190" title="Generate build environment in your project" />
+<A name="toc2-192" title="Generate build environment in your project" />
 ## Generate build environment in your project
 
 Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly.
 
 Run `./generate.sh`
 
-<A name="toc2-197" title="Ownership and License" />
+<A name="toc2-199" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -218,22 +220,22 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc2-206" title="Removal" />
+<A name="toc2-208" title="Removal" />
 ## Removal
 
-<A name="toc3-209" title="autotools" />
+<A name="toc3-211" title="autotools" />
 ### autotools
 
     make uninstall
 
-<A name="toc3-214" title="Hints to Contributors" />
+<A name="toc3-216" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Before you commit code please make sure that the project model hides all details of backend scripts.
 
 For example don't make a user enter a header file because autoconf needs it to do AC_CHECK_LIB.
 
-<A name="toc3-221" title="This Document" />
+<A name="toc3-223" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).
