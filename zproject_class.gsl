@@ -8,8 +8,8 @@
 .#      * include/$(project.name).h - public project header (once)
 .#      * src/$(project.prefix)_selftest.c - selftest class
 .#      * src/$(project.prefix)_classes.h - private project header
-.#      * (include|src)$(class.name).h - public/private header file for classes
-.#      * src/$(class.name).c - source code file for classes
+.#      * (include|src)$(class.c_name).h - public/private header file for classes
+.#      * src/$(class.c_name).c - source code file for classes
 .#  ===========================================================================
 .#
 .#   Resolve XML includes
@@ -88,8 +88,8 @@ $(project.GENERATED_WARNING_HEADER:)
 
 //  Opaque class structures to allow forward references
 .for project.class where !defined (class.private)
-typedef struct _$(class.name)_t $(class.name)_t;
-#define $(CLASS.NAME)_T_DEFINED
+typedef struct _$(class.c_name)_t $(class.c_name)_t;
+#define $(CLASS.C_NAME)_T_DEFINED
 .endfor
 
 .for constant where !defined (constant.private)
@@ -103,8 +103,8 @@ typedef struct _$(class.name)_t $(class.name)_t;
 .for project.header
 #include "$(header.name).h"
 .endfor
-.for project.class where !defined (class.private) & class.name <> "$(project.name)"
-#include "$(class.name).h"
+.for project.class where !defined (class.private) & class.c_name <> "$(project.name)"
+#include "$(class.c_name).h"
 .endfor
 
 #endif
@@ -144,7 +144,7 @@ main (int argc, char *argv [])
     printf ("Running $(project.name) selftests...\\n");
 
 .for class
-    $(class.name)_test (verbose); 
+    $(class.c_name)_test (verbose); 
 .endfor
 
     printf ("Tests passed OK\\n");
@@ -176,7 +176,7 @@ $(project.GENERATED_WARNING_HEADER:)
 
 //  Internal API
 .for class where defined (class.private)
-#include "$(class.name).h"
+#include "$(class.c_name).h"
 .endfor
 
 .for constant where defined (constant.private)
@@ -193,12 +193,12 @@ $(project.GENERATED_WARNING_HEADER:)
 .   if class.private ?= 1
 .       class.classdir = "src"
 .   endif
-.header_file = "$(class.classdir)/$(class.name).h"
+.header_file = "$(class.classdir)/$(class.c_name).h"
 .if !file.exists (header_file)
 .echo "Generating $(header_file)..."
 .   output header_file
 /*  =========================================================================
-    $(class.name) - $(class.?'':)
+    $(class.c_name) - $(string.trim (class.?''):no,left)
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -206,38 +206,38 @@ $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
-#ifndef __$(CLASS.NAME)_H_INCLUDED__
-#define __$(CLASS.NAME)_H_INCLUDED__
+#ifndef __$(CLASS.C_NAME)_H_INCLUDED__
+#define __$(CLASS.C_NAME)_H_INCLUDED__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-.   if class.name = project.name
+.   if class.c_name = project.name
 //  Include the library file with typdefs, public includes and public constants    
-#include "$(class.name)_library.h"
+#include "$(class.c_name)_library.h"
 
 .   endif  
 .   if class.private ?= 1
-typedef struct _$(class.name)_t $(class.name)_t;
-.  endif
+typedef struct _$(class.c_name)_t $(class.c_name)_t;
+.   endif
 
 //  @interface
-//  Create a new $(class.name)
-$(PROJECT.PREFIX)_EXPORT $(class.name)_t *
-    $(class.name)_new ();
+//  Create a new $(class.c_name)
+$(PROJECT.PREFIX)_EXPORT $(class.c_name)_t *
+    $(class.c_name)_new ();
 
-//  Destroy the $(class.name)
+//  Destroy the $(class.c_name)
 $(PROJECT.PREFIX)_EXPORT void
-    $(class.name)_destroy ($(class.name)_t **self_p);
+    $(class.c_name)_destroy ($(class.c_name)_t **self_p);
 
 //  Print properties of object
 $(PROJECT.PREFIX)_EXPORT void
-    $(class.name)_print ($(class.name)_t *self);
+    $(class.c_name)_print ($(class.c_name)_t *self);
 
 //  Self test of this class
 $(PROJECT.PREFIX)_EXPORT int
-    $(class.name)_test (bool verbose);
+    $(class.c_name)_test (bool verbose);
 //  @end
 
 #ifdef __cplusplus
@@ -249,12 +249,12 @@ $(PROJECT.PREFIX)_EXPORT int
 .-
 .-  Build the source file for a class
 .-
-.source_file = "src/$(class.name).c"
+.source_file = "src/$(class.c_name).c"
 .if !file.exists (source_file)
 .echo "Generating $(source_file)..."
 .   output source_file
 /*  =========================================================================
-    $(class.name) - $(class.?'':)
+    $(class.c_name) - $(class.?'':)
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -264,14 +264,14 @@ $(PROJECT.PREFIX)_EXPORT int
 
 /*
 @header
-    $(class.name) - $(class.?'':)
+    $(class.c_name) - $(class.?'':)
 @discuss
 @end
 */
 
 //  Structure of our class
 
-struct _$(class.name)_t {
+struct _$(class.c_name)_t {
 };
 
 #include "../include/$(project.name).h"
@@ -280,12 +280,12 @@ struct _$(class.name)_t {
 .   endif
 
 //  --------------------------------------------------------------------------
-//  Create a new $(class.name)
+//  Create a new $(class.c_name)
 
-$(class.name)_t *
-$(class.name)_new ()
+$(class.c_name)_t *
+$(class.c_name)_new ()
 {
-    $(class.name)_t *self = ($(class.name)_t *) zmalloc (sizeof ($(class.name)_t));
+    $(class.c_name)_t *self = ($(class.c_name)_t *) zmalloc (sizeof ($(class.c_name)_t));
     assert (self);
 
     //  TODO: Initialize properties
@@ -295,14 +295,14 @@ $(class.name)_new ()
 
 
 //  --------------------------------------------------------------------------
-//  Destroy the $(class.name)
+//  Destroy the $(class.c_name)
 
 void
-$(class.name)_destroy ($(class.name)_t **self_p)
+$(class.c_name)_destroy ($(class.c_name)_t **self_p)
 {
     assert (self_p);
     if (*self_p) {
-        $(class.name)_t *self = *self_p;
+        $(class.c_name)_t *self = *self_p;
 
         //  Free class properties
 
@@ -317,7 +317,7 @@ $(class.name)_destroy ($(class.name)_t **self_p)
 //  Print properties of object
 
 void
-$(class.name)_print ($(class.name)_t *self)
+$(class.c_name)_print ($(class.c_name)_t *self)
 {
     assert (self);
 }
@@ -327,20 +327,80 @@ $(class.name)_print ($(class.name)_t *self)
 //  Selftest
 
 int
-$(class.name)_test (bool verbose)
+$(class.c_name)_test (bool verbose)
 {
-    printf (" * $(class.name): ");
+    printf (" * $(class.c_name): ");
 
     //  @selftest
     //  Simple create/destroy test
-    $(class.name)_t *self = $(class.name)_new ();
+    $(class.c_name)_t *self = $(class.c_name)_new ();
     assert (self);
-    $(class.name)_destroy (&self);
+    $(class.c_name)_destroy (&self);
     //  @end
 
     printf ("OK\\n");
     return 0;
 }
+.endif
+.-
+.-  Regenerate the @interface for the class if it has an api model
+.-
+.if defined (class.api)
+.template 0
+    
+    # Open the header_file for reading
+    handle = file.open (header_file, "ra")
+    current_loc = "prefix"
+    HEADER_FILE_PREFIX = "" # All lines preceding the @interface line
+    HEADER_FILE_SUFFIX = "" # All lines following the @end line
+    
+    # Read each line from the file and pull out the prefix and suffix blocks
+    while defined (handle)
+        this_line = handle.read (error)? ""
+        
+        if defined (error)
+            handle.close ()
+            handle = # undefined
+        elsif current_loc = "prefix"
+            if regexp.match ("//\\s*@interface", this_line)
+                current_loc = "interface"
+            elsif regexp.match ("//\\s*@warning", this_line)
+                # ignore the warning line - do not copy it
+            else
+                HEADER_FILE_PREFIX += this_line
+            endif
+        elsif current_loc = "interface"
+            if regexp.match ("//\\s*@end", this_line)
+                current_loc = "suffix"
+            endif
+        elsif current_loc = "suffix"
+            HEADER_FILE_SUFFIX += this_line
+        endif
+    endwhile
+.endtemplate
+.# Now output the file with stored prefix, generated interface, and stored suffix
+.output header_file
+$(HEADER_FILE_PREFIX:)\
+//  @warning THE FOLLOWING @INTERFACE BLOCK IS AUTO-GENERATED BY ZPROJECT!
+//  @warning Please edit the model at "$(class.api)" to make changes.
+//  @interface\
+.for class.constructor as method
+
+//  $(method.description:no,block)
+$(c_method_declaration (method):)
+.endfor
+.for class.destructor as method
+
+//  $(method.description:no,block)
+$(c_method_declaration (method):)
+.endfor
+.for class.method
+
+//  $(method.description:no,block)
+$(c_method_declaration (method):)
+.endfor
+//  @end
+$(HEADER_FILE_SUFFIX:)\
 .endif
 .endfor
 .endif

@@ -99,6 +99,7 @@
     -->
     <bin name = "zproject.gsl" />
     <bin name = "zproject_projects.gsl" />
+    <bin name = "zproject_class_api.gsl" />
     <bin name = "zproject_mkman" />
     
     <bin name = "zproject_android.gsl" />

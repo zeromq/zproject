@@ -31,6 +31,7 @@ project.generated_warning_header ?= "\
 .#  These scripts must be run first to resolve missing or
 .#  implicit details in the model before code generation.
 .gsl from "zproject_projects.gsl"
+.gsl from "zproject_class_api.gsl"
 .#
 .#  These scripts generate code independently from one another
 .#  so are not run in any particular order other than alphabetically.
