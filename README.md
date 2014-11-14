@@ -1,6 +1,6 @@
 
-<A name="toc1-3" title="zproject - rfc/21 project generator" />
-# zproject - rfc/21 project generator
+<A name="toc1-3" title="zproject - Class Project Generator" />
+# zproject - Class Project Generator
 
 <A name="toc2-6" title="Contents" />
 ## Contents
@@ -30,7 +30,7 @@ zproject has these goals:
 
 * generate files for cross-platform build environments.
 * generate public and private headers. 
-* generate rfc/21 compliant header and source skeletons for new classes
+* generate CLASS (ZeroMQ RFC/21) compliant header and source skeletons for new classes.
 * generate CI setup for travis.
 
 zproject grew out of the work that has been done to automatically generate the build environment in CZMQ.
@@ -51,7 +51,7 @@ The following build environments are currently supported:
 * vs2012 (not tested)
 * vs2013 (not tested)
  
-All classes in the project.xml are automatically added to all build environments. Further as you add new classes to your project you can generate skeleton header and source files according to [rfc/21](http://rfc.zeromq.org/spec:21).
+All classes in the project.xml are automatically added to all build environments. Further as you add new classes to your project you can generate skeleton header and source files according to [the CLASS RFC](http://rfc.zeromq.org/spec:21).
 
 <A name="toc2-44" title="Sample configuration" />
 ## Sample configuration
@@ -205,10 +205,19 @@ Copy the `project.xml` and `generate.sh` to your project or an empty directory a
 
 Run `./generate.sh`
 
-<A name="toc2-196" title="Removal" />
+<A name="toc2-186" title="Ownership and License" />
+## Ownership and License
+
+The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
+
+zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zeromq.org/spec:22) process for contributions.
+
+To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
+
+<A name="toc2-195" title="Removal" />
 ## Removal
 
-<A name="toc3-199" title="autotools" />
+<A name="toc3-198" title="autotools" />
 ### autotools
 
     make uninstall
