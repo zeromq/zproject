@@ -1,0 +1,185 @@
+.template 0
+
+# Resolve filename for each class api (undefined if the file is not found)
+for project.class
+    if defined (class.api)
+        if !file.exists (class.api)
+            echo "No such api file for class: $(class.name): $(class.api)"
+            class.api = # undefined
+        endif
+    else
+        if file.exists ("api/$(class.name).xml")
+            class.api = "api/$(class.name).xml"
+        endif
+    endif
+endfor
+
+# Replace each class item with the class model from its api file (if any)
+for project.class where defined (class.api)
+    echo "Processing $(class.api)..."
+    new_class = XML.load_file (class.api)
+    if !defined (new_class)
+        echo "Error loading api file: $(class.api): $(xml.error?)"
+        class.api = # undefined
+    else
+        new_class.api = class.api
+        move new_class after class
+        delete class
+    endif
+endfor
+
+# Resolve missing or implicit details in a c argument or return
+function resolve_c_container (container)
+    if defined (my.container.variadic)
+        return
+    endif
+    my.container.name ?= "_"
+    my.container.c_name ?= "$(my.container.name:c)"
+    my.container.by_reference ?= "0"
+    my.container.by_reference = conv.number (my.container.by_reference)
+    
+    my.container.type ?= "nothing"
+    if defined (my.container.c_type)
+        return
+    endif
+    
+    my.type = my.container.type
+    my.c_type = ""
+    my.stars = ""
+    
+    if my.type = ""
+        my.c_type = "void"
+    elsif my.type = "nothing"
+        my.c_type = "void"
+    elsif my.type = "anything"
+        my.c_type = "void"
+        my.stars += "*"
+    elsif my.type = "integer"
+        my.c_type = "int"
+    elsif my.type = "real"
+        my.c_type = "float"
+    elsif my.type = "boolean"
+        my.c_type = "bool"
+    elsif my.type = "string"
+        my.c_type = "char"
+        my.stars += "*"
+        my.container.constant ?= "1"
+    else
+        my.c_type = "$(my.type:c)_t"
+        my.stars += "*"
+    endif
+    
+    if my.container.by_reference
+        my.stars += "*"
+    endif
+    
+    my.container.constant ?= "0"
+    my.container.constant ?= conv.number (my.container.constant)
+    if my.container.constant
+        my.c_type = "const " + my.c_type
+    endif
+    
+    if string.length (my.stars)
+        my.c_type += (" " + my.stars)
+    endif
+    
+    my.container.c_type = my.c_type
+endfunction
+
+# Resolve missing or implicit details in a c method model
+function resolve_c_method (method)
+    my.method.c_name ?= "$(my.method.name:c)"
+    my.method.description ?= "$(string.trim (my.method.?):left)"
+    
+    if !count (my.method.return)
+        new return to my.method as ret
+        endnew
+    endif
+    
+    for my.method.argument as obj
+        resolve_c_container (obj)
+    endfor
+    for my.method.return as obj
+        resolve_c_container (obj)
+    endfor
+endfunction
+
+# Resolve missing or implicit details in a c class model
+function resolve_c_class (class)
+    my.class.c_name ?= "$(my.class.name:c)"
+    
+    if !count (my.class.constructor)
+        new constructor to my.class
+        endnew
+    endif
+    if !count (my.class.destructor)
+        new destructor to my.class
+        endnew
+    endif
+    
+    for my.class.method
+        resolve_c_method (method)
+    endfor
+    for my.class.constructor as method
+        method.name ?= "new"
+        method.singleton = "1"
+        # Add a new return value to the first slot - the created object
+        new return to method as ret
+            ret.type = my.class.c_name
+            move ret before method->return # Move to first slot 
+        endnew
+        resolve_c_method (method)
+    endfor
+    for my.class.destructor as method
+        method.name ?= "destroy"
+        method.singleton = "1"
+        # Add a new argument to the first slot - the object to be destroyed
+        new argument to method as arg
+            arg.type = my.class.c_name
+            arg.name = "self_p"
+            arg.by_reference = "1"
+            move arg before method->argument # Move to first slot 
+        endnew
+        resolve_c_method (method)
+    endfor
+endfunction
+
+# Resolve C-related properties of the class api models here because
+# higher-level language bindings will depend on them.
+for project.class 
+    if defined (class.api)
+        resolve_c_class (class)
+    else
+        class.c_name = "$(class.name:c)"
+    endif
+endfor
+
+# A macro for outputting a method declaration in a C header
+function c_method_declaration (method)
+    out = "$(PROJECT.PREFIX)_EXPORT $(my.method->return.c_type)"
+    out += "\n    $(class.c_name)_$(my.method.c_name) ("
+    if !defined (my.method.singleton)
+            out += "$(class.c_name)_t *self"
+        if count (my.method.argument)
+            out += ", "
+        endif
+    endif
+    for my.method.argument
+        if defined (argument.variadic)
+            out += "..."
+        else
+            out += "$(argument.c_type?"")"
+            if !regexp.match ("\\*$", argument.c_type?"")
+                out += " "
+            endif
+            out += "$(argument.c_name?)"
+            if !last ()
+                out += ", "
+            endif
+        endif
+    endfor
+    out += ");"
+    return out
+endfunction
+
+.endtemplate
