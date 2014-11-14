@@ -17,10 +17,24 @@ includedir=@includedir@
 Name: lib$(project.name)
 Description: $(project.description:)
 Version: @VERSION@
+
+.if (count (use) > 0)
 Requires:\
 .for use
- lib$(use.project)\
+.min_version = "$(min_major?'0').$(min_minor?'0').$(min_patch?'0')"
+.project_require = ""
+.  if (min_version <> '0.0.0')
+.project_require = "lib$(use.project) >= $(min_version)"
+.  else
+.project_require = "lib$(use.project)"
+.  endif
+.  if !last()
+$(project_require) \
+.  else
+$(project_require)
+.  endif
 .endfor
+.endif
 
 Libs: -L${libdir} -l$(project.name)
 Cflags: -I${includedir}

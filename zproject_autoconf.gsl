@@ -145,38 +145,70 @@ if test "x${$(PROJECT.NAME)_GCOV}" == "xyes"; then
     fi
 fi
 
+.# Archive user supplied flags
+PREVIOUS_CFLAGS="${CFLAGS}"
+PREVIOUS_LIBS="${LIBS}"
+
 .for use
 .lib_name = "lib$(use.project)"
 .min_version = "$(min_major?'0').$(min_minor?'0').$(min_patch?'0')"
-# $(lib_name) integration
-AC_ARG_WITH([$(lib_name)],
-            [AS_HELP_STRING([--with-$(lib_name)],
-                            [Specify $(lib_name) prefix])],
+
+.  if (min_version <> '0.0.0')
+PKG_CHECK_MODULES([$(use.project)], [$(lib_name) >= $(min_version)],
+    [
+        AC_SUBST([$(use.project)_CFLAGS],[`$PKG_CONFIG --cflags "$(lib_name) >= $(min_version)" 2>/dev/null`])
+        AC_SUBST([$(use.project)_LIBS],[`$PKG_CONFIG --libs "$(lib_name) >= $(min_version)" 2>/dev/null`])
+        CFLAGS="${$(use.project)_CFLAGS} ${CFLAGS}"
+        LIBS="${$(use.project)_LIBS} ${LIBS}"
+    ],
+    [AC_MSG_ERROR([Cannot find required package for $(lib_name).  Note, pkg-config is required due to specified version >= $(min_version)])
+  ])
+.  else
+PKG_CHECK_MODULES([$(use.project)], [$(lib_name)],
+    [
+        AC_SUBST([$(use.project)_CFLAGS],[`$PKG_CONFIG --cflags "$(lib_name)" 2>/dev/null`])
+        AC_SUBST([$(use.project)_LIBS],[`$PKG_CONFIG --libs "$(lib_name)" 2>/dev/null`])
+        CFLAGS="${$(use.project)_CFLAGS} ${CFLAGS}"
+        LIBS="${$(use.project)_LIBS} ${LIBS}"
+    ],
+    [
+        AC_ARG_WITH([$(lib_name)],
+            [
+                AS_HELP_STRING([--with-$(lib_name)],
+                [Specify $(lib_name) prefix])
+            ],
             [search_$(lib_name)="yes"],
             [])
 
-if test "x$search_$(lib_name)" = "xyes"; then
-    if test -r "${with_$(lib_name)}/include/$(use.project).h"; then
-        CFLAGS="-I${with_$(lib_name)}/include ${CFLAGS}"
-        LDFLAGS="-L${with_$(lib_name)}/lib ${LDFLAGS}"
-    else
-        AC_MSG_ERROR([${with_$(lib_name)}/include/$(use.project).h not found. Please check $(lib_name) prefix])
-    fi
-fi
+        $(use.project)_synthetic_cflags=""
+        $(use.project)_synthetic_libs="-l$(use.project)"
 
-AC_CHECK_LIB($(use.project), $(use.test),
-    LIBS="-l$(use.project) $LIBS",
-    [AC_MSG_ERROR([cannot link with -l$(use.project), install $(lib_name).])])
+        if test "x$search_$(lib_name)" = "xyes"; then
+            if test -r "${with_$(lib_name)}/include/$(use.project).h"; then
+                $(use.project)_synthetic_cflags="-I${with_$(lib_name)}/include"
+                $(use.project)_synthetic_libs="-L${with_$(lib_name)}/lib -l$(use.project)"
+            else
+                AC_MSG_ERROR([${with_$(lib_name)}/include/$(use.project).h not found. Please check $(lib_name) prefix])
+            fi
+        fi
 
-.   if (min_version <> '0.0.0')
-PKG_CHECK_MODULES([$(use.project)], [$(lib_name) >= $(min_version)])
+        CFLAGS="${$(use.project)_synthetic_cflags} ${CFLAGS}"
+        LDFLAGS="${$(use.project)_synthetic_libs} ${LDFLAGS}"
+        LIBS="${$(use.project)_synthetic_libs} ${LIBS}"
 
-.   endif   
+        AC_CHECK_LIB([$(use.project)], [$(use.test)],
+            [
+                AC_SUBST([$(use.project)_CFLAGS],[${$(use.project)_synthetic_cflags}])
+                AC_SUBST([$(use.project)_LIBS],[${$(use.project)_synthetic_libs}])
+            ],
+            [AC_MSG_ERROR([cannot link with -l$(use.project), install $(lib_name).])])
+    ])
+.  endif
 .endfor
 
-.for package_dependency
-PKG_CHECK_MODULES([$(package_dependency.name)], [$(package_dependency.pkg_name)])
-.endfor   
+.# Restore user supplied flags
+CFLAGS="${PREVIOUS_CFLAGS}"
+LIBS="${PREVIOUS_LIBS}"
 
 # Platform specific checks
 $(project.name)_on_mingw32="no"
