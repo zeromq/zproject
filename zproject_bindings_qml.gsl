@@ -1,3 +1,5 @@
+.#  Only build bindings if there is at least one API model
+.if count (class, defined (class.api))
 .template 0
 #  Generate minimal QML language bindings
 #
@@ -528,4 +530,5 @@ may need to delete that directory to trigger a clean build.
 ```
 $(project.GENERATED_WARNING_HEADER:)
 ```
+.endif
 .#
