@@ -11,8 +11,8 @@ if !file.exists ("bindings/qml/src")
    directory.create("bindings/qml/src")
 endif
 
-if !file.exists ("bindings/qml/qml")
-   directory.create("bindings/qml/qml")
+if !file.exists ("bindings/qml/src/qml")
+   directory.create("bindings/qml/src/qml")
 endif
 
 if !file.exists ("bindings/qml/test")
@@ -360,6 +360,13 @@ android {
   && $$QMAKE_COPY $$replace($$list($$quote($$VENDOR_PREFIX/lib/*.so)  $$DESTDIR), /, $$QMAKE_DIR_SEP)
 }
 #*/
+
+# Copy the qml implementation directory to the plugin folder
+copyqml.commands = $\(COPY_DIR) $$SRCDIR/qml $$DESTDIR
+first.depends = $\(first) copyqml
+export(first.depends)
+export(copyqml.commands)
+QMAKE_EXTRA_TARGETS += first copyqml
 
 $(project.GENERATED_WARNING_HEADER:)
 .#
