@@ -1,7 +1,7 @@
 .set GIT=https://github.com/zeromq/zproject
 .sub 0MQ=ØMQ
 
-# zproject - rfc/21 project generator
+# zproject - Class Project Generator
 
 ## Contents
 
@@ -9,13 +9,15 @@
 
 ## Overview
 
+zproject is a community project, like most ZeroMQ projects, built using the C4.1 process, and licensed under MPL v2. It solves the Makefile problem really well. It is unashamedly for C, and more pointedly, for that modern C dialect we call CLASS. CLASS is the Minecraft of C: fun, easy, playful, mind-opening, and social. [hintjens#79](http://hintjens.com/blog:79)
+
 ### Scope and Goals
 
 zproject has these goals:
 
 * generate files for cross-platform build environments.
 * generate public and private headers. 
-* generate rfc/21 compliant header and source skeletons for new classes
+* generate CLASS (ZeroMQ RFC/21) compliant header and source skeletons for new classes.
 * generate CI setup for travis.
 
 zproject grew out of the work that has been done to automatically generate the build environment in CZMQ.
@@ -36,7 +38,7 @@ The following build environments are currently supported:
 * vs2012 (not tested)
 * vs2013 (not tested)
  
-All classes in the project.xml are automatically added to all build environments. Further as you add new classes to your project you can generate skeleton header and source files according to [rfc/21](http://rfc.zeromq.org/spec:21).
+All classes in the project.xml are automatically added to all build environments. Further as you add new classes to your project you can generate skeleton header and source files according to [the CLASS RFC](http://rfc.zeromq.org/spec:21).
 
 ## Sample configuration
 
@@ -66,6 +68,14 @@ The following will install the `zproject-*.gsl` files to `/usr/local/bin` where 
 Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly.
 
 Run `./generate.sh`
+
+## Ownership and License
+
+The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
+
+zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zeromq.org/spec:22) process for contributions.
+
+To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
 ## Removal
 
