@@ -115,7 +115,7 @@ AC_SUBST(PACKAGE_VERSION)
 # know exactly what you're doing and have read and understand
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 #
-# lib$(project.name) -version-info
+# lib$(project.prefix) -version-info
 LTVER="2:0:1"
 AC_SUBST(LTVER)
 
@@ -235,7 +235,7 @@ AC_MSG_RESULT([$$(project.name)_build_doc])
 AC_MSG_CHECKING([whether to install manpages])
 AC_MSG_RESULT([$$(project.name)_install_man])
 
-# Set some default features required by lib$(project.name) code.
+# Set some default features required by lib$(project.prefix) code.
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
 
 # OS-specific tests
@@ -352,7 +352,7 @@ AC_SUBST([pkgconfigdir])
 
 # Specify output files
 .if (count (class) > 0)
-AC_CONFIG_FILES([Makefile doc/Makefile src/lib$(project.name).pc])
+AC_CONFIG_FILES([Makefile doc/Makefile src/lib$(project.prefix).pc])
 .else
 AC_CONFIG_FILES([Makefile])
 .endif 

@@ -138,7 +138,7 @@ set ($(project.name)_sources
 )
 source_group ("Source Files" FILES ${$(project.name)_sources})
 add_library($(project.name) SHARED ${$(project.name)_sources})
-set_target_properties($(project.name) PROPERTIES DEFINE_SYMBOL "LIB$(PROJECT.NAME)_EXPORTS")
+set_target_properties($(project.name) PROPERTIES DEFINE_SYMBOL "LIB$(PROJECT.PREFIX)_EXPORTS")
 target_link_libraries($(project.name) ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES})
 
 install(TARGETS $(project.name)
@@ -156,12 +156,12 @@ set(exec_prefix "\\${prefix}")
 set(libdir "\\${prefix}/lib${LIB_SUFFIX}")
 set(includedir "\\${prefix}/include")
 configure_file(
-    ${SOURCE_DIR}/src/lib$(project.name).pc.in
-    ${BINARY_DIR}/lib$(project.name).pc
+    ${SOURCE_DIR}/src/lib$(project.prefix).pc.in
+    ${BINARY_DIR}/lib$(project.prefix).pc
 @ONLY)
 
 install(
-    FILES ${BINARY_DIR}/lib$(project.name).pc
+    FILES ${BINARY_DIR}/lib$(project.prefix).pc
     DESTINATION lib${LIB_SUFFIX}/pkgconfig
 )
 

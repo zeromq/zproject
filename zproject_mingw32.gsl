@@ -16,7 +16,7 @@ CC=gcc
 PREFIX=c:/mingw/msys/1.0/local
 INCDIR=-I$\(PREFIX)/include -I.
 LIBDIR=-L$\(PREFIX)/lib
-CFLAGS=-Wall -Os -g -DLIB$(PROJECT.NAME)_EXPORTS $\(INCDIR)
+CFLAGS=-Wall -Os -g -DLIB$(PROJECT.PREFIX)_EXPORTS $\(INCDIR)
 
 OBJS =\
 .for class
@@ -26,9 +26,9 @@ OBJS =\
 %.o: ../../src/%.c
 	$\(CC) -c -o $@ $< $\(CFLAGS)
 
-all: lib$(project.name).dll $(project.prefix)_selftest.exe
+all: lib$(project.prefix).dll $(project.prefix)_selftest.exe
 
-lib$(project.name).dll: $\(OBJS)
+lib$(project.prefix).dll: $\(OBJS)
 	$\(CC) -shared -o $@ $\(OBJS) -Wl,--out-implib,$@.a $\(LIBDIR) -lzmq -lws2_32 -liphlpapi -lrpcrt4
 
 # the test functions are not exported into the DLL

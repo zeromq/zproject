@@ -54,7 +54,7 @@ mkdir -p "${cache}"
 ##
 # Build $(project.name) from local source
 
-(android_build_verify_so "lib$(project.name).so"\
+(android_build_verify_so "lib$(project.prefix).so"\
 .for use where !defined (use.implied)
  "lib$(use.project).so"\
 .endfor
@@ -78,7 +78,7 @@ mkdir -p "${cache}"
 .for use
 android_build_verify_so "lib$(use.project).so"
 .endfor
-android_build_verify_so "lib$(project.name).so"\
+android_build_verify_so "lib$(project.prefix).so"\
 .for use where !defined (use.implied)
  "lib$(use.project).so"\
 .endfor
