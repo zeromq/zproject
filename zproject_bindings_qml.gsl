@@ -113,7 +113,7 @@ $(project.GENERATED_WARNING_HEADER:)
 
 #include "$(class.QmlName:).h"
 
-static QObject* $(class.QmlName:)::qmlAttachedProperties(QObject* object) {
+QObject* $(class.QmlName:)::qmlAttachedProperties(QObject* object) {
     return new $(class.QmlName:)Attached(object);
 }
 
