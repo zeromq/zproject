@@ -197,7 +197,7 @@ $(argument.name)\
 
     //  $(method.description:no,block)
     $(class.QmlName:) *\
-$(string.replace (method.name, "new|make_new"):camel) ($(qml_method_arguments (method))) {
+$(string.replace (method.name, "new|construct"):camel) ($(qml_method_arguments (method))) {
         $(class.QmlName:) *qmlSelf = new $(class.QmlName:) ();
         qmlSelf->self = $(class.c_name:)_$(method.c_name) (\
 .   for method.argument where !defined (argument.variadic)
@@ -217,7 +217,7 @@ $(argument.name)\
 .   if !regexp.match ("\\*$", method->return.c_type?"")
  \
 .   endif
-$(method.name:camel) ($(class.QmlName) *qmlSelf\
+$(string.replace (method.name, "destroy|destruct"):camel) ($(class.QmlName) *qmlSelf\
 $(qml_method_arguments (method))) {
         return $(class.c_name:)_$(method.c_name) (&qmlSelf->self\
 .       if count (method.argument) > 1
