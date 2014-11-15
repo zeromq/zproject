@@ -5,8 +5,8 @@
 .#  is licensed under MIT/X11.
 .#
 .if (count (class) > 0)
-.echo "Generating src/lib$(project.name).pc.in..."
-.output "src/lib$(project.name).pc.in"
+.echo "Generating src/lib$(project.prefix).pc.in..."
+.output "src/lib$(project.prefix).pc.in"
 $(project.GENERATED_WARNING_HEADER:)
 
 prefix=@prefix@
@@ -14,7 +14,7 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: lib$(project.name)
+Name: lib$(project.prefix)
 Description: $(project.description:)
 Version: @VERSION@
 
