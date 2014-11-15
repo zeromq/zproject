@@ -346,6 +346,7 @@ $(class.c_name)_test (bool verbose)
 .-  Regenerate the @interface for the class if it has an api model
 .-
 .if defined (class.api)
+.echo "Regenerating @interface in $(header_file)..."
 .template 0
     
     # Open the header_file for reading

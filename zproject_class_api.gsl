@@ -90,6 +90,8 @@ endfunction
 function resolve_c_method (method)
     my.method.c_name ?= "$(my.method.name:c)"
     my.method.description ?= "$(string.trim (my.method.?):left)"
+    my.method.singleton ?= "0"
+    my.method.singleton = conv.number (my.method.singleton)
     
     if !count (my.method.return)
         new return to my.method as ret
@@ -123,6 +125,7 @@ function resolve_c_class (class)
     for my.class.constructor as method
         method.name ?= "new"
         method.singleton = "1"
+        method.is_constructor = 1
         # Add a new return value to the first slot - the created object
         new return to method as ret
             ret.type = my.class.c_name
@@ -133,6 +136,7 @@ function resolve_c_class (class)
     for my.class.destructor as method
         method.name ?= "destroy"
         method.singleton = "1"
+        method.is_destructor = 1
         # Add a new argument to the first slot - the object to be destroyed
         new argument to method as arg
             arg.type = my.class.c_name
@@ -154,12 +158,12 @@ for project.class
     endif
 endfor
 
-# A macro for outputting a method declaration in a C header
+# A function for constructng the string for a method declaration in a C header
 function c_method_declaration (method)
     out = "$(PROJECT.PREFIX)_EXPORT $(my.method->return.c_type)"
     out += "\n    $(class.c_name)_$(my.method.c_name) ("
-    if !defined (my.method.singleton)
-            out += "$(class.c_name)_t *self"
+    if !my.method.singleton
+        out += "$(class.c_name)_t *self"
         if count (my.method.argument)
             out += ", "
         endif
@@ -168,11 +172,11 @@ function c_method_declaration (method)
         if defined (argument.variadic)
             out += "..."
         else
-            out += "$(argument.c_type?"")"
+            out += argument.c_type?""
             if !regexp.match ("\\*$", argument.c_type?"")
                 out += " "
             endif
-            out += "$(argument.c_name?)"
+            out += argument.c_name?""
             if !last ()
                 out += ", "
             endif
