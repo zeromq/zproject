@@ -266,6 +266,12 @@ TestCase {
 
 .endif
 .#
+.if !file.exists ("bindings/qml/.gitignore")
+.echo "Generating bindings/qml/.gitignore..."
+.output "bindings/qml/.gitignore"
+build/
+.endif
+.#
 .if !file.exists ("bindings/qml/src/qmldir")
 .echo "Generating bindings/qml/src/qmldir..."
 .output "bindings/qml/src/qmldir"
