@@ -1,3 +1,5 @@
+.#  Only build bindings if there is at least one API model
+.if count (class, defined (class.api))
 .template 0
 #  Generate minimal QML language bindings
 #
@@ -9,8 +11,8 @@ if !file.exists ("bindings/qml/src")
    directory.create("bindings/qml/src")
 endif
 
-if !file.exists ("bindings/qml/qml")
-   directory.create("bindings/qml/qml")
+if !file.exists ("bindings/qml/src/qml")
+   directory.create("bindings/qml/src/qml")
 endif
 
 if !file.exists ("bindings/qml/test")
@@ -111,7 +113,7 @@ $(project.GENERATED_WARNING_HEADER:)
 
 #include "$(class.QmlName:).h"
 
-static QObject* $(class.QmlName:)::qmlAttachedProperties(QObject* object) {
+QObject* $(class.QmlName:)::qmlAttachedProperties(QObject* object) {
     return new $(class.QmlName:)Attached(object);
 }
 
@@ -195,7 +197,7 @@ $(argument.name)\
 
     //  $(method.description:no,block)
     $(class.QmlName:) *\
-$(string.replace (method.name, "new|make_new"):camel) ($(qml_method_arguments (method))) {
+$(string.replace (method.name, "new|construct"):camel) ($(qml_method_arguments (method))) {
         $(class.QmlName:) *qmlSelf = new $(class.QmlName:) ();
         qmlSelf->self = $(class.c_name:)_$(method.c_name) (\
 .   for method.argument where !defined (argument.variadic)
@@ -215,7 +217,7 @@ $(argument.name)\
 .   if !regexp.match ("\\*$", method->return.c_type?"")
  \
 .   endif
-$(method.name:camel) (QmlZyre *qmlSelf\
+$(string.replace (method.name, "destroy|destruct"):camel) ($(class.QmlName) *qmlSelf\
 $(qml_method_arguments (method))) {
         return $(class.c_name:)_$(method.c_name) (&qmlSelf->self\
 .       if count (method.argument) > 1
@@ -264,6 +266,12 @@ TestCase {
 
 .endif
 .#
+.if !file.exists ("bindings/qml/.gitignore")
+.echo "Generating bindings/qml/.gitignore..."
+.output "bindings/qml/.gitignore"
+build/
+.endif
+.#
 .if !file.exists ("bindings/qml/src/qmldir")
 .echo "Generating bindings/qml/src/qmldir..."
 .output "bindings/qml/src/qmldir"
@@ -308,9 +316,19 @@ android {
 
 LIBS += -l$(project.name)
 
-HEADERS += $$SRCDIR/$(project.qml_soname:)_plugin.h \\
+HEADERS += \\
+  $$SRCDIR/$(project.qml_soname:)_plugin.h \\
 .for class where defined (class.api)
-           $$SRCDIR/$(class.QmlName).h \
+  $$SRCDIR/$(class.QmlName).h \
+.   if !last ()
+\\
+.   endif
+.endfor
+
+
+SOURCES += \\
+.for class where defined (class.api)
+  $$SRCDIR/$(class.QmlName).cpp \
 .   if !last ()
 \\
 .   endif
@@ -342,6 +360,13 @@ android {
   && $$QMAKE_COPY $$replace($$list($$quote($$VENDOR_PREFIX/lib/*.so)  $$DESTDIR), /, $$QMAKE_DIR_SEP)
 }
 #*/
+
+# Copy the qml implementation directory to the plugin folder
+copyqml.commands = $\(COPY_DIR) $$SRCDIR/qml $$DESTDIR
+first.depends = $\(first) copyqml
+export(first.depends)
+export(copyqml.commands)
+QMAKE_EXTRA_TARGETS += first copyqml
 
 $(project.GENERATED_WARNING_HEADER:)
 .#
@@ -528,4 +553,5 @@ may need to delete that directory to trigger a clean build.
 ```
 $(project.GENERATED_WARNING_HEADER:)
 ```
+.endif
 .#
