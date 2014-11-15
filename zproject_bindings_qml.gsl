@@ -27,17 +27,32 @@ for class where defined (class.api)
     class.QmlName = "Qml$(class.c_name:Pascal)"
 endfor
 
-# A function for constructng the string for a method signature in a QML C header
+function resolve_qml_container (container)
+    my.container.qmlName = "qml$(my.container.name:Pascal)"
+    my.container.qmlType = my.container.c_type
+    
+    if my.container.type = "string" & !my.container.by_reference
+        my.container.qmlType = "const QString &"
+        my.container.fromQmlPass = my.container.qmlName + ".toUtf8().data()"
+        my.container.toQmlPassPre = "QString("
+        my.container.toQmlPassPost = ")"
+    else
+        my.container.qmlName = my.container.c_name
+    endif
+endfunction
+
+# A function for constructng the string for a string of arguments in a QML C header
 function qml_method_arguments (method)
     my.problematic = 0
     my.out = ""
     for my.method.argument where !defined (argument.variadic)
+        resolve_qml_container (argument)
         if !(defined (my.method.is_destructor) & first ())
-            my.out += argument.c_type?""
-            if !regexp.match ("\\*$", argument.c_type?"")
+            my.out += argument.qmlType
+            if !regexp.match ("[\\*&]$", argument.c_type?"")
                 my.out += " "
             endif
-            my.out += argument.c_name?""
+            my.out += argument.qmlName
         endif
         if !last ()
             my.out += ", "
@@ -49,13 +64,20 @@ function qml_method_arguments (method)
     return my.out
 endfunction
 
+# A function for constructng the string for a return type in a QML C header
+function qml_method_return_type (method)
+    resolve_qml_container (my.method->return)
+    my.out = "$(my.method->return.qmlType)"
+    if !regexp.match ("[\\*&]$", my.method->return.qmlType?"")
+        my.out += " "
+    endif
+    return my.out
+endfunction
+
 # A function for constructng the string for a method signature in a QML C header
 function qml_method_signature (method)
     my.problematic = 0
-    my.out = "$(my.method->return.c_type)"
-    if !regexp.match ("\\*$", my.method->return.c_type?"")
-        my.out += " "
-    endif
+    my.out = qml_method_return_type (my.method)
     my.out += "$(my.method.name:camel) ("
     my.args = qml_method_arguments (my.method)
     if my.args = "ERROR"
@@ -153,17 +175,17 @@ public slots:\
 
     //  $(method.description:no,block)
     $(qml_method_signature (method)) {
-        return $(class.c_name:)_$(method.c_name) (self\
+        return $(method->return.toQmlPassPre?"")$(class.c_name:)_$(method.c_name) (self\
 .       if count (method.argument)
 , \
 .       endif
 .   for method.argument where !defined (argument.variadic)
-$(argument.name)\
+$(argument.fromQmlPass?argument.qmlName)\
 .       if !last ()
 , \
 .       endif
 .   endfor
-);
+)$(method->return.toQmlPassPost?"");
     };
 .endfor
 };
@@ -183,14 +205,14 @@ public slots:\
 
     //  $(method.description:no,block)
     $(qml_method_signature (method)) {
-        return $(class.c_name:)_$(method.c_name) (\
+        return $(method->return.toQmlPassPre?"")$(class.c_name:)_$(method.c_name) (\
 .   for method.argument where !defined (argument.variadic)
-$(argument.name)\
+$(argument.fromQmlPass?argument.qmlName)\
 .       if !last ()
 , \
 .       endif
 .   endfor
-);
+)$(method->return.toQmlPassPost?"");
     };
 .endfor
 .for class.constructor as method where defined (qml_method_signature (method))
@@ -201,7 +223,7 @@ $(string.replace (method.name, "new|construct"):camel) ($(qml_method_arguments (
         $(class.QmlName:) *qmlSelf = new $(class.QmlName:) ();
         qmlSelf->self = $(class.c_name:)_$(method.c_name) (\
 .   for method.argument where !defined (argument.variadic)
-$(argument.name)\
+$(argument.fromQmlPass?argument.qmlName)\
 .       if !last ()
 , \
 .       endif
@@ -213,25 +235,22 @@ $(argument.name)\
 .for class.destructor as method where defined (qml_method_signature (method))
 
     //  $(method.description:no,block)
-    $(method->return.c_type:)\
-.   if !regexp.match ("\\*$", method->return.c_type?"")
- \
-.   endif
+    $(qml_method_return_type (method))
 $(string.replace (method.name, "destroy|destruct"):camel) ($(class.QmlName) *qmlSelf\
 $(qml_method_arguments (method))) {
-        return $(class.c_name:)_$(method.c_name) (&qmlSelf->self\
+        return $(method->return.toQmlPassPre?"")$(class.c_name:)_$(method.c_name) (&qmlSelf->self\
 .       if count (method.argument) > 1
 , \
 .       endif
 .   for method.argument where !defined (argument.variadic)
 .       if !first ()
-$(argument.name)\
+$(argument.fromQmlPass?argument.qmlName)\
 .       endif
 .       if !last ()
 , \
 .       endif
 .   endfor
-);
+)$(method->return.toQmlPassPost?"");
     };
 .endfor
 };
