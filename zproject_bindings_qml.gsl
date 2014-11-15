@@ -217,7 +217,7 @@ $(argument.name)\
 .   if !regexp.match ("\\*$", method->return.c_type?"")
  \
 .   endif
-$(method.name:camel) (QmlZyre *qmlSelf\
+$(method.name:camel) ($(class.QmlName) *qmlSelf\
 $(qml_method_arguments (method))) {
         return $(class.c_name:)_$(method.c_name) (&qmlSelf->self\
 .       if count (method.argument) > 1
