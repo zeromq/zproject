@@ -110,18 +110,7 @@ src_$(project.prefix)_selftest_CPPFLAGS = \\
     \${src_lib$(project.prefix)_la_CFLAGS}
 
 src_$(project.prefix)_selftest_LDADD = \\
-.if count (use) > 0
-    src/lib$(project.prefix).la \\
-.else
     src/lib$(project.prefix).la
-.endif
-.for use
-.   if last()
-    \${$(use.project)_LIBS}
-.   else
-    \${$(use.project)_LIBS} \\
-.endif
-.endfor
 
 src_$(project.prefix)_selftest_SOURCES = src/$(project.prefix)_selftest.c
 
