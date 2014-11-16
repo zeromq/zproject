@@ -87,9 +87,9 @@ function resolve_c_container (container)
 endfunction
 
 # Resolve missing or implicit details in a c method model
-function resolve_c_method (method)
+function resolve_c_method (method, default_description)
     my.method.c_name ?= "$(my.method.name:c)"
-    my.method.description ?= "$(string.trim (my.method.?):left)"
+    my.method.description ?= "$(string.trim (my.method.?my.default_description):left)"
     my.method.singleton ?= "0"
     my.method.singleton = conv.number (my.method.singleton)
     
@@ -120,7 +120,7 @@ function resolve_c_class (class)
     endif
     
     for my.class.method
-        resolve_c_method (method)
+        resolve_c_method (method, "")
     endfor
     for my.class.constructor as method
         method.name ?= "new"
@@ -131,7 +131,7 @@ function resolve_c_class (class)
             ret.type = my.class.c_name
             move ret before method->return # Move to first slot 
         endnew
-        resolve_c_method (method)
+        resolve_c_method (method, "Create a new $(my.class.c_name).")
     endfor
     for my.class.destructor as method
         method.name ?= "destroy"
@@ -144,7 +144,7 @@ function resolve_c_class (class)
             arg.by_reference = "1"
             move arg before method->argument # Move to first slot 
         endnew
-        resolve_c_method (method)
+        resolve_c_method (method, "Destroy the $(my.class.c_name).")
     endfor
 endfunction
 
