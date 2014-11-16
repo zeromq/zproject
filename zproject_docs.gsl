@@ -137,7 +137,7 @@ SYNOPSIS
 ----
 #include <$(project.name).h>
 
-cc ['flags'] 'files' -lzmq -l$(project.name) ['libraries']
+cc ['flags'] 'files' -l$(project.prefix) ['libraries']
 ----
 
 

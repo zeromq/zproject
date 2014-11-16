@@ -18,25 +18,21 @@ Name: lib$(project.prefix)
 Description: $(project.description:)
 Version: @VERSION@
 
-.if (count (use) > 0)
+.if count (use)
 Requires:\
-.for use
-.min_version = "$(min_major?'0').$(min_minor?'0').$(min_patch?'0')"
-.project_require = ""
-.  if (min_version <> '0.0.0')
-.project_require = "lib$(use.project) >= $(min_version)"
-.  else
-.project_require = "lib$(use.project)"
-.  endif
-.  if !last()
-$(project_require) \
-.  else
-$(project_require)
-.  endif
-.endfor
+.   for use
+lib$(use.prefix)\
+.       if (use.min_version <> '0.0.0')
+ >= $(use.min_version)\
+.       endif
+.       if !last()
+ \
+.       endif
+.   endfor
+
 .endif
 
-Libs: -L${libdir} -l$(project.name)
+Libs: -L${libdir} -l$(project.prefix)
 Cflags: -I${includedir}
 
 $(project.GENERATED_WARNING_HEADER:)

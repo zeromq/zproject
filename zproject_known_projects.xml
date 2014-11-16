@@ -1,0 +1,22 @@
+
+<known_projects>
+    
+    <use project = "zmq"
+        repository = "https://github.com/zeromq/libzmq"
+        test = "zmq_init"
+        cmake_name = "ZeroMQ" />
+    
+    <use project = "czmq"
+        repository = "https://github.com/zeromq/czmq"
+        test = "zctx_test"
+        cmake_name = "CZMQ">
+        <use project = "zmq" min_major = "2" min_minor = "2" />
+    </use>
+    
+    <use project = "zyre"
+        repository = "https://github.com/zeromq/zyre"
+        test = "zyre_test">
+        <use project = "czmq" min_major = "3" />
+    </use>
+    
+</known_projects>

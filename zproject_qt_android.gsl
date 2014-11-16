@@ -35,7 +35,7 @@ mkdir -p "${cache}"
 ##
 # Make sure $(use.project) is built and copy the prefix
 
-(android_build_verify_so "lib$(use.project).so" &> /dev/null) || {
+(android_build_verify_so "lib$(use.prefix).so" &> /dev/null) || {
     # Use a default value assuming the $(use.project) project sits alongside this one
     test -z "$$(USE.PROJECT)_ROOT" && $(USE.PROJECT)_ROOT="\$(cd ../../../$(use.project) && pwd)"
     
@@ -56,7 +56,7 @@ mkdir -p "${cache}"
 
 (android_build_verify_so "lib$(project.prefix).so"\
 .for use where !defined (use.implied)
- "lib$(use.project).so"\
+ "lib$(use.prefix).so"\
 .endfor
  &> /dev/null) || {
     rm -rf "${cache}/$(project.name)"
@@ -76,11 +76,11 @@ mkdir -p "${cache}"
 # Verify shared libraries in prefix
 
 .for use
-android_build_verify_so "lib$(use.project).so"
+android_build_verify_so "lib$(use.prefix).so"
 .endfor
 android_build_verify_so "lib$(project.prefix).so"\
 .for use where !defined (use.implied)
- "lib$(use.project).so"\
+ "lib$(use.prefix).so"\
 .endfor
 
 

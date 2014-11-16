@@ -39,18 +39,14 @@
     <version major = "1" minor = "0" patch = "0" />
 
     <!--
-        Specify which other projects this depends on; these projects must be
-        known by zproject, and you do not have to specify subdependencies.
-        Known projects are zyre, czmq, and zmq.
+        Specify which other projects this depends on.
+        These projects must be known by zproject, and the list of
+        known projects is maintained in the zproject_known_projects.xml model.
+        You need not specify subdependencies if they are implied.
     <use project = "zyre" min_major= "1" min_minor = "1" min_patch = "0" />
     -->
 
-    <!-- 
-        The pkg-config based dependencies are added to _CPPFLAGS and _LDADD
-    <package_dependency name="zmq" pkg_name="libzmq" for_all="1" />
-    -->
-
-    <!-- Header Files 
+    <!-- Header Files
          name := The name the header file to include without file ending
     <header name = "myproject_prelude" />
     -->
@@ -99,6 +95,7 @@
     -->
     <bin name = "zproject.gsl" />
     <bin name = "zproject_projects.gsl" />
+    <bin name = "zproject_known_projects.xml" />
     <bin name = "zproject_class_api.gsl" />
     <bin name = "zproject_mkman" />
     
