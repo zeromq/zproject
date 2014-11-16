@@ -89,6 +89,17 @@ src_lib$(project.prefix)_la_LDFLAGS += \\
     -avoid-version
 endif
 
+.if count (use) > 0
+src_lib$(project.prefix)_la_LDFLAGS += \\
+.for use
+.   if last()
+    \${$(use.project)_LIBS}
+.   else
+    \${$(use.project)_LIBS} \\
+.   endif
+.endfor
+.endif
+
 .for project.main
 bin_PROGRAMS += src/$(main.name)
 .endfor
