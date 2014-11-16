@@ -1,6 +1,8 @@
 
 <known_projects>
     
+    <!-- ZeroMQ Projects -->
+    
     <use project = "zmq"
         repository = "https://github.com/zeromq/libzmq"
         test = "zmq_init"
@@ -18,5 +20,27 @@
         test = "zyre_test">
         <use project = "czmq" min_major = "3" />
     </use>
+    
+    <!-- Edgenet Projects -->
+    
+    <use project = "drops"
+        repository = "https://github.com/edgenet/drops"
+        test = "drops_test">
+        <use project = "czmq" />
+        <use project = "zyre" />
+    </use>
+    
+    <use project = "hydra"
+        repository = "https://github.com/edgenet/hydra"
+        test = "hydra_server_test">
+        <use project = "czmq" />
+    </use>
+    
+    <!-- Various known third-party projects
+        (If you're unsure of where a project belongs, add it here) -->
+    
+    <use project = "jansson"
+        repository = "https://github.com/akheron/jansson"
+        test = "json_object" />
     
 </known_projects>
