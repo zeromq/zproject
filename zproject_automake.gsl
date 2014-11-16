@@ -21,6 +21,19 @@ AM_CPPFLAGS = \\
 .endfor
     -I\$(srcdir)/include
 
+.if count (use) > 0
+project_libs = \\
+.else
+project_libs =
+.endif
+.for use
+.   if last()
+    \${$(use.project)_LIBS}
+.   else
+    \${$(use.project)_LIBS} \\
+.   endif
+.endfor
+
 SUBDIRS =
 .if count (class) > 0
 SUBDIRS += doc
@@ -89,19 +102,24 @@ src_lib$(project.prefix)_la_LDFLAGS += \\
     -avoid-version
 endif
 
-.if count (use) > 0
-src_lib$(project.prefix)_la_LIBADD = \\
-.for use
-.   if last()
-    \${$(use.project)_LIBS}
-.   else
-    \${$(use.project)_LIBS} \\
-.   endif
-.endfor
-.endif
+src_lib$(project.prefix)_la_LIBADD = ${project_libs}
 
 .for project.main
 bin_PROGRAMS += src/$(main.name)
+
+src_$(main.name)_CPPFLAGS = \\
+    ${AM_CPPFLAGS}
+
+src_$(main.name)_LDADD = \\
+.if count (use) > 0
+    src/lib$(project.prefix).la \\
+.else
+    ${project_libs} \\
+    src/lib$(project.prefix).la
+.endif
+
+src_$(name)_SOURCES = src/$(name).c
+
 .endfor
 
 check_PROGRAMS += src/$(project.prefix)_selftest
@@ -110,27 +128,15 @@ src_$(project.prefix)_selftest_CPPFLAGS = \\
     \${src_lib$(project.prefix)_la_CFLAGS}
 
 src_$(project.prefix)_selftest_LDADD = \\
-    src/lib$(project.prefix).la
-
-src_$(project.prefix)_selftest_SOURCES = src/$(project.prefix)_selftest.c
-
-.for project.main
-src_$(name)_SOURCES = src/$(name).c
-src_$(name)_LDADD = \\
 .if count (use) > 0
     src/lib$(project.prefix).la \\
+    ${project_libs}
 .else
     src/lib$(project.prefix).la
 .endif
-.for use
-.   if last()
-    \${$(use.project)_LIBS}
-.   else
-    \${$(use.project)_LIBS} \\
-.endif
-.endfor
 
-.endfor
+src_$(project.prefix)_selftest_SOURCES = src/$(project.prefix)_selftest.c
+
 TESTS = src/$(project.prefix)_selftest
 .else
 noinst_LTLIBRARIES = 
