@@ -333,7 +333,7 @@ android {
   QMAKE_INCDIR += $$VENDOR_PREFIX/include
 }
 
-LIBS += -l$(project.name)
+LIBS += -l$(project.prefix)
 
 HEADERS += \\
   $$SRCDIR/$(project.qml_soname:)_plugin.h \\
