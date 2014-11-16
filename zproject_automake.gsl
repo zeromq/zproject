@@ -90,7 +90,7 @@ src_lib$(project.prefix)_la_LDFLAGS += \\
 endif
 
 .if count (use) > 0
-src_lib$(project.prefix)_la_LDFLAGS += \\
+src_lib$(project.prefix)_la_LIBADD = \\
 .for use
 .   if last()
     \${$(use.project)_LIBS}
