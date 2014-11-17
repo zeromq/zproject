@@ -63,6 +63,14 @@ $(project.GENERATED_WARNING_HEADER:)
 .output "src/Makemodule.am"
 $(project.GENERATED_WARNING_HEADER:)
 .if (count (class) > 0)
+program_libs = \\
+.if count (use) > 0
+    src/lib$(project.prefix).la \\
+    ${project_libs}
+.else
+    src/lib$(project.prefix).la
+.endif
+
 lib_LTLIBRARIES += src/lib$(project.prefix).la
 
 pkgconfig_DATA = src/lib$(project.prefix).pc
@@ -89,8 +97,7 @@ src_lib$(project.prefix)_la_SOURCES = \\
 .endfor
     src/platform.h
 
-src_lib$(project.prefix)_la_CPPFLAGS = \\
-    ${AM_CPPFLAGS}
+src_lib$(project.prefix)_la_CPPFLAGS = ${AM_CPPFLAGS}
 
 src_lib$(project.prefix)_la_LDFLAGS = \\
     -version-info @LTVER@ \\
@@ -107,16 +114,9 @@ src_lib$(project.prefix)_la_LIBADD = ${project_libs}
 .for project.main
 bin_PROGRAMS += src/$(main.name)
 
-src_$(main.name)_CPPFLAGS = \\
-    ${AM_CPPFLAGS}
+src_$(main.name)_CPPFLAGS = ${AM_CPPFLAGS}
 
-src_$(main.name)_LDADD = \\
-.if count (use) > 0
-    src/lib$(project.prefix).la \\
-.else
-    ${project_libs} \\
-    src/lib$(project.prefix).la
-.endif
+src_$(main.name)_LDADD = ${program_libs}
 
 src_$(name)_SOURCES = src/$(name).c
 
@@ -124,16 +124,9 @@ src_$(name)_SOURCES = src/$(name).c
 
 check_PROGRAMS += src/$(project.prefix)_selftest
 
-src_$(project.prefix)_selftest_CPPFLAGS = \\
-    \${src_lib$(project.prefix)_la_CFLAGS}
+src_$(project.prefix)_selftest_CPPFLAGS = \${src_lib$(project.prefix)_la_CFLAGS}
 
-src_$(project.prefix)_selftest_LDADD = \\
-.if count (use) > 0
-    src/lib$(project.prefix).la \\
-    ${project_libs}
-.else
-    src/lib$(project.prefix).la
-.endif
+src_$(project.prefix)_selftest_LDADD = ${program_libs}
 
 src_$(project.prefix)_selftest_SOURCES = src/$(project.prefix)_selftest.c
 
