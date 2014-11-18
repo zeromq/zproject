@@ -39,6 +39,7 @@ project.generated_warning_header ?= "\
 .gsl from "zproject_autoconf.gsl"
 .gsl from "zproject_automake.gsl"
 .gsl from "zproject_bindings_qml.gsl"
+.gsl from "zproject_bindings_ruby.gsl"
 .gsl from "zproject_ci.gsl"
 .gsl from "zproject_class.gsl"
 .gsl from "zproject_cmake.gsl"

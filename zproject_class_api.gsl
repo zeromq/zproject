@@ -109,6 +109,7 @@ endfunction
 # Resolve missing or implicit details in a c class model
 function resolve_c_class (class)
     my.class.c_name ?= "$(my.class.name:c)"
+    my.class.description ?= "$(string.trim (my.class.?""):left)"
     
     if !count (my.class.constructor)
         new constructor to my.class
