@@ -16,7 +16,7 @@
         <method name = "has feature">
             Return true if the myclass has the given feature.
             <argument name = "feature" type = "string" />
-            <return type = "bool" />
+            <return type = "boolean" />
         </method>
         
         <method name = "sleep">
