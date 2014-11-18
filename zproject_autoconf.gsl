@@ -116,7 +116,7 @@ AC_SUBST(PACKAGE_VERSION)
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 #
 # lib$(project.prefix) -version-info
-LTVER="2:0:1"
+LTVER="$(project->version.major):$(project->version.minor):1"
 AC_SUBST(LTVER)
 
 # Capture c flags
