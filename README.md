@@ -245,7 +245,7 @@ This would cause the following `@interface` to be generated inside of `include/m
         myclass_destroy (myclass_t **self_p);
 
     //  Return true if the myclass has the given feature.
-    MYPROJECT_EXPORT bool_t *
+    MYPROJECT_EXPORT bool
         myclass_has_feature (myclass_t *self, const char *feature);
 
     //  Put the myclass to sleep for the given number of milliseconds.
