@@ -62,8 +62,8 @@
     <!--
         Main programs built by the project
                  use private = "1" for internal tools
-    <main name = "progname">Exported public tool</class>
-    <main name = "progname" private = "1">Internal tool</class>
+    <main name = "progname">Exported public tool</main>
+    <main name = "progname" private = "1">Internal tool</main>
     -->
 
     <!-- 
