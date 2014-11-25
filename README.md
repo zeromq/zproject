@@ -129,8 +129,8 @@ The following snippet is the `project.xml` from zproject:
     <!--
         Main programs built by the project
                  use private = "1" for internal tools
-    <main name = "progname">Exported public tool</class>
-    <main name = "progname" private = "1">Internal tool</class>
+    <main name = "progname">Exported public tool</main>
+    <main name = "progname" private = "1">Internal tool</main>
     -->
 
     <!-- 
@@ -287,7 +287,7 @@ The following will install the `zproject-*.gsl` files to `/usr/local/bin` where 
 <A name="toc2-270" title="Generate build environment in your project" />
 ## Generate build environment in your project
 
-Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly.
+Copy the `project.xml`, `license.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly.
 
 Run `./generate.sh`
 
