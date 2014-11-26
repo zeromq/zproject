@@ -1,4 +1,3 @@
-
 <known_projects>
     
     <!-- ZeroMQ Projects -->
@@ -43,4 +42,8 @@
         repository = "https://github.com/akheron/jansson"
         test = "json_object" />
     
+    <use project = "sodium"
+        repository = "https://github.com/jedisct1/libsodium"
+        test = "sodium_init" />
+
 </known_projects>
