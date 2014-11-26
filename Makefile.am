@@ -8,6 +8,8 @@ ACLOCAL_AMFLAGS = -I config
 AM_CPPFLAGS = \
     -I$(srcdir)/include
 
+project_libs =
+
 SUBDIRS =
 
 DIST_SUBDIRS =
