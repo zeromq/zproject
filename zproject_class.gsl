@@ -100,10 +100,10 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 .endfor
 
 //  Public API classes
-.for project.header
+.for header where !defined (header.private)
 #include "$(header.name).h"
 .endfor
-.for project.class where !defined (class.private) & class.c_name <> "$(project.name)"
+.for class where !defined (class.private) & class.c_name <> "$(project.name)"
 #include "$(class.c_name).h"
 .endfor
 
@@ -177,6 +177,9 @@ $(project.GENERATED_WARNING_HEADER:)
 //  Internal API
 .for class where defined (class.private)
 #include "$(class.c_name).h"
+.endfor
+.for header where defined (header.private)
+#include "$(header.name).h"
 .endfor
 
 .for constant where defined (constant.private)

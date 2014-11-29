@@ -79,7 +79,7 @@ include_HEADERS = \\
 .if count (class, class.name = project.name) = 0
     include/$(project.name).h \\
 .endif
-.for header
+.for header where !defined (header.private)
     include/$(name).h \\
 .endfor
 .for class where !defined (class.private)
