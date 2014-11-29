@@ -255,7 +255,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .if count (class, class.name = project.name) = 0
       <File RelativePath="..\\..\\..\\..\\include\\$(project.name).h" />
 .endif
-.for header
+.for header where !defined (header.private)
       <File RelativePath="..\\..\\..\\..\\include\\$(name).h" />
 .endfor
 .for extra

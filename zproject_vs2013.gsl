@@ -89,7 +89,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .if count (class, class.name = project.name) = 0
     <ClInclude Include="..\\..\\..\\..\\include\\$(project.name).h" />
 .endif
-.for header
+.for header where !defined (header.private)
     <ClInclude Include="..\\..\\..\\..\\include\\$(name).h" />
 .endfor
 .for extra
@@ -142,7 +142,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Filter>include</Filter>
     </ClInclude>
 .endif
-.for header
+.for header where !defined (header.private)
     <ClInclude Include="..\\..\\..\\..\\include\\$(name).h">
       <Filter>include</Filter>
     </ClInclude>
