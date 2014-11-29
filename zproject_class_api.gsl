@@ -147,11 +147,16 @@ function resolve_c_class (class)
         endnew
         resolve_c_method (method, "Destroy the $(my.class.c_name).")
     endfor
+    
+    for my.class.constant
+        constant.description ?= "$(string.trim (constant.?""):left)"
+        resolve_c_container (constant)
+    endfor
 endfunction
 
 # Resolve C-related properties of the class api models here because
 # higher-level language bindings will depend on them.
-for project.class 
+for project.class
     if defined (class.api)
         resolve_c_class (class)
     else

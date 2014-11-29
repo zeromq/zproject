@@ -4,6 +4,8 @@
         
         <include filename = "../license.xml" />
         
+        <constant name = "default port" value = "8080">registered with IANA</constant>
+        
         <!-- Note: If no <constructor> is declared, an implicit one is created. -->
         <constructor>
             Create a new myclass with the given name.
