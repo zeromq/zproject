@@ -11,19 +11,19 @@
 
 **<a href="#toc2-46">Sample configuration</a>**
 
-**<a href="#toc2-172">Sample API model</a>**
+**<a href="#toc2-53">Sample API model</a>**
 
-**<a href="#toc2-253">Installation</a>**
-&emsp;<a href="#toc3-262">autotools</a>
+**<a href="#toc2-94">Installation</a>**
+&emsp;<a href="#toc3-103">autotools</a>
 
-**<a href="#toc2-272">Generate build environment in your project</a>**
+**<a href="#toc2-113">Generate build environment in your project</a>**
 
-**<a href="#toc2-279">Ownership and License</a>**
+**<a href="#toc2-120">Ownership and License</a>**
 
-**<a href="#toc2-288">Removal</a>**
-&emsp;<a href="#toc3-291">autotools</a>
-&emsp;<a href="#toc3-296">Hints to Contributors</a>
-&emsp;<a href="#toc3-303">This Document</a>
+**<a href="#toc2-129">Removal</a>**
+&emsp;<a href="#toc3-132">autotools</a>
+&emsp;<a href="#toc3-137">Hints to Contributors</a>
+&emsp;<a href="#toc3-144">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -186,7 +186,7 @@ The following snippet is the `project.xml` from zproject:
     <bin name = "zproject_vs2013.gsl" />
 </project>
 
-<A name="toc2-172" title="Sample API model" />
+<A name="toc2-53" title="Sample API model" />
 ## Sample API model
 
 The zproject scripts can also optionally generate the `@interface` in your class headers from an API model, in addition to a host of language bindings.  To opt-in to this behavior, just make a model to the `api` directory of your project.  For example, if your `project.xml` contains `<class name = "myclass"/>`, you could create the following `api/myclass.xml` file:
@@ -267,7 +267,7 @@ Language bindings will also be generated in the following languages:
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
-<A name="toc2-253" title="Installation" />
+<A name="toc2-94" title="Installation" />
 ## Installation
 
 Before you start you'll need to install the code generator GSL (https://github.com/imatix/gsl) on your system. Then execute the generate.sh script to generate the build environment files for zproject.
@@ -276,7 +276,7 @@ Before you start you'll need to install the code generator GSL (https://github.c
 
 After that proceed with your favorite build environment. (Currently only autotools!)
 
-<A name="toc3-262" title="autotools" />
+<A name="toc3-103" title="autotools" />
 ### autotools
 
 The following will install the `zproject-*.gsl` files to `/usr/local/bin` where gsl will find them if you use zproject in your project.
@@ -286,14 +286,14 @@ The following will install the `zproject-*.gsl` files to `/usr/local/bin` where 
     make
     make install
 
-<A name="toc2-272" title="Generate build environment in your project" />
+<A name="toc2-113" title="Generate build environment in your project" />
 ## Generate build environment in your project
 
-Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly.
+Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly. You'll also need a license file. To get started you can copy `license.xml` from zproject and change the license to whatever you like. The text in the `license.xml` will be placed on every header and source file. Thus make sure not to insert the hole license but a appropriate disclaimer.
 
 Run `./generate.sh`
 
-<A name="toc2-279" title="Ownership and License" />
+<A name="toc2-120" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -302,22 +302,22 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc2-288" title="Removal" />
+<A name="toc2-129" title="Removal" />
 ## Removal
 
-<A name="toc3-291" title="autotools" />
+<A name="toc3-132" title="autotools" />
 ### autotools
 
     make uninstall
 
-<A name="toc3-296" title="Hints to Contributors" />
+<A name="toc3-137" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Before you commit code please make sure that the project model hides all details of backend scripts.
 
 For example don't make a user enter a header file because autoconf needs it to do AC_CHECK_LIB.
 
-<A name="toc3-303" title="This Document" />
+<A name="toc3-144" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).
