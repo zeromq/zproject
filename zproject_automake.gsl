@@ -183,4 +183,8 @@ debug: src/$(project.prefix)_selftest
 \tlibtool --mode=execute gdb -q \\
 \t\t$\(srcdir)/src/$(project.prefix)_selftest
 
+# Run the selftest binary with verbose switch for tracing
+animate: src/$(project.prefix)_selftest
+\tlibtool --mode=execute $\(srcdir)/src/$(project.prefix)_selftest -v
+
 $(project.GENERATED_WARNING_HEADER:)
