@@ -105,7 +105,7 @@ The following will install the `zproject-*.gsl` files to `/usr/local/bin` where 
 
 ## Generate build environment in your project
 
-Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly.
+Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly. You'll also need a license file. To get started you can copy `license.xml` from zproject and change the license to whatever you like. The text in the `license.xml` will be placed on every header and source file. Thus make sure not to insert the hole license but a appropriate disclaimer.
 
 Run `./generate.sh`
 
