@@ -33,7 +33,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .endfor
 MAN1 =$(man1)
 MAN3 =$(man3)
-MAN7 = $\(srcdir)/$(project.manpage)
+MAN7 = $(project.manpage)
 MAN_DOC = $\(MAN1) $\(MAN3) $\(MAN7)
 
 MAN_TXT = $\(MAN1:%.1=%.txt)
