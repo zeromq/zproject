@@ -173,18 +173,18 @@ code:
 
 # Run the selftest binary under valgrind to check for memory leaks
 memcheck: src/$(project.prefix)_selftest
-\tlibtool --mode=execute valgrind --tool=memcheck \\
+\t$\(LIBTOOL) --mode=execute valgrind --tool=memcheck \\
 \t\t--leak-check=full --show-reachable=yes --error-exitcode=1 \\
 \t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
 \t\t$\(srcdir)/src/$(project.prefix)_selftest
 
 # Run the selftest binary under gdb for debugging
 debug: src/$(project.prefix)_selftest
-\tlibtool --mode=execute gdb -q \\
+\t$\(LIBTOOL) --mode=execute gdb -q \\
 \t\t$\(srcdir)/src/$(project.prefix)_selftest
 
 # Run the selftest binary with verbose switch for tracing
 animate: src/$(project.prefix)_selftest
-\tlibtool --mode=execute $\(srcdir)/src/$(project.prefix)_selftest -v
+\t$\(LIBTOOL) --mode=execute $\(srcdir)/src/$(project.prefix)_selftest -v
 
 $(project.GENERATED_WARNING_HEADER:)
