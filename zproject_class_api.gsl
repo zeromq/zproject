@@ -149,6 +149,9 @@ function resolve_c_class (class)
     endfor
     
     for my.class.constant
+        if constant.?type = 'string'
+            constant.value = '"' + constant.value + '"'
+        endif
         constant.description ?= "$(string.trim (constant.?""):left)"
         resolve_c_container (constant)
     endfor
