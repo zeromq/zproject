@@ -66,6 +66,11 @@
     <main name = "progname" private = "1">Internal tool</main>
     -->
 
+    <!--
+        Configuration files to be installed by the project
+    <config name = "configname">Configuration file description</config>
+    -->
+
     <!-- 
         Models that we build using GSL. 
         This will generate a 'make code' target to build the models.
