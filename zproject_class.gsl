@@ -272,15 +272,15 @@ $(PROJECT.PREFIX)_EXPORT int
 @end
 */
 
-//  Structure of our class
-
-struct _$(class.c_name)_t {
-};
-
 #include "../include/$(project.name).h"
 .   if (count (class, defined (class.private)) > 0)
 #include "$(project.prefix)_classes.h"
 .   endif
+
+//  Structure of our class
+
+struct _$(class.c_name)_t {
+};
 
 //  --------------------------------------------------------------------------
 //  Create a new $(class.c_name)
