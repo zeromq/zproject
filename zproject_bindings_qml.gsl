@@ -52,13 +52,23 @@ function resolve_qml_container (container)
         my.container.qmlReturnPost = ")"
     elsif my.container.type = "json" # from the jansson library, as a string
         my.container.qmlArgType = "const QString &"
-        my.container.qmlArgPass = "json_loads (" + my.container.qmlName + ".toUtf8().data(), 0)"
+        my.container.qmlArgPass = "json_loads (" + my.container.qmlName + ".toUtf8().data(), 0, NULL)"
         my.container.qmlReturnType = "const QString"
         my.container.qmlReturnPre = "char *retStr_ = json_dumps ("
         my.container.qmlReturnPost = ", JSON_ENCODE_ANY);\n" + \
-        "        QString retQStr_ = QString (retStr_);\n" + \
-        "        free (retStr_);\n" + \
-        "        return retQStr_"
+        "    QString retQStr_ = QString (retStr_);\n" + \
+        "    free (retStr_);\n" + \
+        "    return retQStr_"
+    elsif count (project.class, defined (class.QmlName) & (my.container.type = class.c_name))
+        for project.class where (defined (class.QmlName) & (my.container.type = class.c_name))
+            my.container.qmlArgType = "$(class.QmlName) *"
+            my.container.qmlArgPass = my.container.qmlName + "->self"
+            my.container.qmlReturnPre = "$(class.QmlName) *retQ_ = new $(class.QmlName) ();\n" + \
+            "    retQ_->self = "
+            my.container.qmlReturnPost = ";\n" + \
+            "    return retQ_"
+            my.container.qmlReturnType = "$(class.QmlName) *"
+        endfor
     endif
 endfunction
 
@@ -95,11 +105,33 @@ function qml_method_return_type (method)
     return my.out
 endfunction
 
-# A function for constructing the string for a method signature in a QML C header
-function qml_method_signature (method)
+# A function for constructing the string for a method signature in QML C++ file
+function qml_method_signature (method, in_header)
     my.problematic = 0
     my.out = qml_method_return_type (my.method)
-    my.out += "$(my.method.name:camel) ("
+    if !my.in_header
+        my.out += "$(class.QmlName:)"
+        if my.method.singleton
+            my.out += "Attached"
+        endif
+        my.out += "::"
+    endif
+    
+    if defined (method.is_constructor)
+        my.out += "$(string.replace (method.name, "new|construct"):camel)"
+    elsif defined (method.is_destructor)
+        my.out += "$(string.replace (method.name, "destroy|destruct"):camel)"
+    else
+        my.out += "$(my.method.name:camel)"
+    endif
+    my.out += " ("
+    
+    if defined (method.is_destructor)
+        my.out += "$(class.QmlName) *qmlSelf"
+        if !(qml_method_arguments (method) = "")
+            my.out += ", "
+        endif
+    endif
     my.args = qml_method_arguments (my.method)
     if my.args = "ERROR"
         my.problematic = 1
@@ -107,6 +139,7 @@ function qml_method_signature (method)
         my.out += my.args
     endif
     my.out += ")"
+    
     if my.problematic
         my.out = # undefined
     endif
@@ -121,8 +154,16 @@ endfunction
 $(project.GENERATED_WARNING_HEADER:)
 */
 
+#ifndef $(PROJECT.QML_SONAME)_PLUGIN_H
+#define $(PROJECT.QML_SONAME)_PLUGIN_H
+
 #include <QQmlExtensionPlugin>
 #include <qqml.h>
+
+.for class where defined (class.api)
+class $(class.QmlName:);
+class $(class.QmlName:)Attached;
+.endfor
 
 .for class where defined (class.api)
 #include "$(class.QmlName:).h"
@@ -143,6 +184,8 @@ public:
     };
 };
 
+#endif
+
 /*
 $(project.GENERATED_WARNING_HEADER:)
 */
@@ -156,9 +199,82 @@ $(project.GENERATED_WARNING_HEADER:)
 
 #include "$(class.QmlName:).h"
 
+.for class.method where !method.singleton & defined (qml_method_signature (method, 0))
+
+///
+//  $(method.description:no,block)
+$(qml_method_signature (method, 0)) {
+    $(method->return.qmlReturnPre)$(class.c_name:)_$(method.c_name) (self\
+.   if count (method.argument)
+, \
+.   endif
+.   for method.argument where !defined (argument.variadic)
+$(argument.qmlArgPass)\
+.       if !last ()
+, \
+.       endif
+.   endfor
+)$(method->return.qmlReturnPost);
+};
+.endfor
+
+
 QObject* $(class.QmlName:)::qmlAttachedProperties(QObject* object) {
     return new $(class.QmlName:)Attached(object);
 }
+
+.for class.method where method.singleton & defined (qml_method_signature (method, 0))
+
+///
+//  $(method.description:no,block)
+$(qml_method_signature (method, 0)) {
+    $(method->return.qmlReturnPre)$(class.c_name:)_$(method.c_name) (\
+.   for method.argument where !defined (argument.variadic)
+$(argument.qmlArgPass)\
+.       if !last ()
+, \
+.       endif
+.   endfor
+)$(method->return.qmlReturnPost);
+};
+.endfor
+.for class.constructor as method where defined (qml_method_signature (method, 0))
+
+///
+//  $(method.description:no,block)
+$(qml_method_signature (method, 0)) {
+    $(class.QmlName:) *qmlSelf = new $(class.QmlName:) ();
+    qmlSelf->self = $(class.c_name:)_$(method.c_name) (\
+.   for method.argument where !defined (argument.variadic)
+$(argument.qmlArgPass)\
+.       if !last ()
+, \
+.       endif
+.   endfor
+);
+    return qmlSelf;
+};
+.endfor
+.for class.destructor as method where defined (qml_method_signature (method, 0))
+
+///
+//  $(method.description:no,block)
+$(qml_method_signature (method, 0)) {
+    $(method->return.qmlReturnPre)$(class.c_name:)_$(method.c_name) (&qmlSelf->self\
+.       if count (method.argument) > 1
+, \
+.       endif
+.   for method.argument where !defined (argument.variadic)
+.       if !first ()
+$(argument.qmlArgPass)\
+.       endif
+.       if !last ()
+, \
+.       endif
+.   endfor
+)$(method->return.qmlReturnPost);
+};
+.endfor
 
 /*
 $(project.GENERATED_WARNING_HEADER:)
@@ -176,9 +292,8 @@ $(project.GENERATED_WARNING_HEADER:)
 #include <QtQml>
 
 #include <$(project.name).h>
+#include "$(project.qml_soname:)_plugin.h"
 
-
-class $(class.QmlName:)Attached;
 
 class $(class.QmlName:) : public QObject
 {
@@ -192,22 +307,10 @@ public:
     static QObject* qmlAttachedProperties(QObject* object); // defined in $(class.QmlName:).cpp
     
 public slots:\
-.for class.method where !method.singleton & defined (qml_method_signature (method))
+.for class.method where !method.singleton & defined (qml_method_signature (method, 1))
 
     //  $(method.description:no,block)
-    $(qml_method_signature (method)) {
-        $(method->return.qmlReturnPre)$(class.c_name:)_$(method.c_name) (self\
-.       if count (method.argument)
-, \
-.       endif
-.   for method.argument where !defined (argument.variadic)
-$(argument.qmlArgPass)\
-.       if !last ()
-, \
-.       endif
-.   endfor
-)$(method->return.qmlReturnPost);
-    };
+    $(qml_method_signature (method, 1));
 .endfor
 };
 
@@ -222,57 +325,20 @@ public:
     };
     
 public slots:\
-.for class.method where method.singleton & defined (qml_method_signature (method))
+.for class.method where method.singleton & defined (qml_method_signature (method, 1))
 
     //  $(method.description:no,block)
-    $(qml_method_signature (method)) {
-        $(method->return.qmlReturnPre)$(class.c_name:)_$(method.c_name) (\
-.   for method.argument where !defined (argument.variadic)
-$(argument.qmlArgPass)\
-.       if !last ()
-, \
-.       endif
-.   endfor
-)$(method->return.qmlReturnPost);
-    };
+    $(qml_method_signature (method, 1));
 .endfor
-.for class.constructor as method where defined (qml_method_signature (method))
+.for class.constructor as method where defined (qml_method_signature (method, 1))
 
     //  $(method.description:no,block)
-    $(class.QmlName:) *\
-$(string.replace (method.name, "new|construct"):camel) ($(qml_method_arguments (method))) {
-        $(class.QmlName:) *qmlSelf = new $(class.QmlName:) ();
-        qmlSelf->self = $(class.c_name:)_$(method.c_name) (\
-.   for method.argument where !defined (argument.variadic)
-$(argument.qmlArgPass)\
-.       if !last ()
-, \
-.       endif
-.   endfor
-);
-        return qmlSelf;
-    };
+    $(qml_method_signature (method, 1));
 .endfor
-.for class.destructor as method where defined (qml_method_signature (method))
+.for class.destructor as method where defined (qml_method_signature (method, 1))
 
     //  $(method.description:no,block)
-    $(qml_method_return_type (method))\
-$(string.replace (method.name, "destroy|destruct"):camel) ($(class.QmlName) *qmlSelf\
-$(qml_method_arguments (method))) {
-        $(method->return.qmlReturnPre)$(class.c_name:)_$(method.c_name) (&qmlSelf->self\
-.       if count (method.argument) > 1
-, \
-.       endif
-.   for method.argument where !defined (argument.variadic)
-.       if !first ()
-$(argument.qmlArgPass)\
-.       endif
-.       if !last ()
-, \
-.       endif
-.   endfor
-)$(method->return.qmlReturnPost);
-    };
+    $(qml_method_signature (method, 1));
 .endfor
 };
 
