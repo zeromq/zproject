@@ -123,12 +123,18 @@ src_$(name)_SOURCES = src/$(name).c
 .endfor
 .if (count (config) > 0)
 $(project.name)confdir = \$(sysconfdir)/$(project.name)
+
 $(project.name)conf_DATA =
 
 .for project.config
 $(project.name)conf_DATA += src/$(config.name)
 .endfor
 .endif
+.for project.other
+$(project.name)$(other.name)dir = $(other.dir)
+
+$(project.name)$(other.name)_DATA = $(other.file)
+.endfor
 
 check_PROGRAMS += src/$(project.prefix)_selftest
 

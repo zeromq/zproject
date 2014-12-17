@@ -71,6 +71,12 @@
     <config name = "configname">Configuration file description</config>
     -->
 
+    <!--
+        Other files to be installed by the project
+    <other name = "service_file" dir="@libexecdir@/systemd/system"
+           file = "src/$(PACKAGE).service">Other file description</config>
+    -->
+
     <!-- 
         Models that we build using GSL. 
         This will generate a 'make code' target to build the models.
