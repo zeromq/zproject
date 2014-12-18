@@ -349,16 +349,16 @@ AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
 AC_SUBST([pkgconfigdir])
 
 # Specify output files
-.if (count (class) + count (ac_config) > 0)
+.if count (class) + count (ac_config) > 0
 AC_CONFIG_FILES([Makefile
-.if (count (class) > 0)
+.   if count (class) > 0
                  doc/Makefile
                  src/lib$(project.prefix).pc
-.endif
-.for ac_config
-                 $(ac_config.name)
-.endfor
-				 ])
+.   endif
+.   for project.main where main.service ?= 1
+                 src/$(main.name).service
+.   endfor
+                 ])
 .else
 AC_CONFIG_FILES([Makefile])
 .endif 

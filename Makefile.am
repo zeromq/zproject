@@ -13,11 +13,8 @@ project_libs =
 SUBDIRS =
 
 DIST_SUBDIRS =
-
 lib_LTLIBRARIES =
-
 bin_PROGRAMS =
-
 check_PROGRAMS =
 
 EXTRA_DIST = \
