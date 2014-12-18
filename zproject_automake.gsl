@@ -40,11 +40,8 @@ SUBDIRS += doc
 .endif
 
 DIST_SUBDIRS =
-
 lib_LTLIBRARIES =
-
 bin_PROGRAMS =
-
 check_PROGRAMS =
 
 EXTRA_DIST = \\
@@ -56,10 +53,10 @@ EXTRA_DIST = \\
 include \$(srcdir)/src/Makemodule.am
 
 $(project.GENERATED_WARNING_HEADER:)
-.echo "Generating src/Makemodule.am..."
 .if !file.exists ("src")
-.   directory.create("src")
+.   directory.create ("src")
 .endif
+.echo "Generating src/Makemodule.am..."
 .output "src/Makemodule.am"
 $(project.GENERATED_WARNING_HEADER:)
 .if (count (class) > 0)
@@ -113,35 +110,20 @@ src_lib$(project.prefix)_la_LIBADD = ${project_libs}
 
 .for project.main
 bin_PROGRAMS += src/$(main.name)
-
 src_$(main.name)_CPPFLAGS = ${AM_CPPFLAGS}
-
 src_$(main.name)_LDADD = ${program_libs}
-
 src_$(name)_SOURCES = src/$(name).c
+.   if main.service ?= 1
+src_$(main.name)_configdir = \$(sysconfdir)/$(project.name)
+src_$(main.name)_config_DATA = src/$(main.name).cfg
+src_$(main.name)_servicedir = @libdir@/systemd/system
+src_$(main.name)_service_DATA = src/$(main.name).service
+.   endif
 
 .endfor
-.if (count (config) > 0)
-$(project.name)confdir = \$(sysconfdir)/$(project.name)
-
-$(project.name)conf_DATA =
-
-.for project.config
-$(project.name)conf_DATA += src/$(config.name)
-.endfor
-.endif
-.for project.other
-$(project.name)$(other.name)dir = $(other.dir)
-
-$(project.name)$(other.name)_DATA = $(other.file)
-.endfor
-
 check_PROGRAMS += src/$(project.prefix)_selftest
-
 src_$(project.prefix)_selftest_CPPFLAGS = \${src_lib$(project.prefix)_la_CFLAGS}
-
 src_$(project.prefix)_selftest_LDADD = ${program_libs}
-
 src_$(project.prefix)_selftest_SOURCES = src/$(project.prefix)_selftest.c
 
 TESTS = src/$(project.prefix)_selftest
@@ -202,3 +184,30 @@ animate: src/$(project.prefix)_selftest
 \t$\(LIBTOOL) --mode=execute $\(srcdir)/src/$(project.prefix)_selftest -v
 
 $(project.GENERATED_WARNING_HEADER:)
+.#
+.#  Generate infrastructure for services
+.for project.main where main.service ?= 1
+.   if !file.exists ("src/$(main.name).cfg")
+.       echo "Generating src/$(main.name).cfg..."
+.       output "src/$(main.name).cfg"
+#   $(main.name) configuration
+
+server
+    timeout = 10000     #   Client connection timeout, msec
+    background = 0      #   Run as background process
+    workdir = .         #   Working directory for daemon
+    verbose = 0         #   Do verbose logging of activity?
+.   endif
+.   output "src/$(main.name).service.in"
+.   echo "Generating src/$(main.name).service.in..."
+[Unit]
+Description=$(main.name) service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name).cfg
+
+[Install]
+WantedBy=multi-user.target
+.endfor
