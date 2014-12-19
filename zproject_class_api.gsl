@@ -37,6 +37,8 @@ function resolve_c_container (container)
     my.container.c_name ?= "$(my.container.name:c)"
     my.container.by_reference ?= "0"
     my.container.by_reference = conv.number (my.container.by_reference)
+    my.container.callback ?= "0"
+    my.container.callback = conv.number (my.container.callback)
     
     my.container.type ?= "nothing"
     if defined (my.container.c_type)
@@ -64,6 +66,8 @@ function resolve_c_container (container)
         my.c_type = "char"
         my.stars += "*"
         my.container.constant ?= "1"
+    elsif my.container.callback
+        my.c_type = "$(my.type:c)"
     else
         my.c_type = "$(my.type:c)_t"
         my.stars += "*"
@@ -120,6 +124,9 @@ function resolve_c_class (class)
         endnew
     endif
     
+    for my.class.callback_type as method
+        resolve_c_method (method, "")
+    endfor
     for my.class.method
         resolve_c_method (method, "")
     endfor
@@ -189,6 +196,25 @@ function c_method_declaration (method)
             if !last ()
                 out += ", "
             endif
+        endif
+    endfor
+    out += ");"
+    return out
+endfunction
+
+# A function for constructng the string for a method declaration in a C header
+function c_callback_typedef (method)
+    out = "typedef $(my.method->return.c_type) "
+    out += "($(class.c_name)_$(my.method.c_name)) ("
+    out += "\n    "
+    for my.method.argument
+        out += argument.c_type?""
+        if !regexp.match ("\\*$", argument.c_type?"")
+            out += " "
+        endif
+        out += argument.c_name?""
+        if !last ()
+            out += ", "
         endif
     endfor
     out += ");"
