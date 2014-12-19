@@ -27,6 +27,19 @@
             <argument name = "duration" type = "integer" />
         </method>
         
+        <!-- Note: callback typedefs can be declared like methods -->
+        <callback_type name = "handler_fn">
+            <argument name = "self" type = "myclass" />
+            <argument name = "action" type = "string" />
+            <return type = "boolean" />
+        </callback_type>
+        
+        <!-- Note: callback types can be used as method arguments -->
+        <method name = "add handler">
+            Store the given callback function for later
+            <argument name = "handler" type = "myclass_handler_fn" callback = "1" />
+        </method>
+        
         <!-- Note: If singleton = "1", no class struct pointer is required. -->
         <method name = "test" singleton = "1">
             Self test of this class
