@@ -41,6 +41,11 @@ function resolve_ruby_container (container)
     elsif my.container.c_type = "const char *"
         my.container.ruby_ffi_type = "string"
         my.container.ruby_coerce = "String($(my.container.ruby_name:))"
+    elsif regexp.match ("_t \\*+$", my.container.c_type)
+        my.container.ruby_coerce = "$(my.container.ruby_name:).__ptr if $(my.container.ruby_name:)"
+        if my.container.by_reference
+            my.container.ruby_coerce = "$(my.container.ruby_name:).__ptr_give_ref"
+        endif
     endif
 endfunction
 
@@ -229,6 +234,21 @@ module $(project.RubyName:)
         end
       end
 .endif
+      # Return internal pointer
+      def __ptr
+        raise DestroyedError unless @ptr
+        @ptr
+      end
+      # Nullify internal pointer and return pointer pointer
+      def __ptr_give_ref
+        raise DestroyedError unless @ptr
+        ptr_ptr = ::FFI::MemoryPointer.new :pointer
+        ptr_ptr.write_pointer @ptr
+        ObjectSpace.undefine_finalizer self
+        @finalizer = nil
+        @ptr = nil
+        ptr_ptr
+      end
 .for callback_type
       
       # Create a new callback of the following type:
@@ -262,17 +282,10 @@ module $(project.RubyName:)
       # $(method.description:no,block)
       $(method.ruby_def_line)
         return unless @ptr
-        $(method->argument.ruby_name) = ::FFI::MemoryPointer.new :pointer
-        $(method->argument.ruby_name).write_pointer @ptr
 .for method.argument where defined (argument.ruby_coerce)
         $(argument.ruby_name:) = $(argument.ruby_coerce:)
 .endfor
-        result = $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
-        
-        ObjectSpace.undefine_finalizer self
-        @finalizer = nil
-        @ptr = nil
-        result
+        $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
       end
 .endfor
 .for method
@@ -285,9 +298,7 @@ module $(project.RubyName:)
 .for method.argument where defined (argument.ruby_coerce)
         $(argument.ruby_name:) = $(argument.ruby_coerce:)
 .endfor
-        result = $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
-        
-        result
+        $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
       end
 .endfor
     end
