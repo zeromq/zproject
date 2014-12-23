@@ -25,8 +25,12 @@ for class where defined (class.api)
 endfor
 
 function resolve_ruby_container (container)
-    my.container.ruby_name = "$(my.container.name:c)"
+    # Defaults
     my.container.ruby_ffi_type = "pointer"
+    my.container.ruby_name = "$(my.container.name:c)"
+    if my.container.ruby_name = "_"
+        my.container.ruby_name = "result"
+    endif
     
     # All C types should be transformed to a type name recognized by FFI.
     # To handle more C types, add support for them here.
@@ -34,18 +38,22 @@ function resolve_ruby_container (container)
         my.container.ruby_ffi_type = "void"
     elsif my.container.c_type = "int"
         my.container.ruby_ffi_type = "int"
-        my.container.ruby_coerce = "Integer($(my.container.ruby_name:))"
+        my.container.ruby_coerce_arg = "Integer($(my.container.ruby_name:))"
     elsif my.container.c_type = "bool"
         my.container.ruby_ffi_type = "bool"
-        my.container.ruby_coerce = "!(0==$(my.container.ruby_name:)||!$(my.container.ruby_name:)) # boolean"
+        my.container.ruby_coerce_arg = "!(0==$(my.container.ruby_name:)||!$(my.container.ruby_name:)) # boolean"
     elsif my.container.c_type = "const char *"
         my.container.ruby_ffi_type = "string"
-        my.container.ruby_coerce = "String($(my.container.ruby_name:))"
-    elsif regexp.match ("_t \\*+$", my.container.c_type)
-        my.container.ruby_coerce = "$(my.container.ruby_name:).__ptr if $(my.container.ruby_name:)"
-        if my.container.by_reference
-            my.container.ruby_coerce = "$(my.container.ruby_name:).__ptr_give_ref"
-        endif
+        my.container.ruby_coerce_arg = "String($(my.container.ruby_name:))"
+    elsif count (project.class, defined (class.RubyName) & (my.container.type = class.c_name))
+        for project.class where (defined (class.RubyName) & (my.container.type = class.c_name))
+            if my.container.by_reference
+                my.container.ruby_coerce_arg = "$(my.container.ruby_name:).__ptr_give_ref"
+            else
+                my.container.ruby_coerce_arg = "$(my.container.ruby_name:).__ptr if $(my.container.ruby_name:)"
+                my.container.ruby_coerce_ret = "$(class.RubyName:).__new $(my.container.ruby_name:), false"
+            endif
+        endfor
     endif
 endfunction
 
@@ -208,10 +216,12 @@ module $(project.RubyName:)
       class << self
         alias :__new :new
       end
-      def initialize ptr
+      def initialize ptr, finalize=true
         @ptr = ptr
-        @finalizer = self.class.send :create_finalizer_for, @ptr
-        ObjectSpace.define_finalizer self, @finalizer
+        if finalize
+          @finalizer = self.class.send :create_finalizer_for, @ptr
+          ObjectSpace.define_finalizer self, @finalizer
+        end
       end
 .for class.destructor where count (destructor.argument) = 1
 .if first ()
@@ -244,7 +254,7 @@ module $(project.RubyName:)
         raise DestroyedError unless @ptr
         ptr_ptr = ::FFI::MemoryPointer.new :pointer
         ptr_ptr.write_pointer @ptr
-        ObjectSpace.undefine_finalizer self
+        ObjectSpace.undefine_finalizer self if @finalizer
         @finalizer = nil
         @ptr = nil
         ptr_ptr
@@ -254,23 +264,46 @@ module $(project.RubyName:)
       # Create a new callback of the following type:
       # $(callback_type.description:no,block)
       #     $(c_callback_typedef (callback_type):no,block)
-      def self.$(callback_type.name) &block
-        ::FFI::Function.new(:$(callback_type->return.ruby_ffi_type), [\
+      def self.$(callback_type.name)
+        ::FFI::Function.new :$(callback_type->return.ruby_ffi_type), [\
 .   for callback_type.argument
 :$(argument.ruby_ffi_type)\
 .       if !last ()
 , \
 .       endif
 .   endfor
-], blocking: true, &block)
+], blocking: true do \|\
+.   for callback_type.argument
+$(argument.ruby_name)\
+.       if !last ()
+, \
+.       endif
+.   endfor
+\|
+          begin
+.   for callback_type.argument where defined (argument.ruby_coerce_ret)
+          $(argument.ruby_name) = $(argument.ruby_coerce_ret:)
+.   endfor
+          yield \
+.   for callback_type.argument
+$(argument.ruby_name)\
+.       if !last ()
+, \
+.       endif
+.   endfor
+
+          rescue Exception => e
+            p e
+          end
+        end
       end
 .endfor
 .for constructor as method
       
       # $(method.description:no,block)
       $(method.ruby_def_line)
-.for method.argument where defined (argument.ruby_coerce)
-        $(argument.ruby_name:) = $(argument.ruby_coerce:)
+.for method.argument where defined (argument.ruby_coerce_arg)
+        $(argument.ruby_name:) = $(argument.ruby_coerce_arg:)
 .endfor
         ptr = $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
         
@@ -282,10 +315,14 @@ module $(project.RubyName:)
       # $(method.description:no,block)
       $(method.ruby_def_line)
         return unless @ptr
-.for method.argument where defined (argument.ruby_coerce)
-        $(argument.ruby_name:) = $(argument.ruby_coerce:)
+.for method.argument where defined (argument.ruby_coerce_arg)
+        $(argument.ruby_name:) = $(argument.ruby_coerce_arg:)
 .endfor
-        $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
+        result = $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
+.if defined (method->return.ruby_coerce_ret)
+        result = $(method->return.ruby_coerce_ret)
+.endif
+        result
       end
 .endfor
 .for method
@@ -295,10 +332,14 @@ module $(project.RubyName:)
 .if !method.singleton
         raise DestroyedError unless @ptr
 .endif
-.for method.argument where defined (argument.ruby_coerce)
-        $(argument.ruby_name:) = $(argument.ruby_coerce:)
+.for method.argument where defined (argument.ruby_coerce_arg)
+        $(argument.ruby_name:) = $(argument.ruby_coerce_arg:)
 .endfor
-        $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
+        result = $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
+.if defined (method->return.ruby_coerce_ret)
+        result = $(method->return.ruby_coerce_ret)
+.endif
+        result
       end
 .endfor
     end
