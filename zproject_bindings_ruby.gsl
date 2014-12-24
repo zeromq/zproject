@@ -280,7 +280,6 @@ $(argument.ruby_name)\
 .       endif
 .   endfor
 \|
-          begin
 .   for callback_type.argument where defined (argument.ruby_coerce_ret)
           $(argument.ruby_name) = $(argument.ruby_coerce_ret:)
 .   endfor
@@ -292,9 +291,6 @@ $(argument.ruby_name)\
 .       endif
 .   endfor
 
-          rescue Exception => e
-            p e
-          end
         end
       end
 .endfor
@@ -320,7 +316,7 @@ $(argument.ruby_name)\
 .endfor
         result = $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
 .if defined (method->return.ruby_coerce_ret)
-        result = $(method->return.ruby_coerce_ret)
+        result = $(method->return.ruby_coerce_ret:)
 .endif
         result
       end
@@ -337,7 +333,7 @@ $(argument.ruby_name)\
 .endfor
         result = $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
 .if defined (method->return.ruby_coerce_ret)
-        result = $(method->return.ruby_coerce_ret)
+        result = $(method->return.ruby_coerce_ret:)
 .endif
         result
       end
