@@ -39,6 +39,8 @@ function resolve_c_container (container)
     my.container.by_reference = conv.number (my.container.by_reference)
     my.container.callback ?= "0"
     my.container.callback = conv.number (my.container.callback)
+    my.container.fresh ?= "0"
+    my.container.fresh = conv.number (my.container.fresh)
     
     my.container.type ?= "nothing"
     if defined (my.container.c_type)
