@@ -158,7 +158,7 @@ function resolve_c_class (class)
     endfor
     
     for my.class.constant
-        if constant.?type = 'string'
+        if defined (constant.type) & (constant.type = 'string')
             constant.value = '"' + constant.value + '"'
         endif
         constant.description ?= "$(string.trim (constant.?""):left)"
