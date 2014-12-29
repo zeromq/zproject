@@ -122,7 +122,7 @@ src_$(main.name)_service_DATA = src/$(main.name).service
 
 .endfor
 check_PROGRAMS += src/$(project.prefix)_selftest
-src_$(project.prefix)_selftest_CPPFLAGS = \${src_lib$(project.prefix)_la_CFLAGS}
+src_$(project.prefix)_selftest_CPPFLAGS = \${src_lib$(project.prefix)_la_CPPFLAGS}
 src_$(project.prefix)_selftest_LDADD = ${program_libs}
 src_$(project.prefix)_selftest_SOURCES = src/$(project.prefix)_selftest.c
 
