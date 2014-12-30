@@ -207,6 +207,7 @@ LIBS="${PREVIOUS_LIBS}"
 
 # Platform specific checks
 $(project.name)_on_mingw32="no"
+$(project.name)_on_cygwin="no"
 $(project.name)_on_android="no"
 
 # Host specific checks
@@ -298,6 +299,7 @@ case "${host_os}" in
         # Define on Cygwin to enable all library features
         CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         AC_DEFINE($(PROJECT.NAME)_HAVE_CYGWIN, 1, [Have Cygwin])
+        $(project.name)_on_cygwin="yes"
         ;;
     *)
         AC_MSG_ERROR([unsupported system: ${host_os}.])
@@ -333,6 +335,7 @@ if test "x$GCC" = "xyes"; then
 fi
 
 AM_CONDITIONAL(ON_MINGW, test "x$$(project.name)_on_mingw32" = "xyes")
+AM_CONDITIONAL(ON_MINGW, test "x$$(project.name)_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$$(project.name)_on_android" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$$(project.name)_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$$(project.name)_build_doc" = "xyes")

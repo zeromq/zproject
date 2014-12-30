@@ -106,6 +106,12 @@ src_lib$(project.prefix)_la_LDFLAGS += \\
     -avoid-version
 endif
 
+if ON_CYGWIN
+src_lib$(project.name)_la_LDFLAGS += \\
+    -no-undefined \\
+    -avoid-version
+endif
+
 src_lib$(project.prefix)_la_LIBADD = ${project_libs}
 
 .for project.main

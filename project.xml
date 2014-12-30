@@ -5,6 +5,7 @@
         * autotool
         * cmake
         * mingw32
+        * cygwin
         * vs2008
         * vs2010
         * vs2012
@@ -112,6 +113,7 @@
     <bin name = "zproject_git.gsl" />
     <bin name = "zproject_lib.gsl" />
     <bin name = "zproject_mingw32.gsl" />
+    <bin name = "zproject_cygwin.gsl" />
     <bin name = "zproject_qt_android.gsl" />
     <bin name = "zproject_tools.gsl" />
     <bin name = "zproject_vs2008.gsl" />

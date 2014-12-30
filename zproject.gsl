@@ -47,6 +47,7 @@ project.generated_warning_header ?= "\
 .gsl from "zproject_git.gsl"
 .gsl from "zproject_lib.gsl"
 .gsl from "zproject_mingw32.gsl"
+.gsl from "zproject_cygwin.gsl"
 .gsl from "zproject_qt_android.gsl"
 .gsl from "zproject_tools.gsl"
 .gsl from "zproject_vs2008.gsl"
