@@ -4,7 +4,7 @@
 for project.class
     if defined (class.api)
         if !file.exists (class.api)
-            echo "No such api file for class: $(class.name): $(class.api)"
+            echo "Could not read API file '$(class.api)' for '$(class.name)'"
             class.api = # undefined
         endif
     else
@@ -28,7 +28,7 @@ for project.class where defined (class.api)
     endif
 endfor
 
-# Resolve missing or implicit details in a c argument or return
+# Resolve missing or implicit details in a C argument or return
 function resolve_c_container (container)
     if defined (my.container.variadic)
         return
@@ -92,7 +92,7 @@ function resolve_c_container (container)
     my.container.c_type = my.c_type
 endfunction
 
-# Resolve missing or implicit details in a c method model
+# Resolve missing or implicit details in a C method model
 function resolve_c_method (method, default_description)
     my.method.c_name ?= "$(my.method.name:c)"
     my.method.description ?= "$(string.trim (my.method.?my.default_description):left)"
@@ -112,7 +112,7 @@ function resolve_c_method (method, default_description)
     endfor
 endfunction
 
-# Resolve missing or implicit details in a c class model
+# Resolve missing or implicit details in a C class model
 function resolve_c_class (class)
     my.class.c_name ?= "$(my.class.name:c)"
     my.class.description ?= "$(string.trim (my.class.?""):left)"
