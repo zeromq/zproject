@@ -17,6 +17,7 @@
 *.a
 *.la
 *.pc
+*.dll.a
 
 # Shared objects (inc. Windows DLLs)
 *.dll
