@@ -206,7 +206,7 @@ if test "x$GCC" = "xyes"; then
 fi
 
 AM_CONDITIONAL(ON_MINGW, test "x$myproject_on_mingw32" = "xyes")
-AM_CONDITIONAL(ON_MINGW, test "x$myproject_on_cygwin" = "xyes")
+AM_CONDITIONAL(ON_CYGWIN, test "x$myproject_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$myproject_on_android" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$myproject_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$myproject_build_doc" = "xyes")
