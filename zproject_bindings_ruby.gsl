@@ -48,7 +48,11 @@ function resolve_ruby_container (container)
     elsif count (project.class, defined (class.RubyName) & (my.container.type = class.c_name))
         for project.class where (defined (class.RubyName) & (my.container.type = class.c_name))
             if my.container.by_reference
-                my.container.ruby_coerce_arg = "$(my.container.ruby_name:).__ptr_give_ref"
+                if defined (my.container.destructor_self)
+                    my.container.ruby_coerce_arg = "__ptr_give_ref"
+                else
+                    my.container.ruby_coerce_arg = "$(my.container.ruby_name:).__ptr_give_ref"
+                endif
             else
                 my.container.ruby_coerce_arg = "$(my.container.ruby_name:).__ptr if $(my.container.ruby_name:)"
                 my.container.ruby_coerce_ret = "$(class.RubyName:).__new $(my.container.ruby_name:), "
