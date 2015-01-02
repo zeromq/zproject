@@ -152,6 +152,7 @@ function resolve_c_class (class)
             arg.type = my.class.c_name
             arg.name = "self_p"
             arg.by_reference = "1"
+            arg.destructor_self = "1"
             move arg before method->argument # Move to first slot 
         endnew
         resolve_c_method (method, "Destroy the $(my.class.c_name).")
