@@ -68,6 +68,10 @@ function resolve_qml_container (container)
             my.container.qmlReturnPost = ";\n" + \
             "    return retQ_"
             my.container.qmlReturnType = "$(class.QmlName) *"
+            if my.container.by_reference
+                my.container.qmlArgPass = "&" + my.container.qmlArgPass
+                my.container.qmlReturnPre = my.container.qmlReturnPre + "*"
+            endif
         endfor
     endif
 endfunction
