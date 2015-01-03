@@ -44,7 +44,9 @@ function resolve_qml_container (container)
     # that work must be defined here.  Define the strategies for each model 
     # type that is acceptable, and it will be generated into the right place.
     # Add handling for more types to expand what is possible to wrap.
-    if my.container.type = "string" & !my.container.by_reference
+    if my.container.c_type = "void"
+        my.container.qmlReturnPre = ""
+    elsif my.container.type = "string" & !my.container.by_reference
         my.container.qmlArgType = "const QString &"
         my.container.qmlArgPass = my.container.qmlName + ".toUtf8().data()"
         my.container.qmlReturnType = "const QString"
