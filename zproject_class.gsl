@@ -228,7 +228,7 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 //  @interface
 //  Create a new $(class.c_name)
 $(PROJECT.PREFIX)_EXPORT $(class.c_name)_t *
-    $(class.c_name)_new ();
+    $(class.c_name)_new (void);
 
 //  Destroy the $(class.c_name)
 $(PROJECT.PREFIX)_EXPORT void
@@ -239,7 +239,7 @@ $(PROJECT.PREFIX)_EXPORT void
     $(class.c_name)_print ($(class.c_name)_t *self);
 
 //  Self test of this class
-$(PROJECT.PREFIX)_EXPORT int
+$(PROJECT.PREFIX)_EXPORT void
     $(class.c_name)_test (bool verbose);
 //  @end
 
@@ -286,7 +286,7 @@ struct _$(class.c_name)_t {
 //  Create a new $(class.c_name)
 
 $(class.c_name)_t *
-$(class.c_name)_new ()
+$(class.c_name)_new (void)
 {
     $(class.c_name)_t *self = ($(class.c_name)_t *) zmalloc (sizeof ($(class.c_name)_t));
     assert (self);
@@ -329,7 +329,7 @@ $(class.c_name)_print ($(class.c_name)_t *self)
 //  --------------------------------------------------------------------------
 //  Selftest
 
-int
+void
 $(class.c_name)_test (bool verbose)
 {
     printf (" * $(class.c_name): ");
@@ -342,7 +342,6 @@ $(class.c_name)_test (bool verbose)
     //  @end
 
     printf ("OK\\n");
-    return 0;
 }
 .endif
 .-
