@@ -186,7 +186,7 @@ module $(project.RubyName:)
       @available = true
     rescue LoadError
       warn ""
-      warn "WARNING: $(project.RubyName:)::FFI is not available without lib$(project.prefix)."
+      warn "WARNING: ::$(project.RubyName:)::FFI is not available without lib$(project.prefix)."
       warn ""
       @available = false
     end
@@ -245,7 +245,7 @@ module $(project.RubyName:)
         Proc.new do
           ptr_ptr = ::FFI::MemoryPointer.new :pointer
           ptr_ptr.write_pointer ptr
-          $(project.RubyName:)::FFI.$(class.c_name)_$(destructor.c_name) ptr_ptr
+          ::$(project.RubyName:)::FFI.$(class.c_name)_$(destructor.c_name) ptr_ptr
         end
       end
 .endif
@@ -316,7 +316,7 @@ $(argument.ruby_name)\
 .for method.argument where defined (argument.ruby_coerce_arg)
         $(argument.ruby_name:) = $(argument.ruby_coerce_arg:)
 .endfor
-        ptr = $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
+        ptr = ::$(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
         
         __new ptr
       end
@@ -329,7 +329,7 @@ $(argument.ruby_name)\
 .for method.argument where defined (argument.ruby_coerce_arg)
         $(argument.ruby_name:) = $(argument.ruby_coerce_arg:)
 .endfor
-        result = $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
+        result = ::$(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
 .if defined (method->return.ruby_coerce_ret)
         result = $(method->return.ruby_coerce_ret:)
 .endif
@@ -346,7 +346,7 @@ $(argument.ruby_name)\
 .for method.argument where defined (argument.ruby_coerce_arg)
         $(argument.ruby_name:) = $(argument.ruby_coerce_arg:)
 .endfor
-        result = $(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
+        result = ::$(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
 .if defined (method->return.ruby_coerce_ret)
         result = $(method->return.ruby_coerce_ret:)
 .endif
@@ -393,7 +393,7 @@ $(project.GENERATED_WARNING_HEADER:)
 
 require 'spec_helper'
 
-describe $(project.RubyName:)::FFI do
+describe ::$(project.RubyName:)::FFI do
   it { should be }
 end
 
