@@ -29,13 +29,13 @@ $name = $1 if $name =~ /(\w+)\.\w+/;
 $cat = 0;           #   Unknown category
 exit unless open (MAKEFILE, "Makefile");
 while (<MAKEFILE>) {
-    if (/MAN1.*$name/) {
+    if (/MAN1.*$name\.1/) {
         $source = "../src/$name.c";
         $header = "../src/$name.c";
         $cat = 1;
         last;
     }
-    elsif (/MAN3.*$name/) {
+    elsif (/MAN3.*$name\.3/) {
         $source = "../src/$name.c";
         $header = "../include/$name.h";
         $cat = 3;
