@@ -279,6 +279,11 @@ module $(project.RubyName:)
       # Create a new callback of the following type:
       # $(callback_type.description:no,block)
       #     $(c_callback_typedef (callback_type):no,block)
+      #
+      # WARNING: If your Ruby code doesn't retain a reference to the
+      #   FFI::Function object after passing it to a C function call,
+      #   it may be garbage collected while C still holds the pointer,
+      #   potentially resulting in a segmentation fault.
       def self.$(callback_type.name)
         ::FFI::Function.new :$(callback_type->return.ruby_ffi_type), [\
 .   for callback_type.argument
