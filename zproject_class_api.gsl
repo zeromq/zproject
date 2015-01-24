@@ -67,7 +67,7 @@ function resolve_c_container (container)
     elsif my.type = "string"
         my.c_type = "char"
         my.stars += "*"
-        my.container.constant ?= "1"
+        my.container.constant ?= !my.container.fresh
     elsif my.container.callback
         my.c_type = "$(my.type:c)"
     else
