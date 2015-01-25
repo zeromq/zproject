@@ -46,12 +46,21 @@ function resolve_qml_container (container)
     # Add handling for more types to expand what is possible to wrap.
     if my.container.c_type = "void"
         my.container.qmlReturnPre = ""
-    elsif my.container.type = "string" & !my.container.by_reference
+    elsif my.container.type = "string" & !my.container.by_reference & !my.container.fresh
         my.container.qmlArgType = "const QString &"
         my.container.qmlArgPass = my.container.qmlName + ".toUtf8().data()"
         my.container.qmlReturnType = "const QString"
         my.container.qmlReturnPre = "return QString ("
         my.container.qmlReturnPost = ")"
+    elsif my.container.type = "string"
+        my.container.qmlArgType = "QString"
+        my.container.qmlArgPass = my.container.qmlName + ".toUtf8().data()"
+        my.container.qmlReturnType = "QString"
+        my.container.qmlReturnPre = "char *retStr_ = "
+        my.container.qmlReturnPost = ";\n" + \
+        "    QString retQStr_ = QString (retStr_);\n" + \
+        "    free (retStr_);\n" + \
+        "    return retQStr_"
     elsif my.container.type = "json" # from the jansson library, as a string
         my.container.qmlArgType = "const QString &"
         my.container.qmlArgPass = "json_loads (" + my.container.qmlName + ".toUtf8().data(), 0, NULL)"
