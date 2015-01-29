@@ -427,7 +427,7 @@ android {
     error(The $(PROJECT.NAME)_ROOT directory does not exist: $$$(PROJECT.NAME)_ROOT)
   }
   # Build the $(project.name) library for android unless it is already built
-  !system($$$(PROJECT.NAME)_ROOT/builds/qt-android/build.sh) {
+  !system(bash $$$(PROJECT.NAME)_ROOT/builds/qt-android/build.sh) {
     error(Failed to build the $(project.name) C library with $$$(PROJECT.NAME)_ROOT/builds/qt-android/build.sh)
   }
   
