@@ -402,8 +402,8 @@ module $(project.QmlName:)
 plugin $(project.qml_soname:)
 .endif
 .#
-.echo "Generating bindings/qml/$(project.qml_soname:).pro..."
-.output "bindings/qml/$(project.qml_soname:).pro"
+.echo "Generating bindings/qml/$(project.qml_soname:)_bindings.pro..."
+.output "bindings/qml/$(project.qml_soname:)_bindings.pro"
 $(project.GENERATED_WARNING_HEADER:)
 
 TEMPLATE = lib
