@@ -261,6 +261,9 @@ module $(project.RubyName:)
         end
       end
 .endif
+      def null?
+        !@ptr or ptr.null?
+      end
       # Return internal pointer
       def __ptr
         raise DestroyedError unless @ptr
