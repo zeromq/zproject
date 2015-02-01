@@ -233,7 +233,9 @@ module $(project.RubyName:)
       end
       def initialize ptr, finalize=true
         @ptr = ptr
-        if finalize
+        if @ptr.null?
+          @ptr = nil # Remove null pointers so we don't have to test for them.
+        elsif finalize
           @finalizer = self.class.send :create_finalizer_for, @ptr
           ObjectSpace.define_finalizer self, @finalizer
         end
@@ -259,6 +261,9 @@ module $(project.RubyName:)
         end
       end
 .endif
+      def null?
+        !@ptr or ptr.null?
+      end
       # Return internal pointer
       def __ptr
         raise DestroyedError unless @ptr
