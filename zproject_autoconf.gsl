@@ -154,9 +154,15 @@ PREVIOUS_LIBS="${LIBS}"
 was_$(use.project)_check_lib_detected=no
 
 .  if (use.min_version <> '0.0.0')
+.    if defined(use.nolib)
+PKG_CHECK_MODULES([$(use.project)], [$(use.prefix) >= $(use.min_version)],,
+    [AC_MSG_ERROR([Cannot find required package for $(use.prefix). Note, pkg-config is required due to specified version >= $(use.min_version)])
+  ])
+.    else
 PKG_CHECK_MODULES([$(use.project)], [lib$(use.prefix) >= $(use.min_version)],,
     [AC_MSG_ERROR([Cannot find required package for lib$(use.prefix). Note, pkg-config is required due to specified version >= $(use.min_version)])
   ])
+.    endif
 .  else
 PKG_CHECK_MODULES([$(use.project)], [lib$(use.prefix)],,
     [
