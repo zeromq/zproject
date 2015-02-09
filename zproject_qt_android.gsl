@@ -42,7 +42,7 @@ fi
 ##
 # Make sure $(use.project) is built and copy the prefix
 
-(android_build_verify_so "lib$(use.prefix).so" &> /dev/null) || {
+(android_build_verify_so "$(use.libname).so" &> /dev/null) || {
     # Use a default value assuming the $(use.project) project sits alongside this one
     test -z "$$(USE.PROJECT)_ROOT" && $(USE.PROJECT)_ROOT="\$(cd ../../../$(use.project) && pwd)"
     
@@ -61,9 +61,9 @@ fi
 ##
 # Build $(project.name) from local source
 
-(android_build_verify_so "lib$(project.prefix).so"\
+(android_build_verify_so "$(project.libname).so"\
 .for use where !defined (use.implied)
- "lib$(use.prefix).so"\
+ "$(use.libname).so"\
 .endfor
  &> /dev/null) || {
     rm -rf "${cache}/$(project.name)"
@@ -83,11 +83,11 @@ fi
 # Verify shared libraries in prefix
 
 .for use
-android_build_verify_so "lib$(use.prefix).so"
+android_build_verify_so "$(use.libname).so"
 .endfor
-android_build_verify_so "lib$(project.prefix).so"\
+android_build_verify_so "$(project.libname).so"\
 .for use where !defined (use.implied)
- "lib$(use.prefix).so"\
+ "$(use.libname).so"\
 .endfor
 
 

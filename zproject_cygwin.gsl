@@ -16,7 +16,7 @@ CC=gcc
 PREFIX=/usr/local
 INCDIR=-I$\(PREFIX)/include -I.
 LIBDIR=-L$\(PREFIX)/lib
-CFLAGS=-Wall -Os -g -DLIB$(PROJECT.PREFIX)_EXPORTS $\(INCDIR)
+CFLAGS=-Wall -Os -g -D$(PROJECT.LIBNAME)_EXPORTS $\(INCDIR)
 
 OBJS =\
 .for class
@@ -26,9 +26,9 @@ OBJS =\
 %.o: ../../src/%.c
 	$\(CC) -c -o $@ $< $\(CFLAGS)
 
-all: lib$(project.prefix).dll $(project.prefix)_selftest.exe
+all: $(project.libname).dll $(project.prefix)_selftest.exe
 
-lib$(project.prefix).dll: $\(OBJS)
+$(project.libname).dll: $\(OBJS)
 	$\(CC) -shared -o $@ $\(OBJS) -Wl,--out-implib,$@.a $\(LIBDIR) -lzmq -luuid
 
 # the test functions are not exported into the DLL

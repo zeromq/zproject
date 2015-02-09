@@ -115,7 +115,7 @@ AC_SUBST(PACKAGE_VERSION)
 # know exactly what you're doing and have read and understand
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 #
-# lib$(project.prefix) -version-info
+# $(project.libname) -version-info
 LTVER="$(project->version.major):$(project->version.minor):0"
 AC_SUBST(LTVER)
 
@@ -154,29 +154,29 @@ PREVIOUS_LIBS="${LIBS}"
 was_$(use.project)_check_lib_detected=no
 
 .  if (use.min_version <> '0.0.0')
-PKG_CHECK_MODULES([$(use.project)], [lib$(use.prefix) >= $(use.min_version)],,
-    [AC_MSG_ERROR([Cannot find required package for lib$(use.prefix). Note, pkg-config is required due to specified version >= $(use.min_version)])
+PKG_CHECK_MODULES([$(use.project)], [$(use.libname) >= $(use.min_version)],,
+    [AC_MSG_ERROR([Cannot find required package for $(use.libname). Note, pkg-config is required due to specified version >= $(use.min_version)])
   ])
 .  else
-PKG_CHECK_MODULES([$(use.project)], [lib$(use.prefix)],,
+PKG_CHECK_MODULES([$(use.project)], [$(use.libname)],,
     [
-        AC_ARG_WITH([lib$(use.prefix)],
+        AC_ARG_WITH([$(use.libname)],
             [
-                AS_HELP_STRING([--with-lib$(use.prefix)],
-                [Specify lib$(use.prefix) prefix])
+                AS_HELP_STRING([--with-$(use.libname)],
+                [Specify $(use.libname) prefix])
             ],
-            [search_lib$(use.prefix)="yes"],
+            [search_$(use.libname)="yes"],
             [])
 
         $(use.project)_synthetic_cflags=""
-        $(use.project)_synthetic_libs="-l$(use.prefix)"
+        $(use.project)_synthetic_libs="-l$(use.linkname)"
 
-        if test "x$search_lib$(use.prefix)" = "xyes"; then
-            if test -r "${with_lib$(use.prefix)}/include/$(use.project).h"; then
-                $(use.project)_synthetic_cflags="-I${with_lib$(use.prefix)}/include"
-                $(use.project)_synthetic_libs="-L${with_lib$(use.prefix)}/lib -l$(use.prefix)"
+        if test "x$search_$(use.libname)" = "xyes"; then
+            if test -r "${with_$(use.libname)}/include/$(use.project).h"; then
+                $(use.project)_synthetic_cflags="-I${with_$(use.libname)}/include"
+                $(use.project)_synthetic_libs="-L${with_$(use.libname)}/lib -l$(use.linkname)"
             else
-                AC_MSG_ERROR([${with_lib$(use.prefix)}/include/$(use.project).h not found. Please check lib$(use.prefix) prefix])
+                AC_MSG_ERROR([${with_$(use.libname)}/include/$(use.project).h not found. Please check $(use.libname) prefix])
             fi
         fi
 
@@ -190,7 +190,7 @@ PKG_CHECK_MODULES([$(use.project)], [lib$(use.prefix)],,
                 AC_SUBST([$(use.project)_LIBS],[${$(use.project)_synthetic_libs}])
                 was_$(use.project)_check_lib_detected=yes
             ],
-            [AC_MSG_ERROR([cannot link with -l$(use.prefix), install lib$(use.prefix).])])
+            [AC_MSG_ERROR([cannot link with -l$(use.linkname), install $(use.libname).])])
     ])
 .  endif
 
@@ -234,7 +234,7 @@ AC_MSG_RESULT([$$(project.name)_build_doc])
 AC_MSG_CHECKING([whether to install manpages])
 AC_MSG_RESULT([$$(project.name)_install_man])
 
-# Set some default features required by lib$(project.prefix) code.
+# Set some default features required by $(project.libname) code.
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
 
 # OS-specific tests
@@ -356,7 +356,7 @@ AC_SUBST([pkgconfigdir])
 AC_CONFIG_FILES([Makefile
 .   if count (class) > 0
                  doc/Makefile
-                 src/lib$(project.prefix).pc
+                 src/$(project.libname).pc
 .   endif
 .   for project.main where main.service ?= 1
                  src/$(main.name).service
