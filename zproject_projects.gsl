@@ -23,6 +23,8 @@ function resolve_project_dependency (use)
     
     # Use reasonable fallback values to fill in any remaining gaps
     my.use.prefix ?= my.use.project
+    my.use.linkname ?= my.use.prefix
+    my.use.libname ?= "lib" + my.use.linkname
     my.use.cmake_name ?= "$(my.use.project:Pascal)"
     
     # For values with no reasonable fallback, print error

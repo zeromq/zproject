@@ -145,7 +145,7 @@ SYNOPSIS
 ----
 #include <$(project.name).h>
 
-cc ['flags'] 'files' -l$(project.prefix) ['libraries']
+cc ['flags'] 'files' -l$(project.linkname) ['libraries']
 ----
 
 
