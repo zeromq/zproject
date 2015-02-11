@@ -21,74 +21,6 @@
 #
 use File::Basename;
 
-$name = $ARGV [0];
-$name = $1 if $name =~ /(\w+)\.\w+/;
-
-#   Check if we're making the man page for a main program, or a class
-
-$cat = 0;           #   Unknown category
-exit unless open (MAKEFILE, "Makefile");
-while (<MAKEFILE>) {
-    if (/MAN1.*$name\.1/) {
-        $source = "../src/$name.c";
-        $header = "../src/$name.c";
-        $cat = 1;
-        last;
-    }
-    elsif (/MAN3.*$name\.3/) {
-        $source = "../src/$name.c";
-        $header = "../include/$name.h";
-        $cat = 3;
-        last;
-    }
-}
-close MAKEFILE;
-
-#   Look for class title in 2nd line of source
-#   If there's no class file, leave hand-written man page alone
-exit unless open (SOURCE, $source);
-$_ = <SOURCE>;
-$_ = <SOURCE>;
-$title = "no title found";
-$title = $1 if (/    \w+ - (.*)/);
-close (SOURCE);
-
-#   Open output file
-die "Can't create $name.txt: $!"
-    unless open (OUTPUT, ">$name.txt");
-
-printf "Generating $name.txt...\n";
-$underline = "=" x (length ($name) + 3);
-
-$template = <<"END";
-$name($cat)
-$underline
-
-NAME
-----
-$name - $title
-
-SYNOPSIS
---------
-----
-pull $header\@interface
-----
-
-DESCRIPTION
------------
-
-pull $source\@header,left
-
-pull $source\@discuss,left
-
-EXAMPLE
--------
-.From $name\_test method
-----
-pull $source\@selftest,left
-----
-END
-
 sub pull {
     local ($_) = @_;
     if (/^(.*)(@[a-zA-Z0-9]+)(,(\w*)\s*)?/) {
@@ -119,28 +51,104 @@ sub pull {
     }
 }
 
-#   Now process template
-for (split /^/, $template) {
-    if (/^pull (.*)$/) {
-        print OUTPUT pull ($1);
+sub generate_manpage {
+    local ($name) = @_;
+    $name = $1 if $name =~ /(\w+)\.\w+/;
+
+    #   Check if we're making the man page for a main program, or a class
+    
+    $cat = 0;           #   Unknown category
+    exit unless open (MAKEFILE, "Makefile");
+    while (<MAKEFILE>) {
+        if (/MAN1.*$name\.1/) {
+            $source = "../src/$name.c";
+            $header = "../src/$name.c";
+            $cat = 1;
+            last;
+        }
+        elsif (/MAN3.*$name\.3/) {
+            $source = "../src/$name.c";
+            $header = "../include/$name.h";
+            $cat = 3;
+            last;
+        }
     }
-    else {
-        print OUTPUT $_;
+    close MAKEFILE;
+
+    #   Look for class title in 2nd line of source
+    #   If there's no class file, leave hand-written man page alone
+    exit unless open (SOURCE, $source);
+    $_ = <SOURCE>;
+    $_ = <SOURCE>;
+    $title = "no title found";
+    $title = $1 if (/    \w+ - (.*)/);
+    close (SOURCE);
+
+    #   Open output file
+    die "Can't create $name.txt: $!"
+        unless open (OUTPUT, ">$name.txt");
+
+    printf "Generating $name.txt...\n";
+    $underline = "=" x (length ($name) + 3);
+
+    $template = <<"END";
+$name($cat)
+$underline
+
+NAME
+----
+$name - $title
+
+SYNOPSIS
+--------
+----
+pull $header\@interface
+----
+
+DESCRIPTION
+-----------
+
+pull $source\@header,left
+
+pull $source\@discuss,left
+
+EXAMPLE
+-------
+.From $name\_test method
+----
+pull $source\@selftest,left
+----
+END
+
+    #   Now process template
+    for (split /^/, $template) {
+        if (/^pull (.*)$/) {
+            print OUTPUT pull ($1);
+        }
+        else {
+            print OUTPUT $_;
+        }
     }
+    
+    #   Generate a simple text documentation for README.txt
+    close OUTPUT;
+    printf "Generating $name.doc...\n";
+    die "Can't create $name.doc: $!"
+        unless open (OUTPUT, ">$name.doc");
+    print OUTPUT "#### $name - $title\n\n";
+    print OUTPUT pull ("$source\@header,left");
+    print OUTPUT "\n";
+    print OUTPUT pull ("$source\@discuss,left");
+    print OUTPUT "\nThis is the class interface:\n\n";
+    print OUTPUT pull ("$header\@interface,code");
+    print OUTPUT "\nThis is the class self test code:\n\n";
+    print OUTPUT pull ("$source\@selftest,test");
+    print OUTPUT "\n";
+    close OUTPUT;
 }
 
-#   Generate a simple text documentation for README.txt
-close OUTPUT;
-printf "Generating $name.doc...\n";
-die "Can't create $name.doc: $!"
-    unless open (OUTPUT, ">$name.doc");
-print OUTPUT "#### $name - $title\n\n";
-print OUTPUT pull ("$source\@header,left");
-print OUTPUT "\n";
-print OUTPUT pull ("$source\@discuss,left");
-print OUTPUT "\nThis is the class interface:\n\n";
-print OUTPUT pull ("$header\@interface,code");
-print OUTPUT "\nThis is the class self test code:\n\n";
-print OUTPUT pull ("$source\@selftest,test");
-print OUTPUT "\n";
-close OUTPUT;
+$name = shift (@ARGV);
+while ($name) {
+    generate_manpage ($name); 
+    $name = shift (@ARGV);
+}
