@@ -58,6 +58,11 @@ $(project.GENERATED_WARNING_HEADER:)
 #ifndef __$(project.prefix)_library_H_INCLUDED__
 #define __$(project.prefix)_library_H_INCLUDED__
 
+//  Set up environment for the application
+.if file.exists ("include/$(project.preludefile)")
+#include "$(project.preludefile)"
+.endif
+
 //  External dependencies
 .for use where !defined (implied)
 #include <$(use.project).h>
