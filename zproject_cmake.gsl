@@ -95,6 +95,9 @@ list(APPEND MORE_LIBRARIES ${$(USE.CMAKE_NAME)_LIBRARIES})
 ########################################################################
 set ($(project.name)_headers
     include/$(project.prefix)_library.h
+.if file.exists ("include/$(project.preludefile)")
+    include/$(project.preludefile)
+.endif
 .if count (class, class.name = project.name) = 0
     include/$(project.name).h
 .endif
