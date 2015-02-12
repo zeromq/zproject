@@ -86,8 +86,8 @@ $(project.GENERATED_WARNING_HEADER:)
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\\..\\..\\..\\include\\$(project.prefix)_library.h" />
-.if file.exists ("include/$(project.preludefile)")
-    <ClInclude Include="..\\..\\..\\..\\include\\$(project.preludefile)" />
+.if file.exists ("include/$(project.prelude)")
+    <ClInclude Include="..\\..\\..\\..\\include\\$(project.prelude)" />
 .endif
 .if count (class, class.name = project.name) = 0
     <ClInclude Include="..\\..\\..\\..\\include\\$(project.name).h" />
@@ -140,8 +140,8 @@ $(project.GENERATED_WARNING_HEADER:)
     <ClInclude Include="..\\..\\..\\..\\include\\$(project.prefix)_library.h">
       <Filter>include</Filter>
     </ClInclude>
-.if file.exists ("include/$(project.preludefile)")
-    <ClInclude Include="..\\..\\..\\..\\include\\$(project.preludefile)">
+.if file.exists ("include/$(project.prelude)")
+    <ClInclude Include="..\\..\\..\\..\\include\\$(project.prelude)">
       <Filter>include</Filter>
     </ClInclude>
 .endif

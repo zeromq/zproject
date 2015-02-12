@@ -320,8 +320,8 @@ $(project.GENERATED_WARNING_HEADER:)
       <File RelativePath="..\\..\\..\\..\\$(classdir)\\$(name).h" />
 .endfor
       <File RelativePath="..\\..\\..\\..\\include\\$(project.prefix)_library.h" />
-.if file.exists ("include/$(project.preludefile)")
-      <File RelativePath="..\\..\\..\\..\\include\\$(project.preludefile)" />
+.if file.exists ("include/$(project.prelude)")
+      <File RelativePath="..\\..\\..\\..\\include\\$(project.prelude)" />
 .endif
 .if count (class, class.name = project.name) = 0
       <File RelativePath="..\\..\\..\\..\\include\\$(project.name).h" />
