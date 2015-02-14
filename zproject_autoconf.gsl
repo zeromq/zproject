@@ -341,6 +341,19 @@ AM_CONDITIONAL(INSTALL_MAN, test "x$$(project.name)_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$$(project.name)_build_doc" = "xyes")
 AM_CONDITIONAL([ENABLE_LABS], [test "x$enable_labs" = "xyes"])
 
+.for project.main where private?0 = 0
+.echo name
+# Check for $(name) intent
+AC_ARG_WITH([$(name)],
+    AS_HELP_STRING([--with-$(name)],
+        [Compile and install the $(name) program [default=yes].]),
+    [with_$(name)=$withval],
+    [with_$(name)=yes])
+
+AM_CONDITIONAL([WITH_$(NAME)], [test x$with_$(name) != xno])
+AM_COND_IF([WITH_$(NAME)], [AC_MSG_NOTICE([WITH_$(NAME) defined])])
+
+.endfor
 # Checks for library functions.
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset getifaddrs)
