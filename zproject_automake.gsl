@@ -42,7 +42,10 @@ SUBDIRS += doc
 DIST_SUBDIRS =
 lib_LTLIBRARIES =
 bin_PROGRAMS =
+noinst_PROGRAMS =
 check_PROGRAMS =
+noinst_LTLIBRARIES =
+TESTS =
 
 EXTRA_DIST = \\
 .for project.extra
@@ -121,7 +124,12 @@ endif
 src_$(project.libname)_la_LIBADD = ${project_libs}
 
 .for project.main
+if WITH_$(NAME)
+.   if main.private ?= 1
+noinst_PROGRAMS += src/$(main.name)
+.   else
 bin_PROGRAMS += src/$(main.name)
+.   endif
 src_$(main.name)_CPPFLAGS = ${AM_CPPFLAGS}
 src_$(main.name)_LDADD = ${program_libs}
 src_$(name)_SOURCES = src/$(name).c
@@ -131,18 +139,14 @@ src_$(main.name)_config_DATA = src/$(main.name).cfg
 src_$(main.name)_servicedir = @libdir@/systemd/system
 src_$(main.name)_service_DATA = src/$(main.name).service
 .   endif
-
+endif
 .endfor
 check_PROGRAMS += src/$(project.prefix)_selftest
 src_$(project.prefix)_selftest_CPPFLAGS = \${src_$(project.libname)_la_CPPFLAGS}
 src_$(project.prefix)_selftest_LDADD = ${program_libs}
 src_$(project.prefix)_selftest_SOURCES = src/$(project.prefix)_selftest.c
-
-TESTS = src/$(project.prefix)_selftest
+TESTS += src/$(project.prefix)_selftest
 .else
-noinst_LTLIBRARIES = 
-noinst_PROGRAMS = 
-TESTS = 
 .endif
 
 .for bin
