@@ -340,12 +340,15 @@ AM_CONDITIONAL(ON_ANDROID, test "x$$(project.name)_on_android" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$$(project.name)_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$$(project.name)_build_doc" = "xyes")
 
-.for project.main where private?0 = 0
-.echo name
+.for project.main
 # Check for $(name) intent
 AC_ARG_WITH([$(name)],
     AS_HELP_STRING([--with-$(name)],
+.   if private ?= 1
+        [Compile the $(name) program [default=yes].]),
+.   else
         [Compile and install the $(name) program [default=yes].]),
+.   endif
     [with_$(name)=$withval],
     [with_$(name)=yes])
 
