@@ -339,7 +339,6 @@ AM_CONDITIONAL(ON_CYGWIN, test "x$$(project.name)_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$$(project.name)_on_android" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$$(project.name)_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$$(project.name)_build_doc" = "xyes")
-AM_CONDITIONAL([ENABLE_LABS], [test "x$enable_labs" = "xyes"])
 
 .for project.main where private?0 = 0
 .echo name
