@@ -74,6 +74,11 @@ program_libs = \\
     src/$(project.libname).la
 .endif
 
+# Programs need to link the c++ runtime if everything was compiled statically.
+if !ENABLE_SHARED
+program_libs += -lstdc++
+endif
+
 lib_LTLIBRARIES += src/$(project.libname).la
 
 pkgconfig_DATA = src/$(project.libname).pc
