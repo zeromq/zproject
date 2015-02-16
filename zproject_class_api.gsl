@@ -30,9 +30,6 @@ endfor
 
 # Resolve missing or implicit details in a C argument or return
 function resolve_c_container (container)
-    if defined (my.container.variadic)
-        return
-    endif
     my.container.name ?= "_"
     my.container.c_name ?= "$(my.container.name:c)"
     my.container.by_reference ?= "0"
@@ -41,6 +38,7 @@ function resolve_c_container (container)
     my.container.callback = conv.number (my.container.callback)
     my.container.fresh ?= "0"
     my.container.fresh = conv.number (my.container.fresh)
+    my.container.is_format ?= 0
     
     my.container.type ?= "nothing"
     if defined (my.container.c_type)
@@ -60,6 +58,8 @@ function resolve_c_container (container)
         my.stars += "*"
     elsif my.type = "integer"
         my.c_type = "int"
+    elsif my.type = "size"
+        my.c_type = "size_t"
     elsif my.type = "real"
         my.c_type = "float"
     elsif my.type = "boolean"
@@ -68,6 +68,11 @@ function resolve_c_container (container)
         my.c_type = "char"
         my.stars += "*"
         my.container.constant ?= !my.container.fresh
+    elsif my.type = "format"
+        my.c_type = "char"
+        my.stars += "*"
+        my.container.constant ?= 1
+        my.container.is_format = 1
     elsif my.container.callback
         my.c_type = "$(my.type:c)"
     else
@@ -106,6 +111,12 @@ function resolve_c_method (method, default_description)
     
     for my.method.argument as obj
         resolve_c_container (obj)
+        if obj.is_format
+            new argument to my.method as fmtargs
+                fmtargs.variadic = 1
+                resolve_c_container (fmtargs) # won't be included in current loop, so resolve now.
+            endnew
+        endif
     endfor
     for my.method.return as obj
         resolve_c_container (obj)
@@ -179,15 +190,21 @@ endfor
 
 # A function for constructng the string for a method declaration in a C header
 function c_method_declaration (method)
+    my.format_index = -1
+    current_argument_index = 0
     out = "$(PROJECT.PREFIX)_EXPORT $(my.method->return.c_type)"
     out += "\n    $(class.c_name)_$(my.method.c_name) ("
     if !my.method.singleton
         out += "$(class.c_name)_t *self"
+        current_argument_index += 1
         if count (my.method.argument)
             out += ", "
         endif
     endif
     for my.method.argument
+        if argument.is_format
+            my.format_index = current_argument_index + 1 # Next argument is the format list
+        endif
         if defined (argument.variadic)
             out += "..."
         else
@@ -200,8 +217,13 @@ function c_method_declaration (method)
                 out += ", "
             endif
         endif
+        current_argument_index += 1
     endfor
-    out += ");"
+    out += ")"
+    if my.format_index >= 0
+        out += " CHECK_PRINTF (" + (my.format_index) + ")"
+    endif
+    out += ";"
     return out
 endfunction
 

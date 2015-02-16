@@ -34,8 +34,13 @@ function resolve_ruby_container (container)
     
     # All C types should be transformed to a type name recognized by FFI.
     # To handle more C types, add support for them here.
-    if my.container.c_type = "void"
+    if defined (my.container.variadic)
+        my.container.ruby_ffi_type = "varargs"
+    elsif my.container.c_type = "void"
         my.container.ruby_ffi_type = "void"
+    elsif my.container.c_type = "size_t"
+        my.container.ruby_ffi_type = "size_t"
+        my.container.ruby_coerce_arg = "Integer($(my.container.ruby_name:))"
     elsif my.container.c_type = "int"
         my.container.ruby_ffi_type = "int"
         my.container.ruby_coerce_arg = "Integer($(my.container.ruby_name:))"
