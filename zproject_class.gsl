@@ -21,8 +21,8 @@
 .if !file.exists ("include")
 .   directory.create ("include")
 .endif
-.if !file.exists ("include/$(project.name).h")
-.echo "Generating include/$(project.name).h..."
+.if !file.exists ("include/$(project.name).h") & count (class, class.name = project.name) = 0
+.echo "Generating project header include/$(project.name).h..."
 .   output "include/$(project.name).h"
 /*  =========================================================================
     $(project.name) - $(project.description?'':)
@@ -253,6 +253,7 @@ $(PROJECT.PREFIX)_EXPORT void
 #endif
 
 #endif
+.close # If there is an API defined, then the file must be written so we can find and rewrite the @interface section
 .endif
 .-
 .-  Build the source file for a class
