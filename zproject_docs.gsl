@@ -65,11 +65,11 @@ SUFFIXES=.txt .xml .1 .3 .7
 
 .for project.class where private?0 = 0
 $(name).txt:
-\tzproject_mkman $<
+\tzproject_mkman $@
 .endfor
 .for project.main where private?0 = 0
 $(name).txt:
-\tzproject_mkman $<
+\tzproject_mkman $@
 .endfor
 clean:
 \trm -f *.1 *.3
@@ -167,17 +167,3 @@ Classes
 
 Something.
 .endif
-.for project.class where private?0 = 0
-.if !file.exists ("doc/$(name).txt")
-.echo "Generating doc/$(name).txt..."
-.output "doc/$(name).txt"
-$(name)(3)
-.endif
-.endfor
-.for project.main where private?0 = 0
-.if !file.exists ("doc/$(name).txt")
-.echo "Generating doc/$(name).txt..."
-.output "doc/$(name).txt"
-$(name)(1)
-.endif
-.endfor

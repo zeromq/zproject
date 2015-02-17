@@ -205,12 +205,12 @@ if test "x$GCC" = "xyes"; then
     CPPFLAGS="-pedantic -Werror -Wall -Wc++-compat ${CPPFLAGS}"
 fi
 
+AM_CONDITIONAL(ENABLE_SHARED, test "x$enable_shared" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$myproject_on_mingw32" = "xyes")
 AM_CONDITIONAL(ON_CYGWIN, test "x$myproject_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$myproject_on_android" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$myproject_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$myproject_build_doc" = "xyes")
-AM_CONDITIONAL([ENABLE_LABS], [test "x$enable_labs" = "xyes"])
 
 # Checks for library functions.
 AC_TYPE_SIGNAL

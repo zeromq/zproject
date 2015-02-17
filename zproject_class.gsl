@@ -279,7 +279,7 @@ $(PROJECT.PREFIX)_EXPORT void
 */
 
 #include "../include/$(project.name).h"
-.   if (count (class, defined (class.private)) > 0)
+.   if (project.has_private_classes)
 #include "$(project.prefix)_classes.h"
 .   endif
 
