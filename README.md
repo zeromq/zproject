@@ -1,3 +1,4 @@
+
 <A name="toc1-3" title="zproject - Class Project Generator" />
 # zproject - Class Project Generator
 
@@ -8,21 +9,23 @@
 **<a href="#toc2-11">Overview</a>**
 &emsp;<a href="#toc3-16">Scope and Goals</a>
 
-**<a href="#toc2-46">Sample configuration</a>**
+**<a href="#toc2-46">Demo on PLAYTerm</a>**
 
-**<a href="#toc2-53">Sample API model</a>**
+**<a href="#toc2-51">Sample configuration</a>**
 
-**<a href="#toc2-94">Installation</a>**
-&emsp;<a href="#toc3-103">autotools</a>
+**<a href="#toc2-58">Sample API model</a>**
 
-**<a href="#toc2-113">Generate build environment in your project</a>**
+**<a href="#toc2-99">Installation</a>**
+&emsp;<a href="#toc3-108">autotools</a>
 
-**<a href="#toc2-120">Ownership and License</a>**
+**<a href="#toc2-118">Generate build environment in your project</a>**
 
-**<a href="#toc2-129">Removal</a>**
-&emsp;<a href="#toc3-132">autotools</a>
-&emsp;<a href="#toc3-137">Hints to Contributors</a>
-&emsp;<a href="#toc3-144">This Document</a>
+**<a href="#toc2-125">Ownership and License</a>**
+
+**<a href="#toc2-134">Removal</a>**
+&emsp;<a href="#toc3-137">autotools</a>
+&emsp;<a href="#toc3-142">Hints to Contributors</a>
+&emsp;<a href="#toc3-149">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -62,7 +65,12 @@ The following build environments are currently supported:
  
 All classes in the project.xml are automatically added to all build environments. Further as you add new classes to your project you can generate skeleton header and source files according to [the CLASS RFC](http://rfc.zeromq.org/spec:21).
 
-<A name="toc2-46" title="Sample configuration" />
+<A name="toc2-46" title="Demo on PLAYTerm" />
+## Demo on PLAYTerm
+
+[ZeroMQ - Create new zproject](http://www.playterm.org/r/zeromq---create-new-zproject-1424116766) 
+
+<A name="toc2-51" title="Sample configuration" />
 ## Sample configuration
 
 The following snippet is the `project.xml` from zproject:
@@ -74,6 +82,7 @@ The following snippet is the `project.xml` from zproject:
         * autotool
         * cmake
         * mingw32
+        * cygwin
         * vs2008
         * vs2010
         * vs2012
@@ -133,6 +142,7 @@ The following snippet is the `project.xml` from zproject:
                  use private = "1" for internal tools
     <main name = "progname">Exported public tool</main>
     <main name = "progname" private = "1">Internal tool</main>
+    <main name = "progname" service = "1">Installed as system service</main>
     -->
 
     <!-- 
@@ -180,6 +190,7 @@ The following snippet is the `project.xml` from zproject:
     <bin name = "zproject_git.gsl" />
     <bin name = "zproject_lib.gsl" />
     <bin name = "zproject_mingw32.gsl" />
+    <bin name = "zproject_cygwin.gsl" />
     <bin name = "zproject_qt_android.gsl" />
     <bin name = "zproject_tools.gsl" />
     <bin name = "zproject_vs2008.gsl" />
@@ -188,52 +199,78 @@ The following snippet is the `project.xml` from zproject:
     <bin name = "zproject_vs2013.gsl" />
 </project>
 
-<A name="toc2-53" title="Sample API model" />
+<A name="toc2-58" title="Sample API model" />
 ## Sample API model
 
 The zproject scripts can also optionally generate the `@interface` in your class headers from an API model, in addition to a host of language bindings.  To opt-in to this behavior, just make a model to the `api` directory of your project.  For example, if your `project.xml` contains `<class name = "myclass"/>`, you could create the following `api/myclass.xml` file:
 
+<!--
+    This model defines a public API for binding. 
+-->
+<class name = "myclass" >
+    My Feature-Rich Class
 
-    <class name = "myclass" >
-        My Feature-Rich Class
-        
-        <include filename = "../license.xml" />
-        
-        <constant name = "default port" value = "8080">registered with IANA</constant>
-        
-        <!-- Note: If no <constructor> is declared, an implicit one is created. -->
-        <constructor>
-            Create a new myclass with the given name.
-            <argument name = "name" type = "string" />
-        </constructor>
-        
-        <!-- Note: If no <destructor> is declared, an implicit one is created.
-            </destructor> -->
-        
-        <method name = "has feature">
-            Return true if the myclass has the given feature.
-            <argument name = "feature" type = "string" />
-            <return type = "boolean" />
-        </method>
-        
-        <method name = "sleep">
-            Put the myclass to sleep for the given number of milliseconds.
-            No messages will be processed by the actor during this time.
-            <argument name = "duration" type = "integer" />
-        </method>
-        
-        <!-- Note: If singleton = "1", no class struct pointer is required. -->
-        <method name = "test" singleton = "1">
-            Self test of this class
-            <argument name = "verbose" type = "boolean" />
-        </method>
-        
-        <!-- Note: See zproject_class_api.gsl for all the type strings that
-            are supported for arguments and return values in C headers.
-            Not all of these are supported in all language bindings;
-            see each language binding's file for supported types in that
-            language, and add more types as needed where appropriate. -->
-    </class>
+    <include filename = "../license.xml" />
+
+    <constant name = "default port" value = "8080">registered with IANA</constant>
+
+    <!-- Constructor is optional; default one has no arguments -->
+    <constructor>
+        Create a new myclass with the given name.
+        <argument name = "name" type = "string" />
+    </constructor>
+
+    <!-- Destructor is optional; default one follows standard style -->
+    <destructor />
+
+    <!-- This models a method with no return value -->
+    <method name = "sleep">
+        Put the myclass to sleep for the given number of milliseconds.
+        No messages will be processed by the actor during this time.
+        <argument name = "duration" type = "integer" />
+    </method>
+
+    <!-- This models an accessor method -->
+    <method name = "has feature">
+        Return true if the myclass has the given feature.
+        <argument name = "feature" type = "string" />
+        <return type = "boolean" />
+    </method>
+
+    <!-- Callback typedefs can be declared like methods -->
+    <callback_type name = "handler_fn">
+        <argument name = "self" type = "myclass" />
+        <argument name = "action" type = "string" />
+        <return type = "boolean" />
+    </callback_type>
+
+    <!-- Callback types can be used as method arguments -->
+    <method name = "add handler">
+        Store the given callback function for later
+        <argument name = "handler" type = "myclass_handler_fn" callback = "1" />
+    </method>
+
+    <!-- If singleton = "1", no class struct pointer is required. -->
+    <method name = "test" singleton = "1">
+        Self test of this class
+        <argument name = "verbose" type = "boolean" />
+    </method>
+
+    <!-- These are the types we support
+         Not all of these are supported in all language bindings;
+         see each language binding's file for supported types in that
+         language, and add more types as needed where appropriate.
+         -->
+    <method name = "tutorial">
+        <argument name = "void pointer" type = "anything" />
+        <argument name = "standard int" type = "integer" />
+        <argument name = "standard float" type = "real" />
+        <argument name = "standard bool" type = "boolean" />
+        <argument name = "char pointer" type = "string" />
+        <argument name = "custom pointer" type = "myclass_t" />
+        <return type = "nothing">void method</return>
+    </method>
+</class>
 
 This would cause the following `@interface` to be generated inside of `include/myclass.h`.  Note that if `include/myclass.h` has other handwritten content outside of the `@interface` this content will be retained.
 
@@ -269,7 +306,7 @@ Language bindings will also be generated in the following languages:
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
-<A name="toc2-94" title="Installation" />
+<A name="toc2-99" title="Installation" />
 ## Installation
 
 Before you start you'll need to install the code generator GSL (https://github.com/imatix/gsl) on your system. Then execute the generate.sh script to generate the build environment files for zproject.
@@ -278,7 +315,7 @@ Before you start you'll need to install the code generator GSL (https://github.c
 
 After that proceed with your favorite build environment. (Currently only autotools!)
 
-<A name="toc3-103" title="autotools" />
+<A name="toc3-108" title="autotools" />
 ### autotools
 
 The following will install the `zproject-*.gsl` files to `/usr/local/bin` where gsl will find them if you use zproject in your project.
@@ -288,14 +325,14 @@ The following will install the `zproject-*.gsl` files to `/usr/local/bin` where 
     make
     make install
 
-<A name="toc2-113" title="Generate build environment in your project" />
+<A name="toc2-118" title="Generate build environment in your project" />
 ## Generate build environment in your project
 
 Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly. You'll also need a license file. To get started you can copy `license.xml` from zproject and change the license to whatever you like. The text in the `license.xml` will be placed on every header and source file. Thus make sure not to insert the hole license but a appropriate disclaimer.
 
 Run `./generate.sh`
 
-<A name="toc2-120" title="Ownership and License" />
+<A name="toc2-125" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -304,22 +341,22 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc2-129" title="Removal" />
+<A name="toc2-134" title="Removal" />
 ## Removal
 
-<A name="toc3-132" title="autotools" />
+<A name="toc3-137" title="autotools" />
 ### autotools
 
     make uninstall
 
-<A name="toc3-137" title="Hints to Contributors" />
+<A name="toc3-142" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Before you commit code please make sure that the project model hides all details of backend scripts.
 
 For example don't make a user enter a header file because autoconf needs it to do AC_CHECK_LIB.
 
-<A name="toc3-144" title="This Document" />
+<A name="toc3-149" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).
