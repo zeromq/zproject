@@ -32,9 +32,6 @@
 
 zproject is a community project, like most ZeroMQ projects, built using the C4.1 process, and licensed under MPL v2. It solves the Makefile problem really well. It is unashamedly for C, and more pointedly, for that modern C dialect we call CLASS. CLASS is the Minecraft of C: fun, easy, playful, mind-opening, and social. [hintjens#79](http://hintjens.com/blog:79)
 
-### Demo
-<div><script id="playterm-MjAxNS0wMi9uZXdwcm9qZWN0dHR5LTE0MjQxMTY1NjZ8ODB4MjQ=" type="text/javascript" src="http://www.playterm.org/js/?hash=MjAxNS0wMi9uZXdwcm9qZWN0dHR5LTE0MjQxMTY1NjZ8ODB4MjQ=" class="size:80x24"></script></div>
-
 <A name="toc3-16" title="Scope and Goals" />
 ### Scope and Goals
 
