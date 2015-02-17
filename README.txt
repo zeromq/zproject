@@ -40,6 +40,10 @@ The following build environments are currently supported:
  
 All classes in the project.xml are automatically added to all build environments. Further as you add new classes to your project you can generate skeleton header and source files according to [the CLASS RFC](http://rfc.zeromq.org/spec:21).
 
+## Demo on PLAYTerm
+
+[ZeroMQ - Create new zproject](http://www.playterm.org/r/zeromq---create-new-zproject-1424116766) 
+
 ## Sample configuration
 
 The following snippet is the `project.xml` from zproject:
