@@ -104,6 +104,7 @@
     <bin name = "zproject_android.gsl" />
     <bin name = "zproject_autoconf.gsl" />
     <bin name = "zproject_automake.gsl" />
+    <bin name = "zproject_bindings_python.gsl" />
     <bin name = "zproject_bindings_qml.gsl" />
     <bin name = "zproject_bindings_ruby.gsl" />
     <bin name = "zproject_ci.gsl" />
