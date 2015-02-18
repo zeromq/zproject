@@ -75,6 +75,12 @@ function resolve_c_container (container)
         my.container.is_format = 1
     elsif my.container.callback
         my.c_type = "$(my.type:c)"
+    elsif string.prefix(my.container.type, ":") = "enum"
+        my.container.is_enum = 1
+        my.class_sep = string.locate (my.container.type, ".")
+        my.container.enum_class = string.substr (my.container.type, 5, my.class_sep-1)
+        my.container.enum_name = string.substr (my.container.type, my.class_sep+1)
+        my.c_type = "$(my.container.enum_class:c)_$(my.container.enum_name:c)_t"
     else
         my.c_type = "$(my.type:c)_t"
         my.stars += "*"

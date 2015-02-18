@@ -401,6 +401,20 @@ $(HEADER_FILE_PREFIX:)\
 #define $(CLASS.NAME:c)_$(NAME:c) $(value)  // $(constant.description:no,block)
 .endfor
 .-
+.for class.enum
+
+typedef enum {
+.  for enum.constant
+.    if last()
+.        post = ""
+.    else
+.        post = ","
+.    endif
+    $(CLASS.NAME:c)_$(CONSTANT.NAME:c) = $(value)$(post)
+.  endfor
+} $(class.name:c)_$(enum.name:c)_t;
+.endfor
+.-
 .for class.callback_type
 
 // $(callback_type.description:no,block)
