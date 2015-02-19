@@ -26,11 +26,11 @@ include $\(PREBUILT_SHARED_LIBRARY)
 #   Build $(project.name)
 
 include $\(CLEAR_VARS)
-LOCAL_MODULE := $(project.name)
+LOCAL_MODULE := $(project.name:c)
 LOCAL_C_INCLUDES := ../../include $\(LIBZMQ)/include
 LOCAL_SRC_FILES :=\
 .for class
- $(name).c\
+ $(name:c).c\
 .endfor
 
 LOCAL_SHARED_LIBRARIES := zmq

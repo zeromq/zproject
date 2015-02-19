@@ -4,16 +4,16 @@
 .#  language. See https://github.com/imatix/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
-.if !file.exists ('builds/msvc/vs2008/$(project.name)')
-.   directory.create('builds/msvc/vs2008/$(project.name)')
+.if !file.exists ('builds/msvc/vs2008/$(project.name:c)')
+.   directory.create('builds/msvc/vs2008/$(project.name:c)')
 .endif
-.echo "Generating builds/msvc/vs2008/$(project.name)/$(project.name).sln..."
-.output "builds/msvc/vs2008/$(project.name)/$(project.name).sln"
+.echo "Generating builds/msvc/vs2008/$(project.name:c)/$(project.name:c).sln..."
+.output "builds/msvc/vs2008/$(project.name:c)/$(project.name:c).sln"
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.name)", "$(project.name)\$(project.name).vcproj", "{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.name:c)", "$(project.name:c)\\$(project.name:c).vcproj", "{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.name)_selftest", "$(project.name)_selftest\$(project.name)_selftest.vcproj", "{A5497C4B-1CD1-4779-9458-2CF7908E7E26}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.name:c)_selftest", "$(project.name:c)_selftest\\$(project.name:c)_selftest.vcproj", "{A5497C4B-1CD1-4779-9458-2CF7908E7E26}"
 EndProject
 Global
     GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,13 +75,13 @@ Global
     EndGlobalSection
 EndGlobal
 .#
-.echo "Generating builds/msvc/vs2008/$(project.name)/$(project.name).vcproj..."
-.output "builds/msvc/vs2008/$(project.name)/$(project.name).vcproj"
+.echo "Generating builds/msvc/vs2008/$(project.name:c)/$(project.name:c).vcproj..."
+.output "builds/msvc/vs2008/$(project.name:c)/$(project.name:c).vcproj"
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 $(project.GENERATED_WARNING_HEADER:)
 -->
-<VisualStudioProject ProjectType="Visual C++" Version="9.00" Name="$(project.name)" ProjectGUID="{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}" RootNamespace="$(project.name)" TargetFrameworkVersion="0">
+<VisualStudioProject ProjectType="Visual C++" Version="9.00" Name="$(project.name:c)" ProjectGUID="{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}" RootNamespace="$(project.name:c)" TargetFrameworkVersion="0">
   <Platforms>
     <Platform Name="Win32" />
     <Platform Name="x64" />
@@ -94,14 +94,14 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="0" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
+      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="0" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="NDEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLibrarianTool" OutputFile=".\\$(project.name).lib" SuppressStartupBanner="true" />
+      <Tool Name="VCLibrarianTool" OutputFile=".\\$(project.name:c).lib" SuppressStartupBanner="true" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCXDCMakeTool" />
-      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name).bsc" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name:c).bsc" />
       <Tool Name="VCFxCopTool" />
       <Tool Name="VCPostBuildEventTool" />
     </Configuration>
@@ -111,14 +111,14 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" TargetEnvironment="3" />
-      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="0" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
+      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="0" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="NDEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLibrarianTool" OutputFile=".\\$(project.name).lib" SuppressStartupBanner="true" />
+      <Tool Name="VCLibrarianTool" OutputFile=".\\$(project.name:c).lib" SuppressStartupBanner="true" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCXDCMakeTool" />
-      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name).bsc" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name:c).bsc" />
       <Tool Name="VCFxCopTool" />
       <Tool Name="VCPostBuildEventTool" />
     </Configuration>
@@ -128,14 +128,14 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" Optimization="0" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" MinimalRebuild="false" BasicRuntimeChecks="3" RuntimeLibrary="1" PrecompiledHeaderFile="./$(project.name).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="1" />
+      <Tool Name="VCCLCompilerTool" Optimization="0" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" MinimalRebuild="false" BasicRuntimeChecks="3" RuntimeLibrary="1" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="1" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="_DEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLibrarianTool" OutputFile=".\\$(project.name).lib" SuppressStartupBanner="true" />
+      <Tool Name="VCLibrarianTool" OutputFile=".\\$(project.name:c).lib" SuppressStartupBanner="true" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCXDCMakeTool" />
-      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name).bsc" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name:c).bsc" />
       <Tool Name="VCFxCopTool" />
       <Tool Name="VCPostBuildEventTool" />
     </Configuration>
@@ -145,14 +145,14 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" TargetEnvironment="3" />
-      <Tool Name="VCCLCompilerTool" Optimization="0" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" MinimalRebuild="false" BasicRuntimeChecks="3" RuntimeLibrary="1" PrecompiledHeaderFile="./$(project.name).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="1" />
+      <Tool Name="VCCLCompilerTool" Optimization="0" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" MinimalRebuild="false" BasicRuntimeChecks="3" RuntimeLibrary="1" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="1" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="_DEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLibrarianTool" OutputFile=".\\$(project.name).lib" SuppressStartupBanner="true" />
+      <Tool Name="VCLibrarianTool" OutputFile=".\\$(project.name:c).lib" SuppressStartupBanner="true" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCXDCMakeTool" />
-      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name).bsc" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name:c).bsc" />
       <Tool Name="VCFxCopTool" />
       <Tool Name="VCPostBuildEventTool" />
     </Configuration>
@@ -162,7 +162,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" Optimization="0" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.NAME)_EXPORTS;_WIN32;WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" MinimalRebuild="false" BasicRuntimeChecks="3" RuntimeLibrary="3" PrecompiledHeaderFile="./$(project.name).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="1" />
+      <Tool Name="VCCLCompilerTool" Optimization="0" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.NAME:c)_EXPORTS;_WIN32;WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" MinimalRebuild="false" BasicRuntimeChecks="3" RuntimeLibrary="3" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="1" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="_DEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
@@ -170,7 +170,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCALinkTool" />
       <Tool Name="VCManifestTool" />
       <Tool Name="VCXDCMakeTool" />
-      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name).bsc" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name:c).bsc" />
       <Tool Name="VCFxCopTool" />
       <Tool Name="VCAppVerifierTool" />
       <Tool Name="VCPostBuildEventTool" />
@@ -181,7 +181,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" TargetEnvironment="3" />
-      <Tool Name="VCCLCompilerTool" Optimization="0" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.NAME)_EXPORTS;_WIN32;WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" MinimalRebuild="false" BasicRuntimeChecks="3" RuntimeLibrary="3" PrecompiledHeaderFile="./$(project.name).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="1" />
+      <Tool Name="VCCLCompilerTool" Optimization="0" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.NAME:c)_EXPORTS;_WIN32;WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" MinimalRebuild="false" BasicRuntimeChecks="3" RuntimeLibrary="3" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="1" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="_DEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
@@ -189,7 +189,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCALinkTool" />
       <Tool Name="VCManifestTool" />
       <Tool Name="VCXDCMakeTool" />
-      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name).bsc" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name:c).bsc" />
       <Tool Name="VCFxCopTool" />
       <Tool Name="VCAppVerifierTool" />
       <Tool Name="VCPostBuildEventTool" />
@@ -200,7 +200,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.NAME)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
+      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.NAME:c)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="NDEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
@@ -208,7 +208,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCALinkTool" />
       <Tool Name="VCManifestTool" />
       <Tool Name="VCXDCMakeTool" />
-      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name).bsc" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name:c).bsc" />
       <Tool Name="VCFxCopTool" />
       <Tool Name="VCAppVerifierTool" />
       <Tool Name="VCPostBuildEventTool" />
@@ -219,7 +219,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" TargetEnvironment="3" />
-      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.NAME)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
+      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.NAME:c)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="NDEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
@@ -227,7 +227,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCALinkTool" />
       <Tool Name="VCManifestTool" />
       <Tool Name="VCXDCMakeTool" />
-      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name).bsc" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name:c).bsc" />
       <Tool Name="VCFxCopTool" />
       <Tool Name="VCAppVerifierTool" />
       <Tool Name="VCPostBuildEventTool" />
@@ -238,7 +238,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.NAME)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
+      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.NAME:c)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="NDEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
@@ -246,7 +246,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCALinkTool" />
       <Tool Name="VCManifestTool" />
       <Tool Name="VCXDCMakeTool" />
-      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name).bsc" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name:c).bsc" />
       <Tool Name="VCFxCopTool" />
       <Tool Name="VCAppVerifierTool" />
       <Tool Name="VCPostBuildEventTool" />
@@ -257,7 +257,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" TargetEnvironment="3" />
-      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.NAME)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
+      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.NAME:c)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="NDEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
@@ -265,7 +265,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCALinkTool" />
       <Tool Name="VCManifestTool" />
       <Tool Name="VCXDCMakeTool" />
-      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name).bsc" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile="./$(project.name:c).bsc" />
       <Tool Name="VCFxCopTool" />
       <Tool Name="VCAppVerifierTool" />
       <Tool Name="VCPostBuildEventTool" />
@@ -275,7 +275,7 @@ $(project.GENERATED_WARNING_HEADER:)
   <Files>
     <Filter Name="Source Files" Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 .for class
-      <File RelativePath="..\\..\\..\\..\\src\\$(name).c">
+      <File RelativePath="..\\..\\..\\..\\src\\$(name:c).c">
         <FileConfiguration Name="Release|Win32">
           <Tool Name="VCCLCompilerTool" CompileAs="2" />
         </FileConfiguration>
@@ -317,20 +317,20 @@ $(project.GENERATED_WARNING_HEADER:)
 .   else
 .       class.classdir = "include"
 .   endif
-      <File RelativePath="..\\..\\..\\..\\$(classdir)\\$(name).h" />
+      <File RelativePath="..\\..\\..\\..\\$(classdir)\\$(name:c).h" />
 .endfor
       <File RelativePath="..\\..\\..\\..\\include\\$(project.prefix)_library.h" />
 .if file.exists ("include/$(project.prelude)")
       <File RelativePath="..\\..\\..\\..\\include\\$(project.prelude)" />
 .endif
 .if count (class, class.name = project.name) = 0
-      <File RelativePath="..\\..\\..\\..\\include\\$(project.name).h" />
+      <File RelativePath="..\\..\\..\\..\\include\\$(project.name:c).h" />
 .endif
 .for header where !defined (header.private)
-      <File RelativePath="..\\..\\..\\..\\include\\$(name).h" />
+      <File RelativePath="..\\..\\..\\..\\include\\$(name:c).h" />
 .endfor
 .for extra
-      <File RelativePath="..\\..\\..\\..\\src\\$(name)" />
+      <File RelativePath="..\\..\\..\\..\\src\\$(name:c)" />
 .endfor
     </Filter>
   </Files>
