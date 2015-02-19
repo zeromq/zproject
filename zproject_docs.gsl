@@ -8,7 +8,7 @@
 .#  This script will generate the following files:
 .#      * doc/Makefile.am
 .#      * doc/asciidoc.conf
-.#      * doc/$(project.name).txt (once)
+.#      * doc/$(project.name:c).txt (once)
 .#  ===========================================================================
 .if !file.exists ("doc")
 .   directory.create ("doc")
@@ -16,17 +16,17 @@
 .echo "Generating doc/Makefile.am..."
 .output "doc/Makefile.am"
 $(project.GENERATED_WARNING_HEADER:)
-.project.manpage = "$(project.name).7"
+.project.manpage = "$(project.name:c).7"
 .man3 = ""
 .for project.class where private?0 = 0
-.   man3 += " $(name).3"
+.   man3 += " $(name:c).3"
 .   if class.name = project.name
 .       project.manpage = ""
 .   endif
 .endfor
 .man1 = ""
 .for project.main where private?0 = 0
-.   man1 += " $(name).1"
+.   man1 += " $(name:c).1"
 .   if main.name = project.name
 .       project.manpage = ""
 .   endif
@@ -55,7 +55,7 @@ SUFFIXES=.txt .xml .1 .3 .7
 
 \.txt.xml:
 \tasciidoc -d manpage -b docbook -f $\(srcdir)/asciidoc.conf \\
-        -a$(project.name)_version=@PACKAGE_VERSION@ -o$@ $<
+        -a$(project.name:c)_version=@PACKAGE_VERSION@ -o$@ $<
 \.xml.1:
 \txmlto man $<
 \.xml.3:
@@ -64,21 +64,21 @@ SUFFIXES=.txt .xml .1 .3 .7
 \txmlto man $<
 
 .for project.class where private?0 = 0
-$(name).txt:
+$(name:c).txt:
 \tzproject_mkman $@
 .endfor
 .for project.main where private?0 = 0
-$(name).txt:
+$(name:c).txt:
 \tzproject_mkman $@
 .endfor
 clean:
 \trm -f *.1 *.3
 \tzproject_mkman \
 .for project.class where private?0 = 0
-$(name) \
+$(name:c) \
 .endfor
 .for project.main where private?0 = 0
-$(name) \
+$(name:c) \
 .endfor
 
 endif
@@ -90,10 +90,10 @@ $(project.GENERATED_WARNING_HEADER:)
 literal-style=template="literalparagraph"
 
 [macros]
-(?su)[\\\\]?(?P<name>link$(project.name)):(?P<target>\\S*?)\\[(?P<attrlist>.*?)\\]=
+(?su)[\\\\]?(?P<name>link$(project.name:c)):(?P<target>\\S*?)\\[(?P<attrlist>.*?)\\]=
 
 ifdef::backend-docbook[]
-[linkf$(project.name)-inlinemacro]
+[linkf$(project.name:c)-inlinemacro]
 {0%{target}}
 {0#<citerefentry>}
 {0#<refentrytitle>{target}</refentrytitle><manvolnum>{0}</manvolnum>}
@@ -101,7 +101,7 @@ ifdef::backend-docbook[]
 endif::backend-docbook[]
 
 ifdef::backend-xhtml11[]
-[link$(project.name)-inlinemacro]
+[link$(project.name:c)-inlinemacro]
 <a href="{target}.html">{target}{0?({0})}</a>
 endif::backend-xhtml11[]
 
@@ -114,7 +114,7 @@ template::[header-declarations]
 <refentrytitle>{mantitle}</refentrytitle>
 <manvolnum>{manvolnum}</manvolnum>
 <refmiscinfo class="source">$(project.name:Pascal)</refmiscinfo>
-<refmiscinfo class="version">{$(project.name)_version}</refmiscinfo>
+<refmiscinfo class="version">{$(project.name:c)_version}</refmiscinfo>
 <refmiscinfo class="manual">$(project.name:Pascal) Manual</refmiscinfo>
 </refmeta>
 <refnamediv>
@@ -138,22 +138,22 @@ template::[header-declarations]
 </refentry>
 endif::backend-docbook[]
 endif::doctype-manpage[]
-.if !file.exists ("doc/$(project.name).txt")
-.echo "Generating doc/$(project.name).txt..."
-.output "doc/$(project.name).txt"
+.if !file.exists ("doc/$(project.name:c).txt")
+.echo "Generating doc/$(project.name:c).txt..."
+.output "doc/$(project.name:c).txt"
 Name(7)
 =======
 
 
 NAME
 ----
-$(project.name) - $(project.description:)
+$(project.name:c) - $(project.description:)
 
 
 SYNOPSIS
 --------
 ----
-#include <$(project.name).h>
+#include <$(project.name:c).h>
 
 cc ['flags'] 'files' -l$(project.linkname) ['libraries']
 ----

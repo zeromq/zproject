@@ -20,7 +20,7 @@ CFLAGS=-Wall -Os -g -D$(PROJECT.LIBNAME)_EXPORTS $\(INCDIR)
 
 OBJS =\
 .for class
- $(name).o\
+ $(name:c).o\
 .endfor
 
 %.o: ../../src/%.c

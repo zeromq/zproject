@@ -4,11 +4,11 @@
 .#  language. See https://github.com/imatix/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
-.echo "Generating builds/msvc/vs2012/$(project.name)/$(project.name).vcxproj..."
-.if !file.exists ("builds/msvc/vs2012/$(project.name)")
-.   directory.create("builds/msvc/vs2012/$(project.name)")
+.echo "Generating builds/msvc/vs2012/$(project.name:c)/$(project.name:c).vcxproj..."
+.if !file.exists ("builds/msvc/vs2012/$(project.name:c)")
+.   directory.create("builds/msvc/vs2012/$(project.name:c)")
 .endif    
-.output "builds/msvc/vs2012/$(project.name)/$(project.name).vcxproj"
+.output "builds/msvc/vs2012/$(project.name:c)/$(project.name:c).vcxproj"
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 $(project.GENERATED_WARNING_HEADER:)
@@ -16,7 +16,7 @@ $(project.GENERATED_WARNING_HEADER:)
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}</ProjectGuid>
-    <ProjectName>$(project.name)</ProjectName>
+    <ProjectName>$(project.name:c)</ProjectName>
     <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
@@ -90,24 +90,24 @@ $(project.GENERATED_WARNING_HEADER:)
     <ClInclude Include="..\\..\\..\\..\\include\\$(project.prelude)" />
 .endif
 .if count (class, class.name = project.name) = 0
-    <ClInclude Include="..\\..\\..\\..\\include\\$(project.name).h" />
+    <ClInclude Include="..\\..\\..\\..\\include\\$(project.name:c).h" />
 .endif
 .for header where !defined (header.private)
-    <ClInclude Include="..\\..\\..\\..\\include\\$(name).h" />
+    <ClInclude Include="..\\..\\..\\..\\include\\$(name:c).h" />
 .endfor
 .for extra
-    <ClInclude Include="..\\..\\..\\..\\src\\$(name)" />
+    <ClInclude Include="..\\..\\..\\..\\src\\$(name:c)" />
 .endfor
   </ItemGroup>
   <ItemGroup>
 .for class
-    <ClCompile Include="..\\..\\..\\..\\src\\$(name).c">
+    <ClCompile Include="..\\..\\..\\..\\src\\$(name:c).c">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
 .endfor
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\\..\\$(project.name).rc" />
+    <ResourceCompile Include="..\\..\\$(project.name:c).rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\\..\\..\\..\\packaging\\nuget\\package.bat" />
@@ -122,8 +122,8 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
   -->
 </Project>
-.echo "Generating builds/msvc/vs2012/$(project.name)/$(project.name).vcxproj.filters..."
-.output "builds/msvc/vs2012/$(project.name)/$(project.name).vcxproj.filters"
+.echo "Generating builds/msvc/vs2012/$(project.name:c)/$(project.name:c).vcxproj.filters..."
+.output "builds/msvc/vs2012/$(project.name:c)/$(project.name:c).vcxproj.filters"
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 $(project.GENERATED_WARNING_HEADER:)
@@ -131,7 +131,7 @@ $(project.GENERATED_WARNING_HEADER:)
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
 .for class
-    <ClCompile Include="..\\..\\..\\..\\src\\$(name).c">
+    <ClCompile Include="..\\..\\..\\..\\src\\$(name:c).c">
       <Filter>src</Filter>
     </ClCompile>
 .endfor
@@ -146,17 +146,17 @@ $(project.GENERATED_WARNING_HEADER:)
     </ClInclude>
 .endif
 .if count (class, class.name = project.name) = 0
-    <ClInclude Include="..\\..\\..\\..\\include\\$(project.name).h">
+    <ClInclude Include="..\\..\\..\\..\\include\\$(project.name:c).h">
       <Filter>include</Filter>
     </ClInclude>
 .endif
 .for header where !defined (header.private)
-    <ClInclude Include="..\\..\\..\\..\\include\\$(name).h">
+    <ClInclude Include="..\\..\\..\\..\\include\\$(name:c).h">
       <Filter>include</Filter>
     </ClInclude>
 .endfor
 .for extra
-    <ClInclude Include="..\\..\\..\\..\\src\\$(name)">
+    <ClInclude Include="..\\..\\..\\..\\src\\$(name:c)">
       <Filter>src</Filter>
     </ClInclude>
 .endfor
@@ -172,7 +172,7 @@ $(project.GENERATED_WARNING_HEADER:)
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\\..\\$(project.name).rc">
+    <ResourceCompile Include="..\\..\\$(project.name:c).rc">
       <Filter>resource</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -294,7 +294,7 @@ $(project.GENERATED_WARNING_HEADER:)
     <ClCompile Include="..\\..\\..\\..\\src\\$(project.prefix)_selftest.c" />
   </ItemGroup>
     <ItemGroup>
-    <ProjectReference Include="..\\$(project.name)\\$(project.name).vcxproj">
+    <ProjectReference Include="..\\$(project.name:c)\\$(project.name:c).vcxproj">
       <Project>{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}</Project>
     </ProjectReference>
   </ItemGroup>

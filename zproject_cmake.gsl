@@ -99,10 +99,10 @@ set ($(project.name)_headers
     include/$(project.prelude)
 .endif
 .if count (class, class.name = project.name) = 0
-    include/$(project.name).h
+    include/$(project.name:c).h
 .endif
 .for header where !defined (header.private)
-    include/$(name).h
+    include/$(name:c).h
 .endfor
 .for class
 .   if class.private ?= 1
@@ -110,7 +110,7 @@ set ($(project.name)_headers
 .   else
 .       class.classdir = "include"
 .   endif
-    $(classdir)/$(name).h
+    $(classdir)/$(name:c).h
 .endfor
 .for extra
     src/$(name)
@@ -126,7 +126,7 @@ include_directories(${BINARY_DIR})
 include_directories(${SOURCE_DIR}/include)
 set ($(project.name)_sources
 .for class
-    src/$(name).c
+    src/$(name:c).c
 .endfor
 )
 source_group ("Source Files" FILES ${$(project.name)_sources})

@@ -88,23 +88,23 @@ include_HEADERS = \\
     include/$(project.prelude) \\
 .endif
 .if count (class, class.name = project.name) = 0
-    include/$(project.name).h \\
+    include/$(project.name:c).h \\
 .endif
 .for header where !defined (header.private)
-    include/$(name).h \\
+    include/$(name:c).h \\
 .endfor
 .for class where !defined (class.private)
 .   class.classdir = "include"
-    $(classdir)/$(name).h \\
+    $(classdir)/$(name:c).h \\
 .endfor
     include/$(project.prefix)_library.h
 
 src_$(project.libname)_la_SOURCES = \\
 .for class
-    src/$(name).c \\
+    src/$(name:c).c \\
 .endfor
 .for extra
-    src/$(name) \\
+    src/$(name:c) \\
 .endfor
     src/platform.h
 
@@ -129,7 +129,7 @@ endif
 src_$(project.libname)_la_LIBADD = ${project_libs}
 
 .for project.main
-if WITH_$(NAME)
+if WITH_$(NAME:c)
 .   if main.private ?= 1
 noinst_PROGRAMS += src/$(main.name)
 .   else
@@ -137,7 +137,7 @@ bin_PROGRAMS += src/$(main.name)
 .   endif
 src_$(main.name)_CPPFLAGS = ${AM_CPPFLAGS}
 src_$(main.name)_LDADD = ${program_libs}
-src_$(name)_SOURCES = src/$(name).c
+src_$(name:c)_SOURCES = src/$(name:c).c
 .   if main.service ?= 1
 src_$(main.name)_configdir = \$(sysconfdir)/$(project.name)
 src_$(main.name)_config_DATA = src/$(main.name).cfg
@@ -182,9 +182,9 @@ code:
 . for model.param
 -$(param.name):$(param.value) \
 . endfor
--q $(name).xml
+-q $(name:c).xml
 .   else
-\tcd $\(srcdir)/src; gsl -q $(name).xml
+\tcd $\(srcdir)/src; gsl -q $(name:c).xml
 .   endif
 .endfor
 
