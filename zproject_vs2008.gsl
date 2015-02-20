@@ -330,7 +330,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <File RelativePath="..\\..\\..\\..\\include\\$(name:c).h" />
 .endfor
 .for extra
-      <File RelativePath="..\\..\\..\\..\\src\\$(name:c)" />
+      <File RelativePath="..\\..\\..\\..\\src\\$(name)" />
 .endfor
     </Filter>
   </Files>

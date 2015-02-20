@@ -96,7 +96,7 @@ $(project.GENERATED_WARNING_HEADER:)
     <ClInclude Include="..\\..\\..\\..\\include\\$(name:c).h" />
 .endfor
 .for extra
-    <ClInclude Include="..\\..\\..\\..\\src\\$(name:c)" />
+    <ClInclude Include="..\\..\\..\\..\\src\\$(name)" />
 .endfor
   </ItemGroup>
   <ItemGroup>
@@ -156,7 +156,7 @@ $(project.GENERATED_WARNING_HEADER:)
     </ClInclude>
 .endfor
 .for extra
-    <ClInclude Include="..\\..\\..\\..\\src\\$(name:c)">
+    <ClInclude Include="..\\..\\..\\..\\src\\$(name)">
       <Filter>src</Filter>
     </ClInclude>
 .endfor
