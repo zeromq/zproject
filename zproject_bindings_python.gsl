@@ -148,7 +148,6 @@ function python_method_definition(method)
     endfor
 
     call = "lib.$(class.name:c)_$(my.method.name:c)($(callargs))"
-    echo 'returning $(my.method->return.type)'
     if defined (my.method->return.python_return)
         call = string.replace (my.method->return.python_return, "<>|$(call:)")
     endif
