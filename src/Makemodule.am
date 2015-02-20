@@ -14,6 +14,7 @@ myproject_SCRIPTS = \
     zproject_android.gsl \
     zproject_autoconf.gsl \
     zproject_automake.gsl \
+    zproject_bindings_python.gsl \
     zproject_bindings_qml.gsl \
     zproject_bindings_ruby.gsl \
     zproject_ci.gsl \

@@ -1,0 +1,257 @@
+.template 0
+#  Only build bindings if there is at least one API model
+if count (class, defined (class.api))
+
+#  Generate minimal Python language bindings.
+#  These are not meant to be idiomatic, but to provide a minimal platform
+#  of FFI function bindings on which to base idiomatic Python classes.
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+#
+
+if !file.exists ("bindings/python/")
+   directory.create("bindings/python/")
+endif
+
+function resolve_python_container (container)
+    my.container.python_name = "$(my.container.name:c)"
+    if my.container.python_name = "_"
+        my.container.python_name = "result"
+    endif
+
+    if defined (my.container.variadic)
+        my.container.python_type = "" # ctypes doesn't explictly state variadic signatures, so we just leave it off
+    elsif defined (my.container.is_enum)
+        my.container.python_type = "c_int"
+        my.container.python_coerce = "$(my.container.enum_class:Pascal).$(my.container.enum_name:Pascal)[<>]"
+        my.container.python_return = "$(my.container.enum_class:Pascal).$(my.container.enum_name:Pascal)_out[<>]"
+    elsif my.container.type = "nothing"
+        my.container.python_type = "None"
+    elsif my.container.type = "anything"
+        my.container.python_type = "c_void_p"
+    elsif my.container.type = "boolean" | my.container.type = "integer"
+        my.container.python_type = "c_int"
+    elsif my.container.type = "size"
+        my.container.python_type = "c_size_t"
+    elsif my.container.type = "real"
+        my.container.python_type = "c_float"
+    elsif my.container.type = "string" | my.container.type = "format"
+        my.container.python_type = "c_char_p"
+    elsif my.container.callback
+        my.container.python_type = my.container.type
+    else
+        if count(project->python_types.type, type.name = my.container.type) = 0
+            new project->python_types.type
+                type.name = my.container.type
+            endnew
+        endif
+        my.container.python_type = "$(my.container.type:c)_p"
+    endif
+
+    if my.container.by_reference
+        my.container.python_coerce = "byref($(my.container.python_type:).from_param(<>))"
+        my.container.python_type = "POINTER($(my.container.python_type:))"
+    endif
+endfunction
+
+function resolve_python_method (method)
+    my.method.python_name = "$(my.method.name:c)"
+    for my.method.argument where !defined (argument.variadic)
+        resolve_python_container (argument)
+    endfor
+    for my.method.return as ret
+        resolve_python_container (ret)
+    endfor
+endfunction
+
+function resolve_python_class (class)
+    for my.class.callback_type as method
+        resolve_python_method (method)
+    endfor
+    for my.class.constructor as method
+        resolve_python_method (method)
+    endfor
+    for my.class.destructor as method
+        resolve_python_method (method)
+    endfor
+    for my.class.method
+        resolve_python_method (method)
+    endfor
+endfunction
+
+function python_method_annotation(method)
+    fn = "lib.$(class.name:c)_$(method.name:c)"
+    for my.method.return
+        restype = return.python_type
+    endfor
+    argtypes = "["
+    if !my.method.singleton
+        argtypes += "$(class.name:c)_p"
+        if count (my.method.argument, !defined (argument.variadic))
+            argtypes += ", "
+        endif
+    endif
+    for my.method.argument where !defined (argument.variadic)
+        argtypes += argument.python_type
+        if !last(argument)
+            argtypes += ", "
+        endif
+    endfor
+    argtypes += "]"
+>$(fn:).restype = $(restype:)
+>$(fn:).argtypes = $(argtypes:)
+endfunction
+
+function python_callback_create(cb)
+    result = ""
+    for my.cb.return
+        result += return.python_type
+    endfor
+    for my.cb.argument where !defined (argument.variadic)
+        result += ", "
+        result += argument.python_type
+    endfor
+    return "CALLBACK($(result:))"
+endfunction
+
+function python_method_definition(method)
+    if my.method.singleton
+        argnames = ""
+        callargs = ""
+    else
+        argnames = "self"
+        callargs = "self._as_parameter_"
+        if count (my.method.argument)
+            argnames += ", "
+            callargs += ", "
+        endif
+    endif
+    for my.method.argument
+        if defined (argument.variadic)
+            argnames += "*args"
+            callargs += "*args"
+        else
+            argnames += "$(argument.name:c)"
+            if defined (argument.python_coerce)
+                callargs += string.replace(argument.python_coerce, "<>|$(argument.name:c)")
+            else
+                callargs += "$(argument.name:c)"
+            endif
+        endif
+
+        if !last (argument)
+            argnames += ", "
+            callargs += ", "
+        endif
+    endfor
+
+    call = "lib.$(class.name:c)_$(my.method.name:c)($(callargs))"
+    echo 'returning $(my.method->return.type)'
+    if defined (my.method->return.python_return)
+        call = string.replace (my.method->return.python_return, "<>|$(call:)")
+    endif
+
+    if my.method.singleton
+>    @staticmethod
+    endif
+>    def $(my.method.name:c)($(argnames)):
+>        """$(my.method.description:no)"""
+>        return $(call:)
+>
+endfunction
+
+# Container for UDTs used by this module
+new python_types
+endnew 
+
+for class where defined (class.api)
+    resolve_python_class (class)
+endfor
+
+echo "Generating bindings/python/$(project.name:c).py"
+output "bindings/python/$(project.name:c).py"
+>$(project.GENERATED_WARNING_HEADER:)
+>
+>from ctypes import *
+>from ctypes.util import find_library
+>
+>libpath = find_library("$(project.name:c)")
+>if not libpath:
+>    raise ImportError("Unable to find $(project.name:c) C library")
+>lib = cdll.LoadLibrary(libpath)
+
+>
+for project->python_types.type
+>class $(type.name:)_t(Structure):
+>    pass # Empty - only for type checking
+>$(type.name:)_p = POINTER($(type.name:)_t)
+>
+endfor
+
+for class where defined (class.api)
+>
+># $(class.name)
+    for callback_type as type
+>$(type.name:c) = $(python_callback_create(type))
+    endfor
+
+    for constructor as method
+        python_method_annotation(method)
+    endfor
+
+    for destructor as method
+        python_method_annotation(method)
+    endfor
+
+    for method
+        python_method_annotation(method)
+    endfor
+
+>
+>class $(class.name:Pascal)(object):
+>    """$(class.description:no)"""
+    if count(enum) > 0
+        for enum
+>
+>    $(enum.name:Pascal) = {
+            for enum.constant
+>        '$(constant.name)': $(constant.value),
+            endfor
+>    }
+>
+>    $(enum.name:Pascal)_out = {
+            for enum.constant
+>         $(constant.value): '$(constant.name)',
+            endfor
+>    }
+        endfor
+    endif
+>
+    for constructor as method
+>    def __init__(self, *args):
+>        """$(method.description:no)"""
+>        if len(args) == 1 and isinstance(args[0], $(class.name:c)_p):
+>            self._as_parameter_ = args[0] # Conversion from raw type to binding
+>        else:
+>            self._as_parameter_ = lib.$(class.name:c)_$(method.name)(*args) # Creation of new raw type
+>
+    endfor
+    for destructor as method
+>    def __del__(self):
+>        """$(method.description:no)"""
+>        lib.$(class.name:c)_$(method.name)(byref(self._as_parameter_))
+>
+    endfor
+    for method
+        python_method_definition(method)
+    endfor
+endfor
+
+
+>$(project.GENERATED_WARNING_HEADER:)
+
+endif
+
+.endtemplate
