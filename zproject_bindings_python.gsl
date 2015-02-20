@@ -113,7 +113,7 @@ function python_callback_create(cb)
         result += ", "
         result += argument.python_type
     endfor
-    return "CALLBACK($(result:))"
+    return "CFUNCTYPE($(result:))"
 endfunction
 
 function python_method_definition(method)
@@ -194,7 +194,7 @@ for class where defined (class.api)
 >
 ># $(class.name)
     for callback_type as type
->$(type.name:c) = $(python_callback_create(type))
+>$(class.name:c)_$(type.name:c) = $(python_callback_create(type))
     endfor
 
     for constructor as method
