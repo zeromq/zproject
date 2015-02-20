@@ -8,8 +8,8 @@ for project.class
             class.api = # undefined
         endif
     else
-        if file.exists ("api/$(class.name).xml")
-            class.api = "api/$(class.name).xml"
+        if file.exists ("api/$(class.name:c).xml")
+            class.api = "api/$(class.name:c).xml"
         endif
     endif
 endfor
