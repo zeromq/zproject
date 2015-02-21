@@ -24,6 +24,8 @@ function python_register_import (lib, class)
 endfunction
 
 function python_register_type (container, struct, pointer)
+    my.fresh_bool = my.container.fresh ?? "True" ? "False"
+
     for project.use
         for use.class where class.name = my.container.type
             my.externlib = use.project
@@ -33,7 +35,7 @@ function python_register_type (container, struct, pointer)
     if defined (my.externlib)
         python_register_import(my.externlib, my.container.type)
         my.container.python_type = "$(my.externlib:c).$(my.container.type:c,no)_p"
-        my.container.python_return = "$(my.externlib:c).$(my.container.type:Pascal)(<>)"
+        my.container.python_return = "$(my.externlib:c).$(my.container.type:Pascal)(<>, $(my.fresh_bool:))"
     else
         if count(project->python_types.type, type.name = my.struct) = 0
             new project->python_types.type
@@ -42,6 +44,9 @@ function python_register_type (container, struct, pointer)
             endnew
         endif
         my.container.python_type = my.pointer
+        for project.class where defined (class.api & class.name = my.container.type)
+            my.container.python_return = "$(my.container.type:Pascal)(<>, $(my.fresh_bool:))"
+        endfor
     endif
 endfunction
 
@@ -298,16 +303,19 @@ for class where defined (class.api)
     for constructor as method
 >    def __init__(self, *args):
 >        """$(method.description:no)"""
->        if len(args) == 1 and isinstance(args[0], $(class.name:c)_p):
+>        if len(args) == 2 and isinstance(args[0], $(class.name:c)_p) and isinstance(args[1], bool):
 >            self._as_parameter_ = args[0] # Conversion from raw type to binding
+>            self.allow_destruct = args[1] # This is a 'fresh' value, owned by us
 >        else:
 >            self._as_parameter_ = lib.$(class.name:c)_$(method.name)(*args) # Creation of new raw type
+>            self.allow_destruct = True
 >
     endfor
     for destructor as method
 >    def __del__(self):
 >        """$(method.description:no)"""
->        lib.$(class.name:c)_$(method.name)(byref(self._as_parameter_))
+>        if self.allow_destruct:
+>            lib.$(class.name:c)_$(method.name)(byref(self._as_parameter_))
 >
     endfor
     for method
