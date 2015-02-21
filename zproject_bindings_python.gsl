@@ -56,7 +56,13 @@ function resolve_python_container (container)
     elsif my.container.type = "FILE"
         my.container.python_type = python_register_type("FILE", "FILE_p")
     elsif my.container.type = "string" | my.container.type = "format"
-        my.container.python_type = "c_char_p"
+        if defined (my.container.fresh) & my.container.fresh = 1
+            my.container.python_type = "POINTER(c_char)" # No auto-conversion to string please - we need to free the memory.
+            my.container.python_return = "return_fresh_string(<>)"
+            project->python_types.uses_fresh_string = 1
+        else
+            my.container.python_type = "c_char_p"
+        endif
     elsif my.container.callback
         my.container.python_type = my.container.type
     else
@@ -186,9 +192,30 @@ echo "Generating bindings/python/$(project.name:c).py"
 output "bindings/python/$(project.name:c).py"
 >$(project.GENERATED_WARNING_HEADER:)
 >
+>from __future__ import print_function
 >from ctypes import *
 >from ctypes.util import find_library
 >
+
+# libc only loaded if we use it
+if defined (project->python_types.uses_fresh_string)
+># load libc to access free, etc.
+>libcpath = find_library("libc")
+>if not libcpath:
+>    raise ImportError("Unable to find libc")
+>libc = cdll.LoadLibrary(libcpath)
+>libc.free.argtypes = [c_void_p]
+>libc.free.restype = None
+>
+>def return_fresh_string(char_p):
+>    s = string_at(char_p)
+>    libc.free(char_p)
+>    return s
+>
+>
+endif
+
+># $(project.name:c)
 >libpath = find_library("$(project.name:c)")
 >if not libpath:
 >    raise ImportError("Unable to find $(project.name:c) C library")
