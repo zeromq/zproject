@@ -77,6 +77,9 @@ endfunction
 
 function resolve_python_method (method)
     my.method.python_name = "$(my.method.name:c)"
+    if my.method.python_name = 'is' # matches keyword
+        my.method.python_name += "_"
+    endif
     for my.method.argument where !defined (argument.variadic)
         resolve_python_container (argument)
     endfor
@@ -174,7 +177,7 @@ function python_method_definition(method)
     if my.method.singleton
 >    @staticmethod
     endif
->    def $(my.method.name:c)($(argnames)):
+>    def $(my.method.python_name:c)($(argnames)):
 >        """$(my.method.description:no)"""
 >        return $(call:)
 >
