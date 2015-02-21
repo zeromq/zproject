@@ -178,7 +178,7 @@ function python_method_definition(method)
         else
             argnames += "$(argument.name:c)"
             if defined (argument.python_coerce)
-                callargs += string.replace(argument.python_coerce, "<>|$(argument.name:c)")
+                callargs += string.search_replace(argument.python_coerce, "<>", "$(argument.name:c)")
             else
                 callargs += "$(argument.name:c)"
             endif
@@ -192,7 +192,7 @@ function python_method_definition(method)
 
     call = "lib.$(class.name:c)_$(my.method.name:c)($(callargs:))"
     if defined (my.method->return.python_return)
-        call = string.replace (my.method->return.python_return, "<>|$(call:)")
+        call = string.search_replace(my.method->return.python_return, "<>", call)
     endif
 
     if my.method.singleton
