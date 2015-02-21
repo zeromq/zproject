@@ -56,6 +56,8 @@ function resolve_c_container (container)
     elsif my.type = "anything"
         my.c_type = "void"
         my.stars += "*"
+    elsif my.type = "byte"
+        my.c_type = "byte"
     elsif my.type = "integer"
         my.c_type = "int"
     elsif my.type = "size"
@@ -64,6 +66,9 @@ function resolve_c_container (container)
         my.c_type = "float"
     elsif my.type = "boolean"
         my.c_type = "bool"
+    elsif my.type = "FILE"
+        my.c_type = "FILE"
+        my.stars += "*"
     elsif my.type = "string"
         my.c_type = "char"
         my.stars += "*"
@@ -73,6 +78,10 @@ function resolve_c_container (container)
         my.stars += "*"
         my.container.constant ?= 1
         my.container.is_format = 1
+    elsif my.type = "buffer"
+        my.c_type = "byte"
+        my.stars += "*"
+        my.container.constant ?= !my.container.fresh
     elsif my.container.callback
         my.c_type = "$(my.type:c)"
     elsif string.prefix(my.container.type, ":") = "enum"

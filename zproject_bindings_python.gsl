@@ -15,6 +15,16 @@ if !file.exists ("bindings/python/")
    directory.create("bindings/python/")
 endif
 
+function python_register_type (struct, pointer)
+    if count(project->python_types.type, type.name = my.struct) = 0
+        new project->python_types.type
+            type.name = my.struct
+            type.pointer = my.pointer
+        endnew
+    endif
+    return my.pointer # We're usually referring to the pointer, so return that for convenience
+endfunction
+
 function resolve_python_container (container)
     my.container.python_name = "$(my.container.name:c)"
     if my.container.python_name = "_"
@@ -31,23 +41,26 @@ function resolve_python_container (container)
         my.container.python_type = "None"
     elsif my.container.type = "anything"
         my.container.python_type = "c_void_p"
-    elsif my.container.type = "boolean" | my.container.type = "integer"
+    elsif my.container.type = "boolean"
+        my.container.python_type = "c_bool"
+    elsif my.container.type = "byte"
+        my.container.python_type = "c_byte"
+    elsif my.container.type = "integer"
         my.container.python_type = "c_int"
     elsif my.container.type = "size"
         my.container.python_type = "c_size_t"
     elsif my.container.type = "real"
         my.container.python_type = "c_float"
+    elsif my.container.type = "buffer"
+        my.container.python_type = "POINTER(c_byte)"
+    elsif my.container.type = "FILE"
+        my.container.python_type = python_register_type("FILE", "FILE_p")
     elsif my.container.type = "string" | my.container.type = "format"
         my.container.python_type = "c_char_p"
     elsif my.container.callback
         my.container.python_type = my.container.type
     else
-        if count(project->python_types.type, type.name = my.container.type) = 0
-            new project->python_types.type
-                type.name = my.container.type
-            endnew
-        endif
-        my.container.python_type = "$(my.container.type:c)_p"
+        my.container.python_type = python_register_type("$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
     endif
 
     if my.container.by_reference
@@ -183,9 +196,9 @@ output "bindings/python/$(project.name:c).py"
 
 >
 for project->python_types.type
->class $(type.name:)_t(Structure):
+>class $(type.name:)(Structure):
 >    pass # Empty - only for type checking
->$(type.name:)_p = POINTER($(type.name:)_t)
+>$(type.pointer:) = POINTER($(type.name:))
 >
 endfor
 
