@@ -15,14 +15,34 @@ if !file.exists ("bindings/python/")
    directory.create("bindings/python/")
 endif
 
-function python_register_type (struct, pointer)
-    if count(project->python_types.type, type.name = my.struct) = 0
-        new project->python_types.type
-            type.name = my.struct
-            type.pointer = my.pointer
+function python_register_import (lib, class)
+    if count (project->python_types.import, import.lib = my.lib) = 0
+        new project->python_types.import
+            import.lib = my.lib
         endnew
     endif
-    return my.pointer # We're usually referring to the pointer, so return that for convenience
+endfunction
+
+function python_register_type (container, struct, pointer)
+    for project.use
+        for use.class where class.name = my.container.type
+            my.externlib = use.project
+            last
+        endfor
+    endfor
+    if defined (my.externlib)
+        python_register_import(my.externlib, my.container.type)
+        my.container.python_type = "$(my.externlib:c).$(my.container.type:c,no)_p"
+        my.container.python_return = "$(my.externlib:c).$(my.container.type:Pascal)(<>)"
+    else
+        if count(project->python_types.type, type.name = my.struct) = 0
+            new project->python_types.type
+                type.name = my.struct
+                type.pointer = my.pointer
+            endnew
+        endif
+        my.container.python_type = my.pointer
+    endif
 endfunction
 
 function resolve_python_container (container)
@@ -54,7 +74,7 @@ function resolve_python_container (container)
     elsif my.container.type = "buffer"
         my.container.python_type = "POINTER(c_byte)"
     elsif my.container.type = "FILE"
-        my.container.python_type = python_register_type("FILE", "FILE_p")
+        python_register_type(my.container, "FILE", "FILE_p")
     elsif my.container.type = "string" | my.container.type = "format"
         if defined (my.container.fresh) & my.container.fresh = 1
             my.container.python_type = "POINTER(c_char)" # No auto-conversion to string please - we need to free the memory.
@@ -66,7 +86,7 @@ function resolve_python_container (container)
     elsif my.container.callback
         my.container.python_type = my.container.type
     else
-        my.container.python_type = python_register_type("$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
+        python_register_type(my.container, "$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
     endif
 
     if my.container.by_reference
@@ -150,6 +170,7 @@ function python_method_definition(method)
             callargs += ", "
         endif
     endif
+
     for my.method.argument
         if defined (argument.variadic)
             argnames += "*args"
@@ -169,7 +190,7 @@ function python_method_definition(method)
         endif
     endfor
 
-    call = "lib.$(class.name:c)_$(my.method.name:c)($(callargs))"
+    call = "lib.$(class.name:c)_$(my.method.name:c)($(callargs:))"
     if defined (my.method->return.python_return)
         call = string.replace (my.method->return.python_return, "<>|$(call:)")
     endif
@@ -198,6 +219,9 @@ output "bindings/python/$(project.name:c).py"
 >from __future__ import print_function
 >from ctypes import *
 >from ctypes.util import find_library
+for project->python_types.import
+>import $(import.lib)
+endfor
 >
 
 # libc only loaded if we use it
