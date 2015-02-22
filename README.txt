@@ -92,26 +92,54 @@ The language bindings are minimal, meant to be wrapped in a handwritten idiomati
 
 ## Installation
 
-Before you start you'll need to install the code generator GSL (https://github.com/imatix/gsl) on your system. Then execute the generate.sh script to generate the build environment files for zproject.
+### GSL
 
-    ./generate.sh
+zproject uses the code generator called GSL to process its inputs and create its outputs. Before you start you'll need to install GSL (https://github.com/imatix/gsl) on your system. 
 
-After that proceed with your favorite build environment. (Currently only autotools!)
+	git clone https://github.com/imatix/gsl.git
+	cd gsl
+	./autogen.sh
+	./configure
+	make
+	make install
 
-### autotools
+### zproject
 
-The following will install the `zproject-*.gsl` files to `/usr/local/bin` where gsl will find them if you use zproject in your project.
+You must then install the zproject resources into your system.
 
+The following will install the zproject files to `/usr/local/bin` where gsl will find them.
+
+	git clone https://github.com/zeromq/zproject.git
+	cd zproject
     ./autogen.sh
     ./configure
     make
     make install
 
-## Generate build environment in your project
+NB: You may need to use the `sudo` command when running `make install` to elevate your privileges, e.g.
+
+	sudo make install
+
+## Setup your project environment
 
 Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly. You'll also need a license file. To get started you can copy `license.xml` from zproject and change the license to whatever you like. The text in the `license.xml` will be placed on every header and source file. Thus make sure not to insert the hole license but a appropriate disclaimer.
 
-Run `./generate.sh`
+	mkdir myproject
+	cd myproject
+	cp ~/zproject/project.xml .
+	cp ~/zproject/license.xml .
+	cp ~/zproject/generate.sh .
+
+Next, edit `project.xml` to your liking, then when you are ready to create/update you project
+
+	./generate.sh
+	./autogen.sh
+	./configure.sh
+	make
+
+To also build the tests (assuming you have added some), use:
+
+	make check
 
 ## Ownership and License
 
