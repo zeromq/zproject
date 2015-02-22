@@ -17,17 +17,16 @@
 
 **<a href="#toc2-288">Installation</a>**
 &emsp;<a href="#toc3-291">GSL</a>
-&emsp;<a href="#toc3-108">zproject</a>
-&emsp;<a href="#toc3-304">zproject</a>
+&emsp;<a href="#toc3-303">zproject</a>
 
-**<a href="#toc2-322">Setup your project environment</a>**
+**<a href="#toc2-321">Setup your project environment</a>**
 
-**<a href="#toc2-344">Ownership and License</a>**
+**<a href="#toc2-343">Ownership and License</a>**
 
-**<a href="#toc2-353">Removal</a>**
-&emsp;<a href="#toc3-356">autotools</a>
-&emsp;<a href="#toc3-361">Hints to Contributors</a>
-&emsp;<a href="#toc3-368">This Document</a>
+**<a href="#toc2-352">Removal</a>**
+&emsp;<a href="#toc3-355">autotools</a>
+&emsp;<a href="#toc3-360">Hints to Contributors</a>
+&emsp;<a href="#toc3-367">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -321,8 +320,7 @@ zproject uses the code generator called GSL to process its inputs and create its
 	make
 	make install
 
-<A name="toc3-108" title="zproject" />
-<A name="toc3-304" title="zproject" />
+<A name="toc3-303" title="zproject" />
 ### zproject
 
 You must then install the zproject resources into your system.
@@ -340,7 +338,7 @@ NB: You may need to use the `sudo` command when running `make install` to elevat
 
 	sudo make install
 
-<A name="toc2-322" title="Setup your project environment" />
+<A name="toc2-321" title="Setup your project environment" />
 ## Setup your project environment
 
 Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly. You'll also need a license file. To get started you can copy `license.xml` from zproject and change the license to whatever you like. The text in the `license.xml` will be placed on every header and source file. Thus make sure not to insert the hole license but a appropriate disclaimer.
@@ -362,7 +360,7 @@ To also build the tests (assuming you have added some), use:
 
 	make check
 
-<A name="toc2-344" title="Ownership and License" />
+<A name="toc2-343" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -371,22 +369,22 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc2-353" title="Removal" />
+<A name="toc2-352" title="Removal" />
 ## Removal
 
-<A name="toc3-356" title="autotools" />
+<A name="toc3-355" title="autotools" />
 ### autotools
 
     make uninstall
 
-<A name="toc3-361" title="Hints to Contributors" />
+<A name="toc3-360" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Before you commit code please make sure that the project model hides all details of backend scripts.
 
 For example don't make a user enter a header file because autoconf needs it to do AC_CHECK_LIB.
 
-<A name="toc3-368" title="This Document" />
+<A name="toc3-367" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).

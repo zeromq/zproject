@@ -103,7 +103,6 @@ zproject uses the code generator called GSL to process its inputs and create its
 	make
 	make install
 
-<A name="toc3-108" title="zproject" />
 ### zproject
 
 You must then install the zproject resources into your system.
