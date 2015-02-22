@@ -44,7 +44,7 @@ function python_register_type (container, struct, pointer)
             endnew
         endif
         my.container.python_type = my.pointer
-        for project.class where defined (class.api & class.name = my.container.type)
+        for project.class where defined (class.api) & class.name = my.container.type
             my.container.python_return = "$(my.container.type:Pascal)(<>, $(my.fresh_bool:))"
         endfor
     endif
