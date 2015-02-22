@@ -433,6 +433,13 @@ $(c_method_declaration (method):)
 $(c_method_declaration (method):)
 .endfor
 .-
+//  Print properties of object
+$(PROJECT.PREFIX)_EXPORT void
+    $(class.c_name)_print ($(class.c_name)_t *self);
+
+//  Self test of this class
+$(PROJECT.PREFIX)_EXPORT void
+    $(class.c_name)_test (bool verbose);
 .for class.method
 
 //  $(method.description:no,block)
