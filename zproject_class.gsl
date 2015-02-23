@@ -290,7 +290,9 @@ struct _$(class.c_name)_t {
 
 .for class.constructor as method
 
+//  --------------------------------------------------------------------------
 //  $(method.description:no,block)
+
 $(c_method_implementation (method):)
 {
     $(class.c_name)_t *self = ($(class.c_name)_t *) zmalloc (sizeof ($(class.c_name)_t));
