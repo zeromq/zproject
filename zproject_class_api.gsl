@@ -69,6 +69,8 @@ function resolve_c_container (container)
     elsif my.type = "FILE"
         my.c_type = "FILE"
         my.stars += "*"
+    elsif my.type = "va_list"
+        my.c_type = "va_list"
     elsif my.type = "string"
         my.c_type = "char"
         my.stars += "*"
@@ -147,11 +149,33 @@ function resolve_c_class (class)
         new constructor to my.class
         endnew
     endif
+
     if !count (my.class.destructor)
         new destructor to my.class
         endnew
     endif
-    
+
+    if (my.class.has_print ? 1) & !count (my.class.method, method.name = "print")
+        # Implicit print method after the destructor
+        new method to my.class after my.class->destructor
+            method.name = "print"
+            method.description = "Print properties of object"
+        endnew
+    endif
+
+    if !count (my.class.method, method.name = "test")
+        # Implicit test method at the end of the list
+        new method to my.class
+            method.name = "test"
+            method.singleton = "1"
+            method.description = "Self test of this class"
+            new argument to method
+                argument.name = "verbose"
+                argument.type = "boolean"
+            endnew
+        endnew
+    endif
+
     for my.class.callback_type as method
         resolve_c_method (method, "")
     endfor
@@ -210,7 +234,11 @@ function c_method_declaration (method)
     out = "$(PROJECT.PREFIX)_EXPORT $(my.method->return.c_type)"
     out += "\n    $(class.c_name)_$(my.method.c_name) ("
     if !my.method.singleton
-        out += "$(class.c_name)_t *self"
+        if defined (my.method.polymorphic)
+            out += "void *self"
+        else
+            out += "$(class.c_name)_t *self"
+        endif
         current_argument_index += 1
         if count (my.method.argument)
             out += ", "
