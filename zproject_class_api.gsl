@@ -69,6 +69,8 @@ function resolve_c_container (container)
     elsif my.type = "FILE"
         my.c_type = "FILE"
         my.stars += "*"
+    elsif my.type = "va_list"
+        my.c_type = "va_list"
     elsif my.type = "string"
         my.c_type = "char"
         my.stars += "*"
