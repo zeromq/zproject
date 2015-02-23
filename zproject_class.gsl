@@ -288,11 +288,10 @@ $(PROJECT.PREFIX)_EXPORT void
 struct _$(class.c_name)_t {
 };
 
-//  --------------------------------------------------------------------------
-//  Create a new $(class.c_name)
+.for class.constructor as method
 
-$(class.c_name)_t *
-$(class.c_name)_new (void)
+//  $(method.description:no,block)
+$(c_method_implementation (method):)
 {
     $(class.c_name)_t *self = ($(class.c_name)_t *) zmalloc (sizeof ($(class.c_name)_t));
     assert (self);
@@ -301,7 +300,7 @@ $(class.c_name)_new (void)
 
     return self;
 }
-
+.endfor
 
 //  --------------------------------------------------------------------------
 //  Destroy the $(class.c_name)
