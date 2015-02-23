@@ -228,10 +228,10 @@ for project.class
 endfor
 
 # A function for constructng the string for a method declaration in a C header
-function c_method_declaration (method)
+function c_method_implementation (method)
     my.format_index = -1
     current_argument_index = 0
-    out = "$(PROJECT.PREFIX)_EXPORT $(my.method->return.c_type)"
+    out = "$(my.method->return.c_type)"
     out += "\n    $(class.c_name)_$(my.method.c_name) ("
     if !my.method.singleton
         if defined (my.method.polymorphic)
@@ -266,8 +266,12 @@ function c_method_declaration (method)
     if my.format_index >= 0
         out += " CHECK_PRINTF (" + (my.format_index) + ")"
     endif
-    out += ";"
     return out
+endfunction
+
+# A function for constructng the string for a method declaration in a C header
+function c_method_declaration (method)
+    return "$(PROJECT.PREFIX)_EXPORT " + c_method_implementation(method) + ";"
 endfunction
 
 # A function for constructng the string for a method declaration in a C header
