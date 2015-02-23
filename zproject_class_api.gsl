@@ -210,7 +210,11 @@ function c_method_declaration (method)
     out = "$(PROJECT.PREFIX)_EXPORT $(my.method->return.c_type)"
     out += "\n    $(class.c_name)_$(my.method.c_name) ("
     if !my.method.singleton
-        out += "$(class.c_name)_t *self"
+        if defined (my.method.polymorphic)
+            out += "void *self"
+        else
+            out += "$(class.c_name)_t *self"
+        endif
         current_argument_index += 1
         if count (my.method.argument)
             out += ", "
