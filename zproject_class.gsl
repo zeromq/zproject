@@ -293,7 +293,7 @@ struct _$(class.c_name)_t {
 //  --------------------------------------------------------------------------
 //  $(method.description:no,block)
 
-$(c_method_implementation (method):)
+$(c_method_declaration (method, 1):)
 {
     $(class.c_name)_t *self = ($(class.c_name)_t *) zmalloc (sizeof ($(class.c_name)_t));
     assert (self);
