@@ -121,7 +121,7 @@ src_$(project.libname)_la_LDFLAGS += \\
 endif
 
 if ON_CYGWIN
-src_lib$(project.name)_la_LDFLAGS += \\
+src_$(project.libname)_la_LDFLAGS += \\
     -no-undefined \\
     -avoid-version
 endif
