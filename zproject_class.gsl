@@ -262,6 +262,9 @@ $(PROJECT.PREFIX)_EXPORT void
 .if !file.exists (source_file)
 .echo "Generating $(source_file)..."
 .   output source_file
+.if !defined (class.api)
+.   resolve_c_class(class)
+.endif
 /*  =========================================================================
     $(class.c_name) - $(class.?'':)
 
@@ -286,6 +289,7 @@ $(PROJECT.PREFIX)_EXPORT void
 //  Structure of our class
 
 struct _$(class.c_name)_t {
+    //  TODO: Declare properties
 };
 
 .for class.constructor as method
@@ -303,41 +307,43 @@ $(c_method_declaration (method, 1):)
     return self;
 }
 .endfor
+.for class.destructor as method
 
 //  --------------------------------------------------------------------------
-//  Destroy the $(class.c_name)
+//  $(method.description:no,block)
 
-void
-$(class.c_name)_destroy ($(class.c_name)_t **self_p)
+$(c_method_declaration (method, 1):)
 {
     assert (self_p);
     if (*self_p) {
         $(class.c_name)_t *self = *self_p;
 
-        //  Free class properties
+        //  TODO: Free class properties
 
         //  Free object itself
         free (self);
         *self_p = NULL;
     }
 }
+.endfor
 
+.for class.method where !(method.name = "test")
 
 //  --------------------------------------------------------------------------
-//  Print properties of object
+//  $(method.description:no,block)
 
-void
-$(class.c_name)_print ($(class.c_name)_t *self)
+$(c_method_declaration (method, 1):)
 {
     assert (self);
 }
+.endfor
 
+.for class.method where method.name = "test"
 
 //  --------------------------------------------------------------------------
-//  Selftest
+//  $(method.description:no,block)
 
-void
-$(class.c_name)_test (bool verbose)
+$(c_method_declaration (method, 1):)
 {
     printf (" * $(class.c_name): ");
 
@@ -350,6 +356,7 @@ $(class.c_name)_test (bool verbose)
 
     printf ("OK\\n");
 }
+.endfor
 .endif
 .-
 .-  Regenerate the @interface for the class if it has an api model
