@@ -227,26 +227,35 @@ for project.class
     endif
 endfor
 
-# A function for constructng the string for a method declaration in a C header
-function c_method_implementation (method)
+# Construct the string for a method declaration in a C header
+function c_method_declaration (method, implementation_style)
+    my.implementation_style ?= 0
     my.format_index = -1
-    current_argument_index = 0
-    out = "$(my.method->return.c_type)"
-    out += "\n    $(class.c_name)_$(my.method.c_name) ("
+    my.current_argument_index = 0
+    out = ""
+    if !my.implementation_style
+        out += "$(PROJECT.PREFIX)_EXPORT "
+    endif
+    out += "$(my.method->return.c_type)\n"
+    if !my.implementation_style
+        out += "    "
+    endif
+    out += "$(class.c_name)_$(my.method.c_name) ("
     if !my.method.singleton
         if defined (my.method.polymorphic)
             out += "void *self"
         else
             out += "$(class.c_name)_t *self"
         endif
-        current_argument_index += 1
+        my.current_argument_index += 1
         if count (my.method.argument)
             out += ", "
         endif
     endif
     for my.method.argument
         if argument.is_format
-            my.format_index = current_argument_index + 1 # Next argument is the format list
+            # Next argument is the format list
+            my.format_index = my.current_argument_index + 1
         endif
         if defined (argument.variadic)
             out += "..."
@@ -260,21 +269,19 @@ function c_method_implementation (method)
                 out += ", "
             endif
         endif
-        current_argument_index += 1
+        my.current_argument_index += 1
     endfor
     out += ")"
     if my.format_index >= 0
         out += " CHECK_PRINTF (" + (my.format_index) + ")"
     endif
+    if !my.implementation_style
+        out += ";"
+    endif
     return out
 endfunction
 
-# A function for constructng the string for a method declaration in a C header
-function c_method_declaration (method)
-    return "$(PROJECT.PREFIX)_EXPORT " + c_method_implementation(method) + ";"
-endfunction
-
-# A function for constructng the string for a method declaration in a C header
+# Construct the string for a callback typedef in a C header
 function c_callback_typedef (method)
     out = "typedef $(my.method->return.c_type) "
     out += "($(class.c_name)_$(my.method.c_name)) ("
