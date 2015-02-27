@@ -229,9 +229,7 @@ endfor
 
 # Construct the string for a method declaration in a C header
 function c_method_declaration (method, implementation_style)
-    echo my.implementation_style
     my.implementation_style ?= 0
-    echo my.implementation_style
     my.format_index = -1
     my.current_argument_index = 0
     out = ""
