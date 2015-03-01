@@ -145,30 +145,32 @@ function resolve_c_class (class)
     my.class.c_name ?= "$(my.class.name:c)"
     my.class.description ?= "$(string.trim (my.class.?""):left)"
     
+    # Implicit constructor
     if !count (my.class.constructor)
         new constructor to my.class
         endnew
     endif
 
+    # Implicit destructor
     if !count (my.class.destructor)
         new destructor to my.class
         endnew
     endif
 
-    if (my.class.has_print ? 1) & !count (my.class.method, method.name = "print")
-        # Implicit print method after the destructor
+    # Implicit print method after the destructor
+    if !count (my.class.method, method.name = "print")
         new method to my.class after my.class->destructor
             method.name = "print"
-            method.description = "Print properties of object"
+            method.description = "Print properties of the $(my.class.c_name)."
         endnew
     endif
 
+    # Implicit test method at the end of the list
     if !count (my.class.method, method.name = "test")
-        # Implicit test method at the end of the list
         new method to my.class
             method.name = "test"
             method.singleton = "1"
-            method.description = "Self test of this class"
+            method.description = "Self test of this class."
             new argument to method
                 argument.name = "verbose"
                 argument.type = "boolean"
@@ -176,6 +178,18 @@ function resolve_c_class (class)
         endnew
     endif
 
+    # Delete methods marked with exclude attribute
+    for my.class.constructor as method where defined (method.exclude)
+        delete method
+    endfor
+    for my.class.destructor as method where defined (method.exclude)
+        delete method
+    endfor
+    for my.class.method where defined (method.exclude)
+        delete method
+    endfor
+
+    # Resolve details of each method
     for my.class.callback_type as method
         resolve_c_method (method, "")
     endfor
@@ -208,6 +222,7 @@ function resolve_c_class (class)
         resolve_c_method (method, "Destroy the $(my.class.c_name).")
     endfor
     
+    # Resolve details of each constant
     for my.class.constant
         if defined (constant.type) & (constant.type = 'string')
             constant.value = '"' + constant.value + '"'
