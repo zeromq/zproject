@@ -161,7 +161,7 @@ function resolve_c_class (class)
     if !count (my.class.method, method.name = "print")
         new method to my.class after my.class->destructor
             method.name = "print"
-            method.description = "Print properties of the $(my.class.c_name)."
+            method.description = "Print properties of the $(my.class.name:) object."
         endnew
     endif
 
