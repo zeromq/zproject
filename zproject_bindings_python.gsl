@@ -26,6 +26,8 @@ endfunction
 function python_register_type (container, struct, pointer)
     my.fresh_bool = my.container.fresh ?? "True" ? "False"
 
+    # First we need to determine whether we're 'importing' this type via
+    # class declarations under the 'use' node.
     for project.use
         for use.class where class.name = my.container.type
             my.externlib = use.project
@@ -33,10 +35,15 @@ function python_register_type (container, struct, pointer)
         endfor
     endfor
     if defined (my.externlib)
+        # We have found this class is imported via the use declaration, we
+        # don't do anything other than coerce to/from it.  This currently
+        # relies on users distributing bindings from dependency projects
+        # manually.
         python_register_import(my.externlib, my.container.type)
         my.container.python_type = "$(my.externlib:c).$(my.container.type:c,no)_p"
         my.container.python_return = "$(my.externlib:c).$(my.container.type:Pascal)(<>, $(my.fresh_bool:))"
     else
+        # No import found - register the type for local declaration.
         if count(project->python_types.type, type.name = my.struct) = 0
             new project->python_types.type
                 type.name = my.struct
