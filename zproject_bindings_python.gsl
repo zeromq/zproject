@@ -66,6 +66,7 @@ function resolve_python_container (container)
         my.container.python_type = "None"
     elsif my.container.type = "anything"
         my.container.python_type = "c_void_p"
+        my.container.python_return = "c_void_p(<>)"
     elsif my.container.type = "boolean"
         my.container.python_type = "c_bool"
     elsif my.container.type = "byte"
@@ -301,13 +302,32 @@ for class where defined (class.api)
     endif
 >
     for constructor as method
+        callargs = ""
+        for method.argument
+            if defined (argument.variadic)
+                callargs += "*args[index()-1:]"
+            elsif defined (argument.python_coerce)
+                callargs += string.search_replace(argument.python_coerce, "<>", "args[$(index()-1)]")
+            else
+                callargs += "args[$(index()-1)]"
+            endif
+
+            if !last (argument)
+                callargs += ", "
+            endif
+        endfor
+
 >    def __init__(self, *args):
 >        """$(method.description:no)"""
->        if len(args) == 2 and isinstance(args[0], $(class.name:c)_p) and isinstance(args[1], bool):
+>        if len(args) == 2 and type(args[0]) is c_void_p and isinstance(args[1], bool):
+>            self._as_parameter_ = cast(args[0], $(class.name:c)_p) # Conversion from raw type to binding
+>            self.allow_destruct = args[1] # This is a 'fresh' value, owned by us
+>        elif len(args) == 2 and type(args[0]) is $(class.name:c)_p and isinstance(args[1], bool):
 >            self._as_parameter_ = args[0] # Conversion from raw type to binding
 >            self.allow_destruct = args[1] # This is a 'fresh' value, owned by us
 >        else:
->            self._as_parameter_ = lib.$(class.name:c)_$(method.name)(*args) # Creation of new raw type
+>            assert(len(args) == $(count (method.argument)))
+>            self._as_parameter_ = lib.$(class.name:c)_$(method.name)($(callargs:)) # Creation of new raw type
 >            self.allow_destruct = True
 >
     endfor
@@ -316,6 +336,15 @@ for class where defined (class.api)
 >        """$(method.description:no)"""
 >        if self.allow_destruct:
 >            lib.$(class.name:c)_$(method.name)(byref(self._as_parameter_))
+>
+
+>    def __bool__(self):
+>        "Determine whether the object is valid by converting to boolean" # Python 3
+>        return self._as_parameter_.__bool__()
+>
+>    def __nonzero__(self):
+>        "Determine whether the object is valid by converting to boolean" # Python 2
+>        return self._as_parameter_.__nonzero__()
 >
     endfor
     for method
