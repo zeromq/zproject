@@ -251,7 +251,7 @@ function c_method_declaration (method, implementation_style)
     if !my.implementation_style
         out += "$(PROJECT.PREFIX)_EXPORT "
     endif
-    out += "$(my.method->return.c_type)\n"
+    out += "$(my.method->return.c_type:)\n"
     if !my.implementation_style
         out += "    "
     endif
@@ -298,7 +298,7 @@ endfunction
 
 # Construct the string for a callback typedef in a C header
 function c_callback_typedef (method)
-    out = "typedef $(my.method->return.c_type) "
+    out = "typedef $(my.method->return.c_type:) "
     out += "($(class.c_name)_$(my.method.c_name)) ("
     out += "\n    "
     for my.method.argument
