@@ -141,7 +141,7 @@ src_$(name:c)_SOURCES = src/$(name:c).c
 .   if main.service ?= 1
 src_$(main.name)_configdir = \$(sysconfdir)/$(project.name)
 src_$(main.name)_config_DATA = src/$(main.name).cfg
-src_$(main.name)_servicedir = @libdir@/systemd/system
+src_$(main.name)_servicedir = @prefix@/lib/systemd/system
 src_$(main.name)_service_DATA = src/$(main.name).service
 .   endif
 endif
