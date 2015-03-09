@@ -316,23 +316,31 @@ for class where defined (class.api)
 >
 >class $(class.name:Pascal)(object):
 >    """$(class.description:no)"""
-    if count(enum) > 0
-        for enum
+    for enum
 >
 >    $(enum.name:Pascal) = {
-            for enum.constant
+        for enum.constant
 >        '$(constant.name)': $(constant.value),
-            endfor
+        endfor
 >    }
 >
 >    $(enum.name:Pascal)_out = {
-            for enum.constant
+        for enum.constant
 >         $(constant.value): '$(constant.name)',
-            endfor
->    }
         endfor
-    endif
+>    }
+    endfor
 >
+
+    for constant
+>    $(CONSTANT.NAME) = $(constant.value)\
+        if defined(constant.description)
+> # $(constant.description:no)
+        else
+>
+        endif
+    endfor
+
     for constructor as method
         callargs = ""
         for method.argument
