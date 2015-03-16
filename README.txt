@@ -9,44 +9,95 @@
 
 ## Overview
 
-zproject is a community project, like most ZeroMQ projects, built using the C4.1 process, and licensed under MPL v2. It solves the Makefile problem really well. It is unashamedly for C, and more pointedly, for that modern C dialect we call CLASS. CLASS is the Minecraft of C: fun, easy, playful, mind-opening, and social. [hintjens#79](http://hintjens.com/blog:79)
+zproject is a community project, like most ZeroMQ projects, built using the C4.1 process, and licensed under MPL v2. It solves the Makefile problem really well. It is unashamedly for C, and more pointedly, for that modern C dialect we call CLASS. CLASS is the Minecraft of C: fun, easy, playful, mind-opening, and social. Read more about it [hintjens#79](http://hintjens.com/blog:79).
+
+zproject grew out of the work that has been done to automatically generate the build environment in CZMQ. It allows to share these automations with other projects like [zyre](https://github.com/zeromq/zyre), [malamute](https://github.com/zeromq/malamute) or [hydra](https://github.com/edgenet/hydra) and at the same time keep everything in sync. 
 
 ### Scope and Goals
 
-zproject has these goals:
+zproject has these primary goals:
 
 * generate files for cross-platform build environments.
-* generate public and private headers. 
-* generate CLASS (ZeroMQ RFC/21) compliant header and source skeletons for new classes.
-* generate CI setup for travis.
+* generate CLASS ([ZeroMQ RFC/21](http://rfc.zeromq.org/spec:21) compliant header and source skeletons for new classes.
+* generate a public header file for your library so it can be easily included by others. 
+* generate stubs for man page documentation which uses the comment based approach from CZMQ.
 
-zproject grew out of the work that has been done to automatically generate the build environment in CZMQ.
-
-All you need is a project.xml in the project's root directory which is your 
+All you need is a project.xml file in the project's root directory which is your 
 
     One file to rule them all
 
 The following build environments are currently supported:
  
-* android (not tested)
-* autotools (tested)
-* cmake (not tested)
-* mingw32 (not tested)
-* qt-android (tested)
-* vs2008 (not tested)
-* vs2010 (not tested)
-* vs2012 (not tested)
-* vs2013 (not tested)
- 
-All classes in the project.xml are automatically added to all build environments. Further as you add new classes to your project you can generate skeleton header and source files according to [the CLASS RFC](http://rfc.zeromq.org/spec:21).
+* android
+* autotools 
+* cmake 
+* mingw32 
+* qt-android 
+* vs2008 
+* vs2010 
+* vs2012 
+* vs2013 
+
+Thanks to the amazing ZeroMQ community you can do all the heavy lifting in C and than easily generate bindings to Python, Ruby and QML to write a nice GUI on top of it.
 
 ## Demo on PLAYTerm
 
-[ZeroMQ - Create new zproject](http://www.playterm.org/r/zeromq---create-new-zproject-1424116766) 
+There is a short Demo on PLAYTerm that shows how easy it is to get started with zproject: [ZeroMQ - Create new zproject](http://www.playterm.org/r/zeromq---create-new-zproject-1424116766) 
 
-## Sample configuration
+## Installation
 
-The following snippet is the `project.xml` from zproject:
+### Requirements
+
+zproject uses the universal code generator called GSL to process its XML inputs and create its outputs. Before you start you'll need to install GSL (https://github.com/imatix/gsl) on your system.
+
+	git clone https://github.com/imatix/gsl.git
+	cd gsl
+	./autogen.sh
+	./configure
+	make
+	make install
+
+### Getting started
+
+GSL must be able to find the zproject resources on your system. Therefore you'll need to install them.
+
+The following will install the zproject files to `/usr/local/bin`.
+
+	git clone https://github.com/zeromq/zproject.git
+	cd zproject
+    ./autogen.sh
+    ./configure
+    make
+    make install
+
+NB: You may need to use the `sudo` command when running `make install` to elevate your privileges, e.g.
+
+	sudo make install
+
+## Setup your project environment
+
+The easiest way to start is by coping the `project.xml` and `generate.sh` to your project or an empty directory. Licensing your project is important thus you'll need a license file. To get started you can copy `license.xml` from zproject and change the license to whatever you like. Here's an overview that might help you decide to [choose a license](http://choosealicense.com/). The text in the `license.xml` will be placed on every generated header and source file. Thus make sure not to insert the hole license but an appropriate disclaimer.
+
+	mkdir myproject
+	cd myproject
+	cp ~/zproject/project.xml .
+	cp ~/zproject/license.xml .
+	cp ~/zproject/generate.sh .
+
+Next, edit `project.xml` to your liking, see [Configuration](#Configuration). Once you're done you can create your project's build environment:
+
+	./generate.sh
+	./autogen.sh
+	./configure.sh
+	make
+
+The compilation will probably fail as the generated skeleton source files are containing empty structs. You'll need to run the `generate.sh` script only when changing the zproject configuration. Otherwise stick to your favorite build environment. To also build the tests (assuming you have added some), use:
+
+	make check
+
+## Configuration
+
+zproject's `project.xml` contains an extensive description of the available configuration: The following snippet is taken from the `project.xml`:
 
 .pull project.xml, code
 
@@ -89,57 +140,6 @@ Language bindings will also be generated in the following languages:
 * QML (experimental)
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
-
-## Installation
-
-### GSL
-
-zproject uses the code generator called GSL to process its inputs and create its outputs. Before you start you'll need to install GSL (https://github.com/imatix/gsl) on your system. 
-
-	git clone https://github.com/imatix/gsl.git
-	cd gsl
-	./autogen.sh
-	./configure
-	make
-	make install
-
-### zproject
-
-You must then install the zproject resources into your system.
-
-The following will install the zproject files to `/usr/local/bin` where gsl will find them.
-
-	git clone https://github.com/zeromq/zproject.git
-	cd zproject
-    ./autogen.sh
-    ./configure
-    make
-    make install
-
-NB: You may need to use the `sudo` command when running `make install` to elevate your privileges, e.g.
-
-	sudo make install
-
-## Setup your project environment
-
-Copy the `project.xml` and `generate.sh` to your project or an empty directory and adjust the values accordingly. You'll also need a license file. To get started you can copy `license.xml` from zproject and change the license to whatever you like. The text in the `license.xml` will be placed on every header and source file. Thus make sure not to insert the hole license but a appropriate disclaimer.
-
-	mkdir myproject
-	cd myproject
-	cp ~/zproject/project.xml .
-	cp ~/zproject/license.xml .
-	cp ~/zproject/generate.sh .
-
-Next, edit `project.xml` to your liking, then when you are ready to create/update you project
-
-	./generate.sh
-	./autogen.sh
-	./configure.sh
-	make
-
-To also build the tests (assuming you have added some), use:
-
-	make check
 
 ## Ownership and License
 
