@@ -129,7 +129,10 @@ set ($(project.name)_sources
 .endfor
 )
 source_group ("Source Files" FILES ${$(project.name)_sources})
-add_library($(project.name) SHARED ${$(project.name)_sources})
+if (NOT DEFINED BUILD_SHARED_LIBS)
+    SET(BUILD_SHARED_LIBS ON)
+endif()
+add_library($(project.name) ${$(project.name)_sources})
 set_target_properties($(project.name) PROPERTIES DEFINE_SYMBOL "$(PROJECT.LIBNAME)_EXPORTS")
 target_link_libraries($(project.name) ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES})
 
