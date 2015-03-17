@@ -129,7 +129,7 @@ function resolve_c_method (method, default_description)
         new return to my.method as ret
         endnew
     endif
-    
+
     for my.method.argument as obj
         resolve_c_container (obj)
         if obj.is_format
@@ -141,7 +141,11 @@ function resolve_c_method (method, default_description)
     endfor
     for my.method.return as obj
         resolve_c_container (obj)
+        if obj.fresh
+            my.method.description += "\nThe caller is responsible for destroying the return value when finished with it."
+        endif
     endfor
+
 endfunction
 
 # Resolve missing or implicit details in a C class model
