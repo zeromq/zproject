@@ -444,6 +444,9 @@ $(c_method_declaration (method):)
 .for class.method
 
 //  $(method.description:no,block)
+.if method->return.fresh
+//  The caller is responsible for destroying the return value when finished with it.
+.endif
 $(c_method_declaration (method):)
 .endfor
 //  @end

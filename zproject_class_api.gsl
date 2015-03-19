@@ -141,9 +141,6 @@ function resolve_c_method (method, default_description)
     endfor
     for my.method.return as obj
         resolve_c_container (obj)
-        if obj.fresh
-            my.method.description += "\nThe caller is responsible for destroying the return value when finished with it."
-        endif
     endfor
 
 endfunction
