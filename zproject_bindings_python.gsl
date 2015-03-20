@@ -371,12 +371,14 @@ for class where defined (class.api)
 >            self.allow_destruct = True
 >
     endfor
+
     for destructor as method
 >    def __del__(self):
 >        """$(method.description:no)"""
 >        if self.allow_destruct:
 >            lib.$(class.name:c)_$(method.name)(byref(self._as_parameter_))
 >
+    endfor
 
 >    def __bool__(self):
 >        "Determine whether the object is valid by converting to boolean" # Python 3
@@ -386,7 +388,7 @@ for class where defined (class.api)
 >        "Determine whether the object is valid by converting to boolean" # Python 2
 >        return self._as_parameter_.__nonzero__()
 >
-    endfor
+
     for method
         python_method_definition(method)
     endfor
