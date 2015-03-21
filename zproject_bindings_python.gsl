@@ -243,7 +243,7 @@ endfor
 # libc only loaded if we use it
 if defined (project->python_types.uses_fresh_string)
 ># load libc to access free, etc.
->libcpath = find_library("libc")
+>libcpath = find_library("c")
 >if not libcpath:
 >    raise ImportError("Unable to find libc")
 >libc = cdll.LoadLibrary(libcpath)
