@@ -233,6 +233,7 @@ output "bindings/python/$(project.name:c).py"
 >$(project.GENERATED_WARNING_HEADER:)
 >
 >from __future__ import print_function
+>import os, sys
 >from ctypes import *
 >from ctypes.util import find_library
 for project->python_types.import
@@ -255,16 +256,26 @@ if defined (project->python_types.uses_fresh_string)
 >    libc.free(char_p)
 >    return s
 >
->
 endif
 
 ># $(project.name:c)
->libpath = find_library("$(project.name:c)")
->if not libpath:
->    raise ImportError("Unable to find $(project.name:c) C library")
->lib = cdll.LoadLibrary(libpath)
-
+>try:
+>    # If LD_LIBRARY_PATH or your OSs equivalent is set, this is the only way to
+>    # load the library.  If we use find_library below, we get the wrong result.
+>    if os.name == 'posix':
+>        if sys.platform == 'darwin':
+>            lib = cdll.LoadLibrary('$(project.libname).$(project->version.major).dylib')
+>        else:
+>            lib = cdll.LoadLibrary("$(project.libname).so.$(project->version.major)")
+>    elif os.name == 'nt':
+>        lib = cdll.LoadLibrary('$(project.libname).dll')
+>except OSError:
+>    libpath = find_library("$(project.name)")
+>    if not libpath:
+>        raise ImportError("Unable to find $(project.libname)")
+>    lib = cdll.LoadLibrary(libpath)
 >
+
 for project->python_types.type
 >class $(type.name:)(Structure):
 >    pass # Empty - only for type checking
