@@ -39,6 +39,7 @@ project.generated_warning_header ?= "\
 .#
 .#  These scripts generate code independently from one another
 .#  so are not run in any particular order other than alphabetically.
+.gsl from "zproject_actor.gsl"
 .gsl from "zproject_android.gsl"
 .gsl from "zproject_autoconf.gsl"
 .gsl from "zproject_automake.gsl"
