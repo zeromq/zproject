@@ -150,7 +150,6 @@ check_PROGRAMS += src/$(project.prefix)_selftest
 src_$(project.prefix)_selftest_CPPFLAGS = \${src_$(project.libname)_la_CPPFLAGS}
 src_$(project.prefix)_selftest_LDADD = ${program_libs}
 src_$(project.prefix)_selftest_SOURCES = src/$(project.prefix)_selftest.c
-TESTS += src/$(project.prefix)_selftest
 .else
 .endif
 
@@ -187,6 +186,12 @@ code:
 \tcd $\(srcdir)/src; gsl -q $(name:c).xml
 .   endif
 .endfor
+
+check-local: src/$(project.prefix)_selftest
+\t$\(LIBTOOL) --mode=execute $\(srcdir)/src/$(project.prefix)_selftest
+
+check-verbose: src/$(project.prefix)_selftest
+\t$\(LIBTOOL) --mode=execute $\(srcdir)/src/$(project.prefix)_selftest -v
 
 # Run the selftest binary under valgrind to check for memory leaks
 memcheck: src/$(project.prefix)_selftest
