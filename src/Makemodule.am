@@ -11,6 +11,7 @@ myproject_SCRIPTS = \
     zproject_known_projects.xml \
     zproject_class_api.gsl \
     zproject_mkman \
+    zproject_actor.gsl \
     zproject_android.gsl \
     zproject_autoconf.gsl \
     zproject_automake.gsl \

@@ -191,6 +191,13 @@ zproject's `project.xml` contains an extensive description of the available conf
     -->
 
     <!--
+        Actors are build upon the czmq zactor model for multithreading 
+        applications.
+    <actor name = "myactor">Public actor description</actor>
+    <actor name = "someactor" private = "1">Private actor description</actor>
+    -->
+    
+    <!--
         Main programs built by the project
                  use private = "1" for internal tools
     <main name = "progname">Exported public tool</main>
@@ -231,6 +238,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_class_api.gsl" />
     <bin name = "zproject_mkman" />
     
+    <bin name = "zproject_actor.gsl" />
     <bin name = "zproject_android.gsl" />
     <bin name = "zproject_autoconf.gsl" />
     <bin name = "zproject_automake.gsl" />
