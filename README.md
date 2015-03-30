@@ -41,7 +41,7 @@ zproject grew out of the work that has been done to automatically generate the b
 zproject has these primary goals:
 
 * generate files for cross-platform build environments.
-* generate CLASS ([ZeroMQ RFC/21](http://rfc.zeromq.org/spec:21) compliant header and source skeletons for new classes.
+* generate CLASS ([ZeroMQ RFC/21](http://rfc.zeromq.org/spec:21)) compliant header and source skeletons for new classes.
 * generate a public header file for your library so it can be easily included by others. 
 * generate stubs for man page documentation which uses the comment based approach from CZMQ.
 
@@ -191,8 +191,11 @@ zproject's `project.xml` contains an extensive description of the available conf
     -->
 
     <!--
-        Actors are build upon the czmq zactor model for multithreading 
-        applications.
+        Actors, are build using the simple actor framework from czmq. If the 
+        actors class header or source file doesn't exist this will generate a
+        skeleton for them. The generated test method of the actor will teach
+        you how to use them. Also have a look at the czmq docs to learn more
+        about actors.
     <actor name = "myactor">Public actor description</actor>
     <actor name = "someactor" private = "1">Private actor description</actor>
     -->

@@ -18,7 +18,7 @@ zproject grew out of the work that has been done to automatically generate the b
 zproject has these primary goals:
 
 * generate files for cross-platform build environments.
-* generate CLASS ([ZeroMQ RFC/21](http://rfc.zeromq.org/spec:21) compliant header and source skeletons for new classes.
+* generate CLASS ([ZeroMQ RFC/21](http://rfc.zeromq.org/spec:21)) compliant header and source skeletons for new classes.
 * generate a public header file for your library so it can be easily included by others. 
 * generate stubs for man page documentation which uses the comment based approach from CZMQ.
 
