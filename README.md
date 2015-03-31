@@ -232,6 +232,10 @@ zproject's `project.xml` contains an extensive description of the available conf
 
     <!-- 
         Stuff that needs to be installed:
+
+        NOTICE: If you copied this file to get started you want to delete or
+                at least comment out those bin tag as they distribute the
+                zproject files.
         
         * Linux -> /usr/local/bin
     -->
