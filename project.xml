@@ -61,8 +61,11 @@
     -->
 
     <!--
-        Actors are build upon the czmq zactor model for multithreading 
-        applications.
+        Actors, are build using the simple actor framework from czmq. If the 
+        actors class header or source file doesn't exist this will generate a
+        skeleton for them. The generated test method of the actor will teach
+        you how to use them. Also have a look at the czmq docs to learn more
+        about actors.
     <actor name = "myactor">Public actor description</actor>
     <actor name = "someactor" private = "1">Private actor description</actor>
     -->
@@ -99,6 +102,10 @@
 
     <!-- 
         Stuff that needs to be installed:
+
+        NOTICE: If you copied this file to get started you want to delete or
+                at least comment out those bin tag as they distribute the
+                zproject files.
         
         * Linux -> /usr/local/bin
     -->
