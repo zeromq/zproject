@@ -9,10 +9,11 @@ function resolve_project_dependency (use)
     
     # Use known values to fill in gaps if it is a known project
     for my.known_projects.use as known where known.project = my.use.project
-        my.use.repository ?= known.repository?
-        my.use.test       ?= known.test?
-        my.use.cmake_name ?= known.cmake_name?
+        my.use.repository  ?= known.repository?
+        my.use.test        ?= known.test?
+        my.use.cmake_name  ?= known.cmake_name?
         my.use.includename ?= known.includename?
+        my.use.prefix      ?= known.prefix?
         
         # Copy known implied dependencies into this dependency
         for known.use as implied_use
