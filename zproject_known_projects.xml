@@ -20,6 +20,13 @@
         <use project = "czmq" min_major = "3" />
     </use>
     
+    <use project = "malamute"
+        repository = "https://github.com/zeromq/malamute"
+        test = "mlm_server_test">
+        <use project = "zmq" min_major= "4" min_minor = "2" min_patch = "0" />
+        <use project = "czmq" min_major = "3" min_minor = "0" min_patch = "1" />
+    </use>
+
     <!-- Edgenet Projects -->
     
     <use project = "drops"
@@ -32,7 +39,7 @@
     <use project = "hydra"
         repository = "https://github.com/edgenet/hydra"
         test = "hydra_server_test">
-        <use project = "czmq" />
+        <use project = "czmq" min_major = "3" min_minor = "0" min_patch = "1" />
     </use>
     
     <!-- Various known third-party projects
