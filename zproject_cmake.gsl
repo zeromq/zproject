@@ -23,7 +23,7 @@ set(BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 # determine version
 ########################################################################
 foreach(which MAJOR MINOR PATCH)
-    file(STRINGS "${SOURCE_DIR}/include/$(project.name)_library.h" $(PROJECT.NAME)_VERSION_STRING REGEX "#define $(PROJECT.NAME)_VERSION_${which}")
+    file(STRINGS "${SOURCE_DIR}/include/$(project.prefix)_library.h" $(PROJECT.NAME)_VERSION_STRING REGEX "#define $(PROJECT.NAME)_VERSION_${which}")
     string(REGEX MATCH "#define $(PROJECT.NAME)_VERSION_${which} ([0-9_]+)" $(PROJECT.NAME)_REGEX_MATCH "${$(PROJECT.NAME)_VERSION_STRING}")
     if (NOT $(PROJECT.NAME)_REGEX_MATCH)
         message(FATAL_ERROR "failed to parse $(PROJECT.NAME)_VERSION_${which} from $(project.name).h")
