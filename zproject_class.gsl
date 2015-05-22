@@ -149,7 +149,7 @@ main (int argc, char *argv [])
     printf ("Running $(project.name) selftests...\\n");
 
 .for class
-    $(class.c_name)_test (verbose); 
+    $(class.c_name)_test (verbose);
 .endfor
 
     printf ("Tests passed OK\\n");
@@ -189,7 +189,7 @@ $(project.GENERATED_WARNING_HEADER:)
 
 .for constant where defined (constant.private)
 .   if first ()
-//  Private constants    
+//  Private constants
 .   endif
 #define $(CONSTANT.NAME)\t$(constant.value) //  $(constant.?'')
 .endfor
@@ -222,10 +222,10 @@ extern "C" {
 #endif
 
 .   if class.c_name = project.name
-//  Include the library file with typdefs, public includes and public constants    
+//  Include the library file with typdefs, public includes and public constants
 #include "$(class.c_name)_library.h"
 
-.   endif  
+.   endif
 .   if class.private ?= 1
 typedef struct _$(class.c_name)_t $(class.c_name)_t;
 .   endif
@@ -364,18 +364,18 @@ $(c_method_declaration (method, 1):)
 .if defined (class.api)
 .echo "Regenerating @interface in $(header_file)..."
 .template 0
-    
+
     # Open the header_file for reading
     handle = file.open (header_file, "ra")
     current_loc = "prefix"
     error = # undefined
     HEADER_FILE_PREFIX = "" # All lines preceding the @interface line
     HEADER_FILE_SUFFIX = "" # All lines following the @end line
-    
+
     # Read each line from the file and pull out the prefix and suffix blocks
     while defined (handle)
         this_line = handle.read (error)? ""
-        
+
         if defined (error)
             handle.close ()
             handle = # undefined
