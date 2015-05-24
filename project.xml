@@ -1,4 +1,4 @@
-<!-- 
+<!--
     The project.xml generates build environments for:
 
         * android
@@ -12,7 +12,7 @@
         * vs2013
 
     Classes are automatically added to all build environments. Further as you
-    add new classes to your project you can generate skeleton header and source 
+    add new classes to your project you can generate skeleton header and source
     files according to http://rfc.zeromq.org/spec:21.
 
     name := The name of your project
@@ -33,9 +33,9 @@
     -->
     <include filename = "license.xml" />
 
-    <!-- 
-        Current version of your project. 
-        This will be used to package your distribution 
+    <!--
+        Current version of your project.
+        This will be used to package your distribution
     -->
     <version major = "1" minor = "0" patch = "0" />
 
@@ -52,7 +52,7 @@
     <header name = "myproject_prelude" />
     -->
 
-    <!-- 
+    <!--
         Classes, if the class header or source file doesn't exist this will
         generate a skeletons for them.
         use private = "1" for internal classes
@@ -61,7 +61,7 @@
     -->
 
     <!--
-        Actors, are build using the simple actor framework from czmq. If the 
+        Actors, are build using the simple actor framework from czmq. If the
         actors class header or source file doesn't exist this will generate a
         skeleton for them. The generated test method of the actor will teach
         you how to use them. Also have a look at the czmq docs to learn more
@@ -69,7 +69,7 @@
     <actor name = "myactor">Public actor description</actor>
     <actor name = "someactor" private = "1">Private actor description</actor>
     -->
-    
+
     <!--
         Main programs built by the project
                  use private = "1" for internal tools
@@ -78,8 +78,8 @@
     <main name = "progname" service = "1">Installed as system service</main>
     -->
 
-    <!-- 
-        Models that we build using GSL. 
+    <!--
+        Models that we build using GSL.
         This will generate a 'make code' target to build the models.
     <model name = "sockopts" />
     <model name = "zgossip" />
@@ -97,16 +97,16 @@
     -->
 
     <!-- Other source files that we need to package
-    <extra name = "some_ressource" />
+    <extra name = "some_resource" />
     -->
 
-    <!-- 
+    <!--
         Stuff that needs to be installed:
 
         NOTICE: If you copied this file to get started you want to delete or
                 at least comment out those bin tag as they distribute the
                 zproject files.
-        
+
         * Linux -> /usr/local/bin
     -->
     <bin name = "zproject.gsl" />
@@ -114,7 +114,7 @@
     <bin name = "zproject_known_projects.xml" />
     <bin name = "zproject_class_api.gsl" />
     <bin name = "zproject_mkman" />
-    
+
     <bin name = "zproject_actor.gsl" />
     <bin name = "zproject_android.gsl" />
     <bin name = "zproject_autoconf.gsl" />
