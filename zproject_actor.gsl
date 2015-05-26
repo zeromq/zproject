@@ -18,6 +18,7 @@ function resolve_actor (actor)
    my.actor.c_name ?= "$(actor.name:c)"
    my.actor.description ?= "$(string.trim (actor.?""):left)"
    my.actor.actordir ?= "include"
+   my.actor.private ?= "0"
 
    my.class = XML.new ("class")
    my.class.name ?= my.actor.name
@@ -114,6 +115,10 @@ $(PROJECT.PREFIX)_EXPORT void
 #include "$(project.prefix)_classes.h"
 .   endif
 
+.   if actor.private ?= 0
+typedef struct _$(actor.c_name)_t $(actor.c_name)_t;
+.   endif
+
 //  Structure of our actor
 
 struct _$(actor.c_name)_t {
@@ -156,6 +161,7 @@ $(actor.c_name)_destroy ($(actor.c_name)_t **self_p)
         //  TODO: Free actor properties
 
         //  Free object itself
+        zpoller_destroy (&self->poller);
         free (self);
         *self_p = NULL;
     }
