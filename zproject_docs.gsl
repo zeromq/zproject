@@ -93,7 +93,7 @@ literal-style=template="literalparagraph"
 (?su)[\\\\]?(?P<name>link$(project.name:c)):(?P<target>\\S*?)\\[(?P<attrlist>.*?)\\]=
 
 ifdef::backend-docbook[]
-[linkf$(project.name:c)-inlinemacro]
+[link$(project.name:c)-inlinemacro]
 {0%{target}}
 {0#<citerefentry>}
 {0#<refentrytitle>{target}</refentrytitle><manvolnum>{0}</manvolnum>}

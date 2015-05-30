@@ -1,25 +1,25 @@
 <known_projects>
-    
+
     <!-- ZeroMQ Projects -->
-    
+
     <use project = "zmq"
         repository = "https://github.com/zeromq/libzmq"
         test = "zmq_init"
         cmake_name = "ZeroMQ" />
-    
+
     <use project = "czmq"
         repository = "https://github.com/zeromq/czmq"
         test = "zctx_test"
         cmake_name = "CZMQ">
         <use project = "zmq" min_major = "2" min_minor = "2" />
     </use>
-    
+
     <use project = "zyre"
         repository = "https://github.com/zeromq/zyre"
         test = "zyre_test">
         <use project = "czmq" min_major = "3" />
     </use>
-    
+
     <use project = "malamute"
         repository = "https://github.com/zeromq/malamute"
         includename = "malamute"
@@ -30,27 +30,27 @@
     </use>
 
     <!-- Edgenet Projects -->
-    
+
     <use project = "drops"
         repository = "https://github.com/edgenet/drops"
         test = "drops_test">
         <use project = "czmq" />
         <use project = "zyre" />
     </use>
-    
+
     <use project = "hydra"
         repository = "https://github.com/edgenet/hydra"
         test = "hydra_server_test">
         <use project = "czmq" min_major = "3" min_minor = "0" min_patch = "1" />
     </use>
-    
+
     <!-- Various known third-party projects
         (If you're unsure of where a project belongs, add it here) -->
-    
+
     <use project = "jansson"
         repository = "https://github.com/akheron/jansson"
         test = "json_object" />
-    
+
     <use project = "sodium"
         repository = "https://github.com/jedisct1/libsodium"
         test = "sodium_init" />
@@ -59,5 +59,9 @@
         repository = "https://github.com/jemalloc/jemalloc"
         test = "malloc"
         includename = "jemalloc/jemalloc" />
+
+    <use project = "editline"
+        repository = "https://github.com/troglobit/editline"
+        test = "readline" />
 
 </known_projects>
