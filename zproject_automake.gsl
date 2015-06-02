@@ -35,11 +35,12 @@ project_libs =
 .endfor
 
 SUBDIRS =
+DIST_SUBDIRS =
 .if count (class) > 0
 SUBDIRS += doc
+DIST_SUBDIRS += doc
 .endif
 
-DIST_SUBDIRS =
 lib_LTLIBRARIES =
 bin_PROGRAMS =
 noinst_PROGRAMS =
@@ -51,6 +52,10 @@ EXTRA_DIST = \\
 .for extra
     src/$(extra.name) \\
 .endfor
+.for class where defined (class.private)
+    src/$(name:c).h \\
+.endfor
+    src/$(project.prefix)_classes.h \\
     version.sh
 
 include \$(srcdir)/src/Makemodule.am
