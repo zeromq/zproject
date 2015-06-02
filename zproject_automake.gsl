@@ -48,8 +48,8 @@ noinst_LTLIBRARIES =
 TESTS =
 
 EXTRA_DIST = \\
-.for project.extra
-    $(extra.name) \\
+.for extra
+    src/$(extra.name) \\
 .endfor
     version.sh
 
