@@ -51,9 +51,7 @@ There is a short Demo on PLAYTerm that shows how easy it is to get started with 
 zproject uses the universal code generator called GSL to process its XML inputs and create its outputs. Before you start you'll need to install GSL (https://github.com/imatix/gsl) on your system.
 
 	git clone https://github.com/imatix/gsl.git
-	cd gsl
-	./autogen.sh
-	./configure
+	cd gsl/src
 	make
 	make install
 
