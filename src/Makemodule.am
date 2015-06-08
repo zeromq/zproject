@@ -34,6 +34,12 @@ myproject_SCRIPTS = \
     zproject_vs2013.gsl
 
 
+check-local: src/myproject_selftest
+	$(LIBTOOL) --mode=execute $(srcdir)/src/myproject_selftest
+
+check-verbose: src/myproject_selftest
+	$(LIBTOOL) --mode=execute $(srcdir)/src/myproject_selftest -v
+
 # Run the selftest binary under valgrind to check for memory leaks
 memcheck: src/myproject_selftest
 	$(LIBTOOL) --mode=execute valgrind --tool=memcheck \

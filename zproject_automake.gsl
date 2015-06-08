@@ -56,6 +56,18 @@ EXTRA_DIST = \\
     src/$(name:c).h \\
 .endfor
     src/$(project.prefix)_classes.h \\
+.if file.exists ("LICENSE")
+    LICENSE \\
+.endif
+.if file.exists ("README.txt")
+    README.txt \\
+.endif
+.if file.exists ("README.md")
+    README.md \\
+.endif
+.if file.exists ("CONTRIBUTING.md")
+    CONTRIBUTING.md \\
+.endif
     version.sh
 
 include \$(srcdir)/src/Makemodule.am
@@ -159,16 +171,16 @@ src_$(project.prefix)_selftest_SOURCES = src/$(project.prefix)_selftest.c
 .endif
 
 .for bin
-.   if first() 
+.   if first()
 # Install data into /usr/local/bin
 $(project.name)dir = @bindir@
 $(project.name)_SCRIPTS = \\
-.   endif    
+.   endif
 .   if !last()
     $(bin.name) \\
 .   else
     $(bin.name)
-.   endif    
+.   endif
 .endfor
 
 .if (count (class) > 0)

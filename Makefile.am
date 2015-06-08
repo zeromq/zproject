@@ -11,8 +11,8 @@ AM_CPPFLAGS = \
 project_libs =
 
 SUBDIRS =
-
 DIST_SUBDIRS =
+
 lib_LTLIBRARIES =
 bin_PROGRAMS =
 noinst_PROGRAMS =
@@ -21,6 +21,11 @@ noinst_LTLIBRARIES =
 TESTS =
 
 EXTRA_DIST = \
+    src/myproject_classes.h \
+    LICENSE \
+    README.txt \
+    README.md \
+    CONTRIBUTING.md \
     version.sh
 
 include $(srcdir)/src/Makemodule.am
