@@ -60,3 +60,7 @@ project.generated_warning_header ?= "\
 .gsl from "zproject_vs2010.gsl"
 .gsl from "zproject_vs2012.gsl"
 .gsl from "zproject_vs2013.gsl"
+.if file.exists ("project.gsl")
+  .echo "Processing \"project.gsl\"..."
+  .gsl from "project.gsl"
+.endif
