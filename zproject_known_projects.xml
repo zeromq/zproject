@@ -17,7 +17,7 @@
     <use project = "zyre"
         repository = "https://github.com/zeromq/zyre"
         test = "zyre_test">
-        <use project = "czmq" min_major = "3" />
+        <use project = "czmq" min_major = "3" min_minor = "0" />
     </use>
 
     <use project = "malamute"
