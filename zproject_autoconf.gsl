@@ -139,8 +139,8 @@ PKG_PROG_PKG_CONFIG
 
 .if file.exists ("acinclude.m4")
 AX_PROJECT_LOCAL_HOOK # Optional project-local hook (acinclude.m4)
-.endif
 
+.endif
 # Code coverage
 AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
                   [With GCC Code Coverage reporting.])],
