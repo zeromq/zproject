@@ -141,6 +141,10 @@ install(TARGETS $(project.name)
     ARCHIVE DESTINATION "lib${LIB_SUFFIX}" # .lib file
     RUNTIME DESTINATION bin              # .dll file
 )
+.if file.exists ("src/CMakeLists-local.txt")
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists-local.txt) # Optional project-local hook
+.endif
 
 ########################################################################
 # pkgconfig
