@@ -113,7 +113,7 @@ endfunction
 
 function resolve_python_method (method)
     my.method.python_name = "$(my.method.name:c)"
-    if my.method.python_name = 'is' # matches keyword
+    if regexp.match ("^(is|from)$", my.method.python_name) # matches keyword
         my.method.python_name += "_"
     endif
     for my.method.argument where !defined (argument.variadic)
