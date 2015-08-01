@@ -28,7 +28,8 @@ if [ $BUILD_TYPE == "default" ]; then
     # Clone and build dependencies
 .for use
     git clone $(use.repository) $(use.project)
-    ( cd $(use.project) && ./autogen.sh && ./configure && make check && sudo make install && sudo ldconfig )
+    ( cd $(use.project) && ./autogen.sh && ./configure && make check && sudo make install &&
+        if [ $TRAVIS_OS_NAME != "osx" ] ; then sudo ldconfig ; fi ) || exit 1
 
 .endfor
     # Build and check this project
