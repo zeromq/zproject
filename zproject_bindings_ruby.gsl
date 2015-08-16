@@ -31,6 +31,11 @@ function resolve_ruby_container (container)
     if my.container.ruby_name = "_"
         my.container.ruby_name = "result"
     endif
+    # Fix if the name matches a Ruby keyword. This list is not exhaustive,
+    # so more keywords should be added as they become a problem.
+    if regexp.match ("^(self|alias)$", my.container.ruby_name)
+        my.container.ruby_name += "_"
+    endif
     
     # All C types should be transformed to a type name recognized by FFI.
     # To handle more C types, add support for them here.
