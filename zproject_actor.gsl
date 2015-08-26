@@ -74,7 +74,31 @@ typedef struct _$(actor.c_name)_t $(actor.c_name)_t;
 .   endif
 
 //  @interface
-// This is the actor that runs a single node; it uses one thread.
+//  Create new $(actor.c_name) actor instance.
+//  @TODO: Describe the purpose of this actor!
+//
+//      zactor_t *$(actor.c_name) = zactor_new ($(actor.c_name), NULL);
+//
+//  Destroy $(actor.c_name) instance.
+//
+//      zactor_destroy (&$(actor.c_name));
+//
+//  Enable verbose logging of commands and activity:
+//
+//      zstr_send ($(actor.c_name), "VERBOSE");
+//      zsock_wait ($(actor.c_name));
+//
+//  Start $(actor.c_name) actor.
+//
+//      zstr_sendx ($(actor.c_name), "START", NULL);
+//      zsock_wait ($(actor.c_name));
+//
+//  Stop $(actor.c_name) actor.
+//
+//      zstr_sendx ($(actor.c_name), "STOP", NULL);
+//      zsock_wait ($(actor.c_name));
+//
+//  This is the $(actor.c_name) constructor as a zactor_fn;
 $(PROJECT.PREFIX)_EXPORT void
     $(actor.c_name)_actor (zsock_t *pipe, void *args);
 
