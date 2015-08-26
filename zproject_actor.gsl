@@ -1,8 +1,8 @@
 .#  ===========================================================================
 .#  Generate czmq actor header/source skeletons
 .#
-.#   Generates a skeleton for a new czmq actor actor. Will not overwrite 
-.#   existing files. 
+.#   Generates a skeleton for a new czmq actor actor. Will not overwrite
+.#   existing files.
 .#   See project.xml for instructions on how to specify an actor.
 .#
 .#  This script will generate the following files:
@@ -37,6 +37,9 @@ endfor
 .-
 .-  Build the header file for an actor
 .-
+.if !file.exists ("include")
+.   directory.create ("include")
+.endif
 .for actor
 .   if actor.private ?= 1
 .       actor.actordir = "src"
@@ -62,16 +65,40 @@ extern "C" {
 #endif
 
 .   if actor.c_name = project.name
-//  Include the library file with typdefs, public includes and public constants    
+//  Include the library file with typdefs, public includes and public constants
 #include "$(actor.c_name)_library.h"
 
-.   endif  
+.   endif
 .   if actor.private ?= 1
 typedef struct _$(actor.c_name)_t $(actor.c_name)_t;
 .   endif
 
 //  @interface
-// This is the actor that runs a single node; it uses one thread.
+//  Create new $(actor.c_name) actor instance.
+//  @TODO: Describe the purpose of this actor!
+//
+//      zactor_t *$(actor.c_name) = zactor_new ($(actor.c_name), NULL);
+//
+//  Destroy $(actor.c_name) instance.
+//
+//      zactor_destroy (&$(actor.c_name));
+//
+//  Enable verbose logging of commands and activity:
+//
+//      zstr_send ($(actor.c_name), "VERBOSE");
+//      zsock_wait ($(actor.c_name));
+//
+//  Start $(actor.c_name) actor.
+//
+//      zstr_sendx ($(actor.c_name), "START", NULL);
+//      zsock_wait ($(actor.c_name));
+//
+//  Stop $(actor.c_name) actor.
+//
+//      zstr_sendx ($(actor.c_name), "STOP", NULL);
+//      zsock_wait ($(actor.c_name));
+//
+//  This is the $(actor.c_name) constructor as a zactor_fn;
 $(PROJECT.PREFIX)_EXPORT void
     $(actor.c_name)_actor (zsock_t *pipe, void *args);
 
@@ -90,6 +117,9 @@ $(PROJECT.PREFIX)_EXPORT void
 .-
 .-  Build the source file for a actor
 .-
+.if !file.exists ("src")
+.   directory.create ("src")
+.endif
 .source_file = "src/$(actor.c_name).c"
 .if !file.exists (source_file)
 .echo "Generating $(source_file)..."
@@ -122,9 +152,10 @@ typedef struct _$(actor.c_name)_t $(actor.c_name)_t;
 //  Structure of our actor
 
 struct _$(actor.c_name)_t {
-    zsock_t *pipe;                //  Pipe back to creator
-    bool terminated;              //  Flag indicating termination
-    zpoller_t *poller;            
+    zsock_t *pipe;              //  Actor command pipe
+    zpoller_t *poller;          //  Socket poller
+    bool terminated;            //  Did caller ask us to quit?
+    bool verbose;               //  Verbose logging enabled?
     //  TODO: Declare properties
 };
 
@@ -177,7 +208,7 @@ $(actor.c_name)_start ($(actor.c_name)_t *self)
     assert (self);
 
     //  TODO: Add startup actions
-    
+
     return 0;
 }
 
@@ -197,21 +228,26 @@ $(actor.c_name)_stop ($(actor.c_name)_t *self)
 
 
 //  Here we handle incomming message from the node
-           
+
 static void
 $(actor.c_name)_recv_api ($(actor.c_name)_t *self)
-{      
+{
 //  Get the whole message of the pipe in one go
     zmsg_t *request = zmsg_recv (self->pipe);
     if (!request)
        return;        //  Interrupted
-    
+
     char *command = zmsg_popstr (request);
-    if (streq (command, "START")) 
+    if (streq (command, "START"))
         zsock_signal (self->pipe, $(actor.c_name)_start (self));
     else
-    if (streq (command, "STOP")) 
+    if (streq (command, "STOP"))
         zsock_signal (self->pipe, $(actor.c_name)_stop (self));
+    else
+    if (streq (command, "VERBOSE")) {
+        self->verbose = true;
+        zsock_signal (self->pipe, 0);
+    }
     else
     if (streq (command, "$TERM"))
         //  The $TERM command is send by zactor_destroy() method
@@ -259,18 +295,18 @@ $(actor.c_name)_test (bool verbose)
     //  @selftest
     //  Simple create/destroy test
     zactor_t *$(actor.c_name) = zactor_new ($(actor.c_name)_actor, NULL);
- 
+
     zstr_send ($(actor.c_name), "START");
     rc = zsock_wait ($(actor.c_name));             //  Wait until actor started
     assert (rc == 0);
- 
+
     zstr_send ($(actor.c_name), "STOP");
     rc = zsock_wait ($(actor.c_name));             //  Wait until actor stopped
     assert (rc == 0);
- 
+
     zactor_destroy (&$(actor.c_name));
     //  @end
- 
+
     printf ("OK\\n");
 }
 .close
