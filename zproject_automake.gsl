@@ -221,6 +221,11 @@ memcheck: src/$(project.prefix)_selftest
 \t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
 \t\t$\(srcdir)/src/$(project.prefix)_selftest
 
+# Run the selftest binary under valgrind to check for performance leaks
+callcheck: src/$(project.prefix)_selftest
+\t$\(LIBTOOL) --mode=execute valgrind --tool=callgrind \\
+\t\t$\(srcdir)/src/$(project.prefix)_selftest
+
 # Run the selftest binary under gdb for debugging
 debug: src/$(project.prefix)_selftest
 \t$\(LIBTOOL) --mode=execute gdb -q \\
@@ -270,14 +275,7 @@ WantedBy=multi-user.target
 .output "bench/Makemodule.am"
 $(project.GENERATED_WARNING_HEADER:)
 
-.for bench
-noinst_PROGRAMS += bench/$(bench.name)
-bench_$(bench.name)_CPPFLAGS = ${AM_CPPFLAGS}
-bench_$(bench.name)_LDADD = ${program_libs}
-bench_$(bench.name)_SOURCES = bench/$(bench.name).c
-
-.endfor
-benchmarks: \\
+benchmark_progs = \\
 .for bench
 .   if !last()
     bench/$(bench.name) \\
@@ -285,7 +283,33 @@ benchmarks: \\
     bench/$(bench.name)
 .   endif
 .endfor
+
+.for bench
+noinst_PROGRAMS += bench/$(bench.name)
+bench_$(bench.name)_CPPFLAGS = ${AM_CPPFLAGS}
+bench_$(bench.name)_LDADD = ${program_libs}
+bench_$(bench.name)_SOURCES = bench/$(bench.name).c
+
+.endfor
+# Run the benchmark binaries
+bench: \$(benchmark_progs)
 \tfor f in \$^; do \$(LIBTOOL) --mode=execute \$(srcdir)/\$\$f; done
+
+# Run the selftest binary under valgrind to check for memory leaks
+bench-memcheck: \$(benchmark_progs)
+\tfor f in \$^; do \\
+\t\t$\(LIBTOOL) --mode=execute valgrind --tool=memcheck \\
+\t\t\t--leak-check=full --show-reachable=yes --error-exitcode=1 \\
+\t\t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
+\t\t\t$\(srcdir)/\$\$f; \\
+\tdone
+
+# Run the selftest binary under valgrind to check for performance leaks
+bench-callcheck: \$(benchmark_progs)
+\tfor f in \$^; do \\
+\t\t$\(LIBTOOL) --mode=execute valgrind --tool=callgrind \\
+\t\t\t$\(srcdir)/\$\$f; \\
+\tdone
 
 $(project.GENERATED_WARNING_HEADER:)
 .endif
