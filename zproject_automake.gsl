@@ -8,6 +8,7 @@
 .#  This script will generate the following files:
 .#      * Makefile.am
 .#      * src/Makemodule.am
+.#      * bench/Makemodule.am
 .#  ===========================================================================
 .echo "Generating Makefile.am..."
 .output "Makefile.am"
@@ -73,6 +74,9 @@ EXTRA_DIST = \\
 include \$(srcdir)/src/Makemodule.am
 .if file.exists ("src/Makemodule-local.am")
 include \$(srcdir)/src/Makemodule-local.am # Optional project-local hook
+.endif
+.if count (bench) > 0
+include \$(srcdir)/bench/Makemodule.am
 .endif
 
 $(project.GENERATED_WARNING_HEADER:)
@@ -254,3 +258,34 @@ ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name).cfg
 [Install]
 WantedBy=multi-user.target
 .endfor
+.close
+.-
+.-  Generate the Makemodule.am for the benchmarks
+.-
+.if count (bench) > 0
+.if !file.exists ("bench")
+.   directory.create ("bench")
+.endif
+.echo "Generating bench/Makemodule.am..."
+.output "bench/Makemodule.am"
+$(project.GENERATED_WARNING_HEADER:)
+
+.for bench
+noinst_PROGRAMS += bench/$(bench.name)
+bench_$(bench.name)_CPPFLAGS = ${AM_CPPFLAGS}
+bench_$(bench.name)_LDADD = ${program_libs}
+bench_$(bench.name)_SOURCES = bench/$(bench.name).c
+
+.endfor
+benchmarks: \\
+.for bench
+.   if !last()
+    bench/$(bench.name) \\
+.   else
+    bench/$(bench.name)
+.   endif
+.endfor
+\tfor f in \$^; do \$(LIBTOOL) --mode=execute \$(srcdir)/\$\$f; done
+
+$(project.GENERATED_WARNING_HEADER:)
+.endif

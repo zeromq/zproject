@@ -79,6 +79,11 @@
     -->
 
     <!--
+        Benchmark programs built by the project
+    <bench name = "benchname">Benchmark for class/function...</main>
+    -->
+
+    <!--
         Models that we build using GSL.
         This will generate a 'make code' target to build the models.
     <model name = "sockopts" />
@@ -119,6 +124,7 @@
     <bin name = "zproject_android.gsl" />
     <bin name = "zproject_autoconf.gsl" />
     <bin name = "zproject_automake.gsl" />
+    <bin name = "zproject_bench.gsl" />
     <bin name = "zproject_bindings_python.gsl" />
     <bin name = "zproject_bindings_qml.gsl" />
     <bin name = "zproject_bindings_ruby.gsl" />

@@ -43,6 +43,7 @@ project.generated_warning_header ?= "\
 .gsl from "zproject_android.gsl"
 .gsl from "zproject_autoconf.gsl"
 .gsl from "zproject_automake.gsl"
+.gsl from "zproject_bench.gsl"
 .gsl from "zproject_bindings_python.gsl"
 .gsl from "zproject_bindings_qml.gsl"
 .gsl from "zproject_bindings_ruby.gsl"
