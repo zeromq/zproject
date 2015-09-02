@@ -292,6 +292,7 @@ bench_$(bench.name)_SOURCES = bench/$(bench.name).c
 
 .endfor
 # Run the benchmark binaries
+\.PHONY: bench
 bench: \$(benchmark_progs)
 \tfor f in \$^; do \$(LIBTOOL) --mode=execute \$(srcdir)/\$\$f; done
 
