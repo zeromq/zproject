@@ -252,7 +252,7 @@ case "${host_os}" in
         # Define on Linux to enable all library features
         CPPFLAGS="-D_GNU_SOURCE -DLINUX $CPPFLAGS"
         AC_DEFINE($(PROJECT.NAME)_HAVE_LINUX, 1, [Have Linux OS])
-        
+
         case "${host_os}" in
             *android*)
                 AC_DEFINE($(PROJECT.NAME)_HAVE_ANDROID, 1, [Have Android OS])
@@ -370,6 +370,7 @@ AM_COND_IF([WITH_$(NAME)], [AC_MSG_NOTICE([WITH_$(NAME) defined])])
 # Checks for library functions.
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset getifaddrs)
+AC_CHECK_LIB([uuid], [uuid_generate])
 
 # Set pkgconfigdir
 AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
@@ -390,7 +391,7 @@ AC_CONFIG_FILES([Makefile
                  ])
 .else
 AC_CONFIG_FILES([Makefile])
-.endif 
+.endif
 AC_OUTPUT
 
 $(project.GENERATED_WARNING_HEADER:)
