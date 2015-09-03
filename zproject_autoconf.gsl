@@ -167,7 +167,12 @@ PKG_CHECK_MODULES([$(use.project)], [$(use.libname) >= $(use.min_version)],,
     [AC_MSG_ERROR([Cannot find required package for $(use.libname). Note, pkg-config is required due to specified version >= $(use.min_version)])
   ])
 .  else
-PKG_CHECK_MODULES([$(use.project)], [$(use.libname)],,
+PKG_CHECK_MODULES([$(use.project)], [$(use.libname)],
+    [
+.    if defined (use.optional) & (use.optional = 1)
+        AC_DEFINE(HAVE_$(USE.LINKNAME), 1, [The $(use.libname) library is to be used.])
+.    endif
+    ],
     [
         AC_ARG_WITH([$(use.libname)],
             [
@@ -189,17 +194,23 @@ PKG_CHECK_MODULES([$(use.project)], [$(use.libname)],,
             fi
         fi
 
-        CFLAGS="${$(use.project)_synthetic_cflags} ${CFLAGS}"
-        LDFLAGS="${$(use.project)_synthetic_libs} ${LDFLAGS}"
-        LIBS="${$(use.project)_synthetic_libs} ${LIBS}"
-
         AC_CHECK_LIB([$(use.project)], [$(use.test)],
             [
+                CFLAGS="${$(use.project)_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${$(use.project)_synthetic_libs} ${LDFLAGS}"
+                LIBS="${$(use.project)_synthetic_libs} ${LIBS}"
+
                 AC_SUBST([$(use.project)_CFLAGS],[${$(use.project)_synthetic_cflags}])
                 AC_SUBST([$(use.project)_LIBS],[${$(use.project)_synthetic_libs}])
                 was_$(use.project)_check_lib_detected=yes
+.    if defined (use.optional) & (use.optional = 1)
+                AC_DEFINE(HAVE_$(USE.LINKNAME), 1, [The $(use.libname) library is to be used.])
+            ],
+            [])
+.    else
             ],
             [AC_MSG_ERROR([cannot link with -l$(use.linkname), install $(use.libname).])])
+.    endif
     ])
 .  endif
 
