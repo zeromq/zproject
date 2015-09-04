@@ -162,18 +162,14 @@ PREVIOUS_LIBS="${LIBS}"
 
 was_$(use.project)_check_lib_detected=no
 
-.  if (use.min_version <> '0.0.0')
-PKG_CHECK_MODULES([$(use.project)], [$(use.libname) >= $(use.min_version)],,
-    [AC_MSG_ERROR([Cannot find required package for $(use.libname). Note, pkg-config is required due to specified version >= $(use.min_version)])
-  ])
-.  else
-PKG_CHECK_MODULES([$(use.project)], [$(use.libname)],
+PKG_CHECK_MODULES([$(use.project)], [$(use.libname) >= $(use.min_version)],
     [
-.    if defined (use.optional) & (use.optional = 1)
-        AC_DEFINE(HAVE_$(USE.LINKNAME), 1, [The $(use.libname) library is to be used.])
-.    endif
+.  if defined (use.optional) & (use.optional = 1)
+        AC_DEFINE(HAVE_$(USE.LIBNAME), 1, [The $(use.libname) library is to be used.])
+.  endif
     ],
     [
+.  if (use.min_version = '0.0.0')
         AC_ARG_WITH([$(use.libname)],
             [
                 AS_HELP_STRING([--with-$(use.libname)],
@@ -204,15 +200,17 @@ PKG_CHECK_MODULES([$(use.project)], [$(use.libname)],
                 AC_SUBST([$(use.project)_LIBS],[${$(use.project)_synthetic_libs}])
                 was_$(use.project)_check_lib_detected=yes
 .    if defined (use.optional) & (use.optional = 1)
-                AC_DEFINE(HAVE_$(USE.LINKNAME), 1, [The $(use.libname) library is to be used.])
+                AC_DEFINE(HAVE_$(USE.LIBNAME), 1, [The $(use.libname) library is to be used.])
             ],
             [])
 .    else
             ],
             [AC_MSG_ERROR([cannot link with -l$(use.linkname), install $(use.libname).])])
 .    endif
-    ])
+.  else
+        AC_MSG_ERROR([Cannot find required package for $(use.libname). Note, pkg-config is required due to specified version >= $(use.min_version)])
 .  endif
+    ])
 
 if test "x$was_$(use.project)_check_lib_detected" = "xno"; then
     CFLAGS="${$(use.project)_CFLAGS} ${CFLAGS}"
