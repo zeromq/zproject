@@ -11,7 +11,7 @@
 
 zproject is a community project, like most ZeroMQ projects, built using the C4.1 process, and licensed under MPL v2. It solves the Makefile problem really well. It is unashamedly for C, and more pointedly, for that modern C dialect we call CLASS. CLASS is the Minecraft of C: fun, easy, playful, mind-opening, and social. Read more about it [hintjens#79](http://hintjens.com/blog:79).
 
-zproject grew out of the work that has been done to automatically generate the build environment in CZMQ. It allows to share these automations with other projects like [zyre](https://github.com/zeromq/zyre), [malamute](https://github.com/zeromq/malamute) or [hydra](https://github.com/edgenet/hydra) and at the same time keep everything in sync. 
+zproject grew out of the work that has been done to automatically generate the build environment in CZMQ. It allows to share these automations with other projects like [zyre](https://github.com/zeromq/zyre), [malamute](https://github.com/zeromq/malamute) or [hydra](https://github.com/edgenet/hydra) and at the same time keep everything in sync.
 
 ### Scope and Goals
 
@@ -19,30 +19,30 @@ zproject has these primary goals:
 
 * generate files for cross-platform build environments.
 * generate CLASS ([ZeroMQ RFC/21](http://rfc.zeromq.org/spec:21)) compliant header and source skeletons for new classes.
-* generate a public header file for your library so it can be easily included by others. 
+* generate a public header file for your library so it can be easily included by others.
 * generate stubs for man page documentation which uses the comment based approach from CZMQ.
 
-All you need is a project.xml file in the project's root directory which is your 
+All you need is a project.xml file in the project's root directory which is your
 
     One file to rule them all
 
 The following build environments are currently supported:
- 
+
 * android
-* autotools 
-* cmake 
-* mingw32 
-* qt-android 
-* vs2008 
-* vs2010 
-* vs2012 
-* vs2013 
+* autotools
+* cmake
+* mingw32
+* qt-android
+* vs2008
+* vs2010
+* vs2012
+* vs2013
 
 Thanks to the amazing ZeroMQ community you can do all the heavy lifting in C and than easily generate bindings to Python, Ruby and QML to write a nice GUI on top of it.
 
 ## Demo on PLAYTerm
 
-There is a short Demo on PLAYTerm that shows how easy it is to get started with zproject: [ZeroMQ - Create new zproject](http://www.playterm.org/r/zeromq---create-new-zproject-1424116766) 
+There is a short Demo on PLAYTerm that shows how easy it is to get started with zproject: [ZeroMQ - Create new zproject](http://www.playterm.org/r/zeromq---create-new-zproject-1424116766)
 
 ## Installation
 
@@ -123,7 +123,7 @@ This would cause the following `@interface` to be generated inside of `include/m
         myclass_has_feature (myclass_t *self, const char *feature);
 
     //  Put the myclass to sleep for the given number of milliseconds.
-    //  No messages will be processed by the actor during this time.  
+    //  No messages will be processed by the actor during this time.
     MYPROJECT_EXPORT void
         myclass_sleep (myclass_t *self, int duration);
 
@@ -155,9 +155,11 @@ To report an issue, use the [zproject issue tracker](https://github.com/zeromq/z
 
 ### Hints to Contributors
 
-Before you commit code please make sure that the project model hides all details of backend scripts.
+Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
 
-For example don't make a user enter a header file because autoconf needs it to do AC_CHECK_LIB.
+Do read your code after you write it and ask, "Can I make this simpler?" We do use a nice minimalist and yet readable style. Learn it, adopt it, use it.
+
+Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
 ### This Document
 
