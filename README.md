@@ -13,27 +13,27 @@
 
 **<a href="#toc2-51">Installation</a>**
 &emsp;<a href="#toc3-54">Requirements</a>
-&emsp;<a href="#toc3-66">Getting started</a>
+&emsp;<a href="#toc3-64">Getting started</a>
 
-**<a href="#toc2-84">Setup your project environment</a>**
+**<a href="#toc2-82">Setup your project environment</a>**
 
-**<a href="#toc2-106">Configuration</a>**
+**<a href="#toc2-104">Configuration</a>**
 
-**<a href="#toc2-113">Sample API model</a>**
+**<a href="#toc2-255">Sample API model</a>**
 
-**<a href="#toc2-154">Ownership and License</a>**
+**<a href="#toc2-362">Ownership and License</a>**
 
-**<a href="#toc2-163">Removal</a>**
-&emsp;<a href="#toc3-166">autotools</a>
-&emsp;<a href="#toc3-171">Hints to Contributors</a>
-&emsp;<a href="#toc3-178">This Document</a>
+**<a href="#toc2-371">Removal</a>**
+&emsp;<a href="#toc3-374">autotools</a>
+&emsp;<a href="#toc3-379">Hints to Contributors</a>
+&emsp;<a href="#toc3-388">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
 
 zproject is a community project, like most ZeroMQ projects, built using the C4.1 process, and licensed under MPL v2. It solves the Makefile problem really well. It is unashamedly for C, and more pointedly, for that modern C dialect we call CLASS. CLASS is the Minecraft of C: fun, easy, playful, mind-opening, and social. Read more about it [hintjens#79](http://hintjens.com/blog:79).
 
-zproject grew out of the work that has been done to automatically generate the build environment in CZMQ. It allows to share these automations with other projects like [zyre](https://github.com/zeromq/zyre), [malamute](https://github.com/zeromq/malamute) or [hydra](https://github.com/edgenet/hydra) and at the same time keep everything in sync. 
+zproject grew out of the work that has been done to automatically generate the build environment in CZMQ. It allows to share these automations with other projects like [zyre](https://github.com/zeromq/zyre), [malamute](https://github.com/zeromq/malamute) or [hydra](https://github.com/edgenet/hydra) and at the same time keep everything in sync.
 
 <A name="toc3-18" title="Scope and Goals" />
 ### Scope and Goals
@@ -42,31 +42,31 @@ zproject has these primary goals:
 
 * generate files for cross-platform build environments.
 * generate CLASS ([ZeroMQ RFC/21](http://rfc.zeromq.org/spec:21)) compliant header and source skeletons for new classes.
-* generate a public header file for your library so it can be easily included by others. 
+* generate a public header file for your library so it can be easily included by others.
 * generate stubs for man page documentation which uses the comment based approach from CZMQ.
 
-All you need is a project.xml file in the project's root directory which is your 
+All you need is a project.xml file in the project's root directory which is your
 
     One file to rule them all
 
 The following build environments are currently supported:
- 
+
 * android
-* autotools 
-* cmake 
-* mingw32 
-* qt-android 
-* vs2008 
-* vs2010 
-* vs2012 
-* vs2013 
+* autotools
+* cmake
+* mingw32
+* qt-android
+* vs2008
+* vs2010
+* vs2012
+* vs2013
 
 Thanks to the amazing ZeroMQ community you can do all the heavy lifting in C and than easily generate bindings to Python, Ruby and QML to write a nice GUI on top of it.
 
 <A name="toc2-46" title="Demo on PLAYTerm" />
 ## Demo on PLAYTerm
 
-There is a short Demo on PLAYTerm that shows how easy it is to get started with zproject: [ZeroMQ - Create new zproject](http://www.playterm.org/r/zeromq---create-new-zproject-1424116766) 
+There is a short Demo on PLAYTerm that shows how easy it is to get started with zproject: [ZeroMQ - Create new zproject](http://www.playterm.org/r/zeromq---create-new-zproject-1424116766)
 
 <A name="toc2-51" title="Installation" />
 ## Installation
@@ -81,7 +81,7 @@ zproject uses the universal code generator called GSL to process its XML inputs 
 	make
 	make install
 
-<A name="toc3-66" title="Getting started" />
+<A name="toc3-64" title="Getting started" />
 ### Getting started
 
 GSL must be able to find the zproject resources on your system. Therefore you'll need to install them.
@@ -99,7 +99,7 @@ NB: You may need to use the `sudo` command when running `make install` to elevat
 
 	sudo make install
 
-<A name="toc2-84" title="Setup your project environment" />
+<A name="toc2-82" title="Setup your project environment" />
 ## Setup your project environment
 
 The easiest way to start is by coping the `project.xml` and `generate.sh` to your project or an empty directory. Licensing your project is important thus you'll need a license file. To get started you can copy `license.xml` from zproject and change the license to whatever you like. Here's an overview that might help you decide to [choose a license](http://choosealicense.com/). The text in the `license.xml` will be placed on every generated header and source file. Thus make sure not to insert the hole license but an appropriate disclaimer.
@@ -121,12 +121,12 @@ The compilation will probably fail as the generated skeleton source files are co
 
 	make check
 
-<A name="toc2-106" title="Configuration" />
+<A name="toc2-104" title="Configuration" />
 ## Configuration
 
 zproject's `project.xml` contains an extensive description of the available configuration: The following snippet is taken from the `project.xml`:
 
-<!-- 
+<!--
     The project.xml generates build environments for:
 
         * android
@@ -140,7 +140,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         * vs2013
 
     Classes are automatically added to all build environments. Further as you
-    add new classes to your project you can generate skeleton header and source 
+    add new classes to your project you can generate skeleton header and source
     files according to http://rfc.zeromq.org/spec:21.
 
     name := The name of your project
@@ -161,9 +161,9 @@ zproject's `project.xml` contains an extensive description of the available conf
     -->
     <include filename = "license.xml" />
 
-    <!-- 
-        Current version of your project. 
-        This will be used to package your distribution 
+    <!--
+        Current version of your project.
+        This will be used to package your distribution
     -->
     <version major = "1" minor = "0" patch = "0" />
 
@@ -180,7 +180,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <header name = "myproject_prelude" />
     -->
 
-    <!-- 
+    <!--
         Classes, if the class header or source file doesn't exist this will
         generate a skeletons for them.
         use private = "1" for internal classes
@@ -189,7 +189,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     -->
 
     <!--
-        Actors, are build using the simple actor framework from czmq. If the 
+        Actors, are build using the simple actor framework from czmq. If the
         actors class header or source file doesn't exist this will generate a
         skeleton for them. The generated test method of the actor will teach
         you how to use them. Also have a look at the czmq docs to learn more
@@ -197,7 +197,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <actor name = "myactor">Public actor description</actor>
     <actor name = "someactor" private = "1">Private actor description</actor>
     -->
-    
+
     <!--
         Main programs built by the project
                  use private = "1" for internal tools
@@ -206,8 +206,13 @@ zproject's `project.xml` contains an extensive description of the available conf
     <main name = "progname" service = "1">Installed as system service</main>
     -->
 
-    <!-- 
-        Models that we build using GSL. 
+    <!--
+        Benchmark programs built by the project
+    <bench name = "benchname">Benchmark for class/function...</main>
+    -->
+
+    <!--
+        Models that we build using GSL.
         This will generate a 'make code' target to build the models.
     <model name = "sockopts" />
     <model name = "zgossip" />
@@ -225,16 +230,16 @@ zproject's `project.xml` contains an extensive description of the available conf
     -->
 
     <!-- Other source files that we need to package
-    <extra name = "some_ressource" />
+    <extra name = "some_resource" />
     -->
 
-    <!-- 
+    <!--
         Stuff that needs to be installed:
 
         NOTICE: If you copied this file to get started you want to delete or
                 at least comment out those bin tag as they distribute the
                 zproject files.
-        
+
         * Linux -> /usr/local/bin
     -->
     <bin name = "zproject.gsl" />
@@ -242,11 +247,12 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_known_projects.xml" />
     <bin name = "zproject_class_api.gsl" />
     <bin name = "zproject_mkman" />
-    
+
     <bin name = "zproject_actor.gsl" />
     <bin name = "zproject_android.gsl" />
     <bin name = "zproject_autoconf.gsl" />
     <bin name = "zproject_automake.gsl" />
+    <bin name = "zproject_bench.gsl" />
     <bin name = "zproject_bindings_python.gsl" />
     <bin name = "zproject_bindings_qml.gsl" />
     <bin name = "zproject_bindings_ruby.gsl" />
@@ -266,7 +272,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_vs2013.gsl" />
 </project>
 
-<A name="toc2-113" title="Sample API model" />
+<A name="toc2-255" title="Sample API model" />
 ## Sample API model
 
 The zproject scripts can also optionally generate the `@interface` in your class headers from an API model, in addition to a host of language bindings.  To opt-in to this behavior, just make a model to the `api` directory of your project.  For example, if your `project.xml` contains `<class name = "myclass"/>`, you could create the following `api/myclass.xml` file:
@@ -357,7 +363,7 @@ This would cause the following `@interface` to be generated inside of `include/m
         myclass_has_feature (myclass_t *self, const char *feature);
 
     //  Put the myclass to sleep for the given number of milliseconds.
-    //  No messages will be processed by the actor during this time.  
+    //  No messages will be processed by the actor during this time.
     MYPROJECT_EXPORT void
         myclass_sleep (myclass_t *self, int duration);
 
@@ -373,7 +379,7 @@ Language bindings will also be generated in the following languages:
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
-<A name="toc2-154" title="Ownership and License" />
+<A name="toc2-362" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -382,22 +388,24 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc2-163" title="Removal" />
+<A name="toc2-371" title="Removal" />
 ## Removal
 
-<A name="toc3-166" title="autotools" />
+<A name="toc3-374" title="autotools" />
 ### autotools
 
     make uninstall
 
-<A name="toc3-171" title="Hints to Contributors" />
+<A name="toc3-379" title="Hints to Contributors" />
 ### Hints to Contributors
 
-Before you commit code please make sure that the project model hides all details of backend scripts.
+Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
 
-For example don't make a user enter a header file because autoconf needs it to do AC_CHECK_LIB.
+Do read your code after you write it and ask, "Can I make this simpler?" We do use a nice minimalist and yet readable style. Learn it, adopt it, use it.
 
-<A name="toc3-178" title="This Document" />
+Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
+
+<A name="toc3-388" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).
