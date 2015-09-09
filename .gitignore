@@ -13,3 +13,4 @@ libtool
 *.gz
 *.zip
 *.la
+*.swp

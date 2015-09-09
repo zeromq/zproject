@@ -2,9 +2,34 @@
 .if count (class, defined (class.api))
 .template 0
 #  Generate minimal JNI language bindings.
-if !file.exists ("bindings/jni")
-   directory.create("bindings/jni")
+project.path = "bindings/jni/src/main/java/org/$(project.name:c)"
+if !file.exists (path)
+   directory.create (path)
 endif
+
+for project.class where defined (class.api)
+    echo class.name
+    output path + "/$(class.name:Pascal).java"
+    
+    >package org.$(project.name:c);
+    >
+    >public class $(class.name:Pascal) {
+    >    public native void create();
+    >    public native void destroy();
+
+    for method
+        echo "method: " + method.name
+        >    public native $(method->return.c_type) $(method.name:camel) ();
+        for argument where defined (argument.variadic)
+            echo "  arg: " + argument.variadic
+        endfor
+        if defined (method.return)
+            echo "  return: " + method.return
+        endif
+    endfor
+
+    >}
+endfor
 
 .endtemplate
 .endif
