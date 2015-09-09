@@ -15,9 +15,11 @@ myproject_SCRIPTS = \
     zproject_android.gsl \
     zproject_autoconf.gsl \
     zproject_automake.gsl \
+    zproject_bench.gsl \
     zproject_bindings_python.gsl \
     zproject_bindings_qml.gsl \
     zproject_bindings_ruby.gsl \
+    zproject_bindings_jni.gsl \
     zproject_ci.gsl \
     zproject_class.gsl \
     zproject_cmake.gsl \
@@ -45,6 +47,11 @@ memcheck: src/myproject_selftest
 	$(LIBTOOL) --mode=execute valgrind --tool=memcheck \
 		--leak-check=full --show-reachable=yes --error-exitcode=1 \
 		--suppressions=$(srcdir)/src/.valgrind.supp \
+		$(srcdir)/src/myproject_selftest
+
+# Run the selftest binary under valgrind to check for performance leaks
+callcheck: src/myproject_selftest
+	$(LIBTOOL) --mode=execute valgrind --tool=callgrind \
 		$(srcdir)/src/myproject_selftest
 
 # Run the selftest binary under gdb for debugging
