@@ -1,0 +1,10 @@
+.#  Only build bindings if there is at least one API model
+.if count (class, defined (class.api))
+.template 0
+#  Generate minimal JNI language bindings.
+if !file.exists ("bindings/jni")
+   directory.create("bindings/jni")
+endif
+
+.endtemplate
+.endif

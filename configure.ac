@@ -114,7 +114,7 @@ case "${host_os}" in
         # Define on Linux to enable all library features
         CPPFLAGS="-D_GNU_SOURCE -DLINUX $CPPFLAGS"
         AC_DEFINE(MYPROJECT_HAVE_LINUX, 1, [Have Linux OS])
-        
+
         case "${host_os}" in
             *android*)
                 AC_DEFINE(MYPROJECT_HAVE_ANDROID, 1, [Have Android OS])
@@ -216,6 +216,7 @@ AM_CONDITIONAL(BUILD_DOC, test "x$myproject_build_doc" = "xyes")
 # Checks for library functions.
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset getifaddrs)
+AC_CHECK_LIB([uuid], [uuid_generate])
 
 # Set pkgconfigdir
 AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
