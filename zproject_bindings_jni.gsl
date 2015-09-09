@@ -7,10 +7,39 @@ if !file.exists (path)
    directory.create (path)
 endif
 
+function resolve_jni_container (container)
+    my.container.jni_name = "$(my.container.name:c)"
+
+    if defined (my.container.variadic)
+        my.container.jni_type = "" # ctypes doesn't explictly state variadic signatures, so we just leave it off
+    elsif my.container.type = "nothing"
+        my.container.jni_type = "void"
+    elsif my.container.type = "anything"
+        my.container.jni_type = "void"
+    elsif my.container.type = "boolean"
+        my.container.jni_type = "boolean"
+    elsif my.container.type = "byte"
+        my.container.jni_type = "byte"
+    elsif my.container.type = "integer"
+        my.container.jni_type = "int"
+    elsif my.container.type = "size"
+        my.container.jni_type = "long"
+    elsif my.container.type = "real"
+        my.container.jni_type = "float"
+    elsif my.container.type = "buffer"
+        my.container.jni_type = "byte []"
+    elsif my.container.type = "string"
+        my.container.jni_type = "String"
+    elsif my.container.type = "zmsg"
+        my.container.jni_type = "String"
+    endif
+endfunction
+
+
 for project.class where defined (class.api)
     echo class.name
     output path + "/$(class.name:Pascal).java"
-    
+
     >package org.$(project.name:c);
     >
     >public class $(class.name:Pascal) {
@@ -18,14 +47,28 @@ for project.class where defined (class.api)
     >    public native void destroy();
 
     for method
-        echo "method: " + method.name
-        >    public native $(method->return.c_type) $(method.name:camel) ();
-        for argument where defined (argument.variadic)
-            echo "  arg: " + argument.variadic
+        method.supported = 1
+        for return
+            resolve_jni_container (return)
+            if !defined (return.jni_type)
+                echo "Removing $(class.name).$(method.name) as unsupported"
+                method.supported = 0
+            endif
         endfor
-        if defined (method.return)
-            echo "  return: " + method.return
-        endif
+        for argument
+            resolve_jni_container (argument)
+            if !defined (argument.jni_type)
+                echo "Removing $(class.name).$(method.name) as unsupported"
+                method.supported = 0
+            endif
+        endfor
+    endfor
+    for method where supported
+        >    public native $(method->return.jni_type:) $(method.name:camel) (\
+        for argument
+            >$(argument.jni_type) $(argument.jni_name) \
+        endfor
+        >);
     endfor
 
     >}
