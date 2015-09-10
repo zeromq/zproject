@@ -29,7 +29,13 @@ function resolve_jni_container (container)
         my.container.jni_type = "byte []"
     elsif my.container.type = "string"
         my.container.jni_type = "String"
+    elsif my.container.type = "time"
+        my.container.jni_type = "long"
+    elsif my.container.type = "file_size"
+        my.container.jni_type = "long"
     elsif defined (project.imports_$(my.container.type))
+        my.container.jni_type = "$(type:pascal)"
+    elsif count (project.class, class.name = my.container.type)
         my.container.jni_type = "$(type:pascal)"
     endif
 endfunction
