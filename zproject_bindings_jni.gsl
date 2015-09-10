@@ -1,11 +1,10 @@
 .#  Only build bindings if there is at least one API model
 .if count (class, defined (class.api))
 .template 0
-#  Generate minimal JNI language bindings.
-project.path = "bindings/jni/src/main/java/org/$(project.name:c)"
-if !file.exists (path)
-   directory.create (path)
-endif
+
+.global.namespace ?= switches.namespace? "org.zeromq"
+.global.name_path ?= switches.name_path? "org/zeromq"
+.global.topdir ?= switches.topdir? "bindings/jni/src"
 
 function resolve_jni_container (container)
     my.container.jni_name = "$(my.container.name:c)"
@@ -30,48 +29,83 @@ function resolve_jni_container (container)
         my.container.jni_type = "byte []"
     elsif my.container.type = "string"
         my.container.jni_type = "String"
-    elsif my.container.type = "zmsg"
-        my.container.jni_type = "String"
+    elsif defined (project.imports_$(my.container.type))
+        my.container.jni_type = "$(type:pascal)"
     endif
 endfunction
 
 
 for project.class where defined (class.api)
-    echo class.name
-    output path + "/$(class.name:Pascal).java"
+    directory.create ("$(topdir)/main/java/$(name_path)")
+    output "$(topdir)/main/java/$(name_path)/$(class.name:pascal).java"
 
-    >package org.$(project.name:c);
+    >package org.zeromq.$(project.name:c);
+    for project.use
+        for class
+            >import org.zeromq.$(project.name:c).$(class.name:pascal);
+            project.imports_$(class.name) = 1
+        endfor
+    endfor
     >
-    >public class $(class.name:Pascal) {
-    >    public native void create();
-    >    public native void destroy();
-
+    >public class $(class.name:pascal) {
+    for constructor
+    >    public native void create ();
+    endfor
+    for destructor
+    >    public native void destroy ();
+    endfor
     for method
         method.supported = 1
         for return
             resolve_jni_container (return)
             if !defined (return.jni_type)
-                echo "Removing $(class.name).$(method.name) as unsupported"
+                echo "Removing $(class.name).$(method.name) as unsupported, no $(return.type)"
                 method.supported = 0
             endif
         endfor
         for argument
             resolve_jni_container (argument)
             if !defined (argument.jni_type)
-                echo "Removing $(class.name).$(method.name) as unsupported"
+                echo "Removing $(class.name).$(method.name) as unsupported, no $(argument.type)"
                 method.supported = 0
             endif
         endfor
     endfor
     for method where supported
+        comma = ""
         >    public native $(method->return.jni_type:) $(method.name:camel) (\
         for argument
-            >$(argument.jni_type) $(argument.jni_name) \
+            >$(comma)$(argument.jni_type:) $(argument.jni_name:pascal)\
+            comma = ", "
         endfor
         >);
     endfor
-
     >}
+
+    directory.create ("$(topdir)/main/c")
+    class.filename = "$(namespace:c)_$(class.name:pascal)"
+    output "$(topdir)/main/c/$(filename:).c"
+    >#include <jni.h>
+    >#include <stdio.h>
+    >#include "$(filename:).h"
+    >#include "$(project.name:c).h"
+
+    for constructor
+        >
+        >JNIEXPORT void JNICALL Java_$(filename:)_create (JNIEnv *env, jobject thisObj) {
+        >}
+    endfor
+    for destructor
+        >
+        >JNIEXPORT void JNICALL Java_$(filename:)_destroy (JNIEnv *env, jobject thisObj) {
+        >}
+    endfor
+    for method
+        >
+        >//  $(method.description:no,block)
+        >JNIEXPORT void JNICALL Java_$(filename:)_$(name:camel) (JNIEnv *env, jobject thisObj) {
+        >}
+    endfor
 endfor
 
 .endtemplate
