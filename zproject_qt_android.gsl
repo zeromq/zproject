@@ -82,7 +82,7 @@ fi
 ##
 # Verify shared libraries in prefix
 
-.for use
+.for use where use.optional = 0
 android_build_verify_so "$(use.libname).so"
 .endfor
 android_build_verify_so "$(project.libname).so"\
