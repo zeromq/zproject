@@ -80,7 +80,7 @@ if (CYGWIN)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${SOURCE_DIR}")
-.for use where use.optional = 0
+.for use
 
 ########################################################################
 # $(USE.PROJECT) dependency
