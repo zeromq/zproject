@@ -458,5 +458,6 @@ $(c_method_declaration (method):)
 //  @end
 $(HEADER_FILE_SUFFIX:)\
 .endif
+.close
 .endfor
 .endif
