@@ -20,7 +20,7 @@ Version: @VERSION@
 
 .if count (use)
 Requires:\
-.   for use
+.   for use where use.optional = 0
 $(use.libname)\
 .       if (use.min_version <> '0.0.0')
  >= $(use.min_version)\
