@@ -47,21 +47,30 @@
     <!-- Various known third-party projects
         (If you're unsure of where a project belongs, add it here) -->
 
+    <use project = "curl"
+        repository = "https://github.com/bagder/curl"
+        test = "curl_easy_init"
+        includename = "curl/curl" />
+
+    <use project = "editline"
+        repository = "https://github.com/troglobit/editline"
+        test = "readline" />
+
     <use project = "jansson"
         repository = "https://github.com/akheron/jansson"
         test = "json_object" />
-
-    <use project = "sodium"
-        repository = "https://github.com/jedisct1/libsodium"
-        test = "sodium_init" />
 
     <use project = "jemalloc"
         repository = "https://github.com/jemalloc/jemalloc"
         test = "malloc"
         includename = "jemalloc/jemalloc" />
 
-    <use project = "editline"
-        repository = "https://github.com/troglobit/editline"
-        test = "readline" />
+    <use project = "sodium"
+        repository = "https://github.com/jedisct1/libsodium"
+        test = "sodium_init" />
+
+    <use project = "uuid"
+        test = "uuid_generate"
+        includename = "uuid/uuid" />
 
 </known_projects>
