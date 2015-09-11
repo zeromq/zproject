@@ -48,7 +48,7 @@ if [ $BUILD_TYPE == "default" ]; then
     CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
 
     # Clone and build dependencies
-.for use
+.for use where defined (use.repository)
     git clone $(use.repository) $(use.project)
     ( cd $(use.project) && ./autogen.sh && ./configure "${CONFIG_OPTS[@]}" && make check && make install ) || exit 1
 
