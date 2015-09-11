@@ -207,7 +207,7 @@ PKG_CHECK_MODULES([$(use.project)], [$(use.libname) >= $(use.min_version)],
             ],
             [AC_MSG_ERROR([cannot link with -l$(use.linkname), install $(use.libname).])])
 .    endif
-.  else
+.  elsif !defined (use.optional) | !(use.optional = 1)
         AC_MSG_ERROR([Cannot find required package for $(use.libname). Note, pkg-config is required due to specified version >= $(use.min_version)])
 .  endif
     ])
@@ -379,7 +379,6 @@ AM_COND_IF([WITH_$(NAME)], [AC_MSG_NOTICE([WITH_$(NAME) defined])])
 # Checks for library functions.
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset getifaddrs)
-AC_CHECK_LIB([uuid], [uuid_generate])
 
 # Set pkgconfigdir
 AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],

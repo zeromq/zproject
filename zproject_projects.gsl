@@ -29,6 +29,7 @@ function resolve_project_dependency (use)
     my.use.includename ?= my.use.prefix
     my.use.libname ?= "lib" + my.use.linkname
     my.use.cmake_name ?= "$(my.use.project:Pascal)"
+    my.use.optional ?= 0
     
     # For values with no reasonable fallback, print error
     if  !defined (my.use.repository) | \
