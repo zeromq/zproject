@@ -196,16 +196,19 @@ IF (NOT PC_$(USE.CMAKE_NAME)_FOUND)
     PKG_CHECK_MODULES(PC_$(USE.CMAKE_NAME) "$(use.prefix)")
 ENDIF (NOT PC_$(USE.CMAKE_NAME)_FOUND)
 
+# some libraries install the headers is a subdirectory of the include dir
+# returned by pkg-config, so use a wildcard match to improve chances of finding
+# headers and SOs.
 find_path(
     $(USE.CMAKE_NAME)_INCLUDE_DIRS
     NAMES $(use.prefix:c).h
-    HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS}
+    HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS} ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS}/*
 )
 
 find_library(
     $(USE.CMAKE_NAME)_LIBRARIES
     NAMES $(use.prefix)
-    HINTS ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS}
+    HINTS ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS} ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS}/*
 )
 
 IF (NOT $(USE.CMAKE_NAME)_INCLUDE_DIRS STREQUAL $(USE.CMAKE_NAME)_INCLUDE_DIRS-NOTFOUND AND NOT $(USE.CMAKE_NAME)_LIBRARIES STREQUAL $(USE.CMAKE_NAME)_LIBRARIES-NOTFOUND)
