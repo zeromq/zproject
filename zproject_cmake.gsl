@@ -80,14 +80,20 @@ if (CYGWIN)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${SOURCE_DIR}")
-.for use where use.optional = 0
+.for use
 
 ########################################################################
 # $(USE.PROJECT) dependency
 ########################################################################
+.if use.optional = 0
 find_package($(use.cmake_name:) REQUIRED)
+.else
+find_package($(use.cmake_name:))
+.endif
+IF ($(USE.CMAKE_NAME)_FOUND)
 include_directories(${$(USE.CMAKE_NAME)_INCLUDE_DIRS})
 list(APPEND MORE_LIBRARIES ${$(USE.CMAKE_NAME)_LIBRARIES})
+ENDIF ($(USE.CMAKE_NAME)_FOUND)
 .endfor
 
 ########################################################################
@@ -178,3 +184,42 @@ message(STATUS "version: ${$(PROJECT.NAME)_VERSION}")
 message(STATUS "install: ${CMAKE_INSTALL_PREFIX}")
 
 $(project.GENERATED_WARNING_HEADER:)
+.
+.for use
+.echo "Generating Find$(use.cmake_name:).cmake..."
+.output "Find$(use.cmake_name:).cmake"
+$(project.GENERATED_WARNING_HEADER:)
+
+include(FindPkgConfig)
+PKG_CHECK_MODULES(PC_$(USE.CMAKE_NAME) "$(use.libname)")
+IF (NOT PC_$(USE.CMAKE_NAME)_FOUND)
+    PKG_CHECK_MODULES(PC_$(USE.CMAKE_NAME) "$(use.prefix)")
+ENDIF (NOT PC_$(USE.CMAKE_NAME)_FOUND)
+
+# some libraries install the headers is a subdirectory of the include dir
+# returned by pkg-config, so use a wildcard match to improve chances of finding
+# headers and SOs.
+find_path(
+    $(USE.CMAKE_NAME)_INCLUDE_DIRS
+    NAMES $(use.prefix:c).h
+    HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS} ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS}/*
+)
+
+find_library(
+    $(USE.CMAKE_NAME)_LIBRARIES
+    NAMES $(use.prefix)
+    HINTS ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS} ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS}/*
+)
+
+IF (NOT $(USE.CMAKE_NAME)_INCLUDE_DIRS STREQUAL $(USE.CMAKE_NAME)_INCLUDE_DIRS-NOTFOUND AND NOT $(USE.CMAKE_NAME)_LIBRARIES STREQUAL $(USE.CMAKE_NAME)_LIBRARIES-NOTFOUND)
+.if defined (use.optional) & (use.optional = 1)
+    ADD_DEFINITIONS(-DHAVE_$(USE.LIBNAME))
+
+.endif
+    include(FindPackageHandleStandardArgs)
+    FIND_PACKAGE_HANDLE_STANDARD_ARGS($(USE.CMAKE_NAME) DEFAULT_MSG $(USE.CMAKE_NAME)_LIBRARIES $(USE.CMAKE_NAME)_INCLUDE_DIRS)
+    mark_as_advanced($(USE.CMAKE_NAME)_LIBRARIES $(USE.CMAKE_NAME)_INCLUDE_DIRS)
+ENDIF (NOT $(USE.CMAKE_NAME)_INCLUDE_DIRS STREQUAL $(USE.CMAKE_NAME)_INCLUDE_DIRS-NOTFOUND AND NOT $(USE.CMAKE_NAME)_LIBRARIES STREQUAL $(USE.CMAKE_NAME)_LIBRARIES-NOTFOUND)
+
+$(project.GENERATED_WARNING_HEADER:)
+.endfor
