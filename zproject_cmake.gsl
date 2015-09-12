@@ -86,8 +86,10 @@ list(APPEND CMAKE_MODULE_PATH "${SOURCE_DIR}")
 # $(USE.PROJECT) dependency
 ########################################################################
 find_package($(use.cmake_name:) REQUIRED)
+IF ($(USE.CMAKE_NAME)_FOUND)
 include_directories(${$(USE.CMAKE_NAME)_INCLUDE_DIRS})
 list(APPEND MORE_LIBRARIES ${$(USE.CMAKE_NAME)_LIBRARIES})
+ENDIF ($(USE.CMAKE_NAME)_FOUND)
 .endfor
 
 ########################################################################
