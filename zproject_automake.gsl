@@ -16,6 +16,9 @@ $(project.GENERATED_WARNING_HEADER:)
 
 ACLOCAL_AMFLAGS = -I config
 
+AM_CFLAGS = \
+	-Werror=format-security
+
 AM_CPPFLAGS = \\
 .for use
     \${$(use.project)_CFLAGS} \\
