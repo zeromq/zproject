@@ -39,16 +39,17 @@ function resolve_c_container (container)
     my.container.fresh ?= "0"
     my.container.fresh = conv.number (my.container.fresh)
     my.container.is_format ?= 0
-    
+
     my.container.type ?= "nothing"
     if defined (my.container.c_type)
         return
     endif
-    
+
     my.type = my.container.type
+    my.size = my.container.size? "1"
     my.c_type = ""
     my.stars = ""
-    
+
     if my.type = ""
         my.c_type = "void"
     elsif my.type = "nothing"
@@ -64,6 +65,16 @@ function resolve_c_container (container)
         my.c_type = "size_t"
     elsif my.type = "real"
         my.c_type = "float"
+    elsif my.type = "number"
+        if my.size = "1"
+            my.c_type = "uint8_t"
+        elsif my.size = "2"
+            my.c_type = "uint16_t"
+        elsif my.size = "4"
+            my.c_type = "uint32_t"
+        elsif my.size = "8"
+            my.c_type = "uint64_t"
+        endif
     elsif my.type = "boolean"
         my.c_type = "bool"
     elsif my.type = "file_size"
