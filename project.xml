@@ -45,6 +45,7 @@
         known projects is maintained in the zproject_known_projects.xml model.
         You need not specify subdependencies if they are implied.
     <use project = "zyre" min_major= "1" min_minor = "1" min_patch = "0" />
+    <use project = "uuid" optional= "1" implied = "1" />
     -->
 
     <!-- Header Files

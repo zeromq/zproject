@@ -216,7 +216,6 @@ AM_CONDITIONAL(BUILD_DOC, test "x$myproject_build_doc" = "xyes")
 # Checks for library functions.
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset getifaddrs)
-AC_CHECK_LIB([uuid], [uuid_generate])
 
 # Set pkgconfigdir
 AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
