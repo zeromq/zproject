@@ -9,7 +9,7 @@
 function resolve_jni_container (container)
     my.container.jni_name = "$(my.container.name:c)"
 
-    if defined (my.container.variadic)
+    if my.container.variadic
         my.container.jni_type = "" # ctypes doesn't explictly state variadic signatures, so we just leave it off
     elsif my.container.type = "nothing"
         my.container.jni_type = "void"

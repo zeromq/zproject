@@ -97,9 +97,9 @@ endfunction
 function qml_method_arguments (method)
     my.problematic = 0
     my.out = ""
-    for my.method.argument where !defined (argument.variadic)
+    for my.method.argument where !argument.variadic
         resolve_qml_container (argument)
-        if !(defined (my.method.is_destructor) & first ())
+        if !(my.method.is_destructor & first ())
             my.out += argument.qmlArgType
             if !regexp.match ("[\\*&]$", argument.qmlArgType?"")
                 my.out += " "
@@ -138,16 +138,16 @@ function qml_method_signature (method, in_header)
         my.out += "::"
     endif
     
-    if defined (method.is_constructor)
+    if method.is_constructor
         my.out += "$(string.replace (method.name, "new|construct"):camel)"
-    elsif defined (method.is_destructor)
+    elsif method.is_destructor
         my.out += "$(string.replace (method.name, "destroy|destruct"):camel)"
     else
         my.out += "$(my.method.name:camel)"
     endif
     my.out += " ("
     
-    if defined (method.is_destructor)
+    if method.is_destructor
         my.out += "$(class.QmlName) *qmlSelf"
         if !(qml_method_arguments (method) = "")
             my.out += ", "
@@ -229,7 +229,7 @@ $(qml_method_signature (method, 0)) {
 .   if count (method.argument)
 , \
 .   endif
-.   for method.argument where !defined (argument.variadic)
+.   for method.argument where !argument.variadic
 $(argument.qmlArgPass)\
 .       if !last ()
 , \
@@ -250,7 +250,7 @@ QObject* $(class.QmlName:)::qmlAttachedProperties(QObject* object) {
 //  $(method.description:no,block)
 $(qml_method_signature (method, 0)) {
     $(method->return.qmlReturnPre)$(class.c_name:)_$(method.c_name) (\
-.   for method.argument where !defined (argument.variadic)
+.   for method.argument where !argument.variadic
 $(argument.qmlArgPass)\
 .       if !last ()
 , \
@@ -266,7 +266,7 @@ $(argument.qmlArgPass)\
 $(qml_method_signature (method, 0)) {
     $(class.QmlName:) *qmlSelf = new $(class.QmlName:) ();
     qmlSelf->self = $(class.c_name:)_$(method.c_name) (\
-.   for method.argument where !defined (argument.variadic)
+.   for method.argument where !argument.variadic
 $(argument.qmlArgPass)\
 .       if !last ()
 , \
@@ -285,7 +285,7 @@ $(qml_method_signature (method, 0)) {
 .       if count (method.argument) > 1
 , \
 .       endif
-.   for method.argument where !defined (argument.variadic)
+.   for method.argument where !argument.variadic
 .       if !first ()
 $(argument.qmlArgPass)\
 .       endif

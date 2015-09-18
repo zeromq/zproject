@@ -39,7 +39,7 @@ function resolve_ruby_container (container)
     
     # All C types should be transformed to a type name recognized by FFI.
     # To handle more C types, add support for them here.
-    if defined (my.container.variadic)
+    if my.container.variadic
         my.container.ruby_ffi_type = "varargs"
     elsif my.container.c_type = "void"
         my.container.ruby_ffi_type = "void"
@@ -109,12 +109,12 @@ function resolve_ruby_method (method)
     
     # The first line of the method definition
     my.method.ruby_def_line = "def "
-    if my.method.singleton & !defined (my.method.is_destructor)
+    if my.method.singleton & !my.method.is_destructor
         my.method.ruby_def_line += "self."
     endif
     my.method.ruby_def_line += "$(method.c_name:)"
     for my.method.argument
-        if !(defined (my.method.is_destructor) & first ())
+        if !(my.method.is_destructor & first ())
             my.method.ruby_def_line += " $(argument.ruby_name)"
             if !last ()
                 my.method.ruby_def_line += ","
