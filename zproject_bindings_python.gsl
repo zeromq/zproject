@@ -63,9 +63,9 @@ function resolve_python_container (container)
         my.container.python_name = "result"
     endif
 
-    if defined (my.container.variadic)
+    if my.container.variadic
         my.container.python_type = "" # ctypes doesn't explictly state variadic signatures, so we just leave it off
-    elsif defined (my.container.is_enum)
+    elsif my.container.is_enum
         my.container.python_type = "c_int"
         my.container.python_coerce = "$(my.container.enum_class:Pascal).$(my.container.enum_name:Pascal)[<>]"
         my.container.python_return = "$(my.container.enum_class:Pascal).$(my.container.enum_name:Pascal)_out[<>]"
@@ -116,7 +116,7 @@ function resolve_python_method (method)
     if regexp.match ("^(is|from)$", my.method.python_name) # matches keyword
         my.method.python_name += "_"
     endif
-    for my.method.argument where !defined (argument.variadic)
+    for my.method.argument where !argument.variadic
         resolve_python_container (argument)
     endfor
     for my.method.return as ret
@@ -147,11 +147,11 @@ function python_method_annotation(method)
     argtypes = "["
     if !my.method.singleton
         argtypes += "$(class.name:c)_p"
-        if count (my.method.argument, !defined (argument.variadic))
+        if count (my.method.argument, !argument.variadic)
             argtypes += ", "
         endif
     endif
-    for my.method.argument where !defined (argument.variadic)
+    for my.method.argument where !argument.variadic
         argtypes += argument.python_type
         if !last(argument)
             argtypes += ", "
@@ -167,7 +167,7 @@ function python_callback_create(cb)
     for my.cb.return
         result += return.python_type
     endfor
-    for my.cb.argument where !defined (argument.variadic)
+    for my.cb.argument where !argument.variadic
         result += ", "
         result += argument.python_type
     endfor
@@ -188,7 +188,7 @@ function python_method_definition(method)
     endif
 
     for my.method.argument
-        if defined (argument.variadic)
+        if argument.variadic
             argnames += "*args"
             callargs += "*args"
         else
@@ -355,7 +355,7 @@ for class where defined (class.api)
     for constructor as method
         callargs = ""
         for method.argument
-            if defined (argument.variadic)
+            if argument.variadic
                 callargs += "*args[index()-1:]"
             elsif defined (argument.python_coerce)
                 callargs += string.search_replace(argument.python_coerce, "<>", "args[$(index()-1)]")

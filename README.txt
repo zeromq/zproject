@@ -134,10 +134,37 @@ This would cause the following `@interface` to be generated inside of `include/m
 
 Language bindings will also be generated in the following languages:
 
-* Ruby (experimental)
-* QML (experimental)
+* Ruby
+* QML
+* Python
+* JNI (experimental)
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
+
+### Supported API Model Attributes
+
+The following attributes are supported for methods:
+- `name` - the name of the method (mandatory).
+- `singleton = "1"` - the method is not invoked within the context of a specific instance of an object. Use this if your method does not need to be passed a `self` pointer as the first argument as normal. Implicit for all `constructor`s and `destructor`s and for the implicit `test` method.
+
+The following attributes are supported for arguments and return values:
+- `type` - the conceptual type or class name of the argument or return value (default: `"nothing"`, which translates to `void` in C).
+- `constant = "1"` - the argument will not be modified, or the return valu
+e should not be modified (roughly translates to `const` in C).
+- `by_reference = "1"` - ownership of the argument (and responsibility for freeing it) is transferred from the caller to the function - in practice, the implementation code should also nullify the caller's reference, though this is not enforced by the API model.
+- `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it.
+- `variadic = "1"` - used for representing variadic arguments.
+- `is_format = "1"` - used for `printf`-style format strings preceding variadic arguments (which are added automatically).
+
+### Tips
+
+At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
+
+```gsl
+# if the `method` variable is a <method/> entity:
+echo method.string()  # will print the model as an XML string.
+method.save(filename) # will save the model as an XML string to the given file.
+```
 
 ## Ownership and License
 
@@ -160,6 +187,84 @@ Make sure that the project model hides all details of backend scripts. For examp
 Do read your code after you write it and ask, "Can I make this simpler?" We do use a nice minimalist and yet readable style. Learn it, adopt it, use it.
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
+
+### Notes for Writing Language Bindings
+
+#### Schema/Architecture Overview
+
+* All `class`es SHALL be in the project model (`project.xml`).
+* Each `class` MAY have a corresponding API model (`api/{class name}.xml`).
+* A binding generator SHOULD consider only `class`es with an API model (`where defined (class.api)`).
+* Each API model SHALL consist of both explicit information (written in the XML file) and implicit information (inferred by the [`zproject_class_api`](zproject_class_api.gsl) script). Both kinds of information will already be resolved (and indistinguishable) when each language binding generator is invoked.
+* Each API model SHALL have exactly one `class` entity at the top level.
+* Each `class` SHALL have a `name` attribute.
+* Each `class` MAY have one or more `method` entities.
+* Each `class` MAY have one or more `constructor` entities.
+* Each `class` MAY have one or more `destructor` entities.
+* Each `method`, `constructor`, and `destructor` MAY have one or more `argument` entities.
+* Each `method`, `constructor`, and `destructor` SHALL at least one `return` entity, and if more than one `return` entity exist, only the first SHOULD be considered. The `return` entity MAY be ignored if it has `type = "nothing"` (the default when no `type` is given).
+* Each entity SHALL have its semantic attributes fully resolved before reaching the language binding generators.
+* Each language binding generator SHALL NOT modify values of semantic attributes of entities.
+* Each language binding generator MAY assign values to language-specific implementation attributes of entities.
+* Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
+
+#### Informal Summary
+
+A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
+
+#### Semantic Attributes
+
+Semantic attributes describe something intrinsic about the container.
+
+For example, arguments may be described as passed `by_reference` to indicate that ownership is transferred from the caller. Similarly, return values may be described as `fresh` to indicate that ownership is transferred to the caller, which must destroy the object when it is finished with it. It's important to remember that these attributes are primarily meant to be an abstraction that describes conceptual information, leaving the details of how code generators interpret (or ignore) each attribute up to the authors.
+
+Semantic attributes may be implicit (not given a value in the written model). In this case, it is up to the [`zproject_class_api`](zproject_class_api.gsl) script to fully resolve default values for all attributes. Downstream code generators should *never* resolve or alter semantic attributes, as this could change the behavior of any code generator that is run after the errant code generator.
+
+These are the semantic attributes for each kind of entity that will be resolved before language bindings generators are invoked:
+
+```gsl
+class.name        # string (as given in the API model)
+class.description # string (comment in the API model, or empty string)
+```
+```gsl
+method.name           # string (as given in the API model, or a default value)
+method.description    # string (comment in the API model, or a default value)
+method.singleton      # 0/1 (default: 0, but 1 for constructors/destructors)
+method.is_constructor # 0/1 (default: 0, but 1 for constructors)
+method.is_destructor  # 0/1 (default: 0, but 1 for destructors)
+```
+```gsl
+container.name         # string (as given in the API model, or "_")
+container.type         # string (as given, or "nothing")
+container.constant     # 0/1 (default: 0)
+container.by_reference # 0/1 (default: 0)
+container.callback     # 0/1 (default: 0)
+container.fresh        # 0/1 (default: 0)
+container.is_format    # 0/1 (default: 0)
+container.is_enum      # 0/1 (default: 0)
+container.enum_name    # string if is_enum, otherwise undefined
+container.enum_class   # string if is_enum, otherwise undefined
+```
+
+#### Language-Specific Implementation Attributes
+
+Language-specific implementation attributes hold information that is not
+intrinsic to the concept of the container, but to the binding implementation.
+
+In practice, language-specific attributes may contain any information that
+is useful to store as part of the container model to facilitate generation, according to any schema that is useful, but it may be helpful to try to follow patterns observed in other code generator scripts.
+
+However, because the container is shared between all generators, which are
+run in an unspecified order, it's important that generators not rely on
+information resolved in generators. The one exceptions is that many
+generators will rely directly on information from the C implementation
+to which they bind.
+
+It is also important that language-specific implementation attributes
+use a naming convention that avoids collisions. The easiest way to
+avoid collisions is to prefix all language-specific attributes with the
+name of the language, though in principle, any collision-free convention
+would be acceptable.
 
 ### This Document
 
