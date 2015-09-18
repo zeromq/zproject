@@ -161,18 +161,10 @@ e should not be modified (roughly translates to `const` in C).
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
 
 ```gsl
-# if the `method` variable is a <method/> entity:
+ # if the `method` variable is a <method/> entity:
 echo method.string()  # will print the model as an XML string.
 method.save(filename) # will save the model as an XML string to the given file.
 ```
-
-## Ownership and License
-
-The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
-
-zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zeromq.org/spec:22) process for contributions.
-
-To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
 ## Removal
 
@@ -180,17 +172,9 @@ To report an issue, use the [zproject issue tracker](https://github.com/zeromq/z
 
     make uninstall
 
-### Hints to Contributors
+## Notes for Writing Language Bindings
 
-Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
-
-Do read your code after you write it and ask, "Can I make this simpler?" We do use a nice minimalist and yet readable style. Learn it, adopt it, use it.
-
-Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
-
-### Notes for Writing Language Bindings
-
-#### Schema/Architecture Overview
+### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
 * Each `class` MAY have a corresponding API model (`api/{class name}.xml`).
@@ -208,11 +192,11 @@ Before opening a pull request read our [contribution guidelines](https://github.
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-#### Informal Summary
+### Informal Summary
 
 A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
 
-#### Semantic Attributes
+### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
 
@@ -246,7 +230,7 @@ container.enum_name    # string if is_enum, otherwise undefined
 container.enum_class   # string if is_enum, otherwise undefined
 ```
 
-#### Language-Specific Implementation Attributes
+### Language-Specific Implementation Attributes
 
 Language-specific implementation attributes hold information that is not
 intrinsic to the concept of the container, but to the binding implementation.
@@ -265,6 +249,22 @@ use a naming convention that avoids collisions. The easiest way to
 avoid collisions is to prefix all language-specific attributes with the
 name of the language, though in principle, any collision-free convention
 would be acceptable.
+
+## Ownership and License
+
+The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
+
+zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zeromq.org/spec:22) process for contributions.
+
+To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
+
+### Hints to Contributors
+
+Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
+
+Do read your code after you write it and ask, "Can I make this simpler?" We do use a nice minimalist and yet readable style. Learn it, adopt it, use it.
+
+Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
 ### This Document
 
