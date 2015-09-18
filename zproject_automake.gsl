@@ -177,16 +177,31 @@ src_$(project.prefix)_selftest_SOURCES = src/$(project.prefix)_selftest.c
 .else
 .endif
 
+.if count (bin) > 0 | count (class, defined (class.api)) > 0
+$(project.name)dir = @bindir@
+$(project.name)_SCRIPTS =
+.endif
 .for bin
 .   if first()
 # Install data into /usr/local/bin
-$(project.name)dir = @bindir@
-$(project.name)_SCRIPTS = \\
+$(project.name)_SCRIPTS += \\
 .   endif
 .   if !last()
     $(bin.name) \\
 .   else
     $(bin.name)
+.   endif
+.endfor
+
+.for class where defined (class.api)
+.   if first()
+# Install api into /usr/local/bin
+$(project.name)_SCRIPTS += \\
+.   endif
+.   if !last ()
+    $(class.api) \\
+.   else
+    $(class.api)
 .   endif
 .endfor
 
