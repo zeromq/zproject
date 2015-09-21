@@ -134,22 +134,22 @@ function resolve_c_container (container)
         my.c_type = "$(my.type:c)_t"
         my.stars += "*"
     endif
-    
+
     if my.container.by_reference
         my.stars += "*"
     endif
-    
+
     # This attribute is resolved late because it may be influenced during type resolution
     my.container.constant ?= "0"
     my.container.constant ?= conv.number (my.container.constant)
     if my.container.constant
         my.c_type = "const " + my.c_type
     endif
-    
+
     if string.length (my.stars)
         my.c_type += (" " + my.stars)
     endif
-    
+
     my.container.c_type = my.c_type
 endfunction
 
@@ -170,16 +170,16 @@ function resolve_c_method (method, default_description)
     my.method.is_constructor = conv.number (my.method.is_constructor)
     my.method.is_destructor ?= "0"
     my.method.is_destructor = conv.number (my.method.is_destructor)
-    
+
     # Resolve language-specific attributes for the C language.
     my.method.c_name ?= "$(my.method.name:c)"
-    
+
     # Add an implicit return container if none exists.
     if !count (my.method.return)
         new return to my.method as ret
         endnew
     endif
-    
+
     # Resolve each argument container in the method.
     for my.method.argument as obj
         resolve_c_container (obj)
@@ -190,7 +190,7 @@ function resolve_c_method (method, default_description)
             endnew
         endif
     endfor
-    
+
     # Resolve each return container in the method.
     for my.method.return as obj
         resolve_c_container (obj)
@@ -207,7 +207,7 @@ endfunction
 function resolve_c_class (class)
     my.class.c_name ?= "$(my.class.name:c)"
     my.class.description ?= "$(string.trim (my.class.?""):left)"
-    
+
     # Implicit constructor
     if !count (my.class.constructor)
         new constructor to my.class
@@ -266,7 +266,7 @@ function resolve_c_class (class)
         # Add a new return value to the first slot - the created object
         new return to method as ret
             ret.type = my.class.c_name
-            move ret before method->return # Move to first slot 
+            move ret before method->return # Move to first slot
         endnew
         resolve_c_method (method, "Create a new $(my.class.c_name).")
     endfor
@@ -280,11 +280,11 @@ function resolve_c_class (class)
             arg.name = "self_p"
             arg.by_reference = "1"
             arg.destructor_self = "1"
-            move arg before method->argument # Move to first slot 
+            move arg before method->argument # Move to first slot
         endnew
         resolve_c_method (method, "Destroy the $(my.class.c_name).")
     endfor
-    
+
     # Resolve details of each constant
     for my.class.constant
         if defined (constant.type) & (constant.type = 'string')
@@ -295,10 +295,49 @@ function resolve_c_class (class)
     endfor
 endfunction
 
+# Resolve all dependent data types for one container and load their API file if
+# it exists.
+#
+function resolve_container_dependencies (class_name, container)
+    if my.container.c_type = "$(my.container.type:c)_t *" \
+     & !(my.class_name = my.container.type) \
+     & count (project.class, class.name = my.container.type) = 0 \
+     & count (project->dependencies.class, class.name = my.container.type) = 0
+        if file.exists ("/usr/local/bin/$(my.container.type:c).xml")
+            echo "Processing /usr/local/bin/$(my.container.type:c).xml..."
+            new_dependency = XML.load_file ("/usr/local/bin/$(my.container.type:c).xml")
+            new_dependency.resolved = "0"
+            move new_dependency to project->dependencies
+        else
+            echo "W: Could not resolve foreign data type $(my.container.type)"
+        endif
+    endif
+endfunction
+
+# Resolve all dependent data types from foreign zproject projects.
+#
+function resolve_class_dependencies (class)
+    # Create dependencies tag if it doesn't exists
+    if count (project.dependencies) = 0
+        dependencies = XML.new ("dependencies")
+        move dependencies to project
+    endif
+    # Resolve argument and return containers
+    for class.method
+        for method.argument as container
+            resolve_container_dependencies (class.name, container)
+        endfor
+        for method.return as container
+            resolve_container_dependencies (class.name, container)
+        endfor
+    endfor
+endfunction
+
 # Resolve each class using the functions written above.
 #
 # This includes creating implicit XML entities as well as resolving both
-# the semantic and the C-specific attributes of all entities.
+# the semantic and the C-specific attributes of all entities. Further this will
+# find dependencies and load their XML entities, if any.
 #
 # Other code generation scripts can depend on these being fully resolved here,
 # though they should NOT depend on attributes resolved by other generators.
@@ -306,6 +345,7 @@ endfunction
 for project.class
     if defined (class.api)
         resolve_c_class (class)
+        resolve_class_dependencies (class)
     else
         # If there is no API model for this class,
         # all we can do is resolve the name.
@@ -313,11 +353,26 @@ for project.class
     endif
 endfor
 
+# Resolve C-related properties of the dependencies API models, find further
+# dependencies, load their APIs and repeat if further dependencies have been
+# found.
+#
+if defined (project->dependencies) & count (project->dependencies.class)
+    while count (project->dependencies.class, !class.resolved)
+        for project->dependencies.class where !class.resolved
+            resolve_c_class (class)
+            resolve_class_dependencies (class)
+            class.resolved = "1"
+        endfor
+    endwhile
+endif
+
 ##
 # The following functions are entirely C-specific code generation helpers.
 # They contain no useful information for higher-level language bindings.
-
+#
 # Construct the string for a method declaration in a C header
+#
 function c_method_declaration (method, implementation_style)
     my.implementation_style ?= 0
     my.format_index = -1
