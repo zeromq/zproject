@@ -56,6 +56,10 @@
         repository = "https://github.com/troglobit/editline"
         test = "readline" />
 
+    <use project = "fuse"
+        repository = "http://git.code.sf.net/p/fuse/fuse"
+        test = "fuse_main" />
+
     <use project = "jansson"
         repository = "https://github.com/akheron/jansson"
         test = "json_object" />
@@ -65,6 +69,10 @@
         test = "malloc"
         includename = "jemalloc/jemalloc" />
 
+    <use project = "msgpack"
+        repository = "https://github.com/msgpack/msgpack-c.git"
+        test = "msgpack_version" />
+
     <use project = "sodium"
         repository = "https://github.com/jedisct1/libsodium"
         test = "sodium_init" />
@@ -72,5 +80,9 @@
     <use project = "uuid"
         test = "uuid_generate"
         includename = "uuid/uuid" />
+
+    <use project = "zdb"
+        repository = "https://bitbucket.org/tildeslash/libzdb.git"
+        test = "ConnectionPool_start" />
 
 </known_projects>
