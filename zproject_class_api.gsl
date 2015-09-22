@@ -299,17 +299,25 @@ endfunction
 # it exists.
 #
 function resolve_container_dependencies (class_name, container)
+    old_dependency_count = count (project->dependencies.class)
     if my.container.c_type = "$(my.container.type:c)_t *" \
      & !(my.class_name = my.container.type) \
      & count (project.class, class.name = my.container.type) = 0 \
      & count (project->dependencies.class, class.name = my.container.type) = 0
-        if file.exists ("/usr/local/bin/$(my.container.type:c).xml")
-            echo "Processing /usr/local/bin/$(my.container.type:c).xml..."
-            new_dependency = XML.load_file ("/usr/local/bin/$(my.container.type:c).xml")
-            new_dependency.resolved = "0"
-            move new_dependency to project->dependencies
-        else
-            echo "W: Could not resolve foreign data type $(my.container.type)"
+        dir = directory.open ("/usr/local/share/zproject")?
+        if defined (dir)
+            for dir.directory
+                api_file = directory.path + directory.name + "/"  + "$(my.container.type:c).xml"
+                if file.exists (api_file)
+                    echo "Processing " + api_file + "..."
+                    new_dependency = XML.load_file (api_file)
+                    new_dependency.resolved = "0"
+                    move new_dependency to project->dependencies
+                endif
+            endfor
+        endif
+        if count (project->dependencies.class) = old_dependency_count
+            echo "W: Could not resolve foreign data type " + my.container.type
         endif
     endif
 endfunction

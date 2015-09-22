@@ -193,7 +193,7 @@ $(project.name)_SCRIPTS = \\
 .for class where defined (class.api)
 .   if first()
 # Install api files into /usr/local/share/zproject
-apidir = @datadir@/zproject
+apidir = @datadir@/zproject/$(project.name)
 dist_api_DATA = \\
 .   endif
 .   if !last ()
