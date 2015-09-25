@@ -82,6 +82,8 @@ function resolve_c_container (container)
         my.stars += "*"
     elsif my.type = "byte"
         my.c_type = "byte"
+    elsif my.type = "char"
+        my.c_type = "char"
     elsif my.type = "integer"
         my.c_type = "int"
     elsif my.type = "size"
