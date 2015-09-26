@@ -21,7 +21,7 @@ AM_CFLAGS = \\
 
 AM_CPPFLAGS = \\
 .for use
-    \${$(use.project)_CFLAGS} \\
+    \${$(use.project:c)_CFLAGS} \\
 .endfor
     -I\$(srcdir)/include
 
@@ -32,9 +32,9 @@ project_libs =
 .endif
 .for use
 .   if last()
-    \${$(use.project)_LIBS}
+    \${$(use.project:c)_LIBS}
 .   else
-    \${$(use.project)_LIBS} \\
+    \${$(use.project:c)_LIBS} \\
 .   endif
 .endfor
 
