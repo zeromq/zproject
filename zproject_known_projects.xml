@@ -86,4 +86,14 @@
         repository = "https://bitbucket.org/tildeslash/libzdb.git"
         test = "ConnectionPool_start" />
 
+    <use project = "json-c"
+        includename = "json-c/json"
+        test = "json_object_to_json_string" />
+
+    <use project = "lognorm"
+        test = "ln_initCtx">
+        <use project = "json-c" />
+    </use>
+
+
 </known_projects>
