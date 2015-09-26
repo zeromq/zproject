@@ -2,8 +2,9 @@
 
     <!-- ZeroMQ Projects -->
 
-    <use project = "zmq"
+    <use project = "libzmq"
         repository = "https://github.com/zeromq/libzmq"
+        prefix = "zmq"
         test = "zmq_init"
         cmake_name = "ZeroMQ" />
 
@@ -11,7 +12,7 @@
         repository = "https://github.com/zeromq/czmq"
         test = "zctx_test"
         cmake_name = "CZMQ">
-        <use project = "zmq" min_major = "2" min_minor = "2" />
+        <use project = "libzmq" min_major = "2" min_minor = "2" />
     </use>
 
     <use project = "zyre"
@@ -25,7 +26,7 @@
         includename = "malamute"
         prefix = "mlm"
         test = "mlm_server_test">
-        <use project = "zmq" min_major= "4" min_minor = "2" min_patch = "0" />
+        <use project = "libzmq" min_major= "4" min_minor = "2" min_patch = "0" />
         <use project = "czmq" min_major = "3" min_minor = "0" min_patch = "1" />
     </use>
 
