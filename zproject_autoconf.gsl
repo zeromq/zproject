@@ -182,11 +182,11 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.project) >= $(use.min_version)],
         $(use.project)_synthetic_libs="-l$(use.linkname)"
 
         if test "x$search_$(use.libname)" = "xyes"; then
-            if test -r "${with_$(use.libname)}/include/$(use.project).h"; then
+            if test -r "${with_$(use.libname)}/include/$(use.includename).h"; then
                 $(use.project)_synthetic_cflags="-I${with_$(use.libname)}/include"
                 $(use.project)_synthetic_libs="-L${with_$(use.libname)}/lib -l$(use.linkname)"
             else
-                AC_MSG_ERROR([${with_$(use.libname)}/include/$(use.project).h not found. Please check $(use.libname) prefix])
+                AC_MSG_ERROR([${with_$(use.libname)}/include/$(use.includename).h not found. Please check $(use.libname) prefix])
             fi
         fi
 
