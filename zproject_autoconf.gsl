@@ -162,7 +162,7 @@ PREVIOUS_LIBS="${LIBS}"
 
 was_$(use.project)_check_lib_detected=no
 
-PKG_CHECK_MODULES([$(use.project)], [$(use.libname) >= $(use.min_version)],
+PKG_CHECK_MODULES([$(use.project:c)], [$(use.project) >= $(use.min_version)],
     [
 .  if defined (use.optional) & (use.optional = 1)
         AC_DEFINE(HAVE_$(USE.LIBNAME), 1, [The $(use.libname) library is to be used.])
@@ -196,8 +196,8 @@ PKG_CHECK_MODULES([$(use.project)], [$(use.libname) >= $(use.min_version)],
                 LDFLAGS="${$(use.project)_synthetic_libs} ${LDFLAGS}"
                 LIBS="${$(use.project)_synthetic_libs} ${LIBS}"
 
-                AC_SUBST([$(use.project)_CFLAGS],[${$(use.project)_synthetic_cflags}])
-                AC_SUBST([$(use.project)_LIBS],[${$(use.project)_synthetic_libs}])
+                AC_SUBST([$(use.project:c)_CFLAGS],[${$(use.project)_synthetic_cflags}])
+                AC_SUBST([$(use.project:c)_LIBS],[${$(use.project)_synthetic_libs}])
                 was_$(use.project)_check_lib_detected=yes
 .    if defined (use.optional) & (use.optional = 1)
                 AC_DEFINE(HAVE_$(USE.LIBNAME), 1, [The $(use.libname) library is to be used.])
@@ -213,8 +213,8 @@ PKG_CHECK_MODULES([$(use.project)], [$(use.libname) >= $(use.min_version)],
     ])
 
 if test "x$was_$(use.project)_check_lib_detected" = "xno"; then
-    CFLAGS="${$(use.project)_CFLAGS} ${CFLAGS}"
-    LIBS="${$(use.project)_LIBS} ${LIBS}"
+    CFLAGS="${$(use.project:c)_CFLAGS} ${CFLAGS}"
+    LIBS="${$(use.project:c)_LIBS} ${LIBS}"
 fi
 
 .endfor
