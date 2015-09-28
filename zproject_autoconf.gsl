@@ -162,7 +162,7 @@ PREVIOUS_LIBS="${LIBS}"
 
 was_$(use.project)_check_lib_detected=no
 
-PKG_CHECK_MODULES([$(use.project:c)], [$(use.project) >= $(use.min_version)],
+PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)],
     [
 .  if defined (use.optional) & (use.optional = 1)
         AC_DEFINE(HAVE_$(USE.LIBNAME), 1, [The $(use.libname) library is to be used.])
@@ -190,7 +190,7 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.project) >= $(use.min_version)],
             fi
         fi
 
-        AC_CHECK_LIB([$(use.project)], [$(use.test)],
+        AC_CHECK_LIB([$(use.libname)], [$(use.test)],
             [
                 CFLAGS="${$(use.project)_synthetic_cflags} ${CFLAGS}"
                 LDFLAGS="${$(use.project)_synthetic_libs} ${LDFLAGS}"

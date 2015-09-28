@@ -14,7 +14,9 @@ function resolve_project_dependency (use)
         my.use.cmake_name  ?= known.cmake_name?
         my.use.includename ?= known.includename?
         my.use.prefix      ?= known.prefix?
-        
+        my.use.linkname    ?= known.linkname?
+        my.use.libname     ?= known.libname?
+
         # Copy known implied dependencies into this dependency
         for known.use as implied_use
             if !count (my.use.use, use.project = implied_use.project)
@@ -27,7 +29,7 @@ function resolve_project_dependency (use)
     my.use.prefix ?= my.use.project
     my.use.linkname ?= my.use.prefix
     my.use.includename ?= my.use.prefix
-    my.use.libname ?= "lib" + my.use.linkname
+    my.use.libname ?= my.use.prefix? my.use.project
     my.use.cmake_name ?= "$(my.use.project:Pascal)"
     my.use.optional ?= 0
     

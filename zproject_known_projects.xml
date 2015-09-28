@@ -2,26 +2,25 @@
 
     <!-- ZeroMQ Projects -->
 
-    <use project = "libzmq"
+    <use project = "libzmq" prefix = "zmq"
         repository = "https://github.com/zeromq/libzmq"
-        prefix = "zmq"
         test = "zmq_init"
         cmake_name = "ZeroMQ" />
 
-    <use project = "czmq"
+    <use project = "czmq" libname = "libczmq"
         repository = "https://github.com/zeromq/czmq"
         test = "zctx_test"
         cmake_name = "CZMQ">
         <use project = "libzmq" min_major = "2" min_minor = "2" />
     </use>
 
-    <use project = "zyre"
+    <use project = "zyre" libname = "libzyre"
         repository = "https://github.com/zeromq/zyre"
         test = "zyre_test">
         <use project = "czmq" min_major = "3" min_minor = "0" />
     </use>
 
-    <use project = "malamute"
+    <use project = "malamute" libname = "libmlm"
         repository = "https://github.com/zeromq/malamute"
         includename = "malamute"
         prefix = "mlm"
@@ -32,14 +31,14 @@
 
     <!-- Edgenet Projects -->
 
-    <use project = "drops"
+    <use project = "drops" libname = "libdrops"
         repository = "https://github.com/edgenet/drops"
         test = "drops_test">
         <use project = "czmq" />
         <use project = "zyre" />
     </use>
 
-    <use project = "hydra"
+    <use project = "hydra" libname = "libhydra"
         repository = "https://github.com/edgenet/hydra"
         test = "hydra_server_test">
         <use project = "czmq" min_major = "3" min_minor = "0" min_patch = "1" />
@@ -48,7 +47,7 @@
     <!-- Various known third-party projects
         (If you're unsure of where a project belongs, add it here) -->
 
-    <use project = "curl"
+    <use project = "libcurl"
         repository = "https://github.com/bagder/curl"
         test = "curl_easy_init"
         includename = "curl/curl" />
@@ -74,7 +73,7 @@
         repository = "https://github.com/msgpack/msgpack-c.git"
         test = "msgpack_version" />
 
-    <use project = "sodium"
+    <use project = "libsodium" prefix = "sodium"
         repository = "https://github.com/jedisct1/libsodium"
         test = "sodium_init" />
 
