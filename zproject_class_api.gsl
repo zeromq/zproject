@@ -49,7 +49,7 @@ function resolve_c_container (container)
     my.container.fresh ?= "0"
     my.container.fresh = conv.number (my.container.fresh)
     my.container.variadic ?= "0"
-    my.container.is_variadic = conv.number (my.container.variadic)
+    my.container.variadic = conv.number (my.container.variadic)
     my.container.is_format ?= "0"
     my.container.is_format = conv.number (my.container.is_format)
     my.container.is_enum ?= "0"
@@ -120,7 +120,7 @@ function resolve_c_container (container)
         my.stars += "*"
         my.container.constant ?= 1
         my.container.is_format = 1
-        my.container.is_variadic = 1
+        my.container.variadic = 1
     elsif my.type = "buffer"
         my.c_type = "byte"
         my.stars += "*"
@@ -186,8 +186,8 @@ function resolve_c_method (method, default_description)
     # Resolve each argument container in the method.
     for my.method.argument as obj
         resolve_c_container (obj)
-        if obj.is_variadic # creates a new argument to represent the variadic arguments.
-            obj.is_variadic = "0"
+        if obj.variadic # creates a new argument to represent the variadic arguments.
+            obj.variadic = "0"
             new argument to my.method as fmtargs
                 fmtargs.variadic = "1"
                 resolve_c_container (fmtargs) # won't be included in current loop, so resolve now.
@@ -414,7 +414,7 @@ function c_method_declaration (method, implementation_style)
             # Next argument is the format list
             my.format_index = my.current_argument_index + 1
         endif
-        if argument.is_variadic
+        if argument.variadic
             out += "..."
         else
             out += argument.c_type?""
