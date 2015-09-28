@@ -29,7 +29,7 @@ function resolve_project_dependency (use)
     my.use.prefix ?= my.use.project
     my.use.linkname ?= my.use.prefix
     my.use.includename ?= my.use.prefix
-    my.use.libname ?= my.use.prefix? my.use.project
+    my.use.libname ?= my.use.project
     my.use.cmake_name ?= "$(my.use.project:Pascal)"
     my.use.optional ?= 0
     
