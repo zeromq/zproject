@@ -46,6 +46,7 @@ project.generated_warning_header ?= "\
 .gsl from "zproject_bench.gsl"
 .gsl from "zproject_bindings_python.gsl"
 .gsl from "zproject_bindings_qml.gsl"
+.gsl from "zproject_bindings_qt.gsl"
 .gsl from "zproject_bindings_ruby.gsl"
 .gsl from "zproject_bindings_jni.gsl"
 .gsl from "zproject_ci.gsl"

@@ -3,10 +3,9 @@
 #  Please refer to the README for information about making permanent changes.  #
 ################################################################################
 
-myprojectdir = @bindir@
-myproject_SCRIPTS =
 # Install data into /usr/local/bin
-myproject_SCRIPTS += \
+myprojectdir = @bindir@
+myproject_SCRIPTS = \
     zproject.gsl \
     zproject_projects.gsl \
     zproject_known_projects.xml \
@@ -19,6 +18,7 @@ myproject_SCRIPTS += \
     zproject_bench.gsl \
     zproject_bindings_python.gsl \
     zproject_bindings_qml.gsl \
+    zproject_bindings_qt.gsl \
     zproject_bindings_ruby.gsl \
     zproject_bindings_jni.gsl \
     zproject_ci.gsl \
@@ -35,6 +35,7 @@ myproject_SCRIPTS += \
     zproject_vs2010.gsl \
     zproject_vs2012.gsl \
     zproject_vs2013.gsl
+
 
 
 check-local: src/myproject_selftest

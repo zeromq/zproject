@@ -1,0 +1,789 @@
+.#  ===========================================================================
+.#  Generate minimal Qt language bindings.
+.#
+.#  This is a code generator built using the iMatix GSL code generation
+.#  language. See https://github.com/imatix/gsl for details. This script
+.#  is licensed under MIT/X11.
+.#
+.#  This script will generate the following files:
+.#      * src/q$(class.qtname).(h/cpp) - Qt class bindings
+.#      * src/$(project.QtName).h - Master header
+.#      * config.pri - Configuration to switch between static or shared lib
+.#      * common.pri - Common flags and variables for both static and shared
+.#      * src/$(project.QtName).pri -  Adds sources/header or links to library
+.#      * buildlib/buildlib.pro - Helper to build the library
+.#      * $(project.QtName).pro - Master project file
+.#      * selftest/selftest.pro - Selftest project file
+.#      * selftest/main.cpp - Selftest
+.#      * README.md - Readme file with instructions and quirks
+.#  ===========================================================================
+.#
+.#  Only build bindings if there is at least one API model
+.#
+.if count (class, defined (class.api))
+.template 0
+#
+#  Create the necessary folders
+#
+if !file.exists ("bindings/qt/")
+   directory.create("bindings/qt/")
+endif
+if !file.exists ("bindings/qt/src")
+   directory.create("bindings/qt/src")
+endif
+#
+#  Resolve Qt project and class names
+#
+project.QtName = "q$(project.name)"
+for class where defined (class.api)
+    class.QtName = "Q$(class.c_name:Pascal)"
+endfor
+for dependencies.class
+    class.QtName = "Q$(class.c_name:Pascal)"
+endfor
+
+#
+#  This function will map c types to Qt types and also define how Qt types are
+#  transformed from and to c types when the c api is called.
+#
+function resolve_qt_container (container)
+    my.container.qtName = "$(my.container.name:camel)"
+    my.container.qtArgType = my.container.c_type
+    my.container.qtArgPass = my.container.qtName
+    my.container.qtReturnType = my.container.c_type
+    my.container.qtCallPre = my.container.qtReturnType + " rv = "
+    my.container.qtCallPost = ""
+    my.container.qtReturn = "return rv;"
+
+    # Use native Qt types instead of the c ones.
+    if my.container.c_type = "void"
+        my.container.qtCallPre = ""
+        my.container.qtReturn = ""
+    elsif regexp.match ("uint(\\d+)_t", my.container.c_type, size)
+        my.container.qtArgType = "quint$(size)"
+        my.container.qtArgPass = "(" + my.container.c_type + ") " + my.container.qtName
+        my.container.qtReturnType = "quint$(size)"
+    elsif my.container.type = "string" & !my.container.by_reference & !my.container.fresh
+        my.container.qtArgType = "const QString &"
+        my.container.qtArgPass = my.container.qtName + ".toUtf8().data()"
+        my.container.qtReturnType = "const QString"
+        my.container.qtCallPre = my.container.qtReturnType + " rv = QString ("
+        my.container.qtCallPost = ")"
+    elsif my.container.type = "string"
+        my.container.qtArgType = "QString"
+        my.container.qtArgPass = my.container.qtName + ".toUtf8().data()"
+        my.container.qtReturnType = "QString"
+        my.container.qtCallPre = "char *retStr_ = "
+        my.container.qtCallPost = ";\n" + \
+        "    QString rv = QString (retStr_);\n" + \
+        "    free (retStr_);"
+    elsif my.container.type = "format"
+        my.container.qtName = "param" # Rename as 'format' is confusing, due to not being format in Qt
+        my.container.qtArgType = "const QString &"
+        # Pass as string format argument, to avoid escaping problems.
+        my.container.qtArgPass = "\"%s\", " + my.container.qtName + ".toUtf8().data()"
+        my.container.qtReturnType = "const QString"
+        my.container.qtCallPre = my.container.qtReturnType + " rv = QString ("
+        my.container.qtCallPost = ")"
+    elsif count (project.class, defined (class.QtName) & (my.container.type = class.c_name)) \
+        | count (project->dependencies.class, defined (class.QtName) & (my.container.type = class.c_name))
+        # Resolve c classes
+        for project.class where (defined (class.QtName) & (my.container.type = class.c_name))
+            my.container.qtArgType = "$(class.QtName) *"
+            my.container.qtArgPass = my.container.qtName + "->self"
+            my.container.qtReturnType = "$(class.QtName) *"
+            my.container.qtCallPre = my.container.qtReturnType + "rv = new $(class.QtName) ("
+            my.container.qtCallPost = ")"
+            if my.container.by_reference
+                my.container.qtArgPass = "&" + my.container.qtArgPass
+                my.container.qtCallPre = my.container.qtCallPre + "*"
+            endif
+        endfor
+        for project->dependencies.class where (defined (class.QtName) & (my.container.type = class.c_name))
+            my.container.qtArgType = "$(class.QtName) *"
+            my.container.qtArgPass = my.container.qtName + "->self"
+            my.container.qtReturnType = "$(class.QtName) *"
+            my.container.qtCallPre = my.container.qtReturnType + "rv = new $(class.QtName) ("
+            my.container.qtCallPost = ")"
+            if my.container.by_reference
+                my.container.qtArgPass = "&" + my.container.qtArgPass
+                my.container.qtCallPre = my.container.qtCallPre + "*"
+            endif
+        endfor
+    endif
+
+    if (my.container.variadic)
+        my.container.qtArgType = ""
+        my.container.qtName = "..."
+        my.container.qtArgPass = "args"
+        my.container.qtArgPassPre = "va_list args;\n    va_start (args, " + my.container.va_start + ");"
+        my.container.qtArgPassPost = "va_end (args);"
+    endif
+endfunction
+
+function qt_method_has_self_pointer (method)
+    for my.method.argument
+        if qt_argument_is_self_pointer (argument)
+            return 1
+        endif
+    endfor
+    return 0
+endfunction
+
+function qt_argument_is_self_pointer (argument)
+    if argument.name = "self_p"
+        return 1
+    else
+        return 0
+    endif
+endfunction
+
+#
+#  A function for constructing a string of arguments for a method declaration
+#  in source/header files. Returns the argument string or 'ERROR'.
+#
+function qt_method_arguments (method)
+    my.problematic = 0
+    my.out = ""
+    # Skip arguments that are,
+    #   * self pointer to wrapped struct
+    #   * variadic argument, if start argument is of type format
+    for my.method.argument where !qt_argument_is_self_pointer (argument) & \
+                                 !(argument.variadic & count (my.method.argument, argument.type = "format"))
+        resolve_qt_container (argument)
+        if !(my.method.is_destructor & first ())
+            my.out += argument.qtArgType
+            if !regexp.match ("[\\*&]$", argument.qtArgType?"")
+                my.out += " "
+            endif
+            my.out += argument.qtName
+        endif
+        if !last ()
+            my.out += ", "
+        endif
+    endfor
+    if my.problematic
+        my.out = "ERROR"
+    endif
+    return my.out
+endfunction
+
+#
+# A function for constructing the string for a return type in a QML C header
+#
+function qt_method_return_type (method)
+    resolve_qt_container (my.method->return)
+    my.out = "$(my.method->return.qtReturnType) "
+    return my.out
+endfunction
+
+#
+# A function for constructing the string for a method signature in Qt C++ file
+#
+function qt_method_signature (method, in_header)
+    # Resolve conflicts with defines
+    for class.method
+        if method.name = "streq" \
+         | method.name = "strneq" \
+         | method.name = "export" \
+         | method.name = "delete" \
+         | method.name = "foreach"
+            method.QtName = method.name + " no conflict"
+        else
+            method.QtName = method.name
+        endif
+    endfor
+    my.problematic = 0
+    my.out = ""
+    if !method.is_constructor & !method.is_destructor
+        if my.in_header & my.method.singleton & !qt_method_has_self_pointer (method)
+            my.out += "static "
+        endif
+        my.out += qt_method_return_type (my.method)
+    else
+        qt_method_return_type (my.method)
+    endif
+    if my.in_header
+        if method.is_constructor
+            my.out += "explicit $(class.QtName)"
+        elsif method.is_destructor
+            my.out += "~$(class.QtName)"
+        endif
+    else
+        my.out += "$(class.QtName:)::"
+        if method.is_constructor
+            my.out += "$(class.QtName)"
+        elsif method.is_destructor
+            my.out += "~$(class.QtName)"
+        endif
+    endif
+
+    if !method.is_constructor & !method.is_destructor
+        my.out += "$(my.method.QtName:camel)"
+    endif
+    my.out += " ("
+
+    my.args = qt_method_arguments (my.method)
+    if my.args = "ERROR"
+        my.problematic = 1
+    else
+        my.out += my.args
+    endif
+
+    if method.is_constructor
+        if !(my.args = "")
+            my.out += ", "
+        endif
+        if my.in_header
+            my.out += "QObject *qObjParent = 0"
+        else
+            my.out += "QObject *qObjParent"
+        endif
+    endif
+
+    my.out += ")"
+
+    if method.is_constructor
+        if !my.in_header
+            my.out += " : QObject (qObjParent)"
+        endif
+    endif
+
+    # Variadic methods without a va_list sibling are not allowed, as the
+    # arguments cannot be forwared < C++11. This is to ensure backwards
+    # compatability.
+    # Exception is if the type is format!
+    if count (my.method.argument, argument.variadic) & \
+       !count (my.method.argument, argument.type = "format") & !my.method.has_va_list_sibling
+        my.problematic = 1
+    endif
+
+    # Exclude methods where strings are passed by reference as the might get
+    # deleted which does not play well with QString.
+    if count (my.method.argument, argument.type = "string" & argument.by_reference)
+        my.problematic = 1
+    endif
+
+    if my.problematic
+        my.out = # undefined
+    endif
+    return my.out
+endfunction
+
+function print_class_header (class)
+>/*
+>$(project.GENERATED_WARNING_HEADER:)
+>*/
+>#ifndef Q_$(CLASS.C_NAME)_H
+>#define Q_$(CLASS.C_NAME)_H
+>
+>#include "$(project.QtName).h"
+>
+>class QT_$(PROJECT.NAME:c)_EXPORT $(class.QtName:) : public QObject
+>{
+>    Q_OBJECT
+>public:
+>
+>   //  Copy-construct to return the proper wrapped c types
+>   $(class.QtName:camel) ($(class.name:c)_t *self, QObject *qObjParent = 0);
+for class.constructor as method where defined (qt_method_signature (method, 1))
+>
+>    //  $(method.description:no,block)
+>    $(qt_method_signature (method, 1));
+endfor
+for class.destructor as method where defined (qt_method_signature (method, 1))
+>
+>    //  $(method.description:no,block)
+>    $(qt_method_signature (method, 1));
+endfor
+for class.method where defined (qt_method_signature (method, 1))
+>
+>    //  $(method.description:no,block)
+>    $(qt_method_signature (method, 1));
+endfor
+>
+>    $(class.c_name:)_t *self;
+>};
+>#endif //  Q_$(CLASS.C_NAME)_H
+>/*
+>$(project.GENERATED_WARNING_HEADER:)
+>*/
+endfunction
+
+function print_class_body (class)
+>/*
+>$(project.GENERATED_WARNING_HEADER:)
+>*/
+>
+>#include "$(project.QtName).h"
+>
+>///
+>//  Copy-construct to return the proper wrapped c types
+>$(class.QtName:camel)::$(class.QtName:camel) ($(class.name:c)_t *self, QObject *qObjParent) : QObject (qObjParent)
+>{
+>    this->self = self;
+>}
+>
+for class.constructor as method where defined (qt_method_signature (method, 0))
+>
+>///
+>//  $(method.description:no,block)
+>$(qt_method_signature (method, 0))
+>{
+>    this->self = $(class.c_name:)_$(method.c_name) (\
+   for method.argument where !argument.variadic
+>$(argument.qtArgPass)\
+       if !last ()
+>, \
+       endif
+   endfor
+>);
+>}
+endfor
+for class.destructor as method where defined (qt_method_signature (method, 0))
+>
+>///
+>//  $(method.description:no,block)
+>$(qt_method_signature (method, 0))
+>{
+>    $(method->return.qtCallPre)$(class.c_name:)_$(method.c_name) (&self\
+       if count (method.argument) > 1
+>, \
+       endif
+   for method.argument where !argument.variadic
+       if !first ()
+>$(argument.qtArgPass)\
+       endif
+       if !last ()
+>, \
+       endif
+   endfor
+>)$(method->return.qtCallPost);
+>}
+endfor
+for class.method where defined (qt_method_signature (method, 0))
+>
+>///
+>//  $(method.description:no,block)
+>$(qt_method_signature (method, 0))
+>{
+    for method.argument where defined (argument.qtArgPassPre)
+>    $(argument.qtArgPassPre)
+    endfor
+    if (method.has_va_list_sibling)
+>    $(method->return.qtCallPre)$(class.c_name:)_v$(method.c_name) (\
+    else
+>    $(method->return.qtCallPre)$(class.c_name:)_$(method.c_name) (\
+    endif
+    if qt_method_has_self_pointer (method)
+>&self, \
+    elsif !method.singleton
+>self\
+        if !method.singleton & count (method.argument)
+>, \
+        endif
+    endif
+    for method.argument where !(!method.has_va_list_sibling & argument.variadic) \
+                            & !qt_argument_is_self_pointer (argument)
+>$(argument.qtArgPass)\
+        if !last ()
+>, \
+        endif
+    endfor
+>)$(method->return.qtCallPost);
+    for method.argument where defined (argument.qtArgPassPost)
+>    $(argument.qtArgPassPost)
+    endfor
+>    $(method->return.qtReturn)
+>}
+endfor
+>/*
+>$(project.GENERATED_WARNING_HEADER:)
+>*/
+endfunction
+
+.endtemplate
+.###############################################################################
+.#                                                                             #
+.#  Generate class headers                                                     #
+.#                                                                             #
+.###############################################################################
+.for class where defined (class.api)
+.  echo "Generating bindings/qt/$(class.qtname).h..."
+.  output "bindings/qt/src/$(class.qtname).h"
+.  print_class_header (class)
+.  close
+.endfor
+.#
+.for dependencies.class
+.  echo "Generating bindings/qt/$(class.qtname).h..."
+.  output "bindings/qt/src/$(class.qtname).h"
+.  print_class_header (class)
+.  close
+.endfor
+.###############################################################################
+.#                                                                             #
+.#  Generate class implementations                                             #
+.#                                                                             #
+.###############################################################################
+.for class where defined (class.api)
+.  echo "Generating bindings/qt/src/$(class.qtname).cpp..."
+.  output "bindings/qt/src/$(class.qtname).cpp"
+.  print_class_body (class)
+.  close
+.endfor
+.#
+.for dependencies.class
+.  echo "Generating bindings/qt/src/$(class.qtname).cpp..."
+.  output "bindings/qt/src/$(class.qtname).cpp"
+.  print_class_body (class)
+.  close
+.endfor
+.###############################################################################
+.#                                                                             #
+.# Generate master header $(project.QtName).h                                                 #
+.#                                                                             #
+.###############################################################################
+.echo "Generating bindings/qt/src/$(project.QtName).h..."
+.output "bindings/qt/src/$(project.QtName).h"
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
+#ifndef Q_$(PROJECT.NAME:c)_H
+#define Q_$(PROJECT.NAME:c)_H
+
+#include <QObject>
+#include <QString>
+#include <$(project.name).h>
+
+#if defined(Q_OS_WIN)
+#  if !defined(QT_$(PROJECT.NAME:c)_EXPORT) && !defined(QT_$(PROJECT.NAME:c)_IMPORT)
+#    define QT_$(PROJECT.NAME:c)_EXPORT
+#  elif defined(QT_$(PROJECT.NAME:c)_IMPORT)
+#    if defined(QT_$(PROJECT.NAME:c)_EXPORT)
+#      undef QT_$(PROJECT.NAME:c)_EXPORT
+#    endif
+#    define QT_$(PROJECT.NAME:c)_EXPORT __declspec(dllimport)
+#  elif defined(QT_$(PROJECT.NAME:c)_EXPORT)
+#    undef QT_$(PROJECT.NAME:c)_EXPORT
+#    define QT_$(PROJECT.NAME:c)_EXPORT __declspec(dllexport)
+#  endif
+#else
+#  define QT_$(PROJECT.NAME:c)_EXPORT
+#endif
+
+//  Opaque class structures to allow forward references
+.for class where defined (class.api)
+class $(class.QtName:);
+.endfor
+.for dependencies.class
+class $(class.QtName:);
+.endfor
+
+//  Public API classes
+.for class where defined (class.api)
+#include "$(class.qtname).h"
+.endfor
+.for dependencies.class
+#include "$(class.qtname).h"
+.endfor
+
+#endif //  Q_$(PROJECT.NAME:c)_H
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
+.close
+.###############################################################################
+.#                                                                             #
+.# Generate config.pri, allows to switch between static or library build       #
+.#                                                                             #
+.###############################################################################
+.echo "Generating bindings/qt/config.pri..."
+.if !file.exists ("bindings/qt/config.pri")
+.  output "bindings/qt/config.pri"
+$(PROJECT.QTNAME)_LIBRARY = yes
+.  close
+.endif
+.###############################################################################
+.#                                                                             #
+.# Generate common.pri, common flags and variables for both static and library #
+.#                                                                             #
+.###############################################################################
+.echo "Generating bindings/qt/common.pri..."
+.output "bindings/qt/common.pri"
+$(project.GENERATED_WARNING_HEADER:)
+exists(config.pri):infile(config.pri, $(PROJECT.QTNAME)_LIBRARY, yes): CONFIG += $(project.QtName)-uselib
+TEMPLATE += fakelib
+Q$(PROJECT.NAME:c)_LIBNAME = $(project.QtName)
+CONFIG(debug, debug|release) {
+    mac:Q$(PROJECT.NAME:c)_LIBNAME = $$member(Q$(PROJECT.NAME:c)_LIBNAME, 0)_debug
+    else:win32:Q$(PROJECT.NAME:c)_LIBNAME = $$member(Q$(PROJECT.NAME:c)_LIBNAME, 0)d
+}
+TEMPLATE -= fakelib
+Q$(PROJECT.NAME:c)_LIBDIR = $$PWD/lib
+unix:$(project.QtName)-uselib:!$(project.QtName)-buildlib:QMAKE_RPATHDIR += $$Q$(PROJECT.NAME:c)_LIBDIR
+$(project.GENERATED_WARNING_HEADER:)
+.close
+.###############################################################################
+.#                                                                             #
+.# Generate $(project.QtName).pri, adds sources/header or link library          #
+.#                                                                             #
+.###############################################################################
+.echo "Generating bindings/qt/src/$(project.QtName).pri..."
+.output "bindings/qt/src/$(project.QtName).pri"
+$(project.GENERATED_WARNING_HEADER:)
+include(../common.pri)
+INCLUDEPATH += $$PWD
+DEPENDPATH += $$PWD
+
+$(project.QtName)-uselib:!$(project.QtName)-buildlib {
+    LIBS += -L$$Q$(PROJECT.NAME:c)_LIBDIR -l$$Q$(PROJECT.NAME:c)_LIBNAME
+} else {
+    HEADERS       += $$PWD/$(project.QtName).h \\
+.for class where defined (class.api)
+                     $$PWD/$(class.qtname).h \
+.   if last() & count (dependencies.class) > 0
+\\
+.   endif
+.endfor
+.for dependencies.class
+.  if !last ()
+                     $$PWD/$(class.qtname).h \\
+.  else
+                     $$PWD/$(class.qtname).h
+.  endif
+.endfor
+
+    SOURCES       += \\
+.for class where defined (class.api)
+                     $$PWD/$(class.qtname).cpp \
+.   if last() & count (dependencies.class) > 0
+\\
+.   endif
+.endfor
+.for dependencies.class
+.  if !last ()
+                     $$PWD/$(class.qtname).cpp \\
+.  else
+                     $$PWD/$(class.qtname).cpp
+.  endif
+.endfor
+}
+
+win32 {
+    $(project.QtName)-buildlib:shared:DEFINES += QT_$(PROJECT.NAME:c)_EXPORT
+    else:$(project.QtName)-uselib:DEFINES += QT_$(PROJECT.NAME:c)_IMPORT
+}
+$(project.GENERATED_WARNING_HEADER:)
+.close
+.###############################################################################
+.#                                                                             #
+.# Generate buildlib/buildlib.pro, helper to build the library                 #
+.#                                                                             #
+.###############################################################################
+.echo "Generating bindings/qt/buildlib/buildlib.pro..."
+.if !file.exists ("bindings/qt/buildlib")
+.   directory.create("bindings/qt/buildlib")
+.endif
+.output "bindings/qt/buildlib/buildlib.pro"
+$(project.GENERATED_WARNING_HEADER:)
+TEMPLATE = lib
+VERSION = $(project->version.major).$(project->version.minor).$(project->version.patch)
+CONFIG += qt dll $(project.QtName)-buildlib
+mac:CONFIG += absolute_library_soname
+win32|mac:!wince*:!win32-msvc:!macx-xcode:CONFIG += debug_and_release build_all
+
+include(../src/$(project.QtName).pri)
+
+TARGET = $$Q$(PROJECT.NAME:c)_LIBNAME
+DESTDIR = $$Q$(PROJECT.NAME:c)_LIBDIR
+
+.for use where use.optional = "0"
+!packagesExist ($(use.libname)): error ("cannot link with -l$(use.linkname), install $(use.libname).")
+.endfor
+
+LIBS += \\
+.for use where use.optional = "0"
+    -l$(use.linkname) \\
+.endfor
+    -l$(project.name)
+
+win32 {
+    DLLDESTDIR = $$[QT_INSTALL_BINS]
+    QMAKE_DISTCLEAN += $$[QT_INSTALL_BINS]\\$${Q$(PROJECT.NAME:c)_LIBNAME}.dll
+}
+unix {
+    isEmpty(PREFIX): PREFIX = /usr/local
+    header.files = $$PWD/../src/*.h
+    header.path = $$PREFIX/include
+    target.path = $$PREFIX/lib
+    INSTALLS += target header
+}
+$(project.GENERATED_WARNING_HEADER:)
+.close
+.###############################################################################
+.#                                                                             #
+.# Generate master project file $(project.QtName)                              #
+.#                                                                             #
+.###############################################################################
+.echo "Generating bindings/qt/$(project.QtName).pro..."
+.output "bindings/qt/$(project.QtName).pro"
+$(project.GENERATED_WARNING_HEADER:)
+TEMPLATE=subdirs
+CONFIG += ordered
+include(common.pri)
+$(project.QtName)-uselib:SUBDIRS=buildlib
+SUBDIRS+=selftest
+$(project.GENERATED_WARNING_HEADER:)
+.close
+.###############################################################################
+.#                                                                             #
+.# Generate selftest project file selftest/selftest.pro                        #
+.#                                                                             #
+.###############################################################################
+.echo "Generating bindings/qt/selftest/selftest.pro..."
+.if !file.exists ("bindings/qt/selftest")
+.   directory.create("bindings/qt/selftest")
+.endif
+.output "bindings/qt/selftest/selftest.pro"
+$(project.GENERATED_WARNING_HEADER:)
+QT += core
+QT -= gui
+
+include(../src/$(project.QtName).pri)
+
+CONFIG   += console
+CONFIG   -= app_bundle
+
+TEMPLATE = app
+
+SOURCES += main.cpp
+$(project.GENERATED_WARNING_HEADER:)
+.close
+.###############################################################################
+.#                                                                             #
+.# Generate selftest main.cpp                                                  #
+.#                                                                             #
+.###############################################################################
+.echo "Generating bindings/qt/selftest/main.cpp..."
+.output "bindings/qt/selftest/main.cpp"
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
+#include <QDebug>
+#include "$(project.QtName).h"
+
+int main(int argc, char **argv)
+{
+    bool verbose;
+    if (argc == 2 && streq (argv [1], "-v"))
+        verbose = true;
+    else
+        verbose = false;
+
+    qDebug() << "Running $(project.QtName) selftests...\\n";
+
+.for class where defined (class.api)
+    $(class.QtName)::test (verbose);
+.endfor
+.for dependencies.class
+    $(class.QtName)::test (verbose);
+.endfor
+
+    qDebug() << "Tests passed OK\\n";
+    return 0;
+}
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
+.close
+.###############################################################################
+.#                                                                             #
+.# Generate selftest main.cpp                                                  #
+.#                                                                             #
+.###############################################################################
+.echo "Generating bindings/qt/README.md"
+.output "bindings/qt/README.md"
+```
+$(project.GENERATED_WARNING_HEADER:)
+```
+# $(project.QtName)
+
+## Overview
+
+$(project.QtName) is a Qt wrapper for $(project.name). It's possible to
+statically or dynamically link against it as well as use it as internal or external
+library.
+
+## Internal library
+
+You can use the Qt wrapper as internal library by including the
+`$(project.QtName).pri` file. Here is a minimal example app:
+
+```make
+QT += core
+QT -= gui
+
+include(<path to pri file>/$(project.QtName).pri)
+
+CONFIG   += console
+CONFIG   -= app_bundle
+
+TEMPLATE = app
+
+SOURCES += main.cpp
+```
+
+To link statically against the wrapper you need to change the
+`$(PROJECT.QTNAME)_LIBRARY` variable in `config.pri` to `no`.
+
+To link dynamically against the wrapper you need to change the
+`$(PROJECT.QTNAME)_LIBRARY` variable in `config.pri` to `yes`.
+
+## External library
+
+To install $(project.QtName) as a shared library do the following:
+
+```sh
+qmake
+make
+sudo make install
+```
+
+The default installation directory prefix on unix is `/usr/local/`. If you like
+to change the prefix define the PREFIX variable when calling qmake:
+
+```sh
+qmake PREFIX=/usr
+```
+
+## Notes
+
+### Dependent classes
+
+If the bindings are generated as part of a zproject that depends on another
+zproject (e.g. zyre on czmq), the Qt bindings will automatically detect all
+dependent classes and generate bindings for them too. Check the ./generate.sh
+output the see which dependent classes couldn't be resolved.
+
+### Format methods
+
+Whenever a c method takes a format followed by variadic arguments, this is
+replaced in the Qt bindings by one string instead.
+
+### Excluded methods
+
+If you're missing some methods in the bindings then because they have been
+excluded. Currently methods are excluded if,
+
+    * they have variadic arguments and don't have a sibling method that
+      accepts a va_list. Most prominent example is probably printf and vprintf.
+
+    * they have char** arguments, as they might get freed which doesn't play
+      well with QString.
+
+```
+$(project.GENERATED_WARNING_HEADER:)
+```
+.close
+.endif
