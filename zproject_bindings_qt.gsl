@@ -539,11 +539,13 @@ DEPENDPATH += $$PWD
 $(project.QtName)-uselib:!$(project.QtName)-buildlib {
     LIBS += -L$$Q$(PROJECT.NAME:c)_LIBDIR -l$$Q$(PROJECT.NAME:c)_LIBNAME
 } else {
-    HEADERS       += $$PWD/$(project.QtName).h \\
+    HEADERS       += \\
+                     $$PWD/$(project.QtName).h \\
 .for class where defined (class.api)
-                     $$PWD/$(class.qtname).h \
-.   if last() & count (dependencies.class) > 0
-\\
+.   if !last() | count (dependencies.class) > 0
+                     $$PWD/$(class.qtname).h \\
+.   else
+                     $$PWD/$(class.qtname).h
 .   endif
 .endfor
 .for dependencies.class
@@ -556,9 +558,10 @@ $(project.QtName)-uselib:!$(project.QtName)-buildlib {
 
     SOURCES       += \\
 .for class where defined (class.api)
-                     $$PWD/$(class.qtname).cpp \
-.   if last() & count (dependencies.class) > 0
-\\
+.   if !last() | count (dependencies.class) > 0
+                     $$PWD/$(class.qtname).cpp \\
+.   else
+                     $$PWD/$(class.qtname).cpp
 .   endif
 .endfor
 .for dependencies.class
