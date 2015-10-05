@@ -19,22 +19,22 @@
 
 **<a href="#toc2-104">Configuration</a>**
 
-**<a href="#toc2-257">Sample API model</a>**
-&emsp;<a href="#toc3-366">Supported API Model Attributes</a>
-&emsp;<a href="#toc3-382">Tips</a>
+**<a href="#toc2-258">Sample API model</a>**
+&emsp;<a href="#toc3-367">Supported API Model Attributes</a>
+&emsp;<a href="#toc3-383">Tips</a>
 
-**<a href="#toc2-393">Removal</a>**
-&emsp;<a href="#toc3-396">autotools</a>
+**<a href="#toc2-394">Removal</a>**
+&emsp;<a href="#toc3-397">autotools</a>
 
-**<a href="#toc2-401">Notes for Writing Language Bindings</a>**
-&emsp;<a href="#toc3-404">Schema/Architecture Overview</a>
-&emsp;<a href="#toc3-423">Informal Summary</a>
-&emsp;<a href="#toc3-428">Semantic Attributes</a>
-&emsp;<a href="#toc3-463">Language-Specific Implementation Attributes</a>
+**<a href="#toc2-402">Notes for Writing Language Bindings</a>**
+&emsp;<a href="#toc3-405">Schema/Architecture Overview</a>
+&emsp;<a href="#toc3-424">Informal Summary</a>
+&emsp;<a href="#toc3-434">Semantic Attributes</a>
+&emsp;<a href="#toc3-483">Language-Specific Implementation Attributes</a>
 
-**<a href="#toc2-484">Ownership and License</a>**
-&emsp;<a href="#toc3-493">Hints to Contributors</a>
-&emsp;<a href="#toc3-502">This Document</a>
+**<a href="#toc2-506">Ownership and License</a>**
+&emsp;<a href="#toc3-515">Hints to Contributors</a>
+&emsp;<a href="#toc3-524">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -264,6 +264,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_bench.gsl" />
     <bin name = "zproject_bindings_python.gsl" />
     <bin name = "zproject_bindings_qml.gsl" />
+    <bin name = "zproject_bindings_qt.gsl" />
     <bin name = "zproject_bindings_ruby.gsl" />
     <bin name = "zproject_bindings_jni.gsl" />
     <bin name = "zproject_ci.gsl" />
@@ -282,7 +283,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_vs2013.gsl" />
 </project>
 
-<A name="toc2-257" title="Sample API model" />
+<A name="toc2-258" title="Sample API model" />
 ## Sample API model
 
 The zproject scripts can also optionally generate the `@interface` in your class headers from an API model, in addition to a host of language bindings.  To opt-in to this behavior, just make a model to the `api` directory of your project.  For example, if your `project.xml` contains `<class name = "myclass"/>`, you could create the following `api/myclass.xml` file:
@@ -391,7 +392,7 @@ Language bindings will also be generated in the following languages:
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
-<A name="toc3-366" title="Supported API Model Attributes" />
+<A name="toc3-367" title="Supported API Model Attributes" />
 ### Supported API Model Attributes
 
 The following attributes are supported for methods:
@@ -407,7 +408,7 @@ e should not be modified (roughly translates to `const` in C).
 - `variadic = "1"` - used for representing variadic arguments.
 - `is_format = "1"` - used for `printf`-style format strings preceding variadic arguments (which are added automatically).
 
-<A name="toc3-382" title="Tips" />
+<A name="toc3-383" title="Tips" />
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
@@ -418,18 +419,18 @@ echo method.string()  # will print the model as an XML string.
 method.save(filename) # will save the model as an XML string to the given file.
 ```
 
-<A name="toc2-393" title="Removal" />
+<A name="toc2-394" title="Removal" />
 ## Removal
 
-<A name="toc3-396" title="autotools" />
+<A name="toc3-397" title="autotools" />
 ### autotools
 
     make uninstall
 
-<A name="toc2-401" title="Notes for Writing Language Bindings" />
+<A name="toc2-402" title="Notes for Writing Language Bindings" />
 ## Notes for Writing Language Bindings
 
-<A name="toc3-404" title="Schema/Architecture Overview" />
+<A name="toc3-405" title="Schema/Architecture Overview" />
 ### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
@@ -448,19 +449,35 @@ method.save(filename) # will save the model as an XML string to the given file.
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-<A name="toc3-423" title="Informal Summary" />
+<A name="toc3-424" title="Informal Summary" />
 ### Informal Summary
 
-A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
+A `class` is always the top-level entity in an API model, and it will be merged
+with the corresponding `class` entity defined in the project model. A class
+contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s),
+and methods contain `argument`s and `return`s (collectively, "container"s). Each
+entity will contain both *semantic attributes* and *language-specific
+implementation attributes*.
 
-<A name="toc3-428" title="Semantic Attributes" />
+<A name="toc3-434" title="Semantic Attributes" />
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
 
-For example, arguments may be described as passed `by_reference` to indicate that ownership is transferred from the caller. Similarly, return values may be described as `fresh` to indicate that ownership is transferred to the caller, which must destroy the object when it is finished with it. It's important to remember that these attributes are primarily meant to be an abstraction that describes conceptual information, leaving the details of how code generators interpret (or ignore) each attribute up to the authors.
+For example, arguments may be described as passed `by_reference` to indicate
+that ownership is transferred from the caller. Similarly, return values may be
+described as `fresh` to indicate that ownership is transferred to the caller,
+which must destroy the object when it is finished with it. It's important to
+remember that these attributes are primarily meant to be an abstraction that
+describes conceptual information, leaving the details of how code generators
+interpret (or ignore) each attribute up to the authors.
 
-Semantic attributes may be implicit (not given a value in the written model). In this case, it is up to the [`zproject_class_api`](zproject_class_api.gsl) script to fully resolve default values for all attributes. Downstream code generators should *never* resolve or alter semantic attributes, as this could change the behavior of any code generator that is run after the errant code generator.
+Semantic attributes may be implicit (not given a value in the written model).
+In this case, it is up to the [`zproject_class_api`](zproject_class_api.gsl)
+script to fully resolve default values for all attributes. Downstream code
+generators should *never* resolve or alter semantic attributes, as this could
+change the behavior of any code generator that is run after the errant code
+generator.
 
 These are the semantic attributes for each kind of entity that will be resolved before language bindings generators are invoked:
 
@@ -474,6 +491,7 @@ method.description    # string (comment in the API model, or a default value)
 method.singleton      # 0/1 (default: 0, but 1 for constructors/destructors)
 method.is_constructor # 0/1 (default: 0, but 1 for constructors)
 method.is_destructor  # 0/1 (default: 0, but 1 for destructors)
+method.has_va_list_sibling # 0/1 (default: 0)
 ```
 ```gsl
 container.name         # string (as given in the API model, or "_")
@@ -486,16 +504,20 @@ container.is_format    # 0/1 (default: 0)
 container.is_enum      # 0/1 (default: 0)
 container.enum_name    # string if is_enum, otherwise undefined
 container.enum_class   # string if is_enum, otherwise undefined
+container.variadic     # 0/1 (default: 0)
+container.va_start     # string - that holds the argment name for va_start ()
 ```
 
-<A name="toc3-463" title="Language-Specific Implementation Attributes" />
+<A name="toc3-483" title="Language-Specific Implementation Attributes" />
 ### Language-Specific Implementation Attributes
 
 Language-specific implementation attributes hold information that is not
 intrinsic to the concept of the container, but to the binding implementation.
 
 In practice, language-specific attributes may contain any information that
-is useful to store as part of the container model to facilitate generation, according to any schema that is useful, but it may be helpful to try to follow patterns observed in other code generator scripts.
+is useful to store as part of the container model to facilitate generation,
+according to any schema that is useful, but it may be helpful to try to follow
+patterns observed in other code generator scripts.
 
 However, because the container is shared between all generators, which are
 run in an unspecified order, it's important that generators not rely on
@@ -509,7 +531,7 @@ avoid collisions is to prefix all language-specific attributes with the
 name of the language, though in principle, any collision-free convention
 would be acceptable.
 
-<A name="toc2-484" title="Ownership and License" />
+<A name="toc2-506" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -518,7 +540,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-493" title="Hints to Contributors" />
+<A name="toc3-515" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -527,7 +549,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-502" title="This Document" />
+<A name="toc3-524" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).

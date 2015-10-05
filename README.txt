@@ -194,15 +194,31 @@ method.save(filename) # will save the model as an XML string to the given file.
 
 ### Informal Summary
 
-A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
+A `class` is always the top-level entity in an API model, and it will be merged
+with the corresponding `class` entity defined in the project model. A class
+contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s),
+and methods contain `argument`s and `return`s (collectively, "container"s). Each
+entity will contain both *semantic attributes* and *language-specific
+implementation attributes*.
 
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
 
-For example, arguments may be described as passed `by_reference` to indicate that ownership is transferred from the caller. Similarly, return values may be described as `fresh` to indicate that ownership is transferred to the caller, which must destroy the object when it is finished with it. It's important to remember that these attributes are primarily meant to be an abstraction that describes conceptual information, leaving the details of how code generators interpret (or ignore) each attribute up to the authors.
+For example, arguments may be described as passed `by_reference` to indicate
+that ownership is transferred from the caller. Similarly, return values may be
+described as `fresh` to indicate that ownership is transferred to the caller,
+which must destroy the object when it is finished with it. It's important to
+remember that these attributes are primarily meant to be an abstraction that
+describes conceptual information, leaving the details of how code generators
+interpret (or ignore) each attribute up to the authors.
 
-Semantic attributes may be implicit (not given a value in the written model). In this case, it is up to the [`zproject_class_api`](zproject_class_api.gsl) script to fully resolve default values for all attributes. Downstream code generators should *never* resolve or alter semantic attributes, as this could change the behavior of any code generator that is run after the errant code generator.
+Semantic attributes may be implicit (not given a value in the written model).
+In this case, it is up to the [`zproject_class_api`](zproject_class_api.gsl)
+script to fully resolve default values for all attributes. Downstream code
+generators should *never* resolve or alter semantic attributes, as this could
+change the behavior of any code generator that is run after the errant code
+generator.
 
 These are the semantic attributes for each kind of entity that will be resolved before language bindings generators are invoked:
 
@@ -216,6 +232,7 @@ method.description    # string (comment in the API model, or a default value)
 method.singleton      # 0/1 (default: 0, but 1 for constructors/destructors)
 method.is_constructor # 0/1 (default: 0, but 1 for constructors)
 method.is_destructor  # 0/1 (default: 0, but 1 for destructors)
+method.has_va_list_sibling # 0/1 (default: 0)
 ```
 ```gsl
 container.name         # string (as given in the API model, or "_")
@@ -228,6 +245,8 @@ container.is_format    # 0/1 (default: 0)
 container.is_enum      # 0/1 (default: 0)
 container.enum_name    # string if is_enum, otherwise undefined
 container.enum_class   # string if is_enum, otherwise undefined
+container.variadic     # 0/1 (default: 0)
+container.va_start     # string - that holds the argment name for va_start ()
 ```
 
 ### Language-Specific Implementation Attributes
@@ -236,7 +255,9 @@ Language-specific implementation attributes hold information that is not
 intrinsic to the concept of the container, but to the binding implementation.
 
 In practice, language-specific attributes may contain any information that
-is useful to store as part of the container model to facilitate generation, according to any schema that is useful, but it may be helpful to try to follow patterns observed in other code generator scripts.
+is useful to store as part of the container model to facilitate generation,
+according to any schema that is useful, but it may be helpful to try to follow
+patterns observed in other code generator scripts.
 
 However, because the container is shared between all generators, which are
 run in an unspecified order, it's important that generators not rely on
