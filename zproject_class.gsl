@@ -237,7 +237,8 @@ main (int argc, char **argv)
 {
     bool verbose = false;
     test_item_t *test = 0;
-    for (int argn = 1; argn < argc; argn++) {
+    int argn;
+    for (argn = 1; argn < argc; argn++) {
         if (streq (argv [argn], "-v"))
             verbose = true;
         else
@@ -275,7 +276,6 @@ main (int argc, char **argv)
             return 1;
         }
     }
-
     if (test) {
         printf ("Running $(project.name) selftest '%s'...\\n", test->testname);
         test->test (verbose);
