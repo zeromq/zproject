@@ -157,7 +157,7 @@ typedef struct
 {
     const char *testname;
     testfn_t test;
-};
+} test_item_t;
 
 //  -------------------------------------------------------------------------
 //  Declaration of all tests
@@ -197,7 +197,7 @@ test_print_list (void)
     test_item_t *item;
     for (item = all_tests; item->test; item++) {
         count++;
-        printf ("%u:%s\n", count, item->testname);
+        printf ("%u:%s\\n", count, item->testname);
     }
 }
 
@@ -224,25 +224,25 @@ test_available (const char *testname)
 static inline void
 test_runall (bool verbose)
 {
-    printf ("Running $(project.name) selftests...\n");
+    printf ("Running $(project.name) selftests...\\n");
     test_item_t *item;
     for (item = all_tests; item->test; item++)
         item->test (verbose);
 
-    printf ("Tests passed OK\n");
+    printf ("Tests passed OK\\n");
 }
 
 int
-main (int argc, char *argv [])
+main (int argc, char **argv)
 {
     bool verbose = false;
     test_item_t *test = 0;
-    for (int argn = 1; argn < argc; argn) {
+    for (int argn = 1; argn < argc; argn++) {
         if (streq (argv [argn], "-v"))
             verbose = true;
         else
         if (streq (argv [argn], "--nb")) {
-            printf("%d\n", test_get_number ());
+            printf("%d\\n", test_get_number ());
             return 0;
         }
         else
@@ -254,31 +254,32 @@ main (int argc, char *argv [])
         if (streq (argv [argn], "--test")) {
             argn++;
             if (argn >= argc) {
-                fprintf (stderr, "--test needs an argument\n");
+                fprintf (stderr, "--test needs an argument\\n");
                 return 1;
             }
             test = test_available (argv [argn]);
             if (!test) {
-                fprintf (stderr, "%s is not available\n", argv [argn]);
+                fprintf (stderr, "%s is not available\\n", argv [argn]);
                 return 1;
             }
         }
         else
         if (streq (argv [argn], "-e")) {
 #ifdef _MSC_VER
-            //When receiving an abort signal, only print to stderr (no dialog)
+            //  When receiving an abort signal, only print to stderr (no dialog)
             _set_abort_behavior (0, _WRITE_ABORT_MSG);
 #endif
         }
         else {
-            printf ("Unknown option: %s\n", argv [argn]);
+            printf ("Unknown option: %s\\n", argv [argn]);
             return 1;
         }
     }
 
     if (test) {
-        printf ("Running $(project.name) selftest '%s'...\n", test->testname);
+        printf ("Running $(project.name) selftest '%s'...\\n", test->testname);
         test->test (verbose);
+    }
     else
         test_runall (verbose);
 
