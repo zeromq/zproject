@@ -94,7 +94,7 @@ IF ($(USE.CMAKE_NAME)_FOUND)
 include_directories(${$(USE.CMAKE_NAME)_INCLUDE_DIRS})
 list(APPEND MORE_LIBRARIES ${$(USE.CMAKE_NAME)_LIBRARIES})
 .if use.optional = 1
-add_definition(-DHAVE_$(USE.CMAKE_NAME))
+add_definitions(-DHAVE_$(USE.CMAKE_NAME))
 .endif
 ENDIF ($(USE.CMAKE_NAME)_FOUND)
 .endfor
@@ -178,8 +178,23 @@ install(
 ########################################################################
 add_executable($(project.prefix)_selftest "${SOURCE_DIR}/src/$(project.prefix)_selftest.c")
 target_link_libraries($(project.prefix)_selftest $(project.name) ${ZEROMQ_LIBRARIES})
-add_test($(project.prefix)_selftest $(project.prefix)_selftest)
 
+set(CLASSTEST_TIMEOUT 5 CACHE STRING "Timeout of the selftest of a class")
+set(TOTAL_TIMEOUT 20 CACHE STRING "Timout of the total testsuite")
+
+set(TEST_CLASSES
+.for class
+  $(name)_test
+.endfor
+)
+
+foreach(TEST_CLASS ${TEST_CLASSES})
+  add_test(NAME ${TEST_CLASS} COMMAND $(project.prefix)_selftest -e -v --test ${TEST_CLASS})
+  set_tests_properties(${TEST_CLASS} PROPERTIES TIMEOUT ${CLASSTEST_TIMEOUT})
+endforeach(TEST_CLASS)
+
+add_test($(project.prefix)_selftest $(project.prefix)_selftest)
+set_tests_properties($(project.prefix)_selftest PROPERTIES TIMEOUT ${TOTAL_TIMEOUT})
 ########################################################################
 # summary
 ########################################################################
@@ -205,7 +220,7 @@ if (NOT MSVC)
     # headers and SOs.
     set($(USE.CMAKE_NAME)_INCLUDE_HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS} ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS}/*)
     set($(USE.CMAKE_NAME)_LIBRARY_HINTS ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS} ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS}/*)
-  endif(NOT PC_$(USE.CMAKE_NAME)_FOUND)
+  endif(PC_$(USE.CMAKE_NAME)_FOUND)
 endif (NOT MSVC)
 
 find_path(
