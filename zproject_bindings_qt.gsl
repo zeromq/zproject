@@ -112,7 +112,7 @@ function resolve_qt_container (container)
         endfor
     endif
 
-    if (my.container.variadic)
+    if my.container.variadic
         my.container.qtArgType = ""
         my.container.qtName = "..."
         my.container.qtArgPass = "args"
@@ -284,8 +284,8 @@ function print_class_header (class)
 >    Q_OBJECT
 >public:
 >
->   //  Copy-construct to return the proper wrapped c types
->   $(class.QtName:camel) ($(class.name:c)_t *self, QObject *qObjParent = 0);
+>    //  Copy-construct to return the proper wrapped c types
+>    $(class.QtName:camel) ($(class.name:c)_t *self, QObject *qObjParent = 0);
 for class.constructor as method where defined (qt_method_signature (method, 1))
 >
 >    //  $(method.description:no,block)
