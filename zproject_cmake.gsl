@@ -218,8 +218,8 @@ if (NOT MSVC)
     # some libraries install the headers is a subdirectory of the include dir
     # returned by pkg-config, so use a wildcard match to improve chances of finding
     # headers and SOs.
-    set($(USE.CMAKE_NAME)_INCLUDE_HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS} ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS}/*)
-    set($(USE.CMAKE_NAME)_LIBRARY_HINTS ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS} ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS}/*)
+    set(PC_$(USE.CMAKE_NAME)_INCLUDE_HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS} ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS}/*)
+    set(PC_$(USE.CMAKE_NAME)_LIBRARY_HINTS ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS} ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS}/*)
   endif(PC_$(USE.CMAKE_NAME)_FOUND)
 endif (NOT MSVC)
 
