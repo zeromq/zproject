@@ -238,7 +238,6 @@ find_library(
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   $(USE.CMAKE_NAME)
-  FOUND_VAR $(USE.CMAKE_NAME)_FOUND
   REQUIRED_VARS $(USE.CMAKE_NAME)_LIBRARIES $(USE.CMAKE_NAME)_INCLUDE_DIRS
 )
 mark_as_advanced($(USE.CMAKE_NAME)_FOUND $(USE.CMAKE_NAME)_LIBRARIES $(USE.CMAKE_NAME)_INCLUDE_DIRS)
