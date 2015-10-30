@@ -96,6 +96,10 @@ list(APPEND MORE_LIBRARIES ${$(USE.CMAKE_NAME)_LIBRARIES})
 .if use.optional = 1
 add_definitions(-DHAVE_$(USE.CMAKE_NAME))
 .endif
+.if use.optional = 0
+ELSE ($(USE.CMAKE_NAME)_FOUND)
+message( FATAL_ERROR "$(use.cmake_name:) not found." )
+.endif
 ENDIF ($(USE.CMAKE_NAME)_FOUND)
 .endfor
 
