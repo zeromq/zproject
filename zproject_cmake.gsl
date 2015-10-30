@@ -96,6 +96,8 @@ list(APPEND MORE_LIBRARIES ${$(USE.CMAKE_NAME)_LIBRARIES})
 .if use.optional = 1
 add_definitions(-DHAVE_$(USE.CMAKE_NAME))
 .endif
+ELSE ($(USE.CMAKE_NAME)_FOUND)
+message( FATAL_ERROR "$(use.cmake_name:) not found." )
 ENDIF ($(USE.CMAKE_NAME)_FOUND)
 .endfor
 
@@ -218,8 +220,8 @@ if (NOT MSVC)
     # some libraries install the headers is a subdirectory of the include dir
     # returned by pkg-config, so use a wildcard match to improve chances of finding
     # headers and SOs.
-    set($(USE.CMAKE_NAME)_INCLUDE_HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS} ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS}/*)
-    set($(USE.CMAKE_NAME)_LIBRARY_HINTS ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS} ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS}/*)
+    set(PC_$(USE.CMAKE_NAME)_INCLUDE_HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS} ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS}/*)
+    set(PC_$(USE.CMAKE_NAME)_LIBRARY_HINTS ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS} ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS}/*)
   endif(PC_$(USE.CMAKE_NAME)_FOUND)
 endif (NOT MSVC)
 
@@ -238,7 +240,6 @@ find_library(
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   $(USE.CMAKE_NAME)
-  FOUND_VAR $(USE.CMAKE_NAME)_FOUND
   REQUIRED_VARS $(USE.CMAKE_NAME)_LIBRARIES $(USE.CMAKE_NAME)_INCLUDE_DIRS
 )
 mark_as_advanced($(USE.CMAKE_NAME)_FOUND $(USE.CMAKE_NAME)_LIBRARIES $(USE.CMAKE_NAME)_INCLUDE_DIRS)
