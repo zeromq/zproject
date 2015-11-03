@@ -392,7 +392,7 @@ for class where defined (class.api)
         callargs = ""
         for method.argument
             if argument.variadic
-                callargs += "*args[1:]"
+                callargs += "*args[$(index()-1):]"
             elsif defined (argument.python_coerce)
                 callargs += string.search_replace(argument.python_coerce, "<>", "args[$(index()-1)]")
             else
