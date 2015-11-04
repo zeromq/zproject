@@ -123,7 +123,7 @@ include_HEADERS = \\
 .endfor
     include/$(project.prefix)_library.h
 
-src_$(project.libname)_la_SOURCES = \\
+src_$(project.libname:c)_la_SOURCES = \\
 .for class
     src/$(name:c).c \\
 .endfor
@@ -132,25 +132,25 @@ src_$(project.libname)_la_SOURCES = \\
 .endfor
     src/platform.h
 
-src_$(project.libname)_la_CPPFLAGS = ${AM_CPPFLAGS}
+src_$(project.libname:c)_la_CPPFLAGS = ${AM_CPPFLAGS}
 
-src_$(project.libname)_la_LDFLAGS = \\
+src_$(project.libname:c)_la_LDFLAGS = \\
     -version-info @LTVER@ \\
     \$(LIBTOOL_EXTRA_LDFLAGS)
 
 if ON_MINGW
-src_$(project.libname)_la_LDFLAGS += \\
+src_$(project.libname:c)_la_LDFLAGS += \\
     -no-undefined \\
     -avoid-version
 endif
 
 if ON_CYGWIN
-src_$(project.libname)_la_LDFLAGS += \\
+src_$(project.libname:c)_la_LDFLAGS += \\
     -no-undefined \\
     -avoid-version
 endif
 
-src_$(project.libname)_la_LIBADD = ${project_libs}
+src_$(project.libname:c)_la_LIBADD = ${project_libs}
 
 .for project.main
 if WITH_$(NAME:c)
@@ -159,21 +159,21 @@ noinst_PROGRAMS += src/$(main.name)
 .   else
 bin_PROGRAMS += src/$(main.name)
 .   endif
-src_$(main.name)_CPPFLAGS = ${AM_CPPFLAGS}
-src_$(main.name)_LDADD = ${program_libs}
+src_$(main.name:c)_CPPFLAGS = ${AM_CPPFLAGS}
+src_$(main.name:c)_LDADD = ${program_libs}
 src_$(name:c)_SOURCES = src/$(name:c).c
 .   if main.service ?= 1
-src_$(main.name)_configdir = \$(sysconfdir)/$(project.name)
-src_$(main.name)_config_DATA = src/$(main.name).cfg
-src_$(main.name)_servicedir = @prefix@/lib/systemd/system
-src_$(main.name)_service_DATA = src/$(main.name).service
+src_$(main.name:c)_configdir = \$(sysconfdir)/$(project.name)
+src_$(main.name:c)_config_DATA = src/$(main.name).cfg
+src_$(main.name:c)_servicedir = @prefix@/lib/systemd/system
+src_$(main.name:c)_service_DATA = src/$(main.name).service
 .   endif
 endif
 .endfor
 check_PROGRAMS += src/$(project.prefix)_selftest
-src_$(project.prefix)_selftest_CPPFLAGS = \${src_$(project.libname)_la_CPPFLAGS}
-src_$(project.prefix)_selftest_LDADD = ${program_libs}
-src_$(project.prefix)_selftest_SOURCES = src/$(project.prefix)_selftest.c
+src_$(project.prefix:c)_selftest_CPPFLAGS = \${src_$(project.libname)_la_CPPFLAGS}
+src_$(project.prefix:c)_selftest_LDADD = ${program_libs}
+src_$(project.prefix:c)_selftest_SOURCES = src/$(project.prefix)_selftest.c
 .else
 .endif
 
