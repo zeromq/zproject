@@ -388,10 +388,12 @@ for class where defined (class.api)
         endif
     endfor
 
+    anyvariadic = 0
     for constructor as method
         callargs = ""
         for method.argument
             if argument.variadic
+                anyvariadic = 1
                 callargs += "*args[$(index()-1):]"
             elsif defined (argument.python_coerce)
                 callargs += string.search_replace(argument.python_coerce, "<>", "args[$(index()-1)]")
@@ -413,7 +415,11 @@ for class where defined (class.api)
 >            self._as_parameter_ = args[0] # Conversion from raw type to binding
 >            self.allow_destruct = args[1] # This is a 'fresh' value, owned by us
 >        else:
+        if anyvariadic = 1
+>            assert(len(args) >= $(count (method.argument) - 1))
+        else
 >            assert(len(args) == $(count (method.argument)))
+        endif
 >            self._as_parameter_ = lib.$(class.name:c)_$(method.name)($(callargs:)) # Creation of new raw type
 >            self.allow_destruct = True
 >
