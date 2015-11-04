@@ -105,11 +105,11 @@ PV_MAJOR=`echo $PACKAGE_VERSION | cut -d . -f 1`
 PV_MINOR=`echo $PACKAGE_VERSION | cut -d . -f 2`
 PV_PATCH=`echo $PACKAGE_VERSION | cut -d . -f 3`
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MAJOR],[$PV_MAJOR],
-    [$(PROJECT.NAME) major version])
+    [$(PROJECT.NAME:c) major version])
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MINOR],[$PV_MINOR],
-    [$(PROJECT.NAME) minor version])
+    [$(PROJECT.NAME:c) minor version])
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_PATCH],[$PV_PATCH],
-    [$(PROJECT.NAME) patchlevel])
+    [$(PROJECT.NAME:c) patchlevel])
 # This lets us use PACKAGE_VERSION in Makefiles
 AC_SUBST(PACKAGE_VERSION)
 
@@ -125,7 +125,7 @@ LTVER="$(project->version.major):$(project->version.minor):0"
 AC_SUBST(LTVER)
 
 # Capture c flags
-$(PROJECT.NAME)_ORIG_CFLAGS="${CFLAGS:-none}"
+$(PROJECT.NAME:c)_ORIG_CFLAGS="${CFLAGS:-none}"
 
 # Checks for programs
 AC_PROG_CC
@@ -144,13 +144,13 @@ AX_PROJECT_LOCAL_HOOK # Optional project-local hook (acinclude.m4)
 # Code coverage
 AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
                   [With GCC Code Coverage reporting.])],
-                  [$(PROJECT.NAME)_GCOV="$withval"])
+                  [$(PROJECT.NAME:c)_GCOV="$withval"])
 
-if test "x${$(PROJECT.NAME)_GCOV}" == "xyes"; then
+if test "x${$(PROJECT.NAME:c)_GCOV}" == "xyes"; then
     CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
 
-    if test "x${$(PROJECT.NAME)_ORIG_CFLAGS}" != "xnone"; then
-        CFLAGS="${CFLAGS} ${$(PROJECT.NAME)_ORIG_CFLAGS}"
+    if test "x${$(PROJECT.NAME:c)_ORIG_CFLAGS}" != "xnone"; then
+        CFLAGS="${CFLAGS} ${$(PROJECT.NAME:c)_ORIG_CFLAGS}"
     fi
 fi
 
@@ -160,7 +160,7 @@ PREVIOUS_LIBS="${LIBS}"
 
 .for use
 
-was_$(use.project)_check_lib_detected=no
+was_$(use.project:c)_check_lib_detected=no
 
 PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)],
     [
@@ -178,13 +178,13 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)],
             [search_$(use.libname)="yes"],
             [])
 
-        $(use.project)_synthetic_cflags=""
-        $(use.project)_synthetic_libs="-l$(use.linkname)"
+        $(use.project:c)_synthetic_cflags=""
+        $(use.project:c)_synthetic_libs="-l$(use.linkname)"
 
         if test "x$search_$(use.libname)" = "xyes"; then
             if test -r "${with_$(use.libname)}/include/$(use.includename).h"; then
-                $(use.project)_synthetic_cflags="-I${with_$(use.libname)}/include"
-                $(use.project)_synthetic_libs="-L${with_$(use.libname)}/lib -l$(use.linkname)"
+                $(use.project:c)_synthetic_cflags="-I${with_$(use.libname)}/include"
+                $(use.project:c)_synthetic_libs="-L${with_$(use.libname)}/lib -l$(use.linkname)"
             else
                 AC_MSG_ERROR([${with_$(use.libname)}/include/$(use.includename).h not found. Please check $(use.libname) prefix])
             fi
@@ -192,13 +192,13 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)],
 
         AC_CHECK_LIB([$(use.libname)], [$(use.test)],
             [
-                CFLAGS="${$(use.project)_synthetic_cflags} ${CFLAGS}"
-                LDFLAGS="${$(use.project)_synthetic_libs} ${LDFLAGS}"
-                LIBS="${$(use.project)_synthetic_libs} ${LIBS}"
+                CFLAGS="${$(use.project:c)_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${$(use.project:c)_synthetic_libs} ${LDFLAGS}"
+                LIBS="${$(use.project:c)_synthetic_libs} ${LIBS}"
 
-                AC_SUBST([$(use.project:c)_CFLAGS],[${$(use.project)_synthetic_cflags}])
-                AC_SUBST([$(use.project:c)_LIBS],[${$(use.project)_synthetic_libs}])
-                was_$(use.project)_check_lib_detected=yes
+                AC_SUBST([$(use.project:c)_CFLAGS],[${$(use.project:c)_synthetic_cflags}])
+                AC_SUBST([$(use.project:c)_LIBS],[${$(use.project:c)_synthetic_libs}])
+                was_$(use.project:c)_check_lib_detected=yes
 .    if defined (use.optional) & (use.optional = 1)
                 AC_DEFINE(HAVE_$(USE.LIBNAME), 1, [The $(use.libname) library is to be used.])
             ],
@@ -212,7 +212,7 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)],
 .  endif
     ])
 
-if test "x$was_$(use.project)_check_lib_detected" = "xno"; then
+if test "x$was_$(use.project:c)_check_lib_detected" = "xno"; then
     CFLAGS="${$(use.project:c)_CFLAGS} ${CFLAGS}"
     LIBS="${$(use.project:c)_LIBS} ${LIBS}"
 fi
@@ -224,33 +224,33 @@ CFLAGS="${PREVIOUS_CFLAGS}"
 LIBS="${PREVIOUS_LIBS}"
 
 # Platform specific checks
-$(project.name)_on_mingw32="no"
-$(project.name)_on_cygwin="no"
-$(project.name)_on_android="no"
+$(project.name:c)_on_mingw32="no"
+$(project.name:c)_on_cygwin="no"
+$(project.name:c)_on_android="no"
 
 # Host specific checks
 AC_CANONICAL_HOST
 
 # Determine whether or not documentation should be built and installed.
-$(project.name)_build_doc="yes"
-$(project.name)_install_man="yes"
+$(project.name:c)_build_doc="yes"
+$(project.name:c)_install_man="yes"
 
 # Check for asciidoc and xmlto and don't build the docs if these are not installed.
-AC_CHECK_PROG($(project.name)_have_asciidoc, asciidoc, yes, no)
-AC_CHECK_PROG($(project.name)_have_xmlto, xmlto, yes, no)
-if test "x$$(project.name)_have_asciidoc" = "xno" -o "x$$(project.name)_have_xmlto" = "xno"; then
-    $(project.name)_build_doc="no"
+AC_CHECK_PROG($(project.name:c)_have_asciidoc, asciidoc, yes, no)
+AC_CHECK_PROG($(project.name:c)_have_xmlto, xmlto, yes, no)
+if test "x$$(project.name:c)_have_asciidoc" = "xno" -o "x$$(project.name:c)_have_xmlto" = "xno"; then
+    $(project.name:c)_build_doc="no"
     # Tarballs built with 'make dist' ship with prebuilt documentation.
     if ! test -f doc/$(project.name).7; then
-        $(project.name)_install_man="no"
+        $(project.name:c)_install_man="no"
         AC_MSG_WARN([You are building an unreleased version of $(PROJECT.NAME) and asciidoc or xmlto are not installed.])
         AC_MSG_WARN([Documentation will not be built and manual pages will not be installed.])
     fi
 fi
 AC_MSG_CHECKING([whether to build documentation])
-AC_MSG_RESULT([$$(project.name)_build_doc])
+AC_MSG_RESULT([$$(project.name:c)_build_doc])
 AC_MSG_CHECKING([whether to install manpages])
-AC_MSG_RESULT([$$(project.name)_install_man])
+AC_MSG_RESULT([$$(project.name:c)_install_man])
 
 # Set some default features required by $(project.libname) code.
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
@@ -260,64 +260,64 @@ case "${host_os}" in
     *linux*)
         # Define on Linux to enable all library features
         CPPFLAGS="-D_GNU_SOURCE -DLINUX $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME)_HAVE_LINUX, 1, [Have Linux OS])
+        AC_DEFINE($(PROJECT.NAME:c)_HAVE_LINUX, 1, [Have Linux OS])
 
         case "${host_os}" in
             *android*)
-                AC_DEFINE($(PROJECT.NAME)_HAVE_ANDROID, 1, [Have Android OS])
-                $(project.name)_on_android="yes"
+                AC_DEFINE($(PROJECT.NAME:c)_HAVE_ANDROID, 1, [Have Android OS])
+                $(project.name:c)_on_android="yes"
             ;;
         esac
         ;;
     *solaris*)
         # Define on Solaris to enable all library features
         CPPFLAGS="-D_PTHREADS $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME)_HAVE_SOLARIS, 1, [Have Solaris OS])
+        AC_DEFINE($(PROJECT.NAME:c)_HAVE_SOLARIS, 1, [Have Solaris OS])
         CFLAGS="${CFLAGS} -lsocket -lssp"
         ;;
     *freebsd*)
         # Define on FreeBSD to enable all library features
         CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME)_HAVE_FREEBSD, 1, [Have FreeBSD OS])
+        AC_DEFINE($(PROJECT.NAME:c)_HAVE_FREEBSD, 1, [Have FreeBSD OS])
         ;;
     *darwin*)
         # Define on Darwin to enable all library features
         CPPFLAGS="-D_DARWIN_C_SOURCE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME)_HAVE_OSX, 1, [Have DarwinOSX OS])
+        AC_DEFINE($(PROJECT.NAME:c)_HAVE_OSX, 1, [Have DarwinOSX OS])
         ;;
     *netbsd*)
         # Define on NetBSD to enable all library features
         CPPFLAGS="-D_NETBSD_SOURCE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME)_HAVE_NETBSD, 1, [Have NetBSD OS])
+        AC_DEFINE($(PROJECT.NAME:c)_HAVE_NETBSD, 1, [Have NetBSD OS])
         ;;
     *openbsd*)
         # Define on OpenBSD to enable all library features
         CPPFLAGS="-D_BSD_SOURCE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME)_HAVE_OPENBSD, 1, [Have OpenBSD OS])
+        AC_DEFINE($(PROJECT.NAME:c)_HAVE_OPENBSD, 1, [Have OpenBSD OS])
         ;;
     *nto-qnx*)
-        AC_DEFINE($(PROJECT.NAME)_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
+        AC_DEFINE($(PROJECT.NAME:c)_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
         ;;
     *aix*)
-        AC_DEFINE($(PROJECT.NAME)_HAVE_AIX, 1, [Have AIX OS])
+        AC_DEFINE($(PROJECT.NAME:c)_HAVE_AIX, 1, [Have AIX OS])
         ;;
     *hpux*)
         # Define on HP-UX to enable all library features
         CPPFLAGS="-D_POSIX_C_SOURCE=200112L"
-        AC_DEFINE($(PROJECT.NAME)_HAVE_HPUX, 1, [Have HPUX OS])
+        AC_DEFINE($(PROJECT.NAME:c)_HAVE_HPUX, 1, [Have HPUX OS])
         ;;
     *mingw32*)
-        AC_DEFINE($(PROJECT.NAME)_HAVE_WINDOWS, 1, [Have Windows OS])
-        AC_DEFINE($(PROJECT.NAME)_HAVE_MINGW32, 1, [Have MinGW32])
+        AC_DEFINE($(PROJECT.NAME:c)_HAVE_WINDOWS, 1, [Have Windows OS])
+        AC_DEFINE($(PROJECT.NAME:c)_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
-        $(project.name)_on_mingw32="yes"
-        $(project.name)_install_man="no"
+        $(project.name:c)_on_mingw32="yes"
+        $(project.name:c)_install_man="no"
         ;;
     *cygwin*)
         # Define on Cygwin to enable all library features
         CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME)_HAVE_CYGWIN, 1, [Have Cygwin])
-        $(project.name)_on_cygwin="yes"
+        AC_DEFINE($(PROJECT.NAME:c)_HAVE_CYGWIN, 1, [Have Cygwin])
+        $(project.name:c)_on_cygwin="yes"
         ;;
     *)
         AC_MSG_ERROR([unsupported system: ${host_os}.])
@@ -354,11 +354,11 @@ if test "x$GCC" = "xyes"; then
 fi
 
 AM_CONDITIONAL(ENABLE_SHARED, test "x$enable_shared" = "xyes")
-AM_CONDITIONAL(ON_MINGW, test "x$$(project.name)_on_mingw32" = "xyes")
-AM_CONDITIONAL(ON_CYGWIN, test "x$$(project.name)_on_cygwin" = "xyes")
-AM_CONDITIONAL(ON_ANDROID, test "x$$(project.name)_on_android" = "xyes")
-AM_CONDITIONAL(INSTALL_MAN, test "x$$(project.name)_install_man" = "xyes")
-AM_CONDITIONAL(BUILD_DOC, test "x$$(project.name)_build_doc" = "xyes")
+AM_CONDITIONAL(ON_MINGW, test "x$$(project.name:c)_on_mingw32" = "xyes")
+AM_CONDITIONAL(ON_CYGWIN, test "x$$(project.name:c)_on_cygwin" = "xyes")
+AM_CONDITIONAL(ON_ANDROID, test "x$$(project.name:c)_on_android" = "xyes")
+AM_CONDITIONAL(INSTALL_MAN, test "x$$(project.name:c)_install_man" = "xyes")
+AM_CONDITIONAL(BUILD_DOC, test "x$$(project.name:c)_build_doc" = "xyes")
 
 .for project.main
 # Check for $(name) intent
@@ -369,11 +369,11 @@ AC_ARG_WITH([$(name)],
 .   else
         [Compile and install the $(name) program [default=yes].]),
 .   endif
-    [with_$(name)=$withval],
-    [with_$(name)=yes])
+    [with_$(name:c)=$withval],
+    [with_$(name:c)=yes])
 
-AM_CONDITIONAL([WITH_$(NAME)], [test x$with_$(name) != xno])
-AM_COND_IF([WITH_$(NAME)], [AC_MSG_NOTICE([WITH_$(NAME) defined])])
+AM_CONDITIONAL([WITH_$(NAME:c)], [test x$with_$(name:c) != xno])
+AM_COND_IF([WITH_$(NAME:c)], [AC_MSG_NOTICE([WITH_$(NAME:c) defined])])
 
 .endfor
 # Checks for library functions.
