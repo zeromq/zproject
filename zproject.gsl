@@ -20,10 +20,26 @@ function resolve_includes ()
 endfunction
 resolve_includes ()
 
+project.name ?= "unnamed"
 project.prefix ?= project.name
 project.linkname ?= project.prefix
 project.libname ?= "lib" + project.linkname
 project.prelude ?= project.prefix + "_prelude.h"
+project.description ?= "Project"
+if count (project.version) = 0
+    new version to project
+    endnew
+endif
+project->version.major ?= 0
+project->version.minor ?= 0
+project->version.patch ?= 0
+project.email ?= "email@hostname.com"
+if count (project.license) = 0
+    new license to project
+    endnew
+endif
+project->license. ?= "Copyright (c) the Authors"
+
 project.has_private_classes = (count (class, defined (class.private)) > 0)
 project.generated_warning_header ?= "\
 ################################################################################
