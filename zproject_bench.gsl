@@ -118,7 +118,6 @@ $(project.GENERATED_WARNING_HEADER:)
 .-
 .for bench
 .if !file.exists ("bench/$(bench.name).c")
-.echo "Generating bench/$(bench.name).c..."
 .   output "bench/$(bench.name).c"
 /*  =========================================================================
     $(bench.name) - $(bench.?'':)

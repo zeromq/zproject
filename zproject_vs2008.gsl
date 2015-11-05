@@ -7,7 +7,6 @@
 .if !file.exists ('builds/msvc/vs2008/$(project.name:c)')
 .   directory.create('builds/msvc/vs2008/$(project.name:c)')
 .endif
-.echo "Generating builds/msvc/vs2008/$(project.name:c)/$(project.name:c).sln..."
 .output "builds/msvc/vs2008/$(project.name:c)/$(project.name:c).sln"
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
@@ -75,7 +74,6 @@ Global
     EndGlobalSection
 EndGlobal
 .#
-.echo "Generating builds/msvc/vs2008/$(project.name:c)/$(project.name:c).vcproj..."
 .output "builds/msvc/vs2008/$(project.name:c)/$(project.name:c).vcproj"
 <?xml version="1.0" encoding="UTF-8"?>
 <!--

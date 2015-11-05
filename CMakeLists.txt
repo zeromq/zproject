@@ -129,8 +129,20 @@ install(
 ########################################################################
 add_executable(myproject_selftest "${SOURCE_DIR}/src/myproject_selftest.c")
 target_link_libraries(myproject_selftest myproject ${ZEROMQ_LIBRARIES})
-add_test(myproject_selftest myproject_selftest)
 
+set(CLASSTEST_TIMEOUT 5 CACHE STRING "Timeout of the selftest of a class")
+set(TOTAL_TIMEOUT 20 CACHE STRING "Timout of the total testsuite")
+
+set(TEST_CLASSES
+)
+
+foreach(TEST_CLASS ${TEST_CLASSES})
+  add_test(NAME ${TEST_CLASS} COMMAND myproject_selftest -e -v --test ${TEST_CLASS})
+  set_tests_properties(${TEST_CLASS} PROPERTIES TIMEOUT ${CLASSTEST_TIMEOUT})
+endforeach(TEST_CLASS)
+
+add_test(myproject_selftest myproject_selftest)
+set_tests_properties(myproject_selftest PROPERTIES TIMEOUT ${TOTAL_TIMEOUT})
 ########################################################################
 # summary
 ########################################################################

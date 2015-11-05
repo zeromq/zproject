@@ -22,7 +22,6 @@
 .   directory.create ("include")
 .endif
 .if !file.exists ("include/$(project.name).h") & count (class, class.name = project.name) = 0
-.echo "Generating project header include/$(project.name).h..."
 .   output "include/$(project.name).h"
 /*  =========================================================================
     $(project.name) - $(project.description?'':)
@@ -125,7 +124,6 @@ $(project.GENERATED_WARNING_HEADER:)
 .#
 .#  Build the project selftest file
 .#
-.echo "Generating src/$(project.prefix)_selftest.c..."
 .output "src/$(project.prefix)_selftest.c"
 /*  =========================================================================
     $(project.prefix)_selftest.c - run selftests
@@ -291,7 +289,6 @@ $(project.GENERATED_WARNING_HEADER:)
 .-
 .-  Build the classes header for private header files and constants
 .-
-.echo "Generating src/$(project.prefix)_classes.h..."
 .output "src/$(project.prefix)_classes.h"
 /*  =========================================================================
     $(project.prefix)_classes - private header file
@@ -333,7 +330,6 @@ $(project.GENERATED_WARNING_HEADER:)
 .   endif
 .header_file = "$(class.classdir)/$(class.c_name).h"
 .if !file.exists (header_file)
-.echo "Generating $(header_file)..."
 .   output header_file
 /*  =========================================================================
     $(class.c_name) - $(string.trim (class.?''):no,left)
@@ -390,7 +386,6 @@ $(PROJECT.PREFIX)_EXPORT void
 .-
 .source_file = "src/$(class.c_name).c"
 .if !file.exists (source_file)
-.echo "Generating $(source_file)..."
 .   output source_file
 .if !defined (class.api)
 .   resolve_c_class(class)
@@ -492,7 +487,6 @@ $(c_method_declaration (method, 1):)
 .-  Regenerate the @interface for the class if it has an api model
 .-
 .if defined (class.api)
-.echo "Regenerating @interface in $(header_file)..."
 .template 0
 
     # Open the header_file for reading

@@ -4,7 +4,6 @@
 .#  language. See https://github.com/imatix/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
-.echo "Generating builds/cygwin/Makefile.cygwin..."
 .if !file.exists ('builds/cygwin')
 .   directory.create('builds/cygwin')
 .endif    

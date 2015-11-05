@@ -9,7 +9,6 @@
 .endif
 .#
 .if !file.exists ("src/.valgrind.supp")
-.echo "Generating src/.valgrind.supp..."
 .output "src/.valgrind.supp"
 {
    <socketcall_sendto>

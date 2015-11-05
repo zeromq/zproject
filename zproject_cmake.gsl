@@ -4,7 +4,6 @@
 .#  language. See https://github.com/imatix/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
-.echo "Generating CMakeLists.txt..."
 .output "CMakeLists.txt"
 $(project.GENERATED_WARNING_HEADER:)
 
@@ -208,7 +207,6 @@ message(STATUS "install: ${CMAKE_INSTALL_PREFIX}")
 $(project.GENERATED_WARNING_HEADER:)
 .
 .for use
-.echo "Generating Find$(use.cmake_name:).cmake..."
 .output "Find$(use.cmake_name:).cmake"
 $(project.GENERATED_WARNING_HEADER:)
 

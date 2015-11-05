@@ -4,7 +4,6 @@
 .#  language. See https://github.com/imatix/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
-.echo "Generating builds/mingw32/Makefile.mingw32..."
 .if !file.exists ('builds/mingw32')
 .   directory.create('builds/mingw32')
 .endif    

@@ -169,7 +169,6 @@ endfunction
 
 .endtemplate
 .#
-.echo "Generating bindings/qml/src/$(project.qml_soname:)_plugin.h..."
 .output "bindings/qml/src/$(project.qml_soname:)_plugin.h"
 /*
 $(project.GENERATED_WARNING_HEADER:)
@@ -212,7 +211,6 @@ $(project.GENERATED_WARNING_HEADER:)
 */
 .#
 .for class where defined (class.api)
-.echo "Generating bindings/qml/src/$(class.QmlName:).cpp..."
 .output "bindings/qml/src/$(class.QmlName:).cpp"
 /*
 $(project.GENERATED_WARNING_HEADER:)
@@ -301,7 +299,6 @@ $(argument.qmlArgPass)\
 $(project.GENERATED_WARNING_HEADER:)
 */
 .#
-.echo "Generating bindings/qml/src/$(class.QmlName:).h..."
 .output "bindings/qml/src/$(class.QmlName:).h"
 /*
 $(project.GENERATED_WARNING_HEADER:)
@@ -375,7 +372,6 @@ $(project.GENERATED_WARNING_HEADER:)
 .endfor
 .#
 .if !file.exists ("bindings/qml/test/tst_$(project.QmlName).qml")
-.echo "Generating bindings/qml/test/tst_$(project.QmlName).qml..."
 .output "bindings/qml/test/tst_$(project.QmlName).qml"
 
 import QtTest 1.0
@@ -396,19 +392,16 @@ TestCase {
 .endif
 .#
 .if !file.exists ("bindings/qml/.gitignore")
-.echo "Generating bindings/qml/.gitignore..."
 .output "bindings/qml/.gitignore"
 build/
 .endif
 .#
 .if !file.exists ("bindings/qml/src/qmldir")
-.echo "Generating bindings/qml/src/qmldir..."
 .output "bindings/qml/src/qmldir"
 module $(project.QmlName:)
 plugin $(project.qml_soname:)
 .endif
 .#
-.echo "Generating bindings/qml/$(project.qml_soname:)_bindings.pro..."
 .output "bindings/qml/$(project.qml_soname:)_bindings.pro"
 $(project.GENERATED_WARNING_HEADER:)
 
@@ -500,7 +493,6 @@ QMAKE_EXTRA_TARGETS += first copyqml
 $(project.GENERATED_WARNING_HEADER:)
 .#
 .output "bindings/qml/Rakefile"
-.echo "Generating bindings/qml/Rakefile..."
 $(project.GENERATED_WARNING_HEADER:)
 
 require 'qt/commander'
@@ -530,7 +522,6 @@ end
 
 $(project.GENERATED_WARNING_HEADER:)
 .#
-.echo "Generating bindings/qml/README.md..."
 .output "bindings/qml/README.md"
 ```
 $(project.GENERATED_WARNING_HEADER:)

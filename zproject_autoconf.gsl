@@ -11,7 +11,6 @@
 .#      * configure.ac
 .#  ===========================================================================
 .#
-.echo "Generating autogen.sh ..."
 .output "autogen.sh"
 #!/usr/bin/env sh
 $(project.GENERATED_WARNING_HEADER:)
@@ -54,7 +53,7 @@ if [ $status -ne 0 ]; then
 fi
 
 $(project.GENERATED_WARNING_HEADER:)
-.echo "Generating version.sh"
+.chmod_x ("autogen.sh")
 .output "version.sh"
 #!/usr/bin/env sh
 $(project.GENERATED_WARNING_HEADER:)
@@ -80,7 +79,7 @@ PATCH=`echo $PATCH | awk '{ print $3 }'`
 echo $MAJOR.$MINOR.$PATCH | tr -d '\\n'
 
 $(project.GENERATED_WARNING_HEADER:)
-.echo "Generating configure.ac"
+.chmod_x ("version.sh")
 .output "configure.ac"
 $(project.GENERATED_WARNING_HEADER:)
 

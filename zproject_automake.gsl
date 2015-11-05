@@ -10,7 +10,6 @@
 .#      * src/Makemodule.am
 .#      * bench/Makemodule.am
 .#  ===========================================================================
-.echo "Generating Makefile.am..."
 .output "Makefile.am"
 $(project.GENERATED_WARNING_HEADER:)
 
@@ -86,7 +85,6 @@ $(project.GENERATED_WARNING_HEADER:)
 .if !file.exists ("src")
 .   directory.create ("src")
 .endif
-.echo "Generating src/Makemodule.am..."
 .output "src/Makemodule.am"
 $(project.GENERATED_WARNING_HEADER:)
 .if (count (class) > 0)
@@ -256,7 +254,6 @@ $(project.GENERATED_WARNING_HEADER:)
 .#  Generate infrastructure for services
 .for project.main where main.service ?= 1
 .   if !file.exists ("src/$(main.name).cfg")
-.       echo "Generating src/$(main.name).cfg..."
 .       output "src/$(main.name).cfg"
 #   $(main.name) configuration
 
@@ -267,7 +264,6 @@ server
     verbose = 0         #   Do verbose logging of activity?
 .   endif
 .   output "src/$(main.name).service.in"
-.   echo "Generating src/$(main.name).service.in..."
 [Unit]
 Description=$(main.name) service
 After=network.target
@@ -287,7 +283,6 @@ WantedBy=multi-user.target
 .if !file.exists ("bench")
 .   directory.create ("bench")
 .endif
-.echo "Generating bench/Makemodule.am..."
 .output "bench/Makemodule.am"
 $(project.GENERATED_WARNING_HEADER:)
 
