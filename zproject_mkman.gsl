@@ -1,4 +1,3 @@
-.echo "Generating doc/mkman..."
 .output "doc/mkman"
 #! /usr/bin/perl
 #   

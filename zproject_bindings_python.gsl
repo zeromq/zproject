@@ -228,7 +228,6 @@ for class where defined (class.api)
     resolve_python_class (class)
 endfor
 
-echo "Generating bindings/python/$(project.name:c).py"
 output "bindings/python/$(project.name:c).py"
 >$(project.GENERATED_WARNING_HEADER:)
 >

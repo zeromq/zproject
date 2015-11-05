@@ -4,7 +4,6 @@
 .#  language. See https://github.com/imatix/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
-.echo "Generating builds/msvc/vs2010/$(project.name:c)/$(project.name:c).vcxproj..."
 .if !file.exists ("builds/msvc/vs2010/$(project.name:c)")
 .   directory.create("builds/msvc/vs2010/$(project.name:c)")
 .endif    
@@ -122,7 +121,6 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
   -->
 </Project>
-.echo "Generating builds/msvc/vs2010/$(project.name:c)/$(project.name:c).vcxproj.filters..."
 .output "builds/msvc/vs2010/$(project.name:c)/$(project.name:c).vcxproj.filters"
 <?xml version="1.0" encoding="utf-8"?>
 <!--
@@ -217,7 +215,6 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 -->
 </Project>
-.echo "Generating builds/msvc/vs2010/$(project.prefix)_selftest/$(project.prefix)_selftest.vcxproj..."
 .if !file.exists ("builds/msvc/vs2010/$(project.prefix)_selftest")
 .   directory.create("builds/msvc/vs2010/$(project.prefix)_selftest")
 .endif    

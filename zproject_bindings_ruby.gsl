@@ -159,7 +159,6 @@ endfor
 
 .endtemplate
 .#
-.echo "Generating bindings/ruby/lib/$(project.name:c)/ffi/version.rb..."
 .output "bindings/ruby/lib/$(project.name:c)/ffi/version.rb"
 $(project.GENERATED_WARNING_HEADER:)
 
@@ -171,7 +170,6 @@ end
 
 $(project.GENERATED_WARNING_HEADER:)
 .#
-.echo "Generating bindings/ruby/lib/$(project.name:c)/ffi.rb..."
 .output "bindings/ruby/lib/$(project.name:c)/ffi.rb"
 $(project.GENERATED_WARNING_HEADER:)
 
@@ -226,7 +224,6 @@ end
 $(project.GENERATED_WARNING_HEADER:)
 .#
 .for class where defined (class.api)
-.echo "Generating bindings/ruby/lib/$(project.name:c)/ffi/$(class.ruby_require:).rb..."
 .output "bindings/ruby/lib/$(project.name:c)/ffi/$(class.ruby_require:).rb"
 $(project.GENERATED_WARNING_HEADER:)
 
@@ -385,7 +382,6 @@ $(project.GENERATED_WARNING_HEADER:)
 .#
 .if !file.exists ("bindings/ruby/Rakefile")
 .output "bindings/ruby/Rakefile"
-.echo "Generating bindings/ruby/Rakefile..."
 
 require 'rspec/core/rake_task'
 
@@ -398,7 +394,6 @@ end
 .#
 .if !file.exists ("bindings/ruby/spec/spec_helper.rb")
 .output "bindings/ruby/spec/spec_helper.rb"
-.echo "Generating bindings/ruby/spec/spec_helper.rb..."
 
 require '$(project.name)/ffi'
 
@@ -410,7 +405,6 @@ end
 .endif
 .#
 .output "bindings/ruby/spec/ffi_spec.rb"
-.echo "Generating bindings/ruby/spec/ffi_spec.rb..."
 $(project.GENERATED_WARNING_HEADER:)
 
 require 'spec_helper'

@@ -5,7 +5,6 @@
 .#  is licensed under MIT/X11.
 .#
 .if (count (class) > 0)
-.echo "Generating src/$(project.libname).pc.in..."
 .output "src/$(project.libname).pc.in"
 $(project.GENERATED_WARNING_HEADER:)
 

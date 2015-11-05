@@ -5,7 +5,6 @@
 .#  is licensed under MIT/X11.
 .#
 .if !file.exists (".travis.yml")
-.echo "Generating .travis.yml..."
 .output ".travis.yml"
 # Travis CI script
 language: c
@@ -29,7 +28,6 @@ script: ./ci_build.sh
 .# Don't want to generate ci_build.sh if travis config exists,
 .# as the existing travis config may not use ci_build.sh at all.
 .if !file.exists ("ci_build.sh")
-.echo "Generating ci_build.sh..."
 .output "ci_build.sh"
 #!/usr/bin/env bash
 
