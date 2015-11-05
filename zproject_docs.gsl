@@ -65,15 +65,15 @@ SUFFIXES=.txt .xml .1 .3 .7
 
 .for project.class where private?0 = 0
 $(name:c).txt:
-\tzproject_mkman $@
+\t./mkman $@
 .endfor
 .for project.main where private?0 = 0
 $(name:c).txt:
-\tzproject_mkman $@
+\t./mkman $@
 .endfor
 clean:
 \trm -f *.1 *.3
-\tzproject_mkman \
+\t./mkman \
 .for project.class where private?0 = 0
 $(name:c) \
 .endfor

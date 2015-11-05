@@ -7,10 +7,7 @@
 myprojectdir = @bindir@
 myproject_SCRIPTS = \
     zproject.gsl \
-    zproject_projects.gsl \
     zproject_known_projects.xml \
-    zproject_class_api.gsl \
-    zproject_mkman \
     zproject_actor.gsl \
     zproject_android.gsl \
     zproject_autoconf.gsl \
@@ -23,12 +20,15 @@ myproject_SCRIPTS = \
     zproject_bindings_jni.gsl \
     zproject_ci.gsl \
     zproject_class.gsl \
+    zproject_class_api.gsl \
     zproject_cmake.gsl \
+    zproject_cygwin.gsl \
     zproject_docs.gsl \
     zproject_git.gsl \
     zproject_lib.gsl \
+    zproject_mkman.gsl \
     zproject_mingw32.gsl \
-    zproject_cygwin.gsl \
+    zproject_projects.gsl \
     zproject_qt_android.gsl \
     zproject_tools.gsl \
     zproject_vs2008.gsl \

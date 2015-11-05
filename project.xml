@@ -15,17 +15,12 @@
     add new classes to your project you can generate skeleton header and source
     files according to http://rfc.zeromq.org/spec:21.
 
-    name := The name of your project
-    description := A short description for your project
     script := The gsl script to generate all the stuff !!! DO NOT CHANGE !!!
-    email := The email address where to reach you project e.g. mailinglist.
+    name := The name of your project (optional)
+    description := A short description for your project (optional)
+    email := The email address where to reach you (optional)
 -->
-<project
-    name = "myproject"
-    description = "My Project that will change the world."
-    script = "zproject.gsl"
-    email = "mail@myproject.org"
-    >
+<project script = "zproject.gsl" name = "myproject">
 
     <!--
         Includes are processed first, so XML in included files will be
@@ -116,10 +111,7 @@
         * Linux -> /usr/local/bin
     -->
     <bin name = "zproject.gsl" />
-    <bin name = "zproject_projects.gsl" />
     <bin name = "zproject_known_projects.xml" />
-    <bin name = "zproject_class_api.gsl" />
-    <bin name = "zproject_mkman" />
 
     <bin name = "zproject_actor.gsl" />
     <bin name = "zproject_android.gsl" />
@@ -133,12 +125,15 @@
     <bin name = "zproject_bindings_jni.gsl" />
     <bin name = "zproject_ci.gsl" />
     <bin name = "zproject_class.gsl" />
+    <bin name = "zproject_class_api.gsl" />
     <bin name = "zproject_cmake.gsl" />
+    <bin name = "zproject_cygwin.gsl" />
     <bin name = "zproject_docs.gsl" />
     <bin name = "zproject_git.gsl" />
     <bin name = "zproject_lib.gsl" />
+    <bin name = "zproject_mkman.gsl" />
     <bin name = "zproject_mingw32.gsl" />
-    <bin name = "zproject_cygwin.gsl" />
+    <bin name = "zproject_projects.gsl" />
     <bin name = "zproject_qt_android.gsl" />
     <bin name = "zproject_tools.gsl" />
     <bin name = "zproject_vs2008.gsl" />

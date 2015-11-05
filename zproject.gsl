@@ -47,6 +47,11 @@ project.generated_warning_header ?= "\
 #  Please refer to the README for information about making permanent changes.  #
 ################################################################################"
 
+function chmod_x (filename)
+    my.shell = proc.new ("chmod +x $(my.filename:)")
+    my.shell.run ()
+endfunction
+
 .endtemplate
 .#  These scripts must be run first to resolve missing or
 .#  implicit details in the model before code generation.
@@ -69,6 +74,7 @@ project.generated_warning_header ?= "\
 .gsl from "zproject_class.gsl"
 .gsl from "zproject_cmake.gsl"
 .gsl from "zproject_docs.gsl"
+.gsl from "zproject_mkman.gsl"
 .gsl from "zproject_git.gsl"
 .gsl from "zproject_lib.gsl"
 .gsl from "zproject_mingw32.gsl"
