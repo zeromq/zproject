@@ -385,6 +385,39 @@ AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
     [pkgconfigdir="$withval"], [pkgconfigdir='${libdir}/pkgconfig'])
 AC_SUBST([pkgconfigdir])
 
+
+.if file.exists ("src/$(project.libname).sym")
+# Symbol versioning support: snatched and adapted from libpng:
+# http://www.opensource.apple.com/source/X11libs/X11libs-40/libpng/libpng-1.2.35/configure.ac
+AC_MSG_CHECKING([if libraries can be versioned])
+GLD="`$LD --help < /dev/null 2>/dev/null | grep version-script`"
+AS_IF([test -n "$GLD"],
+        [have_ld_version_script=yes
+         AC_MSG_RESULT(yes)],
+        [have_ld_version_script=no
+         AC_MSG_RESULT(no)
+         AC_MSG_WARN(*** You have not enabled versioned symbols.)
+])
+AM_CONDITIONAL(HAVE_LD_VERSION_SCRIPT, test "$have_ld_version_script" = "yes")
+AS_IF([test "$have_ld_version_script" = "yes"],
+        [AC_MSG_CHECKING([for symbol prefix])
+         SYMBOL_PREFIX=`echo "PREFIX=__USER_LABEL_PREFIX__" \
+                   | ${CPP-${CC-gcc} -E} - 2>&1 \
+                   | ${EGREP-grep} "^PREFIX=" \
+                   | ${SED-sed} "s:^PREFIX=::"`
+         AC_SUBST(SYMBOL_PREFIX)
+         AC_MSG_RESULT($SYMBOL_PREFIX)
+         CXXFLAG_VISIBILITY=""
+         gl_VISIBILITY
+         AS_CASE(["$CFLAG_VISIBILITY"],
+            [*-fvisibility-inlines-hidden*],[
+                CXXFLAG_VISIBILITY="$CFLAG_VISIBILITY"],
+            [*-fvisibility=hidden*],[
+                CXXFLAG_VISIBILITY="$CFLAG_VISIBILITY -fvisibility-inlines-hidden"])
+        AC_SUBST(CXXFLAG_VISIBILITY)
+])
+.endif
+
 # Specify output files
 .if count (class) + count (ac_config) > 0
 AC_CONFIG_FILES([Makefile

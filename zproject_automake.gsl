@@ -136,6 +136,16 @@ src_$(project.libname:c)_la_LDFLAGS = \\
     -version-info @LTVER@ \\
     \$(LIBTOOL_EXTRA_LDFLAGS)
 
+.if file.exists ("src/$(project.libname).sym")
+if HAVE_LD_VERSION_SCRIPT
+src_$(project.libname:c)_la_LDFLAGS += \\
+		-Wl,--version-script=\$(top_srcdir)/src/$(project.libname).sym
+else
+src_$(project.libname:c)_la_LDFLAGS += \\
+		-export-symbols \$(top_srcdir)/src/$(project.libname).sym
+endif
+.endif
+
 if ON_MINGW
 src_$(project.libname:c)_la_LDFLAGS += \\
     -no-undefined \\
