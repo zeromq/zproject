@@ -77,6 +77,7 @@ endfunction
 .gsl from "zproject_vs2010.gsl"
 .gsl from "zproject_vs2012.gsl"
 .gsl from "zproject_vs2013.gsl"
+.gsl from "zproject_vs2015.gsl"
 .echo "Generating language bindings..."
 .gsl from "zproject_bindings_python.gsl"
 .gsl from "zproject_bindings_qml.gsl"
