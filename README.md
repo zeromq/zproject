@@ -68,6 +68,7 @@ The following build environments are currently supported:
 * vs2010
 * vs2012
 * vs2013
+* vs2015
 
 Thanks to the amazing ZeroMQ community you can do all the heavy lifting in C and than easily generate bindings to Python, Ruby and QML to write a nice GUI on top of it.
 
@@ -146,6 +147,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         * vs2010
         * vs2012
         * vs2013
+        * vs2015
 
     Classes are automatically added to all build environments. Further as you
     add new classes to your project you can generate skeleton header and source
@@ -281,6 +283,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_vs2010.gsl" />
     <bin name = "zproject_vs2012.gsl" />
     <bin name = "zproject_vs2013.gsl" />
+    <bin name = "zproject_vs2015.gsl" />
 </project>
 
 <A name="toc2-258" title="Sample API model" />
