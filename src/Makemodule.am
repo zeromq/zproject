@@ -34,7 +34,8 @@ myproject_SCRIPTS = \
     zproject_vs2008.gsl \
     zproject_vs2010.gsl \
     zproject_vs2012.gsl \
-    zproject_vs2013.gsl
+    zproject_vs2013.gsl \
+    zproject_vs2015.gsl
 
 
 
