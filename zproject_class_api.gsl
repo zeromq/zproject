@@ -16,7 +16,6 @@ endfor
 
 # Replace each class item with the class model from its API file (if any)
 for project.class where defined (class.api)
-    echo "Processing $(class.api)..."
     new_class = XML.load_file (class.api)
     if !defined (new_class)
         echo "Error loading api file: $(class.api): $(xml.error?)"
@@ -323,7 +322,6 @@ function resolve_container_dependencies (class_name, container)
             for dir.directory
                 api_file = directory.path + directory.name + "/"  + "$(my.container.type:c).xml"
                 if file.exists (api_file)
-                    echo "Processing " + api_file + "..."
                     new_dependency = XML.load_file (api_file)
                     new_dependency.resolved = "0"
                     move new_dependency to project->dependencies

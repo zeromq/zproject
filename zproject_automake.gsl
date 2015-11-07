@@ -24,26 +24,14 @@ AM_CPPFLAGS = \\
 .endfor
     -I\$(srcdir)/include
 
-.if count (use) > 0
-project_libs = \\
-.else
-project_libs =
-.endif
+.libs = ""
 .for use
-.   if last()
-    \${$(use.project:c)_LIBS}
-.   else
-    \${$(use.project:c)_LIBS} \\
-.   endif
+.   libs += " \${$(use.project:c)_LIBS}"
 .endfor
+project_libs =$(libs:)
 
-SUBDIRS =
-DIST_SUBDIRS =
-.if count (class) > 0
-SUBDIRS += doc
-DIST_SUBDIRS += doc
-.endif
-
+SUBDIRS = $(count (class)?? "doc"? "")
+DIST_SUBDIRS = $(count (class)?? "doc"? "")
 lib_LTLIBRARIES =
 bin_PROGRAMS =
 noinst_PROGRAMS =
@@ -85,26 +73,30 @@ $(project.GENERATED_WARNING_HEADER:)
 .if !file.exists ("src")
 .   directory.create ("src")
 .endif
+.#
+.#  ===========================================================================
 .output "src/Makemodule.am"
 $(project.GENERATED_WARNING_HEADER:)
-.if (count (class) > 0)
-program_libs = \\
-.if count (use) > 0
-    src/$(project.libname).la \\
-    ${project_libs}
-.else
-    src/$(project.libname).la
+.libs = ""
+.if count (class)
+.   libs += "src/$(project.libname).la"
 .endif
+.if count (use)
+.   libs += " ${project_libs}"
+.endif
+program_libs =$(libs:)
 
 # Programs need to link the c++ runtime if everything was compiled statically.
 if !ENABLE_SHARED
 program_libs += -lstdc++
 endif
 
+.if count (class)
 lib_LTLIBRARIES += src/$(project.libname).la
-
 pkgconfig_DATA = src/$(project.libname).pc
 
+.endif
+.if count (class)
 include_HEADERS = \\
 .if file.exists ("include/$(project.prelude)")
     include/$(project.prelude) \\
@@ -139,10 +131,10 @@ src_$(project.libname:c)_la_LDFLAGS = \\
 .if file.exists ("src/$(project.libname).sym")
 if HAVE_LD_VERSION_SCRIPT
 src_$(project.libname:c)_la_LDFLAGS += \\
-		-Wl,--version-script=\$(top_srcdir)/src/$(project.libname).sym
+    -Wl,--version-script=\$(top_srcdir)/src/$(project.libname).sym
 else
 src_$(project.libname:c)_la_LDFLAGS += \\
-		-export-symbols \$(top_srcdir)/src/$(project.libname).sym
+    -export-symbols \$(top_srcdir)/src/$(project.libname).sym
 endif
 .endif
 
@@ -160,6 +152,12 @@ endif
 
 src_$(project.libname:c)_la_LIBADD = ${project_libs}
 
+check_PROGRAMS += src/$(project.prefix)_selftest
+src_$(project.prefix:c)_selftest_CPPFLAGS = \${src_$(project.libname)_la_CPPFLAGS}
+src_$(project.prefix:c)_selftest_LDADD = ${program_libs}
+src_$(project.prefix:c)_selftest_SOURCES = src/$(project.prefix)_selftest.c
+
+.endif
 .for project.main
 if WITH_$(NAME:c)
 .   if main.private ?= 1
@@ -178,15 +176,9 @@ src_$(main.name:c)_service_DATA = src/$(main.name).service
 .   endif
 endif
 .endfor
-check_PROGRAMS += src/$(project.prefix)_selftest
-src_$(project.prefix:c)_selftest_CPPFLAGS = \${src_$(project.libname)_la_CPPFLAGS}
-src_$(project.prefix:c)_selftest_LDADD = ${program_libs}
-src_$(project.prefix:c)_selftest_SOURCES = src/$(project.prefix)_selftest.c
-.else
-.endif
-
 .for bin
 .   if first()
+
 # Install data into /usr/local/bin
 $(project.name)dir = @bindir@
 $(project.name)_SCRIPTS = \\
@@ -209,8 +201,8 @@ dist_api_DATA = \\
 .   else
     $(class.api)
 .   endif
-.endfor
 
+.endfor
 .if (count (class) > 0)
 # define custom target for all products of /src
 src: src/$(project.libname).la src/$(project.prefix)_selftest
@@ -230,8 +222,8 @@ code:
 .   else
 \tcd $\(srcdir)/src; gsl -q $(name:c).xml
 .   endif
-.endfor
 
+.endfor
 check-local: src/$(project.prefix)_selftest
 \t$\(LIBTOOL) --mode=execute $\(srcdir)/src/$(project.prefix)_selftest
 
