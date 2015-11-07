@@ -201,8 +201,8 @@ dist_api_DATA = \\
 .   else
     $(class.api)
 .   endif
-
 .endfor
+
 .if (count (class) > 0)
 # define custom target for all products of /src
 src: src/$(project.libname).la src/$(project.prefix)_selftest
