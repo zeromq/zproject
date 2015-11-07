@@ -20,7 +20,7 @@ function resolve_includes ()
 endfunction
 resolve_includes ()
 
-project.name ?= "unnamed"
+project.name ?= "myproject"
 project.prefix ?= project.name
 project.linkname ?= project.prefix
 project.libname ?= "lib" + project.linkname
