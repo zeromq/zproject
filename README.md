@@ -9,32 +9,32 @@
 **<a href="#toc2-11">Overview</a>**
 &emsp;<a href="#toc3-18">Scope and Goals</a>
 
-**<a href="#toc2-46">Demo on PLAYTerm</a>**
+**<a href="#toc2-47">Demo on PLAYTerm</a>**
 
-**<a href="#toc2-51">Installation</a>**
-&emsp;<a href="#toc3-54">Requirements</a>
-&emsp;<a href="#toc3-64">Getting started</a>
+**<a href="#toc2-52">Installation</a>**
+&emsp;<a href="#toc3-55">Requirements</a>
+&emsp;<a href="#toc3-65">Getting started</a>
 
-**<a href="#toc2-82">Setup your project environment</a>**
+**<a href="#toc2-85">Setup your project environment</a>**
 
-**<a href="#toc2-104">Configuration</a>**
+**<a href="#toc2-114">Configuration</a>**
 
-**<a href="#toc2-258">Sample API model</a>**
-&emsp;<a href="#toc3-367">Supported API Model Attributes</a>
-&emsp;<a href="#toc3-383">Tips</a>
+**<a href="#toc2-265">Sample API model</a>**
+&emsp;<a href="#toc3-375">Supported API Model Attributes</a>
+&emsp;<a href="#toc3-391">Tips</a>
 
-**<a href="#toc2-394">Removal</a>**
-&emsp;<a href="#toc3-397">autotools</a>
+**<a href="#toc2-402">Removal</a>**
+&emsp;<a href="#toc3-405">autotools</a>
 
-**<a href="#toc2-402">Notes for Writing Language Bindings</a>**
-&emsp;<a href="#toc3-405">Schema/Architecture Overview</a>
-&emsp;<a href="#toc3-424">Informal Summary</a>
-&emsp;<a href="#toc3-434">Semantic Attributes</a>
-&emsp;<a href="#toc3-483">Language-Specific Implementation Attributes</a>
+**<a href="#toc2-410">Notes for Writing Language Bindings</a>**
+&emsp;<a href="#toc3-413">Schema/Architecture Overview</a>
+&emsp;<a href="#toc3-432">Informal Summary</a>
+&emsp;<a href="#toc3-442">Semantic Attributes</a>
+&emsp;<a href="#toc3-491">Language-Specific Implementation Attributes</a>
 
-**<a href="#toc2-506">Ownership and License</a>**
-&emsp;<a href="#toc3-515">Hints to Contributors</a>
-&emsp;<a href="#toc3-524">This Document</a>
+**<a href="#toc2-514">Ownership and License</a>**
+&emsp;<a href="#toc3-523">Hints to Contributors</a>
+&emsp;<a href="#toc3-532">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -72,15 +72,15 @@ The following build environments are currently supported:
 
 Thanks to the amazing ZeroMQ community you can do all the heavy lifting in C and than easily generate bindings to Python, Ruby and QML to write a nice GUI on top of it.
 
-<A name="toc2-46" title="Demo on PLAYTerm" />
+<A name="toc2-47" title="Demo on PLAYTerm" />
 ## Demo on PLAYTerm
 
 There is a short Demo on PLAYTerm that shows how easy it is to get started with zproject: [ZeroMQ - Create new zproject](http://www.playterm.org/r/zeromq---create-new-zproject-1424116766)
 
-<A name="toc2-51" title="Installation" />
+<A name="toc2-52" title="Installation" />
 ## Installation
 
-<A name="toc3-54" title="Requirements" />
+<A name="toc3-55" title="Requirements" />
 ### Requirements
 
 zproject uses the universal code generator called GSL to process its XML inputs and create its outputs. Before you start you'll need to install GSL (https://github.com/imatix/gsl) on your system.
@@ -90,7 +90,7 @@ zproject uses the universal code generator called GSL to process its XML inputs 
 	make
 	make install
 
-<A name="toc3-64" title="Getting started" />
+<A name="toc3-65" title="Getting started" />
 ### Getting started
 
 GSL must be able to find the zproject resources on your system. Therefore you'll need to install them.
@@ -108,29 +108,38 @@ NB: You may need to use the `sudo` command when running `make install` to elevat
 
 	sudo make install
 
-<A name="toc2-82" title="Setup your project environment" />
+NB: If you don't have superuser rights on a system you'll have to make sure zproject's gsl scripts can be found on your PATH.
+
+<A name="toc2-85" title="Setup your project environment" />
 ## Setup your project environment
 
-The easiest way to start is by coping the `project.xml` and `generate.sh` to your project or an empty directory. Licensing your project is important thus you'll need a license file. To get started you can copy `license.xml` from zproject and change the license to whatever you like. Here's an overview that might help you decide to [choose a license](http://choosealicense.com/). The text in the `license.xml` will be placed on every generated header and source file. Thus make sure not to insert the hole license but an appropriate disclaimer.
+The easiest way to start is by coping the `generate.sh` to an empty directory. Then add the following minimal project.xml.
 
-	mkdir myproject
-	cd myproject
-	cp ~/zproject/project.xml .
-	cp ~/zproject/license.xml .
-	cp ~/zproject/generate.sh .
+    <project script = "zproject.gsl">
+        <use project = "czmq" />
+        <main name = "hello" private = "1" />
+    </project>
 
-Next, edit `project.xml` to your liking, see [Configuration](#Configuration). Once you're done you can create your project's build environment:
+Once you're done you can create your project's build environment and start compiling:
 
 	./generate.sh
 	./autogen.sh
 	./configure.sh
 	make
 
-The compilation will probably fail as the generated skeleton source files are containing empty structs. You'll need to run the `generate.sh` script only when changing the zproject configuration. Otherwise stick to your favorite build environment. To also build the tests (assuming you have added some), use:
+NB: To get a more comprehensive example copy zproject's project.xml. It contains all possible configurations and according documentation.
 
-	make check
+Licensing your project is important thus you'll need a license file. Here's an overview that might help you decide to [choose a license](http://choosealicense.com/). zproject allows you to add an appropriate disclaimer of your license as a xml file, e.g. license.xml:
 
-<A name="toc2-104" title="Configuration" />
+    <license>
+        Your license disclaimer goes here!
+    </license>
+
+This disclaimer can be included in your project.xml and is used whenever zproject is generating new files e.g. CLASS skeletons or bindings.
+
+    <include filename = "license.xml" />
+
+<A name="toc2-114" title="Configuration" />
 ## Configuration
 
 zproject's `project.xml` contains an extensive description of the available configuration: The following snippet is taken from the `project.xml`:
@@ -153,17 +162,12 @@ zproject's `project.xml` contains an extensive description of the available conf
     add new classes to your project you can generate skeleton header and source
     files according to http://rfc.zeromq.org/spec:21.
 
-    name := The name of your project
-    description := A short description for your project
     script := The gsl script to generate all the stuff !!! DO NOT CHANGE !!!
-    email := The email address where to reach you project e.g. mailinglist.
+    name := The name of your project (optional)
+    description := A short description for your project (optional)
+    email := The email address where to reach you (optional)
 -->
-<project
-    name = "myproject"
-    description = "My Project that will change the world."
-    script = "zproject.gsl"
-    email = "mail@myproject.org"
-    >
+<project script = "zproject.gsl" name = "myproject">
 
     <!--
         Includes are processed first, so XML in included files will be
@@ -254,10 +258,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         * Linux -> /usr/local/bin
     -->
     <bin name = "zproject.gsl" />
-    <bin name = "zproject_projects.gsl" />
     <bin name = "zproject_known_projects.xml" />
-    <bin name = "zproject_class_api.gsl" />
-    <bin name = "zproject_mkman" />
 
     <bin name = "zproject_actor.gsl" />
     <bin name = "zproject_android.gsl" />
@@ -271,12 +272,15 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_bindings_jni.gsl" />
     <bin name = "zproject_ci.gsl" />
     <bin name = "zproject_class.gsl" />
+    <bin name = "zproject_class_api.gsl" />
     <bin name = "zproject_cmake.gsl" />
+    <bin name = "zproject_cygwin.gsl" />
     <bin name = "zproject_docs.gsl" />
     <bin name = "zproject_git.gsl" />
     <bin name = "zproject_lib.gsl" />
+    <bin name = "zproject_mkman.gsl" />
     <bin name = "zproject_mingw32.gsl" />
-    <bin name = "zproject_cygwin.gsl" />
+    <bin name = "zproject_projects.gsl" />
     <bin name = "zproject_qt_android.gsl" />
     <bin name = "zproject_tools.gsl" />
     <bin name = "zproject_vs2008.gsl" />
@@ -286,7 +290,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_vs2015.gsl" />
 </project>
 
-<A name="toc2-258" title="Sample API model" />
+<A name="toc2-265" title="Sample API model" />
 ## Sample API model
 
 The zproject scripts can also optionally generate the `@interface` in your class headers from an API model, in addition to a host of language bindings.  To opt-in to this behavior, just make a model to the `api` directory of your project.  For example, if your `project.xml` contains `<class name = "myclass"/>`, you could create the following `api/myclass.xml` file:
@@ -390,12 +394,13 @@ Language bindings will also be generated in the following languages:
 
 * Ruby
 * QML
+* Qt
 * Python
 * JNI (experimental)
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
-<A name="toc3-367" title="Supported API Model Attributes" />
+<A name="toc3-375" title="Supported API Model Attributes" />
 ### Supported API Model Attributes
 
 The following attributes are supported for methods:
@@ -411,7 +416,7 @@ e should not be modified (roughly translates to `const` in C).
 - `variadic = "1"` - used for representing variadic arguments.
 - `is_format = "1"` - used for `printf`-style format strings preceding variadic arguments (which are added automatically).
 
-<A name="toc3-383" title="Tips" />
+<A name="toc3-391" title="Tips" />
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
@@ -422,18 +427,18 @@ echo method.string()  # will print the model as an XML string.
 method.save(filename) # will save the model as an XML string to the given file.
 ```
 
-<A name="toc2-394" title="Removal" />
+<A name="toc2-402" title="Removal" />
 ## Removal
 
-<A name="toc3-397" title="autotools" />
+<A name="toc3-405" title="autotools" />
 ### autotools
 
     make uninstall
 
-<A name="toc2-402" title="Notes for Writing Language Bindings" />
+<A name="toc2-410" title="Notes for Writing Language Bindings" />
 ## Notes for Writing Language Bindings
 
-<A name="toc3-405" title="Schema/Architecture Overview" />
+<A name="toc3-413" title="Schema/Architecture Overview" />
 ### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
@@ -452,7 +457,7 @@ method.save(filename) # will save the model as an XML string to the given file.
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-<A name="toc3-424" title="Informal Summary" />
+<A name="toc3-432" title="Informal Summary" />
 ### Informal Summary
 
 A `class` is always the top-level entity in an API model, and it will be merged
@@ -462,7 +467,7 @@ and methods contain `argument`s and `return`s (collectively, "container"s). Each
 entity will contain both *semantic attributes* and *language-specific
 implementation attributes*.
 
-<A name="toc3-434" title="Semantic Attributes" />
+<A name="toc3-442" title="Semantic Attributes" />
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
@@ -511,7 +516,7 @@ container.variadic     # 0/1 (default: 0)
 container.va_start     # string - that holds the argment name for va_start ()
 ```
 
-<A name="toc3-483" title="Language-Specific Implementation Attributes" />
+<A name="toc3-491" title="Language-Specific Implementation Attributes" />
 ### Language-Specific Implementation Attributes
 
 Language-specific implementation attributes hold information that is not
@@ -534,7 +539,7 @@ avoid collisions is to prefix all language-specific attributes with the
 name of the language, though in principle, any collision-free convention
 would be acceptable.
 
-<A name="toc2-506" title="Ownership and License" />
+<A name="toc2-514" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -543,7 +548,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-515" title="Hints to Contributors" />
+<A name="toc3-523" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -552,7 +557,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-524" title="This Document" />
+<A name="toc3-532" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).

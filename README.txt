@@ -73,26 +73,35 @@ NB: You may need to use the `sudo` command when running `make install` to elevat
 
 	sudo make install
 
+NB: If you don't have superuser rights on a system you'll have to make sure zproject's gsl scripts can be found on your PATH.
+
 ## Setup your project environment
 
-The easiest way to start is by coping the `project.xml` and `generate.sh` to your project or an empty directory. Licensing your project is important thus you'll need a license file. To get started you can copy `license.xml` from zproject and change the license to whatever you like. Here's an overview that might help you decide to [choose a license](http://choosealicense.com/). The text in the `license.xml` will be placed on every generated header and source file. Thus make sure not to insert the hole license but an appropriate disclaimer.
+The easiest way to start is by coping the `generate.sh` to an empty directory. Then add the following minimal project.xml.
 
-	mkdir myproject
-	cd myproject
-	cp ~/zproject/project.xml .
-	cp ~/zproject/license.xml .
-	cp ~/zproject/generate.sh .
+    <project script = "zproject.gsl">
+        <use project = "czmq" />
+        <main name = "hello" private = "1" />
+    </project>
 
-Next, edit `project.xml` to your liking, see [Configuration](#Configuration). Once you're done you can create your project's build environment:
+Once you're done you can create your project's build environment and start compiling:
 
 	./generate.sh
 	./autogen.sh
 	./configure.sh
 	make
 
-The compilation will probably fail as the generated skeleton source files are containing empty structs. You'll need to run the `generate.sh` script only when changing the zproject configuration. Otherwise stick to your favorite build environment. To also build the tests (assuming you have added some), use:
+NB: To get a more comprehensive example copy zproject's project.xml. It contains all possible configurations and according documentation.
 
-	make check
+Licensing your project is important thus you'll need a license file. Here's an overview that might help you decide to [choose a license](http://choosealicense.com/). zproject allows you to add an appropriate disclaimer of your license as a xml file, e.g. license.xml:
+
+    <license>
+        Your license disclaimer goes here!
+    </license>
+
+This disclaimer can be included in your project.xml and is used whenever zproject is generating new files e.g. CLASS skeletons or bindings.
+
+    <include filename = "license.xml" />
 
 ## Configuration
 
@@ -137,6 +146,7 @@ Language bindings will also be generated in the following languages:
 
 * Ruby
 * QML
+* Qt
 * Python
 * JNI (experimental)
 
