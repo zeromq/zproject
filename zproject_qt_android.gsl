@@ -91,6 +91,8 @@ android_build_verify_so "$(project.libname).so"\
 
 
 $(project.GENERATED_WARNING_HEADER:)
+.close
+.chmod_x ("builds/qt-android/build.sh")
 .#
 .output "builds/qt-android/ci_build.sh"
 #!/usr/bin/env bash
@@ -132,6 +134,8 @@ git clone $(use.repository) $$(USE.PROJECT)_ROOT
 source ./build.sh
 
 $(project.GENERATED_WARNING_HEADER:)
+.close
+.chmod_x ("builds/qt-android/ci_build.sh")
 .#
 .output "builds/qt-android/android_build_helper.sh"
 #!/usr/bin/env bash
@@ -428,3 +432,5 @@ function android_build_verify_so {
 
 .endliteral
 $(project.GENERATED_WARNING_HEADER:)
+.close
+.chmod_x ("builds/qt-android/android_build_helper.sh")

@@ -56,5 +56,7 @@ if [ $BUILD_TYPE == "default" ]; then
 else
     cd ./builds/${BUILD_TYPE} && ./ci_build.sh
 fi
+.close
+.chmod_x ("ci_build.sh")
 .endif # !file.exists ("ci_build.sh")
 .endif # !file.exists (".travis.yml")
