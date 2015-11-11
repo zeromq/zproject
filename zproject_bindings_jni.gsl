@@ -88,30 +88,6 @@ for project.class where defined (class.api)
     endfor
     >}
 
-    directory.create ("$(topdir)/main/c")
-    class.filename = "$(namespace:c)_$(class.name:pascal)"
-    output "$(topdir)/main/c/$(filename:).c"
-    >#include <jni.h>
-    >#include <stdio.h>
-    >#include "$(filename:).h"
-    >#include "$(project.name:c).h"
-
-    for constructor
-        >
-        >JNIEXPORT void JNICALL Java_$(filename:)_create (JNIEnv *env, jobject thisObj) {
-        >}
-    endfor
-    for destructor
-        >
-        >JNIEXPORT void JNICALL Java_$(filename:)_destroy (JNIEnv *env, jobject thisObj) {
-        >}
-    endfor
-    for method
-        >
-        >//  $(method.description:no,block)
-        >JNIEXPORT void JNICALL Java_$(filename:)_$(name:camel) (JNIEnv *env, jobject thisObj) {
-        >}
-    endfor
 endfor
 
 .endtemplate
