@@ -1,0 +1,113 @@
+.#  ===========================================================================
+.#  Generate spec file for project
+.#
+.#  This is a code generator built using the iMatix GSL code generation
+.#  language. See https://github.com/imatix/gsl for details. This script
+.#  is licensed under MIT/X11.
+.#
+.#  This script will generate the following files:
+.#  builds/spec/$(project.name).spec
+.#  ===========================================================================
+.#
+.if !file.exists ('builds/spec')
+.   directory.create('builds/spec')
+.endif
+.output "builds/spec/$(project.name).spec"
+#
+#    $(project.name) - $(project.description?'':)
+#
+.   for project.license
+#    $(string.trim (license.):block                                         )
+.   endfor
+#
+
+Name:           $(project.name)
+Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)
+Release:        1
+Summary:        $(project.description)
+License:        MIT
+URL:            http://example.com/
+Source0:        %{name}-%{version}.tar.gz
+Group:          System/Libraries
+BuildRequires:  automake
+BuildRequires:  autoconf
+BuildRequires:  libtool
+BuildRequires:  pkg-config
+.for project.use
+.if use.project = "libzmq"
+BuildRequires:  zeromq-devel
+.else
+BuildRequires:  $(use.project)-devel
+.endif
+.endfor
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+
+%description
+$(project.name) $(project.description).
+
+.if project.has_classes
+%package -n $(project.libname)$(project->version.major)
+Group:          System/Libraries
+Summary:        $(project.description)
+
+%description -n $(project.libname)$(project->version.major)
+$(project.name) $(project.description).
+This package contains shared library.
+
+%post -n $(project.libname)$(project->version.major) -p /sbin/ldconfig
+%postun -n $(project.libname)$(project->version.major) -p /sbin/ldconfig
+
+%files -n $(project.libname)$(project->version.major)
+%defattr(-,root,root)
+%doc COPYING
+%{_libdir}/$(project.libname).so.*
+
+%package devel
+Summary:        $(project.description)
+Group:          System/Libraries
+Requires:       $(project.libname)$(project->version.major) = %{version}
+.for project.use
+Requires:       $(use.project)-devel
+.endfor
+
+%description devel
+$(project.name) $(project.description).
+This package contains development files.
+
+%files -n devel
+%defattr(-,root,root)
+%{_libdir}/$(project.libname).so
+%{_libdir}/pkgconfig/$(project.name).pc
+.endif
+
+%prep
+%setup -q
+
+%build
+sh autogen.sh
+%{configure}
+make %{_smp_mflags}
+
+%install
+make install DESTDIR=%{buildroot} %{?_smp_mflags}
+
+# remove static libraries
+find %{buildroot} -name '*.a' | xargs rm -f
+find %{buildroot} -name '*.la' | xargs rm -f
+
+.if has_main
+%files
+%defattr(-,root,root)
+%doc README.md COPYING
+.# generate binary names
+.for project.main
+%{_bindir}/$(main.name)
+.endfor
+.# generate service file names
+.for project.main where main.service ?= 1
+%config(noreplace) %{_systemconfdir}/$(project.name)/$(main.name).cfg
+%{_prefix}/lib/systemd/system/$(main.name).service
+.endfor
+.endif
+
+%changelog
