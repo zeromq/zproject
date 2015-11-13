@@ -25,8 +25,8 @@ Name:           $(project.name)
 Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)
 Release:        1
 Summary:        $(project.description)
-License:        MIT
-URL:            http://example.com/
+License:        $(project.license?"MIT")
+URL:            $(project.url?"http://example.com/")
 Source0:        %{name}-%{version}.tar.gz
 Group:          System/Libraries
 BuildRequires:  automake
@@ -74,8 +74,9 @@ Requires:       $(use.project)-devel
 $(project.name) $(project.description).
 This package contains development files.
 
-%files -n devel
+%files devel
 %defattr(-,root,root)
+%{_includedir}/*
 %{_libdir}/$(project.libname).so
 %{_libdir}/pkgconfig/$(project.name).pc
 .endif
