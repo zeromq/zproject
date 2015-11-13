@@ -40,6 +40,8 @@ if count (project.license) = 0
 endif
 project->license. ?= "Copyright (c) the Authors"
 
+project.has_main = (count (main) > 0)
+project.has_classes = (count (class, ! defined (class.private)) > 0)
 project.has_private_classes = (count (class, defined (class.private)) > 0)
 project.generated_warning_header ?= "\
 ################################################################################
@@ -89,3 +91,5 @@ endfunction
 .gsl from "zproject_bench.gsl"
 .gsl from "zproject_tools.gsl"
 .gsl from "zproject_git.gsl"
+.echo "Generating distro packaging recipes"
+.gsl from "zproject_spec.gsl"
