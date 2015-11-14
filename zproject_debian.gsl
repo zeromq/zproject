@@ -1,0 +1,139 @@
+.#  ===========================================================================
+.#  Generate debian recipes for project
+.#
+.#  This is a code generator built using the iMatix GSL code generation
+.#  language. See https://github.com/imatix/gsl for details. This script
+.#  is licensed under MIT/X11.
+.#
+.#  This script will generate the following files:
+.#   * builds/debian/control
+.#  ===========================================================================
+.#
+.if !file.exists ('builds/debian')
+.   directory.create('builds/debian')
+.endif
+.output "builds/debian/control"
+#
+#    $(project.name) - $(project.description?'':)
+#
+.   for project.license
+#    $(string.trim (license.):block                                         )
+.   endfor
+#
+
+Source:         $(project.name)
+Section:        net
+Priority:       optional
+Maintainer:     John Doe <John.Doe@example.com>
+Uploaders:      John Doe <John.Doe@example.com>
+Standards-Version: 3.9.5
+Build-Depends: bison, debhelper (>= 8),
+    pkg-config,
+    automake,
+    autoconf,
+    libtool,
+.for project.use
+.if use.project = "libzmq"
+    libzmq4-dev,
+.else
+    $(use.libname)-dev,
+.endif
+.endfor
+    dh-autoreconf
+
+.if project.has_classes
+Package: $(project.libname)$(project->version.major)
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: $(project.name)
+ This package contains shared library for $(project.name): $(project.description)
+
+Package: $(project.name)-dev
+Architecture: all
+Section: libdevel
+Depends:
+    $(project.libname)$(project->version.major) (= ${binary:Version}),
+    ${shlibs:Depends},
+.for project.use
+.if use.project = "libzmq"
+    libzmq4-dev,
+.else
+    lib$(use.project)-dev,
+.endif
+.endfor
+    ${misc:Depends}
+Description: development files for $(project.name)
+ This package contains development files for $(project.name): $(project.description)
+.endif
+
+.if project.has_main
+Package: $(project.name)
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: $(project.description)
+ Main package for $(project.name): $(project.description)
+.endif
+
+Package: $(project.name)-dbg
+Architecture: any
+Section: debug
+Priority: extra
+Depends:
+.if project.has_main
+    $(project.name) (= ${binary:Version}),
+.else
+    $(project.libname)$(project->version.major) (= ${binary:Version}),
+.endif
+    ${misc:Depends}
+Description: debugging symbols for $(project.name)
+ This package contains the debugging symbols for $(project.name) : $(project.description).
+
+.output "builds/debian/$(project.name).dsc"
+Format:         1.0
+Source:         $(project.name)
+Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)-1
+.if project.has_main & project.has_classes
+Binary:         $(project.name), $(project.libname)$(project->version.major)
+.elsif project.has_main
+Binary:         $(project.name)
+.elsif project.has_classes
+Binary:         $(project.libname)$(project->version.major)
+.endif
+Architecture:   any all
+Maintainer:     John Doe <John.Doe@example.com>
+Standards-Version: 3.9.5
+Build-Depends: bison, debhelper (>= 8),
+    pkg-config,
+    automake,
+    autoconf,
+    libtool,
+.for project.use
+.if use.project = "libzmq"
+    libzmq4-dev,
+.else
+    $(use.libname)-dev,
+.endif
+.endfor
+    dh-autoreconf
+
+Package-List:
+.if project.has_main
+ $(project.name) dev net optional arch-any
+.endif
+.if project.has_classes
+ $(project.libname)$(project->version.major) dev net optional arch-any
+.endif
+
+.output "builds/debian/rules"
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+override_dh_strip:
+	dh_strip --dbg-package=$(project.name)-dbg
+
+override_dh_auto_test:
+	echo "Skipped for now"
+%:
+	dh $@ --with=autoreconf
+
+\.PHONY: override_dh_strip override_dh_auto_test
