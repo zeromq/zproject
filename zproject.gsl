@@ -92,4 +92,5 @@ endfunction
 .gsl from "zproject_tools.gsl"
 .gsl from "zproject_git.gsl"
 .echo "Generating distro packaging recipes"
+.gsl from "zproject_debian.gsl"
 .gsl from "zproject_spec.gsl"
