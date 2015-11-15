@@ -21,8 +21,8 @@
 .if !file.exists ("include")
 .   directory.create ("include")
 .endif
-.if !file.exists ("include/$(project.name).h") & count (class, class.name = project.name) = 0
-.   output "include/$(project.name).h"
+.if !file.exists ("include/$(project.name:c).h") & count (class, class.name = project.name) = 0
+.   output "include/$(project.name:c).h"
 /*  =========================================================================
     $(project.name) - $(project.description?'':)
 
