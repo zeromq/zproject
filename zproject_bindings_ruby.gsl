@@ -36,7 +36,7 @@ function resolve_ruby_container (container)
     if regexp.match ("^(self|alias)$", my.container.ruby_name)
         my.container.ruby_name += "_"
     endif
-    
+
     # All C types should be transformed to a type name recognized by FFI.
     # To handle more C types, add support for them here.
     if my.container.variadic
@@ -90,7 +90,7 @@ function resolve_ruby_method (method)
     for my.method.return as ret
         resolve_ruby_container (ret)
     endfor
-    
+
     # The line that attaches the function to the project's FFI module
     my.method.ruby_ffi_attach = "attach_function :$(class.c_name)_$(method.c_name:), ["
     if !my.method.singleton
@@ -106,7 +106,7 @@ function resolve_ruby_method (method)
         endif
     endfor
     my.method.ruby_ffi_attach += "], :$(method->return.ruby_ffi_type), **opts"
-    
+
     # The first line of the method definition
     my.method.ruby_def_line = "def "
     if my.method.singleton & !my.method.is_destructor
@@ -121,7 +121,7 @@ function resolve_ruby_method (method)
             endif
         endif
     endfor
-    
+
     # The arguments passed to the inner method call
     my.method.ruby_args_pass = ""
     if !my.method.singleton
@@ -181,11 +181,11 @@ require_relative 'ffi/version'
 module $(project.RubyName:)
   module FFI
     extend ::FFI::Library
-    
+
     def self.available?
       @available
     end
-    
+
     begin
       lib_name = '$(project.libname)'
       lib_paths = ['/usr/local/lib', '/opt/local/lib', '/usr/lib64']
@@ -198,13 +198,13 @@ module $(project.RubyName:)
       warn ""
       @available = false
     end
-    
+
     if available?
       opts = {
         blocking: true  # only necessary on MRI to deal with the GIL.
       }
 .for class where defined (class.api)
-      
+
 .for constructor as method
       $(method.ruby_ffi_attach)
 .endfor
@@ -214,7 +214,7 @@ module $(project.RubyName:)
 .for method
       $(method.ruby_ffi_attach)
 .endfor
-      
+
       require_relative 'ffi/$(class.ruby_require:)'
 .endfor
     end
@@ -229,11 +229,11 @@ $(project.GENERATED_WARNING_HEADER:)
 
 module $(project.RubyName:)
   module FFI
-    
+
     # $(class.description:no,block)
     class $(class.RubyName:)
       class DestroyedError < RuntimeError; end
-      
+
       # Boilerplate for self pointer, initializer, and finalizer
       class << self
         alias :__new :new
@@ -289,7 +289,7 @@ module $(project.RubyName:)
         ptr_ptr
       end
 .for callback_type
-      
+
       # Create a new callback of the following type:
       # $(callback_type.description:no,block)
       #     $(c_callback_typedef (callback_type):no,block)
@@ -329,19 +329,19 @@ $(argument.ruby_name)\
       end
 .endfor
 .for constructor as method
-      
+
       # $(method.description:no,block)
       $(method.ruby_def_line)
 .for method.argument where defined (argument.ruby_coerce_arg)
         $(argument.ruby_name:) = $(argument.ruby_coerce_arg:)
 .endfor
         ptr = ::$(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
-        
+
         __new ptr
       end
 .endfor
 .for destructor as method
-      
+
       # $(method.description:no,block)
       $(method.ruby_def_line)
         return unless @ptr
@@ -356,7 +356,7 @@ $(argument.ruby_name)\
       end
 .endfor
 .for method
-      
+
       # $(method.description:no,block)
       $(method.ruby_def_line)
 .if !method.singleton
@@ -373,7 +373,7 @@ $(argument.ruby_name)\
       end
 .endfor
     end
-    
+
   end
 end
 
