@@ -269,7 +269,7 @@ module $(project.RubyName:)
       end
 .endif
       def null?
-        !@ptr or ptr.null?
+        !@ptr or @ptr.null?
       end
       # Return internal pointer
       def __ptr
