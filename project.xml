@@ -119,6 +119,7 @@
     <bin name = "zproject_autoconf.gsl" />
     <bin name = "zproject_automake.gsl" />
     <bin name = "zproject_bench.gsl" />
+    <bin name = "zproject_debian.gsl" />
     <bin name = "zproject_bindings_python.gsl" />
     <bin name = "zproject_bindings_qml.gsl" />
     <bin name = "zproject_bindings_qt.gsl" />
@@ -136,6 +137,7 @@
     <bin name = "zproject_mingw32.gsl" />
     <bin name = "zproject_projects.gsl" />
     <bin name = "zproject_qt_android.gsl" />
+    <bin name = "zproject_spec.gsl" />
     <bin name = "zproject_tools.gsl" />
     <bin name = "zproject_vs2008.gsl" />
     <bin name = "zproject_vs2010.gsl" />
