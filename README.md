@@ -70,7 +70,7 @@ The following build environments are currently supported:
 * vs2013
 * vs2015
 
-Thanks to the amazing ZeroMQ community you can do all the heavy lifting in C and than easily generate bindings to Python, Ruby and QML to write a nice GUI on top of it.
+Thanks to the amazing ZeroMQ community you can do all the heavy lifting in C and then easily generate bindings to Python, Ruby and QML to write a nice GUI on top of it.
 
 <A name="toc2-47" title="Demo on PLAYTerm" />
 ## Demo on PLAYTerm
