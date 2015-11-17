@@ -4,6 +4,11 @@
 ################################################################################
 program_libs =
 
+# Programs need to link the c++ runtime if everything was compiled statically.
+if !ENABLE_SHARED
+program_libs += -lstdc++
+endif
+
 
 # Install data into /usr/local/bin
 myprojectdir = @bindir@
@@ -15,6 +20,7 @@ myproject_SCRIPTS = \
     zproject_autoconf.gsl \
     zproject_automake.gsl \
     zproject_bench.gsl \
+    zproject_debian.gsl \
     zproject_bindings_python.gsl \
     zproject_bindings_qml.gsl \
     zproject_bindings_qt.gsl \
@@ -32,13 +38,13 @@ myproject_SCRIPTS = \
     zproject_mingw32.gsl \
     zproject_projects.gsl \
     zproject_qt_android.gsl \
+    zproject_spec.gsl \
     zproject_tools.gsl \
     zproject_vs2008.gsl \
     zproject_vs2010.gsl \
     zproject_vs2012.gsl \
     zproject_vs2013.gsl \
     zproject_vs2015.gsl
-
 
 
 check-local: src/myproject_selftest
