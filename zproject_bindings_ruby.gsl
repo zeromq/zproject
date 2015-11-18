@@ -29,11 +29,15 @@ function resolve_ruby_container (container)
     my.container.ruby_ffi_type = "pointer"
     my.container.ruby_name = "$(my.container.name:c)"
     if my.container.ruby_name = "_"
-        my.container.ruby_name = "result"
+        if my.container.variadic
+            my.container.ruby_name = "args"
+        else
+            my.container.ruby_name = "result"
+        endif
     endif
-    # Fix if the name matches a Ruby keyword. This list is not exhaustive,
-    # so more keywords should be added as they become a problem.
-    if regexp.match ("^(self|alias)$", my.container.ruby_name)
+
+    # Fix if the name matches a Ruby keyword. The only keyword not tested is defined?, but that won't be possible because of the 'c' pretty-print modifier above.
+    if regexp.match ("^(BEGIN|END|__ENCODING__|__END__|__FILE__|__LINE__|alias|and|begin|break|case|class|def|do|else|elsif|end|ensure|false|for|if|in|module|next|nil|not|or|redo|rescue|retry|return|self|super|then|true|undef|unless|until|when|while|yield)$", my.container.ruby_name)
         my.container.ruby_name += "_"
     endif
 
@@ -115,7 +119,11 @@ function resolve_ruby_method (method)
     my.method.ruby_def_line += "$(method.c_name:)"
     for my.method.argument
         if !(my.method.is_destructor & first ())
-            my.method.ruby_def_line += " $(argument.ruby_name)"
+            my.method.ruby_def_line += " "
+            if argument.variadic
+              my.method.ruby_def_line += "*"
+            endif
+            my.method.ruby_def_line += argument.ruby_name
             if !last ()
                 my.method.ruby_def_line += ","
             endif
@@ -131,7 +139,11 @@ function resolve_ruby_method (method)
         endif
     endif
     for my.method.argument
-        my.method.ruby_args_pass += " $(argument.ruby_name)"
+        my.method.ruby_args_pass += " "
+        if argument.variadic
+            my.method.ruby_args_pass += "*"
+        endif
+        my.method.ruby_args_pass += argument.ruby_name
         if !last ()
             my.method.ruby_args_pass += ","
         endif
