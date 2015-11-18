@@ -32,8 +32,8 @@
     =========================================================================
 */
 
-#ifndef $(PROJECT.NAME)_H_INCLUDED
-#define $(PROJECT.NAME)_H_INCLUDED
+#ifndef $(PROJECT.NAME:c)_H_INCLUDED
+#define $(PROJECT.NAME:c)_H_INCLUDED
 
 //  Include the project library file
 #include "$(project.prefix)_library.h"
@@ -54,8 +54,8 @@ $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
-#ifndef $(project.prefix)_library_H_INCLUDED
-#define $(project.prefix)_library_H_INCLUDED
+#ifndef $(project.prefix:c)_library_H_INCLUDED
+#define $(project.prefix:c)_library_H_INCLUDED
 
 //  Set up environment for the application
 .if file.exists ("include/$(project.prelude)")
@@ -75,25 +75,25 @@ $(project.GENERATED_WARNING_HEADER:)
 
 //  $(PROJECT.NAME) version macros for compile-time API detection
 
-#define $(PROJECT.NAME)_VERSION_MAJOR $(project->version.major)
-#define $(PROJECT.NAME)_VERSION_MINOR $(project->version.minor)
-#define $(PROJECT.NAME)_VERSION_PATCH $(project->version.patch)
+#define $(PROJECT.NAME:c)_VERSION_MAJOR $(project->version.major)
+#define $(PROJECT.NAME:c)_VERSION_MINOR $(project->version.minor)
+#define $(PROJECT.NAME:c)_VERSION_PATCH $(project->version.patch)
 
-#define $(PROJECT.NAME)_MAKE_VERSION(major, minor, patch) \\
+#define $(PROJECT.NAME:c)_MAKE_VERSION(major, minor, patch) \\
     ((major) * 10000 + (minor) * 100 + (patch))
-#define $(PROJECT.NAME)_VERSION \\
-    $(PROJECT.NAME)_MAKE_VERSION($(PROJECT.NAME)_VERSION_MAJOR, $(PROJECT.NAME)_VERSION_MINOR, $(PROJECT.NAME)_VERSION_PATCH)
+#define $(PROJECT.NAME:c)_VERSION \\
+    $(PROJECT.NAME:c)_MAKE_VERSION($(PROJECT.NAME:c)_VERSION_MAJOR, $(PROJECT.NAME:c)_VERSION_MINOR, $(PROJECT.NAME:c)_VERSION_PATCH)
 
 #if defined (__WINDOWS__)
-#   if defined $(PROJECT.LIBNAME)_STATIC
-#       define $(PROJECT.PREFIX)_EXPORT
-#   elif defined $(PROJECT.LIBNAME)_EXPORTS
-#       define $(PROJECT.PREFIX)_EXPORT __declspec(dllexport)
+#   if defined $(PROJECT.LIBNAME:c)_STATIC
+#       define $(PROJECT.PREFIX:c)_EXPORT
+#   elif defined $(PROJECT.LIBNAME:c)_EXPORTS
+#       define $(PROJECT.PREFIX:c)_EXPORT __declspec(dllexport)
 #   else
-#       define $(PROJECT.PREFIX)_EXPORT __declspec(dllimport)
+#       define $(PROJECT.PREFIX:c)_EXPORT __declspec(dllimport)
 #   endif
 #else
-#   define $(PROJECT.PREFIX)_EXPORT
+#   define $(PROJECT.PREFIX:c)_EXPORT
 #endif
 
 //  Opaque class structures to allow forward references
@@ -300,11 +300,11 @@ $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
-#ifndef $(PROJECT.PREFIX)_CLASSES_H_INCLUDED
-#define $(PROJECT.PREFIX)_CLASSES_H_INCLUDED
+#ifndef $(PROJECT.PREFIX:c)_CLASSES_H_INCLUDED
+#define $(PROJECT.PREFIX:c)_CLASSES_H_INCLUDED
 
 //  External API
-#include "../include/$(project.name).h"
+#include "../include/$(project.name:c).h"
 
 //  Internal API
 .for class where defined (class.private)
@@ -358,19 +358,19 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 
 //  @interface
 //  Create a new $(class.c_name)
-$(PROJECT.PREFIX)_EXPORT $(class.c_name)_t *
+$(PROJECT.PREFIX:c)_EXPORT $(class.c_name)_t *
     $(class.c_name)_new (void);
 
 //  Destroy the $(class.c_name)
-$(PROJECT.PREFIX)_EXPORT void
+$(PROJECT.PREFIX:c)_EXPORT void
     $(class.c_name)_destroy ($(class.c_name)_t **self_p);
 
 //  Print properties of object
-$(PROJECT.PREFIX)_EXPORT void
+$(PROJECT.PREFIX:c)_EXPORT void
     $(class.c_name)_print ($(class.c_name)_t *self);
 
 //  Self test of this class
-$(PROJECT.PREFIX)_EXPORT void
+$(PROJECT.PREFIX:c)_EXPORT void
     $(class.c_name)_test (bool verbose);
 //  @end
 
