@@ -18,6 +18,12 @@ ACLOCAL_AMFLAGS = -I config
 AM_CFLAGS = \\
 	-Werror=format-security
 
+.if project.use_cxx
+AM_CXXFLAGS = \\
+    -Werror=format-security \\
+    -std=c++11
+.endif
+
 AM_CPPFLAGS = \\
 .for use
     \${$(use.project:c)_CFLAGS} \\
@@ -115,7 +121,11 @@ include_HEADERS = \\
 
 src_$(project.libname:c)_la_SOURCES = \\
 .for class
+.   if file.exists ("src/$(name:c).cc")
+    src/$(name:c).cc \\
+.   else
     src/$(name:c).c \\
+.   endif
 .endfor
 .for extra
     src/$(name) \\
@@ -123,6 +133,9 @@ src_$(project.libname:c)_la_SOURCES = \\
     src/platform.h
 
 src_$(project.libname:c)_la_CPPFLAGS = ${AM_CPPFLAGS}
+.if project.use_cxx
+src_$(project.libname:c)_la_CXXFLAGS = ${AM_CXXFLAGS}
+.endif
 
 src_$(project.libname:c)_la_LDFLAGS = \\
     -version-info @LTVER@ \\
@@ -167,7 +180,11 @@ bin_PROGRAMS += src/$(main.name)
 .   endif
 src_$(main.name:c)_CPPFLAGS = ${AM_CPPFLAGS}
 src_$(main.name:c)_LDADD = ${program_libs}
+.   if file.exists ("src/$(name:c).cc")
+src_$(name:c)_SOURCES = src/$(name:c).cc
+.   else
 src_$(name:c)_SOURCES = src/$(name:c).c
+.   endif
 .   if main.service ?= 1
 src_$(main.name:c)_configdir = \$(sysconfdir)/$(project.name)
 src_$(main.name:c)_config_DATA = src/$(main.name).cfg
