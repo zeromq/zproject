@@ -38,7 +38,7 @@ endfunction
 
 project.use_cxx = project_use_cxx ()
 project.name ?= "myproject"
-project.prefix ?= project.name
+project.prefix ?= "$(project.name:c)"
 project.linkname ?= project.prefix
 project.libname ?= "lib" + project.linkname
 project.prelude ?= project.prefix + "_prelude.h"
@@ -98,10 +98,15 @@ endfunction
 .gsl from "zproject_vs2013.gsl"
 .gsl from "zproject_vs2015.gsl"
 .echo "Generating language bindings..."
+.echo " - Python..."
 .gsl from "zproject_bindings_python.gsl"
+.echo " - QML..."
 .gsl from "zproject_bindings_qml.gsl"
+.echo " - Qt..."
 .gsl from "zproject_bindings_qt.gsl"
+.echo " - Ruby FFI..."
 .gsl from "zproject_bindings_ruby.gsl"
+.echo " - Java JNI..."
 .gsl from "zproject_bindings_jni.gsl"
 .echo "Generating miscellaneous support..."
 .gsl from "zproject_ci.gsl"
