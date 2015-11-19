@@ -361,8 +361,7 @@ rootProject.name = '$(project.prefix)-jni'
 
 function resolve_jni_container (container)
     if my.container.variadic
-        # ctypes doesn't explicitly state variadic signatures, so leave it off
-        my.container.jni_type = ""
+        my.container.jni_type = "Object..."
     elsif my.container.type = "nothing"
         my.container.jni_type = "void"
     elsif my.container.type = "anything"
