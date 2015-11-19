@@ -34,11 +34,8 @@ function resolve_project_dependency (use)
     my.use.optional ?= 0
     
     # For values with no reasonable fallback, print error
-    if  !defined (my.use.repository) | \
-        !defined (my.use.test)
-        echo "Unknown project for <use project = \"$(my.use.project)\"/>.  " +\
-            "Please add $(my.use.project) to zproject_known_projects.xml " +\
-            "or add the missing properties to the <use> model locally."
+    if !defined (my.use.test)
+        echo "Project $(my.use.project) needs a 'test' attribute"
     endif
     
     # Calculate all non-model values from model values
