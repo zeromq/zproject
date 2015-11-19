@@ -124,7 +124,11 @@ $(project.GENERATED_WARNING_HEADER:)
 .#
 .#  Build the project selftest file
 .#
+.if project.use_cxx
+.output "src/$(project.prefix)_selftest.cc"
+.else
 .output "src/$(project.prefix)_selftest.c"
+.endif
 /*  =========================================================================
     $(project.prefix)_selftest.c - run selftests
 

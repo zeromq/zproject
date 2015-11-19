@@ -166,9 +166,14 @@ endif
 src_$(project.libname:c)_la_LIBADD = ${project_libs}
 
 check_PROGRAMS += src/$(project.prefix)_selftest
-src_$(project.prefix:c)_selftest_CPPFLAGS = \${src_$(project.libname)_la_CPPFLAGS}
+src_$(project.prefix:c)_selftest_CPPFLAGS = \${src_$(project.libname:c)_la_CPPFLAGS}
+.if project.use_cxx
+src_$(project.prefix:c)_selftest_CXXFLAGS = \${src_$(project.libname:c)_la_CXXFLAGS}
+.endif
 src_$(project.prefix:c)_selftest_LDADD = ${program_libs}
-src_$(project.prefix:c)_selftest_SOURCES = src/$(project.prefix)_selftest.c
+.if project.use_cxx
+src_$(project.prefix:c)_selftest_SOURCES = src/$(project.prefix)_selftest.cc
+.endif
 
 .endif
 .for project.main
