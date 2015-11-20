@@ -302,6 +302,7 @@ module $(project.RubyName:)
 .endif
 .endfor
 .if !defined (class.has_ruby_finalizer)
+.# TODO: just raise an ImplicitDestroyError
       def self.create_finalizer_for ptr
         Proc.new do
           "WARNING: "\\
@@ -361,6 +362,7 @@ $(argument.ruby_name)\
 .   endfor
           yield \
 .   for callback_type.argument
+.# TODO: coerce
 $(argument.ruby_name)\
 .       if !last ()
 , \
