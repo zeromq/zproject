@@ -4,7 +4,7 @@
 <class name = "myclass" >
     My Feature-Rich Class
 
-    <include filename = "../license.xml" />
+    <include filename = "license.xml" />
 
     <constant name = "default port" value = "8080">registered with IANA</constant>
 

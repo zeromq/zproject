@@ -4,12 +4,15 @@
 #  is licensed under MIT/X11.
 
 #   Resolve XML includes
-function resolve_includes ()
-    for project.include
+function resolve_includes (xml)
+    for my.xml.include
         if defined (include.filename)
-            my.include_file = project.load_file (filename)
+            my.include_file = my.xml.load_file (filename)
             if defined (my.include_file)
-                move my.include_file after include
+                echo "I: including XML $(filename) into $(my.xml.name)"
+                for my.include_file. as element
+                    move element before include
+                endfor
             else
                 echo "E: error loading include file: $(filename): $(xml.error?)"
             endif
@@ -18,7 +21,7 @@ function resolve_includes ()
         endif
     endfor
 endfunction
-resolve_includes ()
+resolve_includes (project)
 
 # Find c++ sources in the project
 function project_use_cxx ()

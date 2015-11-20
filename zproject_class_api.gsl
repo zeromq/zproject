@@ -214,6 +214,9 @@ function resolve_c_class (class)
     my.class.c_name ?= "$(my.class.name:c)"
     my.class.description ?= "$(string.trim (my.class.?""):left)"
 
+    # Includes of XML files
+    resolve_includes(my.class)
+
     # Implicit constructor
     if !count (my.class.constructor)
         new constructor to my.class
