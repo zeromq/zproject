@@ -67,7 +67,7 @@ function resolve_ruby_container (container)
         my.container.ruby_coerce_arg = "String($(my.container.ruby_name:))"
     elsif my.container.c_type = "byte"
         my.container.ruby_ffi_type = "char"
-        my.container.ruby_coerce_arg = "String($(my.container.ruby_name:))[0]"
+        my.container.ruby_coerce_arg = "Integer($(my.container.ruby_name:))"
     elsif count (project.class, defined (class.RubyName) & (my.container.type = class.c_name))
         for project.class where (defined (class.RubyName) & (my.container.type = class.c_name))
             if my.container.by_reference
@@ -79,11 +79,7 @@ function resolve_ruby_container (container)
             else
                 my.container.ruby_coerce_arg = "$(my.container.ruby_name:).__ptr if $(my.container.ruby_name:)"
                 my.container.ruby_coerce_ret = "$(class.RubyName:).__new $(my.container.ruby_name:), "
-                if my.container.fresh
-                    my.container.ruby_coerce_ret += "true"
-                else
-                    my.container.ruby_coerce_ret += "false"
-                endif
+                my.container.ruby_coerce_ret += my.container.fresh ?? "true" ? "false"
             endif
         endfor
     endif
@@ -97,60 +93,93 @@ function resolve_ruby_method (method)
     for my.method.return as ret
         resolve_ruby_container (ret)
     endfor
+endfunction
 
-    # The line that attaches the function to the project's FFI module
-    my.method.ruby_ffi_attach = "attach_function :$(class.c_name)_$(method.c_name:), ["
+# The line that attaches the function to the project's FFI module
+# like: attach_function my_project_method, [:pointer], :int, **opts
+function ruby_ffi_attach_definition(method)
+    my.attach_definition = "attach_function :$(class.c_name)_$(method.c_name:), ["
     if !my.method.singleton
-        my.method.ruby_ffi_attach += ":pointer"
+        my.attach_definition += ":pointer"
         if count (my.method.argument)
-            my.method.ruby_ffi_attach += ", "
+            my.attach_definition += ", "
         endif
     endif
     for my.method.argument
-        my.method.ruby_ffi_attach += ":$(argument.ruby_ffi_type)"
+        my.attach_definition += ":$(argument.ruby_ffi_type)"
         if !last ()
-            my.method.ruby_ffi_attach += ", "
+            my.attach_definition += ", "
         endif
     endfor
-    my.method.ruby_ffi_attach += "], :$(method->return.ruby_ffi_type), **opts"
+    my.attach_definition += "], :$(method->return.ruby_ffi_type), **opts"
+    return my.attach_definition
+endfunction
 
-    # The first line of the method definition
-    my.method.ruby_def_line = "def "
-    if my.method.singleton & !my.method.is_destructor
-        my.method.ruby_def_line += "self."
+# Returns the Ruby method call without arguments,
+# like: ::MyProject::FFI.my_class_my_method
+function ruby_method_call_without_arguments(method)
+  # must not contain newline at the end
+  my.call = "::$(project.RubyName:)::FFI.$(class.c_name:)_$(my.method.c_name:)"
+  return my.call
+endfunction
+
+# The arguments passed to the inner method call,
+# like: arg1, arg2, args*
+#
+# If it's a singleton method, or the class method of a polymorphic method, make
+# sure to set self_p first (before the call).
+function ruby_method_call_arguments(method)
+    my.args = ""
+    if !my.method.singleton
+        my.args += "self_p"
+        if count(my.method.argument)
+            my.args += ", "
+        endif
     endif
-    my.method.ruby_def_line += "$(method.c_name:)"
     for my.method.argument
-        if !(my.method.is_destructor & first ())
-            my.method.ruby_def_line += " "
-            if argument.variadic
-              my.method.ruby_def_line += "*"
-            endif
-            my.method.ruby_def_line += argument.ruby_name
+        my.args += argument.variadic ?? "*" ? ""
+        my.args += argument.ruby_name
+        if !last ()
+            my.args += ", "
+        endif
+    endfor
+    return my.args
+endfunction
+
+function ruby_method_signature_arguments(method)
+    my.args = ""
+    for my.method.argument
+        if !(my.method.is_destructor & first())
+            my.args += argument.variadic ?? "*" ? ""
+            my.args += argument.ruby_name
             if !last ()
-                my.method.ruby_def_line += ","
+                my.args += ", "
             endif
         endif
     endfor
+    return my.args
+endfunction
 
-    # The arguments passed to the inner method call
-    my.method.ruby_args_pass = ""
-    if !my.method.singleton
-        my.method.ruby_args_pass += " @ptr"
-        if count (my.method.argument)
-            my.method.ruby_args_pass += ","
-        endif
+# The first line of the monomorphic method definition (either class or instance method)
+# like: def my_method(arg1, arg2)
+#   or: def self.my_method(arg1, arg2)
+function ruby_monomorphic_method_signature(method)
+    my.def_line = ""
+    if my.method.singleton & !my.method.is_destructor
+        my.def_line += "self."
     endif
-    for my.method.argument
-        my.method.ruby_args_pass += " "
-        if argument.variadic
-            my.method.ruby_args_pass += "*"
-        endif
-        my.method.ruby_args_pass += argument.ruby_name
-        if !last ()
-            my.method.ruby_args_pass += ","
-        endif
-    endfor
+    my.def_line += "$(my.method.c_name:)($(ruby_method_signature_arguments(my.method)))"
+    return my.def_line
+endfunction
+
+# Ruby methods, which take a pointer to the receiving object,
+# like: def self.my_method(self_p, arg1, arg2)
+function ruby_polymorphic_method_signature(method)
+    my.def_line = "self.$(my.method.c_name:)(self_p"
+    my.def_line += count(my.method.argument) ?? ", " ? ""
+    my.def_line += ruby_method_signature_arguments(my.method)
+    my.def_line += ")"
+    return my.def_line
 endfunction
 
 function resolve_ruby_class (class)
@@ -219,13 +248,13 @@ module $(project.RubyName:)
 .for class where defined (class.api)
 
 .for constructor as method
-      $(method.ruby_ffi_attach)
+      $(ruby_ffi_attach_definition(method))
 .endfor
 .for destructor as method
-      $(method.ruby_ffi_attach)
+      $(ruby_ffi_attach_definition(method))
 .endfor
 .for method
-      $(method.ruby_ffi_attach)
+      $(ruby_ffi_attach_definition(method))
 .endfor
 
       require_relative 'ffi/$(class.ruby_require:)'
@@ -256,7 +285,7 @@ module $(project.RubyName:)
         if @ptr.null?
           @ptr = nil # Remove null pointers so we don't have to test for them.
         elsif finalize
-          @finalizer = self.class.send :create_finalizer_for, @ptr
+          @finalizer = self.class.create_finalizer_for @ptr
           ObjectSpace.define_finalizer self, @finalizer
         end
       end
@@ -344,24 +373,23 @@ $(argument.ruby_name)\
 .for constructor as method
 
       # $(method.description:no,block)
-      $(method.ruby_def_line)
+      def $(ruby_monomorphic_method_signature(method))
 .for method.argument where defined (argument.ruby_coerce_arg)
         $(argument.ruby_name:) = $(argument.ruby_coerce_arg:)
 .endfor
-        ptr = ::$(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
-
+        ptr = $(ruby_method_call_without_arguments(method))($(ruby_method_call_arguments(method)))
         __new ptr
       end
 .endfor
 .for destructor as method
 
       # $(method.description:no,block)
-      $(method.ruby_def_line)
+      def $(ruby_monomorphic_method_signature(method))
         return unless @ptr
 .for method.argument where defined (argument.ruby_coerce_arg)
         $(argument.ruby_name:) = $(argument.ruby_coerce_arg:)
 .endfor
-        result = ::$(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
+        result = $(ruby_method_call_without_arguments(method))($(ruby_method_call_arguments(method)))
 .if defined (method->return.ruby_coerce_ret)
         result = $(method->return.ruby_coerce_ret:)
 .endif
@@ -371,22 +399,44 @@ $(argument.ruby_name)\
 .for method
 
       # $(method.description:no,block)
-      $(method.ruby_def_line)
+      def $(ruby_monomorphic_method_signature(method))
 .if !method.singleton
         raise DestroyedError unless @ptr
+.# we do this so actuall FFI call of monomorphic and polymorphic methods is the same
+        self_p = @ptr
 .endif
 .for method.argument where defined (argument.ruby_coerce_arg)
         $(argument.ruby_name:) = $(argument.ruby_coerce_arg:)
 .endfor
-        result = ::$(project.RubyName:)::FFI.$(class.c_name:)_$(method.c_name:)$(method.ruby_args_pass:)
+        result = $(ruby_method_call_without_arguments(method))($(ruby_method_call_arguments(method)))
 .if defined (method->return.ruby_coerce_ret)
         result = $(method->return.ruby_coerce_ret:)
 .endif
         result
       end
+.if method.polymorphic & !method.singleton # only methods that aren't already singletons
+.#
+.# NOTE: polymorphic methods will result in 2 Ruby methods:
+.# * a normal instance method (already produced above)
+.# * a class ("singleton") method, which takes a polymorphic reference
+
+      # $(method.description:no,block)
+      #
+      # This is the polymorphic version of #$(method.ruby_name:).
+      def $(ruby_polymorphic_method_signature(method))
+        raise DestroyedError unless self_p
+.for method.argument where defined (argument.ruby_coerce_arg)
+        $(argument.ruby_name:) = $(argument.ruby_coerce_arg:)
+.endfor
+        result = $(ruby_method_call_without_arguments(method))($(ruby_method_call_arguments(method)))
+.if defined (method->return.ruby_coerce_ret)
+        result = $(method->return.ruby_coerce_ret:)
+.endif
+        result
+      end
+.endif
 .endfor
     end
-
   end
 end
 
