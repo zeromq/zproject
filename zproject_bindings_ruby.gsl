@@ -67,7 +67,7 @@ function resolve_ruby_container (container)
         my.container.ruby_coerce_arg = "String($(my.container.ruby_name:))"
     elsif my.container.c_type = "byte"
         my.container.ruby_ffi_type = "char"
-        my.container.ruby_coerce_arg = "String($(my.container.ruby_name:))[0]"
+        my.container.ruby_coerce_arg = "Integer($(my.container.ruby_name:))"
     elsif count (project.class, defined (class.RubyName) & (my.container.type = class.c_name))
         for project.class where (defined (class.RubyName) & (my.container.type = class.c_name))
             if my.container.by_reference
