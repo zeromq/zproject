@@ -79,11 +79,7 @@ function resolve_ruby_container (container)
             else
                 my.container.ruby_coerce_arg = "$(my.container.ruby_name:).__ptr if $(my.container.ruby_name:)"
                 my.container.ruby_coerce_ret = "$(class.RubyName:).__new $(my.container.ruby_name:), "
-                if my.container.fresh
-                    my.container.ruby_coerce_ret += "true"
-                else
-                    my.container.ruby_coerce_ret += "false"
-                endif
+                my.container.ruby_coerce_ret += my.container.fresh ?? "true" ? "false"
             endif
         endfor
     endif
