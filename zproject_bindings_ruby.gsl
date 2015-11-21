@@ -24,22 +24,34 @@ for class where defined (class.api)
     class.RubyName = "$(class.ruby_require:Pascal)"
 endfor
 
+# Work out Ruby name based on container.name and and set it as
+# container.ruby_name.
+function sanitize_ruby_container_name(container)
+  my.container.ruby_name = "$(my.container.name:c)"
+
+  # Replace default value from resolve_c_container().
+  if my.container.ruby_name = "_"
+      my.container.ruby_name = my.container.variadic ?? "args" ? "result"
+  endif
+
+  ##
+  # Sanitize if it matches a Ruby keyword.
+  #
+
+  # Ruby keywords. The only keyword not listed here is 'defined?', but that
+  # won't be possible because of the 'c' pretty-print modifier above.
+  my.ruby_keywords_regexp = "^(BEGIN|END|__ENCODING__|__END__|__FILE__|__LINE__|alias|and|begin|break|case|class|def|do|else|elsif|end|ensure|false|for|if|in|module|next|nil|not|or|redo|rescue|retry|return|self|super|then|true|undef|unless|until|when|while|yield)$"
+
+  if regexp.match (my.ruby_keywords_regexp, my.container.ruby_name)
+      my.container.ruby_name += "_"
+  endif
+endfunction
+
 function resolve_ruby_container (container)
+    sanitize_ruby_container_name(my.container)
+
     # Defaults
     my.container.ruby_ffi_type = "pointer"
-    my.container.ruby_name = "$(my.container.name:c)"
-    if my.container.ruby_name = "_"
-        if my.container.variadic
-            my.container.ruby_name = "args"
-        else
-            my.container.ruby_name = "result"
-        endif
-    endif
-
-    # Fix if the name matches a Ruby keyword. The only keyword not tested is defined?, but that won't be possible because of the 'c' pretty-print modifier above.
-    if regexp.match ("^(BEGIN|END|__ENCODING__|__END__|__FILE__|__LINE__|alias|and|begin|break|case|class|def|do|else|elsif|end|ensure|false|for|if|in|module|next|nil|not|or|redo|rescue|retry|return|self|super|then|true|undef|unless|until|when|while|yield)$", my.container.ruby_name)
-        my.container.ruby_name += "_"
-    endif
 
     # All C types should be transformed to a type name recognized by FFI.
     # To handle more C types, add support for them here.
