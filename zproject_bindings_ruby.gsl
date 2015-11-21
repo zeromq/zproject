@@ -428,8 +428,10 @@ $(argument.ruby_name)\
       # $(method.description:no,block)
       #
       # This is the polymorphic version of #$(method.ruby_name:).
+      #
+      # @param self_p [$(project.RubyName:)::$(class.RubyName:), #__ptr, FFI::Pointer, nil] object reference to use this method on
       def $(ruby_polymorphic_method_signature(method))
-        raise DestroyedError unless self_p
+        self_p = self_p.__ptr if self_p.respond_to?(:__ptr)
 .for method.argument where defined (argument.coerce_to_c)
         $(argument.ruby_name:) = $(argument.coerce_to_c:)
 .endfor
