@@ -360,15 +360,18 @@ $(argument.ruby_name)\
 .   for callback_type.argument where defined (argument.coerce_to_ruby)
           $(argument.ruby_name) = $(argument.coerce_to_ruby:)
 .   endfor
-          yield \
+          result = yield \
 .   for callback_type.argument
-.# TODO: coerce
 $(argument.ruby_name)\
 .       if !last ()
 , \
 .       endif
 .   endfor
 
+.if defined (callback_type->return.coerce_to_c)
+          result = $(callback_type->return.coerce_to_c:)
+.endif
+          result
         end
       end
 .endfor
