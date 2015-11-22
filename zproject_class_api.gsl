@@ -412,7 +412,7 @@ function c_method_declaration (method, implementation_style)
     endif
     out += "$(class.c_name)_$(my.method.c_name) ("
     if !my.method.singleton
-        if defined (my.method.polymorphic)
+        if defined (my.method.polymorphic) & my.method.polymorphic
             out += "void *self"
         else
             out += "$(class.c_name)_t *self"
