@@ -1,39 +1,80 @@
 <!--
     This model defines a public API for binding. 
+
+    It shows a language binding developer what to expect from the API XML
+    files.
 -->
-<class name = "myclass" >
+<class name = "my class" >
     My Feature-Rich Class
 
     <include filename = "license.xml" />
 
     <constant name = "default port" value = "8080">registered with IANA</constant>
 
+    <enum name = "mode">
+        Enumeration defining different work modes. Constants are mandatory.
+        <constant name="normal" constant = "1">
+        <constant name="fast"   constant = "2">
+        <constant name="safe"   constant = "3">
+    </enum>
+
     <!-- Constructor is optional; default one has no arguments -->
     <constructor>
-        Create a new myclass with the given name.
+        Create a new my_class with the given name.
         <argument name = "name" type = "string" />
     </constructor>
 
     <!-- Destructor is optional; default one follows standard style -->
-    <destructor />
+    <destructor>
+        Destructors implicitely get a new argument prepended, which:
+
+        * is called `self_p`
+        * is of this class' type
+        * is passed by reference
+        * is marked as the self pointer for the destructor (`destructor_self = "1"`)
+    </destructor>
 
     <!-- This models a method with no return value -->
     <method name = "sleep">
-        Put the myclass to sleep for the given number of milliseconds.
-        No messages will be processed by the actor during this time.
+        Put the `my_class` to sleep for the given number of milliseconds.
+        No messages will be processed by it during this time.
         <argument name = "duration" type = "integer" />
     </method>
 
     <!-- This models an accessor method -->
     <method name = "has feature">
-        Return true if the myclass has the given feature.
+        Return true if the `my_class` has the given feature.
         <argument name = "feature" type = "string" />
+        <return type = "boolean" />
+    </method>
+
+    <!-- This models a method which will be excluded from generated C code and bindings -->
+    <method name = "print" exclude = "1">
+        Get printable string for this `my_class` struct.
+        <return type = "string" />
+    </method>
+
+    <method name = "send strings">
+        This does something with a series of strings (until NULL). The strings
+        won't be touched.
+
+        Because the next method has the same name with a prepended "v", it's
+        recognized as this method's `va_list` sibling (in GSL:
+        `method.has_va_list_sibling = "1"`). This information might be used by
+        the various language bindings.
+        <argument name = "string" type = "string" variadic = "1" constant = "1"/>
+        <return type = "boolean" />
+    </method>
+    <method name = "vsend strings">
+        This does something with a series of strings (until NULL). The strings
+        won't be touched.
+        <argument name = "string" type = "string" variadic = "1" constant = "1"/>
         <return type = "boolean" />
     </method>
 
     <!-- Callback typedefs can be declared like methods -->
     <callback_type name = "handler_fn">
-        <argument name = "self" type = "myclass" />
+        <argument name = "self" type = "my_class" />
         <argument name = "action" type = "string" />
         <return type = "boolean" />
     </callback_type>
@@ -41,7 +82,7 @@
     <!-- Callback types can be used as method arguments -->
     <method name = "add handler">
         Store the given callback function for later
-        <argument name = "handler" type = "myclass_handler_fn" callback = "1" />
+        <argument name = "handler" type = "my_class_handler_fn" callback = "1" />
     </method>
 
     <!-- If singleton = "1", no class struct pointer is required. -->
@@ -50,18 +91,73 @@
         <argument name = "verbose" type = "boolean" />
     </method>
 
+    <method name = "new thing" singleton = "1" >
+        Creates a new `my_class` struct. The caller is responsible for
+        destroying it when finished with it.
+        <return type = "my_class" fresh = "1" />
+    </method>
+
+    <method name = "free" singleton = "1">
+        Frees a provided string, and nullify the parent pointer.
+        <argument name = "string pointer" type = "string" constant = "0"
+            by_reference = "1" />
+    </method>
+
     <!-- These are the types we support
          Not all of these are supported in all language bindings;
          see each language binding's file for supported types in that
          language, and add more types as needed where appropriate.
+
+         Also, see zproject_class_api.gsl to see how they're handled exactly.
          -->
     <method name = "tutorial">
         <argument name = "void pointer" type = "anything" />
         <argument name = "standard int" type = "integer" />
         <argument name = "standard float" type = "real" />
         <argument name = "standard bool" type = "boolean" />
-        <argument name = "char pointer" type = "string" />
-        <argument name = "custom pointer" type = "myclass_t" />
+        <argument name = "fixed size unsigned integer" type = "number" size = "4">
+            Supported sizes are 1, 2, 4, and 8.
+        </argument>
+        <argument name = "a byte" type = "byte" />
+        <argument name = "conversion mode" type = "enum:my_class.mode">
+            The container for this argument will get the following attributes:
+            * `is_enum = 1"
+            * `enum_class = "my_class"`
+            * `enum_name = "mode"`
+            * `c_type = "my_class_mode_t"`
+        </argument>
+        <argument name = "char pointer to C string" type = "string" />
+        <argument name = "byte pointer to buffer" type = "buffer" />
+        <argument name = "buffer size" type = "size" />
+        <argument name = "file handle" type = "FILE" />
+        <argument name = "file size" type = "file_size" />
+        <argument name = "time" type = "time" />
+        <argument name = "format" type = "format">
+            This makes the function is variadic (will cause a new argument to be
+            added to represent the variadic arguments).
+        </argument>
+        <argument name = "variadic list argument" type = "va_list" />
+        <argument name = "custom pointer" type = "my custom class">
+            Any other type is valid, as long as there is a corresponding C
+            type, in this case `my_custom_class_t`.
+        </argument>
         <return type = "nothing">void method</return>
+    </method>
+
+    <method name = "set foo" polymorphic = "1">
+      Set attribute foo to a new value. Note that this method takes a
+      polymorphic reference (`void *`) as its first argument, which could point
+      to structs of different types.
+
+      This also means that high-level bindings might give you the choice to
+      call this method directly on an instance, or with an explicit receiver.
+      <argument name = "new value" type="integer" />
+    </method>
+
+    <method name = "set bar">
+        This method takes an argument type of the (descriptive) type `foo`, but
+        resolving it to a corresponding C type will be skipped because it's
+        overridden to `foobarbaz_t` by the `c_type` attribute.
+        <argument name = "new foo" type="foo" c_type="foobarbaz_t" />
     </method>
 </class>
