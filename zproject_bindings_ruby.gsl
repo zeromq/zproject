@@ -278,6 +278,7 @@ module $(project.RubyName:)
         :$(constant.name:c), $(constant.value),
 .  endfor
       ]
+
 .endfor
 .for constructor as method
       $(ruby_ffi_attach_definition(method))
