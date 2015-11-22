@@ -4,7 +4,7 @@
     It shows a language binding developer what to expect from the API XML
     files.
 -->
-<class name = "my class" >
+<class name = "myclass" >
     My Feature-Rich Class
 
     <include filename = "license.xml" />
@@ -20,7 +20,7 @@
 
     <!-- Constructor is optional; default one has no arguments -->
     <constructor>
-        Create a new my_class with the given name.
+        Create a new myclass with the given name.
         <argument name = "name" type = "string" />
     </constructor>
 
@@ -36,21 +36,21 @@
 
     <!-- This models a method with no return value -->
     <method name = "sleep">
-        Put the `my_class` to sleep for the given number of milliseconds.
+        Put the myclass to sleep for the given number of milliseconds.
         No messages will be processed by it during this time.
         <argument name = "duration" type = "integer" />
     </method>
 
     <!-- This models an accessor method -->
     <method name = "has feature">
-        Return true if the `my_class` has the given feature.
+        Return true if the myclass has the given feature.
         <argument name = "feature" type = "string" />
         <return type = "boolean" />
     </method>
 
     <!-- This models a method which will be excluded from generated C code and bindings -->
     <method name = "print" exclude = "1">
-        Get printable string for this `my_class` struct.
+        Get printable string for this myclass.
         <return type = "string" />
     </method>
 
@@ -74,7 +74,7 @@
 
     <!-- Callback typedefs can be declared like methods -->
     <callback_type name = "handler_fn">
-        <argument name = "self" type = "my_class" />
+        <argument name = "self" type = "myclass" />
         <argument name = "action" type = "string" />
         <return type = "boolean" />
     </callback_type>
@@ -92,9 +92,9 @@
     </method>
 
     <method name = "new thing" singleton = "1" >
-        Creates a new `my_class` struct. The caller is responsible for
-        destroying it when finished with it.
-        <return type = "my_class" fresh = "1" />
+	Creates a new myclass. The caller is responsible for destroying it when
+	finished with it.
+        <return type = "myclass" fresh = "1" />
     </method>
 
     <method name = "free" singleton = "1">
@@ -119,10 +119,10 @@
             Supported sizes are 1, 2, 4, and 8.
         </argument>
         <argument name = "a byte" type = "byte" />
-        <argument name = "conversion mode" type = "enum:my_class.mode">
+        <argument name = "conversion mode" type = "enum:myclass.mode">
             The container for this argument will get the following attributes:
             * `is_enum = 1"
-            * `enum_class = "my_class"`
+            * `enum_class = "myclass"`
             * `enum_name = "mode"`
             * `c_type = "my_class_mode_t"`
         </argument>
