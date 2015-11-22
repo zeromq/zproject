@@ -10,9 +10,7 @@ function resolve_includes (xml)
             my.include_file = my.xml.load_file (filename)
             if defined (my.include_file)
                 echo "I: including XML $(filename) into $(my.xml.name)"
-                for my.include_file. as element
-                    move element before include
-                endfor
+                move my.include_file after include
             else
                 echo "E: error loading include file: $(filename): $(xml.error?)"
             endif

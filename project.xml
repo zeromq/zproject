@@ -50,7 +50,7 @@
     -->
 
     <!--
-        Classes, if the class header or source file doesn't exist this will
+        Classes, if the class header or source file doesn't exist, this will
         generate a skeletons for them.
         use private = "1" for internal classes
     <class name = "myclass">Public class description</class>
@@ -58,8 +58,8 @@
     -->
 
     <!--
-        Actors, are build using the simple actor framework from czmq. If the
-        actors class header or source file doesn't exist this will generate a
+        Actors, are built using the simple actor framework from czmq. If the
+        actors class header or source file doesn't exist, this will generate a
         skeleton for them. The generated test method of the actor will teach
         you how to use them. Also have a look at the czmq docs to learn more
         about actors.
