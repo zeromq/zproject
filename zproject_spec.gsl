@@ -33,6 +33,9 @@ BuildRequires:  automake
 BuildRequires:  autoconf
 BuildRequires:  libtool
 BuildRequires:  pkg-config
+.if project.use_cxx
+BuildRequires:  gcc-c++
+.endif
 .for project.use
 .if use.project = "libzmq"
 BuildRequires:  zeromq-devel
