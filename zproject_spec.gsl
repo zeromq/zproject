@@ -36,6 +36,8 @@ BuildRequires:  pkg-config
 .for project.use
 .if use.project = "libzmq"
 BuildRequires:  zeromq-devel
+.elsif defined(use.spec_name)
+BuildRequires:  $(use.spec_name)
 .else
 BuildRequires:  $(use.project)-devel
 .endif
@@ -67,7 +69,13 @@ Summary:        $(project.description)
 Group:          System/Libraries
 Requires:       $(project.libname)$(project->version.major) = %{version}
 .for project.use
+.if use.project = "libzmq"
+Requires:       zeromq-devel
+.elsif defined(use.spec_name)
+Requires:       $(use.spec_name)
+.else
 Requires:       $(use.project)-devel
+.endif
 .endfor
 
 %description devel
