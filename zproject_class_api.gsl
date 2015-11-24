@@ -311,6 +311,11 @@ function resolve_c_class (class)
         constant.description ?= "$(string.trim (constant.?""):left)"
         resolve_c_container (constant)
     endfor
+
+    # Resolve details of each constant
+    for my.class.enum
+        enum.description ?= "$(string.trim (enum.?""):left)"
+    endfor
 endfunction
 
 # Resolve all dependent data types for one container and load their API file if

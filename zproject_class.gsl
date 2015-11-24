@@ -540,6 +540,7 @@ $(HEADER_FILE_PREFIX:)\
 .-
 .for class.enum
 
+// $(enum.description:no,block)
 typedef enum {
 .  for enum.constant
 .    if last()
