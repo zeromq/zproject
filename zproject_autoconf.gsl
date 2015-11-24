@@ -427,7 +427,7 @@ AS_IF([test "$have_ld_version_script" = "yes"],
 .endif
 
 # Specify output files
-.if count (class) + count (ac_config) > 0
+.if count (class) + count (ac_config) + count (main, service ?= 1) + count (main, services ?= 1)  > 0
 AC_CONFIG_FILES([Makefile
 .   if count (class) > 0
                  doc/Makefile
@@ -435,6 +435,9 @@ AC_CONFIG_FILES([Makefile
 .   endif
 .   for project.main where main.service ?= 1
                  src/$(main.name).service
+.   endfor
+.   for project.main where main.services ?= 1
+                 src/$(main.name)@.service
 .   endfor
                  ])
 .else
