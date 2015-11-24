@@ -193,7 +193,7 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)],
             fi
         fi
 
-        AC_CHECK_LIB([$(use.libname)], [$(use.test)],
+        AC_CHECK_LIB([$(use.libname)], [$(use.test:)],
             [
                 CFLAGS="${$(use.project:c)_synthetic_cflags} ${CFLAGS}"
                 LDFLAGS="${$(use.project:c)_synthetic_libs} ${LDFLAGS}"
