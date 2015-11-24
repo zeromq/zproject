@@ -190,11 +190,19 @@ src_$(name:c)_SOURCES = src/$(name:c).cc
 .   else
 src_$(name:c)_SOURCES = src/$(name:c).c
 .   endif
-.   if main.service ?= 1
+.   if main.service ?= 1 | main.services ?= 1
 src_$(main.name:c)_configdir = \$(sysconfdir)/$(project.name)
-src_$(main.name:c)_config_DATA = src/$(main.name).cfg
 src_$(main.name:c)_servicedir = @prefix@/lib/systemd/system
+.   if main.service ?= 1
+src_$(main.name:c)_config_DATA = src/$(main.name).cfg
+.   else
+src_$(main.name:c)_config_DATA = src/$(main.name).cfg.example
+.   endif
+.   if main.service ?= 1
 src_$(main.name:c)_service_DATA = src/$(main.name).service
+.   else
+src_$(main.name:c)_service_DATA = src/$(main.name)@.service
+.   endif
 .   endif
 endif
 .endfor
@@ -276,9 +284,16 @@ animate: src/$(project.prefix)_selftest
 $(project.GENERATED_WARNING_HEADER:)
 .#
 .#  Generate infrastructure for services
-.for project.main where main.service ?= 1
-.   if !file.exists ("src/$(main.name).cfg")
+.for project.main where main.service ?= 1 | main.services ?= 1
+. do_cfg = 1
+.if main.service  ?= 1 & !file.exists ("src/$(main.name).cfg")
 .       output "src/$(main.name).cfg"
+.elsif main.services ?= 1 & !file.exists ("src/$(main.name).cfg.example")
+.       output "src/$(main.name).cfg.example"
+.else
+.       do_cfg = 0
+.endif
+.if do_cfg ?= 1
 #   $(main.name) configuration
 
 server
@@ -286,7 +301,8 @@ server
     background = 0      #   Run as background process
     workdir = .         #   Working directory for daemon
     verbose = 0         #   Do verbose logging of activity?
-.   endif
+.endif
+.if main.service ?= 1
 .   output "src/$(main.name).service.in"
 [Unit]
 Description=$(main.name) service
@@ -298,6 +314,20 @@ ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name).cfg
 
 [Install]
 WantedBy=multi-user.target
+.endif
+.if main.services ?= 1
+.   output "src/$(main.name)@.service.in"
+[Unit]
+Description=$(main.name) service for %I
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/%i.cfg
+
+[Install]
+WantedBy=multi-user.target
+.endif
 .endfor
 .close
 .-
