@@ -110,7 +110,16 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .if has_main
 %files
 %defattr(-,root,root)
-%doc README.md COPYING
+.if file.exists ('README.md')
+%doc README.md
+.endif
+.if file.exists ('README.txt')
+%doc README.txt
+.endif
+.if file.exists ('README.asciidoc')
+%doc README.asciidoc
+.endif
+%doc COPYING
 .# generate binary names
 .for project.main
 %{_bindir}/$(main.name)
