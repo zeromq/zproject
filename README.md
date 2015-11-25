@@ -20,21 +20,21 @@
 **<a href="#toc2-128">Configuration</a>**
 
 **<a href="#toc2-283">Sample API model</a>**
-&emsp;<a href="#toc3-397">Supported API Model Attributes</a>
-&emsp;<a href="#toc3-413">Tips</a>
+&emsp;<a href="#toc3-499">Supported API Model Attributes</a>
+&emsp;<a href="#toc3-515">Tips</a>
 
-**<a href="#toc2-424">Removal</a>**
-&emsp;<a href="#toc3-427">autotools</a>
+**<a href="#toc2-526">Removal</a>**
+&emsp;<a href="#toc3-529">autotools</a>
 
-**<a href="#toc2-434">Notes for Writing Language Bindings</a>**
-&emsp;<a href="#toc3-437">Schema/Architecture Overview</a>
-&emsp;<a href="#toc3-456">Informal Summary</a>
-&emsp;<a href="#toc3-466">Semantic Attributes</a>
-&emsp;<a href="#toc3-515">Language-Specific Implementation Attributes</a>
+**<a href="#toc2-536">Notes for Writing Language Bindings</a>**
+&emsp;<a href="#toc3-539">Schema/Architecture Overview</a>
+&emsp;<a href="#toc3-558">Informal Summary</a>
+&emsp;<a href="#toc3-568">Semantic Attributes</a>
+&emsp;<a href="#toc3-617">Language-Specific Implementation Attributes</a>
 
-**<a href="#toc2-538">Ownership and License</a>**
-&emsp;<a href="#toc3-547">Hints to Contributors</a>
-&emsp;<a href="#toc3-556">This Document</a>
+**<a href="#toc2-640">Ownership and License</a>**
+&emsp;<a href="#toc3-649">Hints to Contributors</a>
+&emsp;<a href="#toc3-658">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -119,7 +119,7 @@ NB: If you don't have superuser rights on a system you'll have to make sure zpro
 <A name="toc2-91" title="Setup your project environment" />
 ## Setup your project environment
 
-The easiest way to start is by coping the `generate.sh` to an empty directory. Then add the following minimal project.xml.
+The easiest way to start is to create a minimal project.xml.
 
 ```xml
 <project script = "zproject.gsl">
@@ -131,7 +131,7 @@ The easiest way to start is by coping the `generate.sh` to an empty directory. T
 Once you're done you can create your project's build environment and start compiling:
 
 ```sh
-./generate.sh
+gsl project.xml
 ./autogen.sh
 ./configure.sh
 make
@@ -211,7 +211,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     -->
 
     <!--
-        Classes, if the class header or source file doesn't exist this will
+        Classes, if the class header or source file doesn't exist, this will
         generate a skeletons for them.
         use private = "1" for internal classes
     <class name = "myclass">Public class description</class>
@@ -219,8 +219,8 @@ zproject's `project.xml` contains an extensive description of the available conf
     -->
 
     <!--
-        Actors, are build using the simple actor framework from czmq. If the
-        actors class header or source file doesn't exist this will generate a
+        Actors, are built using the simple actor framework from czmq. If the
+        actors class header or source file doesn't exist, this will generate a
         skeleton for them. The generated test method of the actor will teach
         you how to use them. Also have a look at the czmq docs to learn more
         about actors.
@@ -316,13 +316,23 @@ The zproject scripts can also optionally generate the `@interface` in your class
 ```xml
 <!--
     This model defines a public API for binding. 
+
+    It shows a language binding developer what to expect from the API XML
+    files.
 -->
 <class name = "myclass" >
     My Feature-Rich Class
 
-    <include filename = "../license.xml" />
+    <include filename = "license.xml" />
 
     <constant name = "default port" value = "8080">registered with IANA</constant>
+
+    <enum name = "mode">
+        Enumeration defining different work modes. Constants are mandatory.
+        <constant name="normal" constant = "1">
+        <constant name="fast"   constant = "2">
+        <constant name="safe"   constant = "3">
+    </enum>
 
     <!-- Constructor is optional; default one has no arguments -->
     <constructor>
@@ -331,12 +341,19 @@ The zproject scripts can also optionally generate the `@interface` in your class
     </constructor>
 
     <!-- Destructor is optional; default one follows standard style -->
-    <destructor />
+    <destructor>
+        Destructors implicitely get a new argument prepended, which:
+
+        * is called `self_p`
+        * is of this class' type
+        * is passed by reference
+        * is marked as the self pointer for the destructor (`destructor_self = "1"`)
+    </destructor>
 
     <!-- This models a method with no return value -->
     <method name = "sleep">
         Put the myclass to sleep for the given number of milliseconds.
-        No messages will be processed by the actor during this time.
+        No messages will be processed by it during this time.
         <argument name = "duration" type = "integer" />
     </method>
 
@@ -344,6 +361,36 @@ The zproject scripts can also optionally generate the `@interface` in your class
     <method name = "has feature">
         Return true if the myclass has the given feature.
         <argument name = "feature" type = "string" />
+        <return type = "boolean" />
+    </method>
+
+    <!-- This models a method which will be excluded from generated C code and
+         bindings.
+
+         It's meant to be useful if your C code has either no constructor, no
+         destructor, no `print` method, or no `test` method, which would be
+         generated implicitly if not found in the API.
+     -->
+    <method name = "print" exclude = "1">
+        Get printable string for this myclass.
+        <return type = "string" />
+    </method>
+
+    <method name = "send strings">
+        This does something with a series of strings (until NULL). The strings
+        won't be touched.
+
+        Because the next method has the same name with a prepended "v", it's
+        recognized as this method's `va_list` sibling (in GSL:
+        `method.has_va_list_sibling = "1"`). This information might be used by
+        the various language bindings.
+        <argument name = "string" type = "string" variadic = "1" constant = "1"/>
+        <return type = "boolean" />
+    </method>
+    <method name = "vsend strings">
+        This does something with a series of strings (until NULL). The strings
+        won't be touched.
+        <argument name = "string" type = "string" variadic = "1" constant = "1"/>
         <return type = "boolean" />
     </method>
 
@@ -357,7 +404,7 @@ The zproject scripts can also optionally generate the `@interface` in your class
     <!-- Callback types can be used as method arguments -->
     <method name = "add handler">
         Store the given callback function for later
-        <argument name = "handler" type = "myclass_handler_fn" callback = "1" />
+        <argument name = "handler" type = "my_class_handler_fn" callback = "1" />
     </method>
 
     <!-- If singleton = "1", no class struct pointer is required. -->
@@ -366,19 +413,74 @@ The zproject scripts can also optionally generate the `@interface` in your class
         <argument name = "verbose" type = "boolean" />
     </method>
 
+    <method name = "new thing" singleton = "1" >
+	Creates a new myclass. The caller is responsible for destroying it when
+	finished with it.
+        <return type = "myclass" fresh = "1" />
+    </method>
+
+    <method name = "free" singleton = "1">
+        Frees a provided string, and nullify the parent pointer.
+        <argument name = "string pointer" type = "string" constant = "0"
+            by_reference = "1" />
+    </method>
+
     <!-- These are the types we support
          Not all of these are supported in all language bindings;
          see each language binding's file for supported types in that
          language, and add more types as needed where appropriate.
+
+         Also, see zproject_class_api.gsl to see how they're handled exactly.
          -->
     <method name = "tutorial">
         <argument name = "void pointer" type = "anything" />
         <argument name = "standard int" type = "integer" />
         <argument name = "standard float" type = "real" />
         <argument name = "standard bool" type = "boolean" />
-        <argument name = "char pointer" type = "string" />
-        <argument name = "custom pointer" type = "myclass_t" />
+        <argument name = "fixed size unsigned integer" type = "number" size = "4">
+            Supported sizes are 1, 2, 4, and 8.
+        </argument>
+        <argument name = "a byte" type = "byte" />
+        <argument name = "conversion mode" type = "enum:myclass.mode">
+            The container for this argument will get the following attributes:
+            * `is_enum = 1"
+            * `enum_class = "myclass"`
+            * `enum_name = "mode"`
+            * `c_type = "my_class_mode_t"`
+        </argument>
+        <argument name = "char pointer to C string" type = "string" />
+        <argument name = "byte pointer to buffer" type = "buffer" />
+        <argument name = "buffer size" type = "size" />
+        <argument name = "file handle" type = "FILE" />
+        <argument name = "file size" type = "file_size" />
+        <argument name = "time" type = "time" />
+        <argument name = "format" type = "format">
+            This makes the function is variadic (will cause a new argument to be
+            added to represent the variadic arguments).
+        </argument>
+        <argument name = "variadic list argument" type = "va_list" />
+        <argument name = "custom pointer" type = "my custom class">
+            Any other type is valid, as long as there is a corresponding C
+            type, in this case `my_custom_class_t`.
+        </argument>
         <return type = "nothing">void method</return>
+    </method>
+
+    <method name = "set foo" polymorphic = "1">
+      Set attribute foo to a new value. Note that this method takes a
+      polymorphic reference (`void *`) as its first argument, which could point
+      to structs of different types.
+
+      This also means that high-level bindings might give you the choice to
+      call this method directly on an instance, or with an explicit receiver.
+      <argument name = "new value" type="integer" />
+    </method>
+
+    <method name = "set bar">
+        This method takes an argument type of the (descriptive) type `foo`, but
+        resolving it to a corresponding C type will be skipped because it's
+        overridden to `foobarbaz_t` by the `c_type` attribute.
+        <argument name = "new foo" type="foo" c_type="foobarbaz_t" />
     </method>
 </class>
 ```
@@ -422,7 +524,7 @@ Language bindings will also be generated in the following languages:
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
-<A name="toc3-397" title="Supported API Model Attributes" />
+<A name="toc3-499" title="Supported API Model Attributes" />
 ### Supported API Model Attributes
 
 The following attributes are supported for methods:
@@ -438,7 +540,7 @@ e should not be modified (roughly translates to `const` in C).
 - `variadic = "1"` - used for representing variadic arguments.
 - `is_format = "1"` - used for `printf`-style format strings preceding variadic arguments (which are added automatically).
 
-<A name="toc3-413" title="Tips" />
+<A name="toc3-515" title="Tips" />
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
@@ -449,20 +551,20 @@ echo method.string()  # will print the model as an XML string.
 method.save(filename) # will save the model as an XML string to the given file.
 ```
 
-<A name="toc2-424" title="Removal" />
+<A name="toc2-526" title="Removal" />
 ## Removal
 
-<A name="toc3-427" title="autotools" />
+<A name="toc3-529" title="autotools" />
 ### autotools
 
 ```sh
 make uninstall
 ```
 
-<A name="toc2-434" title="Notes for Writing Language Bindings" />
+<A name="toc2-536" title="Notes for Writing Language Bindings" />
 ## Notes for Writing Language Bindings
 
-<A name="toc3-437" title="Schema/Architecture Overview" />
+<A name="toc3-539" title="Schema/Architecture Overview" />
 ### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
@@ -481,7 +583,7 @@ make uninstall
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-<A name="toc3-456" title="Informal Summary" />
+<A name="toc3-558" title="Informal Summary" />
 ### Informal Summary
 
 A `class` is always the top-level entity in an API model, and it will be merged
@@ -491,7 +593,7 @@ and methods contain `argument`s and `return`s (collectively, "container"s). Each
 entity will contain both *semantic attributes* and *language-specific
 implementation attributes*.
 
-<A name="toc3-466" title="Semantic Attributes" />
+<A name="toc3-568" title="Semantic Attributes" />
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
@@ -540,7 +642,7 @@ container.variadic     # 0/1 (default: 0)
 container.va_start     # string - that holds the argment name for va_start ()
 ```
 
-<A name="toc3-515" title="Language-Specific Implementation Attributes" />
+<A name="toc3-617" title="Language-Specific Implementation Attributes" />
 ### Language-Specific Implementation Attributes
 
 Language-specific implementation attributes hold information that is not
@@ -563,7 +665,7 @@ avoid collisions is to prefix all language-specific attributes with the
 name of the language, though in principle, any collision-free convention
 would be acceptable.
 
-<A name="toc2-538" title="Ownership and License" />
+<A name="toc2-640" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -572,7 +674,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-547" title="Hints to Contributors" />
+<A name="toc3-649" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -581,7 +683,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-556" title="This Document" />
+<A name="toc3-658" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).

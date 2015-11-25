@@ -83,7 +83,7 @@ NB: If you don't have superuser rights on a system you'll have to make sure zpro
 
 ## Setup your project environment
 
-The easiest way to start is by coping the `generate.sh` to an empty directory. Then add the following minimal project.xml.
+The easiest way to start is to create a minimal project.xml.
 
 ```xml
 <project script = "zproject.gsl">
@@ -95,7 +95,7 @@ The easiest way to start is by coping the `generate.sh` to an empty directory. T
 Once you're done you can create your project's build environment and start compiling:
 
 ```sh
-./generate.sh
+gsl project.xml
 ./autogen.sh
 ./configure.sh
 make
