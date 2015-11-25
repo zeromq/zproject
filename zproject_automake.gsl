@@ -310,7 +310,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name).cfg
+ExecStart=@prefix@/bin/$(main.name) @prefix@/etc/@PACKAGE@/$(main.name).cfg
 
 [Install]
 WantedBy=multi-user.target
@@ -323,7 +323,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/%i.cfg
+ExecStart=@prefix@/bin/$(main.name) @prefix@/etc/@PACKAGE@/%i.cfg
 
 [Install]
 WantedBy=multi-user.target
