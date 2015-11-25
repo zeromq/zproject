@@ -86,6 +86,12 @@ function resolve_ruby_container (container)
     elsif my.container.c_type = "const char *"
         my.container.ruby_ffi_type = "string"
         my.container.coerce_to_c = "String($(my.container.ruby_name:))"
+    elsif my.container.c_type = "char *"
+        if my.container.fresh
+            # if it's a fresh string that we have to free() when done with it,
+            # wrap pointer in an FFI::AutoPointer
+            my.container.coerce_to_ruby = "$(project.RubyName:)::FFI::AutoPointer.new($(my.container.ruby_name:))"
+        endif
     elsif my.container.c_type = "byte"
         my.container.ruby_ffi_type = "char"
         my.container.coerce_to_c = "Integer($(my.container.ruby_name:))"
@@ -246,6 +252,20 @@ require_relative 'ffi/version'
 
 module $(project.RubyName:)
   module FFI
+    module LibC
+      extend ::FFI::Library
+      ffi_lib ::FFI::Platform::LIBC
+      attach_function :free, [ :pointer ], :void, blocking: true
+    end
+
+    # Used to wrap fresh pointers so they can be free'd automatically, when the
+    # AutoPointer instance goes out of scope.
+    class AutoPointer < ::FFI::AutoPointer
+      def self.release(ptr)
+        LibC.free(ptr)
+      end
+    end
+
     extend ::FFI::Library
 
     def self.available?
