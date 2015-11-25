@@ -389,7 +389,11 @@ $(PROJECT.PREFIX:c)_EXPORT void
 .-
 .-  Build the source file for a class
 .-
+.if project.use_cxx
+.source_file = "src/$(class.c_name).cc"
+.else
 .source_file = "src/$(class.c_name).c"
+.endif
 .if !file.exists (source_file)
 .   output source_file
 .if !defined (class.api)
