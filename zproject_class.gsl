@@ -55,8 +55,8 @@ $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
-#ifndef $(project.prefix:c)_library_H_INCLUDED
-#define $(project.prefix:c)_library_H_INCLUDED
+#ifndef $(PROJECT.PREFIX:C)_LIBRARY_H_INCLUDED
+#define $(PROJECT.PREFIX:C)_LIBRARY_H_INCLUDED
 
 //  Set up environment for the application
 .if file.exists ("include/$(project.prelude)")
