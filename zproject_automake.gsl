@@ -191,12 +191,14 @@ src_$(name:c)_SOURCES = src/$(name:c).cc
 src_$(name:c)_SOURCES = src/$(name:c).c
 .   endif
 .   if main.service ?= 1 | main.services ?= 1
-src_$(main.name:c)_configdir = \$(sysconfdir)/$(project.name)
 src_$(main.name:c)_servicedir = @prefix@/lib/systemd/system
+.   if ! (main.no_config ?= 1)
+src_$(main.name:c)_configdir = \$(sysconfdir)/$(project.name)
 .   if main.service ?= 1
 src_$(main.name:c)_config_DATA = src/$(main.name).cfg
 .   else
 src_$(main.name:c)_config_DATA = src/$(main.name).cfg.example
+.   endif
 .   endif
 .   if main.service ?= 1
 src_$(main.name:c)_service_DATA = src/$(main.name).service
@@ -293,6 +295,9 @@ $(project.GENERATED_WARNING_HEADER:)
 .else
 .       do_cfg = 0
 .endif
+.if main.no_config ?= 1
+. do_cfg = 0
+.endif
 .if do_cfg ?= 1
 #   $(main.name) configuration
 
@@ -302,7 +307,7 @@ server
     workdir = .         #   Working directory for daemon
     verbose = 0         #   Do verbose logging of activity?
 .endif
-.if main.service ?= 1
+.if main.service ?= 1 & !file.exists ("src/$(main.name).service.in")
 .   output "src/$(main.name).service.in"
 [Unit]
 Description=$(main.name) service
@@ -310,12 +315,16 @@ After=network.target
 
 [Service]
 Type=simple
+.if main.no_config ?= 1
+ExecStart=@prefix@/bin/$(main.name)
+.else
 ExecStart=@prefix@/bin/$(main.name) @prefix@/etc/@PACKAGE@/$(main.name).cfg
+.endif
 
 [Install]
 WantedBy=multi-user.target
 .endif
-.if main.services ?= 1
+.if main.services ?= 1 & !file.exists ("src/$(main.name)@.service.in")
 .   output "src/$(main.name)@.service.in"
 [Unit]
 Description=$(main.name) service for %I
@@ -323,7 +332,11 @@ After=network.target
 
 [Service]
 Type=simple
+.if main.no_config ?= 1
+ExecStart=@prefix@/bin/$(main.name) %i
+.else
 ExecStart=@prefix@/bin/$(main.name) @prefix@/etc/@PACKAGE@/%i.cfg
+.endif
 
 [Install]
 WantedBy=multi-user.target
