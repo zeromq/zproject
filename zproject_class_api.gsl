@@ -41,18 +41,12 @@ function resolve_c_container (container)
     #
     my.container.name ?= "_"
     my.container.type ?= "nothing"
-    my.container.by_reference ?= "0"
-    my.container.by_reference = conv.number (my.container.by_reference)
-    my.container.callback ?= "0"
-    my.container.callback = conv.number (my.container.callback)
-    my.container.fresh ?= "0"
-    my.container.fresh = conv.number (my.container.fresh)
-    my.container.variadic ?= "0"
-    my.container.variadic = conv.number (my.container.variadic)
-    my.container.is_format ?= "0"
-    my.container.is_format = conv.number (my.container.is_format)
-    my.container.is_enum ?= "0"
-    my.container.is_enum = conv.number (my.container.is_enum)
+    my.container.by_reference = conv.number (my.container.by_reference? 0)
+    my.container.callback = conv.number (my.container.callback? 0)
+    my.container.fresh = conv.number (my.container.fresh? 0)
+    my.container.variadic = conv.number (my.container.variadic? 0)
+    my.container.is_format = conv.number (my.container.is_format? 0)
+    my.container.is_enum = conv.number (my.container.is_enum? 0)
 
     # Resolve language-specific attributes for the C language.
     #
@@ -144,8 +138,7 @@ function resolve_c_container (container)
     endif
 
     # This attribute is resolved late because it may be influenced during type resolution
-    my.container.constant ?= "0"
-    my.container.constant ?= conv.number (my.container.constant)
+    my.container.constant ?= conv.number (my.container.constant? 0)
     if my.container.constant
         my.c_type = "const " + my.c_type
     endif
@@ -168,14 +161,10 @@ function resolve_c_method (method, default_description)
     # Resolve semantic attributes
     my.method.name ?= "_"
     my.method.description ?= "$(string.trim (my.method.?my.default_description):left)"
-    my.method.singleton ?= "0"
-    my.method.singleton = conv.number (my.method.singleton)
-    my.method.is_constructor ?= "0"
-    my.method.is_constructor = conv.number (my.method.is_constructor)
-    my.method.is_destructor ?= "0"
-    my.method.is_destructor = conv.number (my.method.is_destructor)
-    my.method.polymorphic ?= "0"
-    my.method.polymorphic = conv.number (my.method.polymorphic)
+    my.method.singleton = conv.number (my.method.singleton? 0)
+    my.method.is_constructor = conv.number (my.method.is_constructor? 0)
+    my.method.is_destructor = conv.number (my.method.is_destructor? 0)
+    my.method.polymorphic = conv.number (my.method.polymorphic? 0)
 
     # Resolve language-specific attributes for the C language.
     my.method.c_name ?= "$(my.method.name:c)"
