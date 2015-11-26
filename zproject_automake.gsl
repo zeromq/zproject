@@ -221,6 +221,18 @@ $(project.name)_SCRIPTS = \\
     $(bin.name)
 .   endif
 .endfor
+.for service
+.   if first()
+
+$(project.name)_servicesdir = @prefix@/lib/systemd/system
+$(project.name)_services_DATA = \\
+.   endif
+.   if !last()
+    src/$(service.name).service \\
+.   else
+    src/$(service.name).service
+.   endif
+.endfor
 
 .for class where defined (class.api)
 .   if first()

@@ -439,6 +439,9 @@ AC_CONFIG_FILES([Makefile
 .   for project.main where main.services ?= 1
                  src/$(main.name)@.service
 .   endfor
+.   for project.service
+                 src/$(service.name).service
+.   endfor
                  ])
 .else
 AC_CONFIG_FILES([Makefile])
