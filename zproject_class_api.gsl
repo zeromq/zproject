@@ -41,18 +41,12 @@ function resolve_c_container (container)
     #
     my.container.name ?= "_"
     my.container.type ?= "nothing"
-    my.container.by_reference ?= "0"
-    my.container.by_reference = conv.number (my.container.by_reference)
-    my.container.callback ?= "0"
-    my.container.callback = conv.number (my.container.callback)
-    my.container.fresh ?= "0"
-    my.container.fresh = conv.number (my.container.fresh)
-    my.container.variadic ?= "0"
-    my.container.variadic = conv.number (my.container.variadic)
-    my.container.is_format ?= "0"
-    my.container.is_format = conv.number (my.container.is_format)
-    my.container.is_enum ?= "0"
-    my.container.is_enum = conv.number (my.container.is_enum)
+    my.container.by_reference = conv.number (my.container.by_reference? 0)
+    my.container.callback = conv.number (my.container.callback? 0)
+    my.container.fresh = conv.number (my.container.fresh? 0)
+    my.container.variadic = conv.number (my.container.variadic? 0)
+    my.container.is_format = conv.number (my.container.is_format? 0)
+    my.container.is_enum = conv.number (my.container.is_enum? 0)
 
     # Resolve language-specific attributes for the C language.
     #
@@ -133,6 +127,8 @@ function resolve_c_container (container)
         my.container.enum_name = string.substr (my.container.type, my.class_sep+1)
         my.c_type = "$(my.container.enum_class:c)_$(my.container.enum_name:c)_t"
     else
+        #   Map unknown type XYZ to "XYZ_t *" and resolve later
+        my.container.foreign = 1
         my.c_type = "$(my.type:c)_t"
         my.stars += "*"
     endif
@@ -142,14 +138,13 @@ function resolve_c_container (container)
     endif
 
     # This attribute is resolved late because it may be influenced during type resolution
-    my.container.constant ?= "0"
-    my.container.constant ?= conv.number (my.container.constant)
+    my.container.constant ?= conv.number (my.container.constant? 0)
     if my.container.constant
         my.c_type = "const " + my.c_type
     endif
 
     if string.length (my.stars)
-        my.c_type += (" " + my.stars)
+        my.c_type += " " + my.stars
     endif
 
     my.container.c_type = my.c_type
@@ -166,14 +161,10 @@ function resolve_c_method (method, default_description)
     # Resolve semantic attributes
     my.method.name ?= "_"
     my.method.description ?= "$(string.trim (my.method.?my.default_description):left)"
-    my.method.singleton ?= "0"
-    my.method.singleton = conv.number (my.method.singleton)
-    my.method.is_constructor ?= "0"
-    my.method.is_constructor = conv.number (my.method.is_constructor)
-    my.method.is_destructor ?= "0"
-    my.method.is_destructor = conv.number (my.method.is_destructor)
-    my.method.polymorphic ?= "0"
-    my.method.polymorphic = conv.number (my.method.polymorphic)
+    my.method.singleton = conv.number (my.method.singleton? 0)
+    my.method.is_constructor = conv.number (my.method.is_constructor? 0)
+    my.method.is_destructor = conv.number (my.method.is_destructor? 0)
+    my.method.polymorphic = conv.number (my.method.polymorphic? 0)
 
     # Resolve language-specific attributes for the C language.
     my.method.c_name ?= "$(my.method.name:c)"
@@ -318,15 +309,14 @@ function resolve_c_class (class)
     endfor
 endfunction
 
-# Resolve all dependent data types for one container and load their API file if
-# it exists.
+#   Resolve all dependent data types for one container and load their API file
+#   if it exists.
 #
 function resolve_container_dependencies (class_name, container)
-    old_dependency_count = count (project->dependencies.class)
-    if my.container.c_type = "$(my.container.type:c)_t *" \
-     & !(my.class_name = my.container.type) \
-     & count (project.class, class.name = my.container.type) = 0 \
-     & count (project->dependencies.class, class.name = my.container.type) = 0
+    if my.container.foreign ?= 1 \
+    & count (project.class, class.name = my.container.type) = 0 \
+    & count (project->dependencies.class, class.name = my.container.type) = 0
+        resolved = 0
         dir = directory.open ("/usr/local/share/zproject")?
         if defined (dir)
             for dir.directory
@@ -335,11 +325,12 @@ function resolve_container_dependencies (class_name, container)
                     new_dependency = XML.load_file (api_file)
                     new_dependency.resolved = "0"
                     move new_dependency to project->dependencies
+                    resolved = 1
                 endif
             endfor
         endif
-        if count (project->dependencies.class) = old_dependency_count
-            echo "W: Could not resolve foreign data type " + my.container.type
+        if !resolved
+            echo "W: in $(class.name): '" + my.container.type +"' does not resolve to a class"
         endif
     endif
 endfunction
@@ -354,11 +345,11 @@ function resolve_class_dependencies (class)
     endif
     # Resolve argument and return containers
     for class.method
-        for method.argument as container
-            resolve_container_dependencies (class.name, container)
+        for method.argument
+            resolve_container_dependencies (class.name, argument)
         endfor
-        for method.return as container
-            resolve_container_dependencies (class.name, container)
+        for method.return
+            resolve_container_dependencies (class.name, return)
         endfor
     endfor
 endfunction
