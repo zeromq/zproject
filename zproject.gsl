@@ -6,18 +6,18 @@
 #   Resolve XML includes
 function resolve_includes (xml)
     for my.xml.include
-        if defined (include.filename)
-            my.include_file = my.xml.load_file (filename)?
-            if defined (my.include_file)
-                move my.include_file after include
-            else
-                echo "E: error loading include file: $(filename): $(xml.error?)"
-            endif
+        if !defined (include.filename)
+            abort "E: required attribute 'filename' not defined"
+        endif
+        my.include_file = my.xml.load_file (filename)?
+        if defined (my.include_file)
+            move my.include_file after include
         else
-            echo "E: required attribute 'filename' not defined"
+            abort "E: <include> failed: $(xml.error?)"
         endif
     endfor
 endfunction
+
 resolve_includes (project)
 
 # Find c++ sources in the project
