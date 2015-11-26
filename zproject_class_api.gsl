@@ -104,6 +104,8 @@ function resolve_c_container (container)
         my.stars += "*"
     elsif my.type = "va_list"
         my.c_type = "va_list"
+    elsif my.type = "socket"
+        my.c_type = "SOCKET"
     elsif my.type = "string"
         my.c_type = "char"
         my.stars += "*"
