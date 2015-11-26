@@ -175,13 +175,14 @@ The language bindings are minimal, meant to be wrapped in a handwritten idiomati
 ### Supported API Model Attributes
 
 The following attributes are supported for methods:
+
 - `name` - the name of the method (mandatory).
 - `singleton = "1"` - the method is not invoked within the context of a specific instance of an object. Use this if your method does not need to be passed a `self` pointer as the first argument as normal. Implicit for all `constructor`s and `destructor`s and for the implicit `test` method.
 
 The following attributes are supported for arguments and return values:
+
 - `type` - the conceptual type or class name of the argument or return value (default: `"nothing"`, which translates to `void` in C).
-- `constant = "1"` - the argument will not be modified, or the return valu
-e should not be modified (roughly translates to `const` in C).
+- `constant = "1"` - the argument will not be modified, or the return value should not be modified (roughly translates to `const` in C).
 - `by_reference = "1"` - ownership of the argument (and responsibility for freeing it) is transferred from the caller to the function - in practice, the implementation code should also nullify the caller's reference, though this is not enforced by the API model.
 - `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it.
 - `variadic = "1"` - used for representing variadic arguments.
