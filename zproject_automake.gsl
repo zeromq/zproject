@@ -212,8 +212,8 @@ endif
 .   if first()
 
 # Install data into /usr/local/bin
-$(project.name)dir = @bindir@
-$(project.name)_SCRIPTS = \\
+$(project.name:c)dir = @bindir@
+$(project.name:c)_SCRIPTS = \\
 .   endif
 .   if !last()
     $(bin.name) \\
@@ -224,8 +224,8 @@ $(project.name)_SCRIPTS = \\
 .for service
 .   if first()
 
-$(project.name)_servicesdir = @prefix@/lib/systemd/system
-$(project.name)_services_DATA = \\
+$(project.name:c)_servicesdir = @prefix@/lib/systemd/system
+$(project.name:c)_services_DATA = \\
 .   endif
 .   if !last()
     src/$(service.name).service \\
