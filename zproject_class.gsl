@@ -47,9 +47,9 @@
 /*  =========================================================================
     $(project.name) - $(PROJECT.NAME) wrapper
 
-.       for project.license
+.   for project.license
     $(string.trim (license.):block                                         )
-.       endfor
+.   endfor
 
 $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
@@ -330,10 +330,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .-  Build the header file for a class
 .-
 .for class
-.   if class.private ?= 1
-.       class.classdir = "src"
-.   endif
-.header_file = "$(class.classdir)/$(class.c_name).h"
+.header_file = "$((class.private ?= 1)?? "src"? "include")/$(class.c_name).h"
 .if !file.exists (header_file)
 .   output header_file
 /*  =========================================================================
