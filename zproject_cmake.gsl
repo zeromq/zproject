@@ -117,12 +117,7 @@ set ($(project.name)_headers
     include/$(name:c).h
 .endfor
 .for class
-.   if class.private ?= 1
-.       class.classdir = "src"
-.   else
-.       class.classdir = "include"
-.   endif
-    $(classdir)/$(name:c).h
+    $((class.private ?= 1)?? "src"? "include")/$(name:c).h
 .endfor
 .for extra
     src/$(name)

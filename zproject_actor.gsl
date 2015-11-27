@@ -1,7 +1,7 @@
 .#  ===========================================================================
 .#  Generate czmq actor header/source skeletons
 .#
-.#   Generates a skeleton for a new czmq actor actor. Will not overwrite
+.#   Generates a skeleton for a new czmq actor. Will not overwrite
 .#   existing files.
 .#   See project.xml for instructions on how to specify an actor.
 .#
@@ -24,7 +24,6 @@ function resolve_actor (actor)
    my.class.name ?= my.actor.name
    my.class.private ?= my.actor.private
    my.class.c_name ?= my.actor.c_name
-   my.class.classdir ?= my.actor.actordir
    my.class.description ?= my.actor.description
    move my.class to project
 endfunction

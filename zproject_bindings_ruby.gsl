@@ -25,35 +25,33 @@ for class where defined (class.api)
 endfor
 
 function resolve_ruby_enums (class)
-  for my.class.enum
-    enum.ruby_name = "$(my.class.c_name:)_$(enum.name:c)"
-
-    # useful to test existence of enum later when resolving arguments of enum type
-    enum.c_type    = "$(my.class.c_name:)_$(enum.name:c)_t"
-  endfor
+    for my.class.enum
+        #   Useful to test existence of enum later when resolving
+        #   arguments of enum type
+        enum.c_type    = "$(my.class.c_name:)_$(enum.name:c)_t"
+        enum.ruby_name = "$(my.class.c_name:)_$(enum.name:c)"
+    endfor
 endfunction
 
 # Work out Ruby name based on container.name and and set it as
 # container.ruby_name.
 function sanitize_ruby_container_name(container)
-  my.container.ruby_name = "$(my.container.name:c)"
+    my.container.ruby_name = "$(my.container.name:c)"
 
-  # Replace default value from resolve_c_container().
-  if my.container.ruby_name = "_"
-      my.container.ruby_name = my.container.variadic ?? "args" ? "result"
-  endif
+    # Replace default value from resolve_c_container().
+    if my.container.ruby_name = "_"
+        my.container.ruby_name = my.container.variadic ?? "args" ? "result"
+    endif
 
-  ##
-  # Sanitize if it matches a Ruby keyword.
-  #
+    # Sanitize if it matches a Ruby keyword.
 
-  # Ruby keywords. The only keyword not listed here is 'defined?', but that
-  # won't be possible because of the 'c' pretty-print modifier above.
-  my.ruby_keywords_regexp = "^(BEGIN|END|__ENCODING__|__END__|__FILE__|__LINE__|alias|and|begin|break|case|class|def|do|else|elsif|end|ensure|false|for|if|in|module|next|nil|not|or|redo|rescue|retry|return|self|super|then|true|undef|unless|until|when|while|yield)$"
+    # Ruby keywords. The only keyword not listed here is 'defined?', but that
+    # won't be possible because of the 'c' pretty-print modifier above.
+    my.ruby_keywords_regexp = "^(BEGIN|END|__ENCODING__|__END__|__FILE__|__LINE__|alias|and|begin|break|case|class|def|do|else|elsif|end|ensure|false|for|if|in|module|next|nil|not|or|redo|rescue|retry|return|self|super|then|true|undef|unless|until|when|while|yield)$"
 
-  if regexp.match (my.ruby_keywords_regexp, my.container.ruby_name)
-      my.container.ruby_name += "_"
-  endif
+    if regexp.match (my.ruby_keywords_regexp, my.container.ruby_name)
+        my.container.ruby_name += "_"
+    endif
 endfunction
 
 function resolve_ruby_container (container)
@@ -147,9 +145,9 @@ endfunction
 # Returns the Ruby method call without arguments,
 # like: ::MyProject::FFI.my_class_my_method
 function ruby_method_call_without_arguments(method)
-  # must not contain newline at the end
-  my.call = "::$(project.RubyName:)::FFI.$(class.c_name:)_$(my.method.c_name:)"
-  return my.call
+    # must not contain newline at the end
+    my.call = "::$(project.RubyName:)::FFI.$(class.c_name:)_$(my.method.c_name:)"
+    return my.call
 endfunction
 
 # The arguments passed to the inner method call,
@@ -293,13 +291,13 @@ module $(project.RubyName:)
 
 .endfor
 .for constructor as method
-      $(ruby_ffi_attach_definition(method))
+      $(ruby_ffi_attach_definition (method))
 .endfor
 .for destructor as method
-      $(ruby_ffi_attach_definition(method))
+      $(ruby_ffi_attach_definition (method))
 .endfor
 .for method
-      $(ruby_ffi_attach_definition(method))
+      $(ruby_ffi_attach_definition (method))
 .endfor
 
       require_relative 'ffi/$(class.ruby_require:)'
@@ -335,8 +333,8 @@ module $(project.RubyName:)
         end
       end
 .for class.destructor where count (destructor.argument) = 1
-.if first ()
-.class.has_ruby_finalizer = 1
+.   if first ()
+.       class.has_ruby_finalizer = 1
       def self.create_finalizer_for ptr
         Proc.new do
           ptr_ptr = ::FFI::MemoryPointer.new :pointer
@@ -344,7 +342,7 @@ module $(project.RubyName:)
           ::$(project.RubyName:)::FFI.$(class.c_name)_$(destructor.c_name) ptr_ptr
         end
       end
-.endif
+.   endif
 .endfor
 .if !defined (class.has_ruby_finalizer)
 .# TODO: just raise an ImplicitDestroyError

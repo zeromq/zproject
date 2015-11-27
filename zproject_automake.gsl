@@ -114,8 +114,7 @@ include_HEADERS = \\
     include/$(name:c).h \\
 .endfor
 .for class where !defined (class.private)
-.   class.classdir = "include"
-    $(classdir)/$(name:c).h \\
+    include/$(name:c).h \\
 .endfor
     include/$(project.prefix)_library.h
 
