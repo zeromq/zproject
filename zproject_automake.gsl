@@ -326,10 +326,11 @@ After=network.target
 
 [Service]
 Type=simple
+Environment="prefix=@prefix@"
 .if main.no_config ?= 1
 ExecStart=@prefix@/bin/$(main.name)
 .else
-ExecStart=@prefix@/bin/$(main.name) @prefix@/etc/@PACKAGE@/$(main.name).cfg
+ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name).cfg
 .endif
 
 [Install]
@@ -343,10 +344,11 @@ After=network.target
 
 [Service]
 Type=simple
+Environment="prefix=@prefix@"
 .if main.no_config ?= 1
 ExecStart=@prefix@/bin/$(main.name) %i
 .else
-ExecStart=@prefix@/bin/$(main.name) @prefix@/etc/@PACKAGE@/%i.cfg
+ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/%i.cfg
 .endif
 
 [Install]
