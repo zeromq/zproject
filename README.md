@@ -364,18 +364,6 @@ The zproject scripts can also optionally generate the `@interface` in your class
         <return type = "boolean" />
     </method>
 
-    <!-- This models a method which will be excluded from generated C code and
-         bindings.
-
-         It's meant to be useful if your C code has either no constructor, no
-         destructor, no `print` method, or no `test` method, which would be
-         generated implicitly if not found in the API.
-     -->
-    <method name = "print" exclude = "1">
-        Get printable string for this myclass.
-        <return type = "string" />
-    </method>
-
     <method name = "send strings">
         This does something with a series of strings (until NULL). The strings
         won't be touched.
