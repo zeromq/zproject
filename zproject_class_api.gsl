@@ -199,41 +199,21 @@ function resolve_c_method (method, default_description)
     endfor
 endfunction
 
-# Resolve missing or implicit details in a C class model
+#   Resolve missing or implicit details in a C class model
 #
-# Here, "class" refers to a <class/> entity in the model XML.
+#   Here, "class" refers to a <class/> entity in the model XML.
 #
-# All inner methods will be fully resolved, including creating implicit methods.
-# as well as any semantic or C-specific attributes of the method itself.
+#   All inner methods will be fully resolved, as well as any
+#   semantic or C-specific attributes of the method itself.
 #
 function resolve_c_class (class)
     my.class.c_name ?= "$(my.class.name:c)"
     my.class.description ?= "$(string.trim (my.class.?""):left)"
 
     # Includes of XML files
-    resolve_includes(my.class)
+    resolve_includes (my.class)
 
-    # Implicit constructor
-    if !count (my.class.constructor)
-        new constructor to my.class
-        endnew
-    endif
-
-    # Implicit destructor
-    if !count (my.class.destructor)
-        new destructor to my.class
-        endnew
-    endif
-
-    # Implicit print method after the destructor
-    if !count (my.class.method, method.name = "print")
-        new method to my.class after my.class->destructor
-            method.name = "print"
-            method.description = "Print properties of the $(my.class.name:) object."
-        endnew
-    endif
-
-    # Implicit test method at the end of the list
+    # All classes must have a test method
     if !count (my.class.method, method.name = "test")
         new method to my.class
             method.name = "test"
@@ -246,21 +226,11 @@ function resolve_c_class (class)
         endnew
     endif
 
-    # Delete methods marked with exclude attribute
-    for my.class.constructor as method where defined (method.exclude)
-        delete method
-    endfor
-    for my.class.destructor as method where defined (method.exclude)
-        delete method
-    endfor
-    for my.class.method where defined (method.exclude)
-        delete method
-    endfor
-
     # Resolve details of each method
     for my.class.callback_type as method
         resolve_c_method (method, "")
     endfor
+
     for my.class.method
         resolve_c_method (method, "")
         # Test if a variadic function has a sibling that accepts a va_list.
@@ -271,6 +241,7 @@ function resolve_c_class (class)
             method.has_va_list_sibling = "1"
         endif
     endfor
+
     for my.class.constructor as method
         method.name ?= "new"
         method.singleton = "1"
@@ -283,6 +254,7 @@ function resolve_c_class (class)
         endnew
         resolve_c_method (method, "Create a new $(my.class.c_name).")
     endfor
+
     for my.class.destructor as method
         method.name ?= "destroy"
         method.singleton = "1"
