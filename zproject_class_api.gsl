@@ -72,7 +72,7 @@ function resolve_c_container (container)
         my.c_type = "void"
     elsif my.type = "anything"
         my.c_type = "void"
-        my.stars += "*"
+        my.stars = "*"
     elsif my.type = "byte"
         my.c_type = "byte"
     elsif my.type = "char"
@@ -101,24 +101,27 @@ function resolve_c_container (container)
         my.c_type = "time_t"
     elsif my.type = "FILE"
         my.c_type = "FILE"
-        my.stars += "*"
+        my.stars = "*"
     elsif my.type = "va_list"
         my.c_type = "va_list"
     elsif my.type = "socket"
         my.c_type = "SOCKET"
+    elsif my.type = "zmq_pollitem"
+        my.c_type = "zmq_pollitem_t"
+        my.stars = "*"
     elsif my.type = "string"
         my.c_type = "char"
-        my.stars += "*"
+        my.stars = "*"
         my.container.constant ?= !my.container.fresh
     elsif my.type = "format"
         my.c_type = "char"
-        my.stars += "*"
+        my.stars = "*"
         my.container.constant ?= 1
         my.container.is_format = 1
         my.container.variadic = 1
     elsif my.type = "buffer"
         my.c_type = "byte"
-        my.stars += "*"
+        my.stars = "*"
         my.container.constant ?= !my.container.fresh
     elsif my.container.callback
         my.c_type = "$(my.type:c)"
@@ -132,7 +135,7 @@ function resolve_c_container (container)
         #   Map unknown type XYZ to "XYZ_t *" and resolve later
         my.container.foreign = 1
         my.c_type = "$(my.type:c)_t"
-        my.stars += "*"
+        my.stars = "*"
     endif
 
     if my.container.by_reference
