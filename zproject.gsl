@@ -24,12 +24,12 @@ resolve_includes (project)
 function project_use_cxx ()
     use_cxx = 0
     for class
-        if file.exists ("src/$(name:c).cc")
+        if file.exists ("src/$(name).cc")
             return 1
         endif
     endfor
     for main
-        if file.exists ("src/$(name:c).cc")
+        if file.exists ("src/$(name).cc")
             return 1
         endif
     endfor
