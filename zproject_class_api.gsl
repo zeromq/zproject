@@ -45,7 +45,6 @@ function resolve_c_container (container)
     my.container.callback = conv.number (my.container.callback? 0)
     my.container.fresh = conv.number (my.container.fresh? 0)
     my.container.variadic = conv.number (my.container.variadic? 0)
-    my.container.is_format = conv.number (my.container.is_format? 0)
     my.container.is_enum = conv.number (my.container.is_enum? 0)
 
     # Resolve language-specific attributes for the C language.
@@ -117,7 +116,6 @@ function resolve_c_container (container)
         my.c_type = "char"
         my.stars = "*"
         my.container.constant ?= 1
-        my.container.is_format = 1
         my.container.variadic = 1
     elsif my.type = "buffer"
         my.c_type = "byte"
@@ -183,7 +181,9 @@ function resolve_c_method (method, default_description)
     # Resolve each argument container in the method.
     for my.method.argument as obj
         resolve_c_container (obj)
-        if obj.variadic # creates a new argument to represent the variadic arguments.
+        if obj.variadic
+            #   Create a new argument to represent the variadic arguments
+            #   ???This logic is nasty; variadic means two different things
             obj.variadic = "0"
             new argument to my.method as fmtargs
                 fmtargs.variadic = "1"
@@ -396,7 +396,7 @@ function c_method_declaration (method, implementation_style)
         endif
     endif
     for my.method.argument
-        if argument.is_format
+        if argument.type = "format"
             # Next argument is the format list
             my.format_index = my.current_argument_index + 1
         endif

@@ -186,7 +186,6 @@ The following attributes are supported for arguments and return values:
 - `by_reference = "1"` - ownership of the argument (and responsibility for freeing it) is transferred from the caller to the function - in practice, the implementation code should also nullify the caller's reference, though this is not enforced by the API model.
 - `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it.
 - `variadic = "1"` - used for representing variadic arguments.
-- `is_format = "1"` - used for `printf`-style format strings preceding variadic arguments (which are added automatically).
 
 ### Tips
 
@@ -228,31 +227,15 @@ make uninstall
 
 ### Informal Summary
 
-A `class` is always the top-level entity in an API model, and it will be merged
-with the corresponding `class` entity defined in the project model. A class
-contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s),
-and methods contain `argument`s and `return`s (collectively, "container"s). Each
-entity will contain both *semantic attributes* and *language-specific
-implementation attributes*.
+A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
 
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
 
-For example, arguments may be described as passed `by_reference` to indicate
-that ownership is transferred from the caller. Similarly, return values may be
-described as `fresh` to indicate that ownership is transferred to the caller,
-which must destroy the object when it is finished with it. It's important to
-remember that these attributes are primarily meant to be an abstraction that
-describes conceptual information, leaving the details of how code generators
-interpret (or ignore) each attribute up to the authors.
+For example, arguments may be described as passed `by_reference` to indicate that ownership is transferred from the caller. Similarly, return values may be described as `fresh` to indicate that ownership is transferred to the caller, which must destroy the object when it is finished with it. It's important to remember that these attributes are primarily meant to be an abstraction that describes conceptual information, leaving the details of how code generators interpret (or ignore) each attribute up to the authors.
 
-Semantic attributes may be implicit (not given a value in the written model).
-In this case, it is up to the [`zproject_class_api`](zproject_class_api.gsl)
-script to fully resolve default values for all attributes. Downstream code
-generators should *never* resolve or alter semantic attributes, as this could
-change the behavior of any code generator that is run after the errant code
-generator.
+Semantic attributes may be implicit (not given a value in the written model). In this case, it is up to the [`zproject_class_api`](zproject_class_api.gsl) script to fully resolve default values for all attributes. Downstream code generators should *never* resolve or alter semantic attributes, as this could change the behavior of any code generator that is run after the errant code generator.
 
 These are the semantic attributes for each kind of entity that will be resolved before language bindings generators are invoked:
 
@@ -275,7 +258,6 @@ container.constant     # 0/1 (default: 0)
 container.by_reference # 0/1 (default: 0)
 container.callback     # 0/1 (default: 0)
 container.fresh        # 0/1 (default: 0)
-container.is_format    # 0/1 (default: 0)
 container.is_enum      # 0/1 (default: 0)
 container.enum_name    # string if is_enum, otherwise undefined
 container.enum_class   # string if is_enum, otherwise undefined
@@ -285,25 +267,13 @@ container.va_start     # string - that holds the argment name for va_start ()
 
 ### Language-Specific Implementation Attributes
 
-Language-specific implementation attributes hold information that is not
-intrinsic to the concept of the container, but to the binding implementation.
+Language-specific implementation attributes hold information that is not intrinsic to the concept of the container, but to the binding implementation.
 
-In practice, language-specific attributes may contain any information that
-is useful to store as part of the container model to facilitate generation,
-according to any schema that is useful, but it may be helpful to try to follow
-patterns observed in other code generator scripts.
+In practice, language-specific attributes may contain any information that is useful to store as part of the container model to facilitate generation, according to any schema that is useful, but it may be helpful to try to follow patterns observed in other code generator scripts.
 
-However, because the container is shared between all generators, which are
-run in an unspecified order, it's important that generators not rely on
-information resolved in generators. The one exceptions is that many
-generators will rely directly on information from the C implementation
-to which they bind.
+However, because the container is shared between all generators, which are run in an unspecified order, it's important that generators not rely on information resolved in generators. The one exceptions is that many generators will rely directly on information from the C implementation to which they bind.
 
-It is also important that language-specific implementation attributes
-use a naming convention that avoids collisions. The easiest way to
-avoid collisions is to prefix all language-specific attributes with the
-name of the language, though in principle, any collision-free convention
-would be acceptable.
+It is also important that language-specific implementation attributes use a naming convention that avoids collisions. The easiest way to avoid collisions is to prefix all language-specific attributes with the name of the language, though in principle, any collision-free convention would be acceptable.
 
 ## Ownership and License
 

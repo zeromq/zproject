@@ -59,10 +59,10 @@ function resolve_qt_container (container)
     if my.container.c_type = "void"
         my.container.qtCallPre = ""
         my.container.qtReturn = ""
-    elsif regexp.match ("uint(\\d+)_t", my.container.c_type, size)
-        my.container.qtArgType = "quint$(size)"
+    elsif regexp.match ("uint(\\d+)_t", my.container.c_type, my.size)
+        my.container.qtArgType = "quint$(my.size)"
         my.container.qtArgPass = "(" + my.container.c_type + ") " + my.container.qtName
-        my.container.qtReturnType = "quint$(size)"
+        my.container.qtReturnType = "quint$(my.size)"
     elsif my.container.type = "string" & !my.container.by_reference & !my.container.fresh
         my.container.qtArgType = "const QString &"
         my.container.qtArgPass = my.container.qtName + ".toUtf8().data()"
