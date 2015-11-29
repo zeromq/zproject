@@ -7,11 +7,6 @@
 #   language. See https://github.com/imatix/gsl for details. This script
 #   is licensed under MIT/X11.
 #
-#   These parts are not yet implemented:
-#
-#   - function callbacks (e.g. zactor_new)
-#   - methods that take FILE * arguments
-
 
 global.namespace ?= switches.namespace? "org.zeromq.$(project.prefix)"
 global.name_path ?= switches.name_path? "org/zeromq/$(project.prefix)"
@@ -72,6 +67,7 @@ test.dependsOn buildNative
 .#
 .## -------------------------------------------------------------------------
 .   output "$(topdir)/CMakeLists.txt"
+$(project.GENERATED_WARNING_HEADER:)
 cmake_minimum_required (VERSION 2.8)
 
 project ($(project.prefix)jni CXX)
@@ -98,7 +94,9 @@ target_link_libraries ($(project.prefix)jni ${ZMQ_LIBRARY} ${$(PROJECT.PREFIX)_L
 .   output "$(topdir)/gradlew"
 #!/usr/bin/env bash
 #   Gradle start up script for Linux/UN*X
-
+#
+$(project.GENERATED_WARNING_HEADER:)
+#
 #   Add default JVM options here.
 #   You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script
 DEFAULT_JVM_OPTS=""
@@ -366,93 +364,122 @@ rootProject.name = '$(project.prefix)-jni'
 .endmacro
 
 function resolve_jni_container (container)
-    if my.container.variadic
-        my.container.jni_type = "Object..."
-    elsif my.container.type = "nothing"
+    if my.container.type = "nothing"
         my.container.jni_type = "void"
+        my.container.jni_ctype = "void"
     elsif my.container.type = "anything"
         my.container.jni_type = "void *"
+        my.container.jni_ctype = "jlong"
     elsif my.container.type = "boolean"
         my.container.jni_type = "boolean"
+        my.container.jni_ctype = "jboolean"
     elsif my.container.type = "byte"
         my.container.jni_type = "byte"
+        my.container.jni_ctype = "jbyte"
     elsif my.container.type = "char"
         my.container.jni_type = "char"
+        my.container.jni_ctype = "jchar"
     elsif my.container.type = "integer"
         my.container.jni_type = "int"
+        my.container.jni_ctype = "jint"
     elsif my.container.type = "size"
         my.container.jni_type = "long"
+        my.container.jni_ctype = "jlong"
     elsif my.container.type = "number"
         if my.container.size ?= "1"
             my.container.jni_type = "byte"
-        elsif my.container.size = "2"
+            my.container.jni_ctype = "jbyte"
+        elsif my.container.size = 2
             my.container.jni_type = "short"
-        elsif my.container.size = "4"
+            my.container.jni_ctype = "jshort"
+        elsif my.container.size = 4
             my.container.jni_type = "int"
-        elsif my.container.size = "8"
+            my.container.jni_ctype = "jint"
+        elsif my.container.size = 8
             my.container.jni_type = "long"
+            my.container.jni_ctype = "jlong"
         endif
     elsif my.container.type = "real"
         my.container.jni_type = "float"
+        my.container.jni_ctype = "jfloat"
     elsif my.container.type = "buffer"
         my.container.jni_type = "byte []"
+        my.container.jni_ctype = "jbyteArray"
     elsif my.container.type = "string" | my.container.type = "format"
         my.container.jni_type = "String"
+        my.container.jni_ctype = "jstring"
     elsif my.container.type = "time"
         my.container.jni_type = "long"
+        my.container.jni_ctype = "jlong"
     elsif my.container.type = "file_size"
         my.container.jni_type = "long"
+        my.container.jni_ctype = "jlong"
     elsif defined (project.imports_$(my.container.type))
         my.container.jni_type = "$(type:pascal)"
+        my.container.jni_ctype = "jlong"
     elsif count (project.class, class.name = my.container.type)
         my.container.jni_type = "$(type:pascal)"
+        my.container.jni_ctype = "jlong"
+
+    elsif my.container.callback ?= 1 \
+    |     my.container.is_enum \
+    |     my.container.type = "FILE" \
+    |     my.container.type = "va_list" \
+    |     my.container.type = "FILE" \
+    |     my.container.type = "zmq_pollitem" \
+    |     my.container.type = "socket"
+        return 1
+    else
+        abort "Unhandled type '$(my.container.type:)' in $(class.name)"
     endif
+
+    return 0            #   Seems to be OK
 endfunction
 
 function resolve_jni_method (method)
     my.method.jni_name = "$(my.method.name:c)"
     my.method.jni_okay = 1
     my.method.jni_return = "void"
+    my.method.jni_args_def = ""
+    my.method.jni_args_use = ""
+    my.method.jni_args_c = ""
 
-    if my.method.singleton = 0
-        my.method.jni_argsdef = "long pointer"
-        my.method.jni_argsuse = "pointer"
-        comma = ","
-    else
-        my.method.jni_argsdef = ""
-        my.method.jni_argsuse = ""
+    if my.method.singleton = 1
+        my.method.jni_self_def = ""
+        my.method.jni_self_use = ""
         comma = ""
+    else
+        my.method.jni_self_def = "long self"
+        my.method.jni_self_use = "self"
+        comma = ", "
     endif
 
-    for my.method.argument
-        resolve_jni_container (argument)
-        if defined (argument.jni_type)
-            jni_argsdef += "$(comma)$(argument.jni_type:) $(argument.name:camel)"
-            jni_argsuse += "$(comma)$(argument.name:camel)"
+    for my.method.argument where variadic ?= 0
+        if resolve_jni_container (argument) = 0
+            jni_args_def += "$(comma)$(argument.jni_type:) $(argument.name:camel)"
+            jni_args_use += "$(comma)$(argument.name:camel)"
+            jni_args_c += ", $(argument.jni_ctype:) $(argument.name)"
             comma = ", "
         else
-            echo "Removing $(class.name).$(my.method.jni_name:) as unsupported, no $(argument.type:)"
-            my.method.okay = 0
+            my.method.jni_okay = 0
         endif
     endfor
 
     for my.method.return
-        resolve_jni_container ([return])
-        if defined (return.jni_type)
+        if resolve_jni_container (return) = 0
             my.method.jni_return = return.jni_type
         else
-            echo "Removing $(class.name).$(my.method.jni_name:) as unsupported, no $(return.type:)"
-            my.method.okay = 0
+            my.method.jni_okay = 0
         endif
     endfor
 endfunction
 
 .macro generate_class_java (class)
-.   for method
-.       resolve_jni_method (method)
-.   endfor
 .   directory.create ("$(topdir)/src/main/java/$(name_path)")
 .   output "$(topdir)/src/main/java/$(name_path)/$(my.class.name:pascal).java"
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
 package org.zeromq.$(project.name:c);
 
 public class $(my.class.name:pascal) implements AutoCloseable {
@@ -464,33 +491,79 @@ public class $(my.class.name:pascal) implements AutoCloseable {
             System.exit (-1);
         }
     }
-    long pointer;
+    long self;
 
 .   for constructor
-.       resolve_jni_method (constructor)
-    native static long __init ();
-    public () {
-        pointer = __init ();
+    /*
+    $(description:no,block)
+    */
+    native static long __init ($(jni_args_def:));
+    public $(my.class.name:pascal) ($(jni_args_def:)) {
+        self = __init ($(jni_args_use:));
     }
-    public $(my.class.name:pascal) (long address) {
-        pointer = address;
+.   endfor
+.   for destructor
+    /*
+    $(description:no,block)
+    */
+    native static void __destroy (long self);
+    @Override
+    public void close() {
+        __destroy (self);
+        self = 0;
     }
-
 .   endfor
 .   for method where jni_okay
-    native static $(method.jni_return:) __$(jni_name:) ($(jni_argsdef:));
-    public $(method.jni_return:) $(jni_name:) ($(jni_argsdef:)) {
-        return $(class.name:pascal).__$(jni_name:) ($(jni_argsuse:));
+    /*
+    $(description:no,block)
+    */
+    native static $(method.jni_return:) __$(jni_name:) ($(jni_self_def:)$(jni_args_def:));
+    public $(method.jni_return:) $(jni_name:) ($(jni_self_def:)$(jni_args_def:)) {
+        return $(class.name:pascal).__$(jni_name:) ($(jni_self_use:)$(jni_args_use:));
     }
+.   endfor
+}
+.endmacro
+
+.macro generate_class_c (class)
+.   directory.create ("$(topdir)/src/main/c/")
+.   my.cname = "$(namespace:c)_$(my.class.name:pascal)"
+.   output "$(topdir)/src/main/c/$(my.cname:).c"
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <jni.h>
+#include "$(project.header:)"
+#include "../../native/include/$(my.cname:).h"
+
+.   for constructor
+JNIEXPORT jlong JNICALL
+Java_$(my.cname:)__1_1init (JNIEnv *env, jclass c$(jni_args_c:)) {
+    $(my.class.name)_t *self = $(my.class.name)_new ($(jni_args_use:));
+    if (self)
+        return (jlong) self;
+    return -1;
+}
 
 .   endfor
 .   for destructor
-    native static void __destroy (long pointer);
-    @Override
-    public void close() {
-        __destroy (pointer);
-        pointer = 0;
-    }
+JNIEXPORT void JNICALL
+Java_$(my.cname:)__1_1destroy (JNIEnv *env, jclass c, jlong jself) {
+    $(my.class.name)_t *self = ($(my.class.name)_t *) jself;
+    $(my.class.name)_destroy (&self);
+}
+
+.   endfor
+.   for method where jni_okay
+JNIEXPORT $(method->return.jni_ctype) JNICALL
+Java_$(my.cname:)__1_1$(jni_name) (JNIEnv *env, jclass c, jlong jself$(jni_args_c:)) {
+    $(my.class.name)_t *self = ($(my.class.name)_t *) jself;
+    $(->return.c_type) rc = $(my.class.name)_$(jni_name) ($(jni_self_use)$(jni_args_use:));
+    return rc;
+}
+
 .   endfor
 }
 .endmacro
@@ -499,35 +572,17 @@ for project.class where defined (class.api)
     if first ()
         generate_gradle ()
     endif
-    generate_class_java (class)
-endfor
-
-/*
-    directory.create ("$(topdir)/src/main/c")
-    class.filename = "$(namespace:c)_$(class.name:pascal)"
-    output "$(topdir)/src/main/c/$(filename:).c"
-    >#include <jni.h>
-    >#include <stdio.h>
-    >#include "$(filename:).h"
-    >#include "$(project.name:c).h"
-
     for constructor
-        >
-        >JNIEXPORT void JNICALL Java_$(filename:)_create (JNIEnv *env, jobject thisObj) {
-        >}
+        resolve_jni_method (constructor)
     endfor
     for destructor
-        >
-        >JNIEXPORT void JNICALL Java_$(filename:)_destroy (JNIEnv *env, jobject thisObj) {
-        >}
+        resolve_jni_method (destructor)
     endfor
     for method
-        >
-        >//  $(method.description:no,block)
-        >JNIEXPORT void JNICALL Java_$(filename:)_$(name:camel) (JNIEnv *env, jobject thisObj) {
-        >}
+        resolve_jni_method (method)
     endfor
+    generate_class_java (class)
+    generate_class_c (class)
 endfor
-*/
 
 .endtemplate
