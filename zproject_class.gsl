@@ -5,7 +5,7 @@
 .#   See project.xml for instructions on how to specify a class.
 .#
 .#  This script will generate the following files:
-.#      * include/$(project.name).h - public project header (once)
+.#      * include/$(project.header:) - public project header (once)
 .#      * src/$(project.prefix)_selftest.c - selftest class
 .#      * src/$(project.prefix)_classes.h - private project header
 .#      * (include|src)$(class.c_name).h - public/private header file for classes
@@ -21,7 +21,7 @@
 .if !file.exists ("include")
 .   directory.create ("include")
 .endif
-.project_header_file = "include/$(project.name:c).h"
+.project_header_file = "include/$(project.header:)"
 .if !file.exists (project_header_file) & count (class, class.name = project.name) = 0
 .   output project_header_file
 /*  =========================================================================
@@ -309,7 +309,7 @@ $(project.GENERATED_WARNING_HEADER:)
 #define $(PROJECT.PREFIX:c)_CLASSES_H_INCLUDED
 
 //  External API
-#include "../include/$(project.name:c).h"
+#include "../include/$(project.header:)"
 
 //  Internal API
 .for class where defined (class.private)
@@ -412,7 +412,7 @@ $(PROJECT.PREFIX:c)_EXPORT void
 @end
 */
 
-#include "../include/$(project.name).h"
+#include "../include/$(project.header:)"
 .   if (project.has_private_classes)
 #include "$(project.prefix)_classes.h"
 .   endif

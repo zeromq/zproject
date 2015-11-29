@@ -87,11 +87,11 @@ $(project.GENERATED_WARNING_HEADER:)
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
 #
-# The version number is extracted from include/$(project.name).h using
+# The version number is extracted from include/$(project.header:) using
 # the version.sh script. Hence, it should be updated there.
 # The version in git should reflect the *next* version planned.
 #
-AC_INIT([$(project.name)],[m4_esyscmd([./version.sh $(project.name)])],[$(project.email)])
+AC_INIT([$(project.name)],[m4_esyscmd([./version.sh $(project.header:)])],[$(project.email)])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
@@ -244,7 +244,7 @@ AC_CHECK_PROG($(project.name:c)_have_xmlto, xmlto, yes, no)
 if test "x$$(project.name:c)_have_asciidoc" = "xno" -o "x$$(project.name:c)_have_xmlto" = "xno"; then
     $(project.name:c)_build_doc="no"
     # Tarballs built with 'make dist' ship with prebuilt documentation.
-    if ! test -f doc/$(project.name).7; then
+    if ! test -f doc/$(project.name:c).7; then
         $(project.name:c)_install_man="no"
         AC_MSG_WARN([You are building an unreleased version of $(PROJECT.NAME) and asciidoc or xmlto are not installed.])
         AC_MSG_WARN([Documentation will not be built and manual pages will not be installed.])
