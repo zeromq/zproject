@@ -150,7 +150,7 @@ $(project.name:c) - $(project.description:)
 SYNOPSIS
 --------
 ----
-#include <$(project.name:c).h>
+#include <$(project.header:)>
 
 cc ['flags'] 'files' -l$(project.linkname) ['libraries']
 ----

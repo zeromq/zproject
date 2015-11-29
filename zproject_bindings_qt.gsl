@@ -449,7 +449,7 @@ $(project.GENERATED_WARNING_HEADER:)
 
 #include <QObject>
 #include <QString>
-#include <$(project.name).h>
+#include <$(project.header:)>
 
 #if defined(Q_OS_WIN)
 #  if !defined(QT_$(PROJECT.NAME:c)_EXPORT) && !defined(QT_$(PROJECT.NAME:c)_IMPORT)

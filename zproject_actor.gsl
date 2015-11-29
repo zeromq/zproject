@@ -137,7 +137,7 @@ $(PROJECT.PREFIX)_EXPORT void
 @end
 */
 
-#include "../include/$(project.name).h"
+#include "../include/$(project.header:)"
 .   if (project.has_private_classes)
 #include "$(project.prefix)_classes.h"
 .   endif
