@@ -182,9 +182,9 @@ The following attributes are supported for methods:
 The following attributes are supported for arguments and return values:
 
 - `type` - the conceptual type or class name of the argument or return value (default: `"nothing"`, which translates to `void` in C).
-- `constant = "1"` - the argument will not be modified, or the return value should not be modified (roughly translates to `const` in C).
+- `constant = "1"` - the argument will not be modified, or the return value should not be modified (roughly translates to `const` in C). All string, format, and buffer arguments are constant by default.
 - `by_reference = "1"` - ownership of the argument (and responsibility for freeing it) is transferred from the caller to the function - in practice, the implementation code should also nullify the caller's reference, though this is not enforced by the API model.
-- `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it.
+- `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it. Implies constant = 0.
 - `variadic = "1"` - used for representing variadic arguments.
 
 ### Tips
