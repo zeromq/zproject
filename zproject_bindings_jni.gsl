@@ -8,7 +8,7 @@
 #   is licensed under MIT/X11.
 #
 #   Workflow:
-#   - Compile java files into classes, with gradle (or your IDE, maven, etc.)
+#   - Compile java files into classes, with gradle (or IDE, maven, etc.)
 #   - Run javah on those compiled classes to generate the header files
 #   - Build the shared library from those header files
 
@@ -19,7 +19,6 @@ global.topdir ?= switches.topdir? "bindings/jni"
 ### Generate CMake infrastructure
 
 .macro generate_cmake
-.   project.save ("x.xml")
 .   output "$(topdir)/CMakeLists.txt"
 cmake_minimum_required (VERSION 2.8)
 
