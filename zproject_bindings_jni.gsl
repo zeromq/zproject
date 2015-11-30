@@ -7,7 +7,9 @@
 #   language. See https://github.com/imatix/gsl for details. This script
 #   is licensed under MIT/X11.
 #
-#   Workflow:
+#   Workflow, in bindings/jni directory:
+#   > gradle build
+#
 #   - Compile java files into classes, with gradle (or IDE, maven, etc.)
 #   - Run javah on those compiled classes to generate the header files
 #   - Build the shared library from those header files
@@ -32,10 +34,9 @@ find_library ($(PROJECT.PREFIX)_LIBRARY NAMES $(project.prefix) REQUIRED)
 include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} src/native/include)
 
 set ($(project.prefix)jni_sources
-.for project.class where defined (class.api)
+.for project.class where defined (class.api) & class.jni_okay ?= 1
 .   my.cname = "$(namespace:c)_$(class.name:pascal)"
-.   echo my.cname
-   src/main/c/$(my.cname:).c
+    src/main/c/$(my.cname:).c
 .endfor
 )
 
@@ -83,7 +84,7 @@ task generateJniHeaders(type: Exec, dependsOn: 'classes') {
     def classpath = sourceSets.main.output.classesDir
     def nativeIncludes = "src/native/include"
     def jniClasses = [
-.       for project.class where defined (class.api)
+.       for project.class where defined (class.api) & class.jni_okay ?= 1
             '$(namespace).$(name:pascal)'$(last ()?? ""? ",")
 .       endfor
     ]
@@ -378,24 +379,31 @@ function resolve_jni_container (container)
     if my.container.type = "nothing"
         my.container.jni_type = "void"
         my.container.jni_ctype = "void"
+
     elsif my.container.type = "anything"
-        my.container.jni_type = "void *"
+        my.container.jni_type = "long"
         my.container.jni_ctype = "jlong"
+
     elsif my.container.type = "boolean"
         my.container.jni_type = "boolean"
         my.container.jni_ctype = "jboolean"
+
     elsif my.container.type = "byte"
         my.container.jni_type = "byte"
         my.container.jni_ctype = "jbyte"
+
     elsif my.container.type = "char"
         my.container.jni_type = "char"
         my.container.jni_ctype = "jchar"
+
     elsif my.container.type = "integer"
         my.container.jni_type = "int"
         my.container.jni_ctype = "jint"
+
     elsif my.container.type = "size"
         my.container.jni_type = "long"
         my.container.jni_ctype = "jlong"
+
     elsif my.container.type = "number"
         if my.container.size ?= "1"
             my.container.jni_type = "byte"
@@ -410,33 +418,42 @@ function resolve_jni_container (container)
             my.container.jni_type = "long"
             my.container.jni_ctype = "jlong"
         endif
+
     elsif my.container.type = "real"
         my.container.jni_type = "float"
         my.container.jni_ctype = "jfloat"
+
     elsif my.container.type = "buffer"
         my.container.jni_type = "byte []"
-        my.container.jni_ctype = "jbyteArray"
+        my.container.jni_ctype = "jlong"
+
     elsif my.container.type = "string" | my.container.type = "format"
         my.container.jni_type = "String"
         my.container.jni_ctype = "jstring"
+
     elsif my.container.type = "time"
         my.container.jni_type = "long"
         my.container.jni_ctype = "jlong"
+
     elsif my.container.type = "file_size"
         my.container.jni_type = "long"
         my.container.jni_ctype = "jlong"
+
     elsif defined (project.imports_$(my.container.type))
         my.container.jni_type = "$(type:pascal)"
         my.container.jni_ctype = "jlong"
-    elsif count (project.class, class.c_name = my.container.type)
-        my.container.jni_type = "$(type:pascal)"
-        my.container.jni_ctype = "jlong"
-    elsif count (project->dependencies.class, class.c_name = my.container.type)
-        my.container.jni_type = "$(type:pascal)"
+
+    elsif count (project.class, class.name = my.container.type)
+        my.container.jni_type = "long"
         my.container.jni_ctype = "jlong"
 
-    elsif my.container.callback ?= 1 \
-    |     my.container.is_enum \
+    elsif my.container.callback ?= 1
+        #   For now, don't stress about how we get the address of
+        #   a callback. Let's solve that later.
+        my.container.jni_type = "long"
+        my.container.jni_ctype = "jlong"
+
+    elsif my.container.is_enum \
     |     my.container.type = "FILE" \
     |     my.container.type = "va_list" \
     |     my.container.type = "FILE" \
@@ -452,7 +469,21 @@ endfunction
 
 function resolve_jni_method (method)
     my.method.jni_okay = 1
-    my.method.jni_return = "void"
+    my.method.jni_method_type = "void"
+
+    if my.method.name = "clone" \
+    |  my.method.name = "equals" \
+    |  my.method.name = "finalize" \
+    |  my.method.name = "getClass" \
+    |  my.method.name = "hashCode" \
+    |  my.method.name = "toString" \
+    |  my.method.name = "notify" \
+    |  my.method.name = "notifyAll" \
+    |  my.method.name = "wait"
+        my.method.jni_name = "$(Name:c)"
+    else
+        my.method.jni_name = "$(name:c)"
+    endif
 
     if my.method.singleton = 1
         my.method.jni_jargs_def = ""
@@ -476,10 +507,14 @@ function resolve_jni_method (method)
 
             if type = "format"
                 jni_cargs_use += "$(comma)\"%s\", $(argument.c_name)_"
-            elsif type = "string" | type = "buffer"
+            elsif type = "string"
+.#  For now, buffers must be native C and not Java byte arrays
+.#            elsif type = "string" | type = "buffer"
                 jni_cargs_use += "$(comma)$(argument.c_name)_"
             elsif by_reference = 1
                 jni_cargs_use += "$(comma)($(argument.c_type)) &$(argument.c_name)"
+            elsif callback = 1
+                jni_cargs_use += "$(comma)($(argument.c_type) *) $(argument.c_name)"
             else
                 jni_cargs_use += "$(comma)($(argument.c_type)) $(argument.c_name)"
             endif
@@ -491,7 +526,7 @@ function resolve_jni_method (method)
 
     for my.method.return
         if resolve_jni_container (return) = 0
-            my.method.jni_return = return.jni_type
+            my.method.jni_method_type = return.jni_type
         else
             my.method.jni_okay = 0
         endif
@@ -506,7 +541,11 @@ $(project.GENERATED_WARNING_HEADER:)
 */
 package org.zeromq.$(project.name:c);
 
-public class $(my.class.name:pascal) implements AutoCloseable {
+public class $(my.class.name:pascal) \
+.   if count (my.class.constructor)
+implements AutoCloseable \
+.   endif
+{
     static {
         try {
             System.loadLibrary ("$(project.name:c)jni");
@@ -533,7 +572,7 @@ public class $(my.class.name:pascal) implements AutoCloseable {
     */
     native static void __destroy (long self);
     @Override
-    public void close() {
+    public void close () {
         __destroy (self);
         self = 0;
     }
@@ -542,16 +581,20 @@ public class $(my.class.name:pascal) implements AutoCloseable {
     /*
     $(description:no,block)
     */
-    native static $(method.jni_return:) __$(c_name:) ($(jni_jargs_def:));
-    public $(method.jni_return:) $(c_name:) ($(jni_jargs_def:)) {
+    native static $(method.jni_method_type:) __$(c_name:) ($(jni_jargs_def:));
+    public $(method.jni_method_type:) $(jni_name:) ($(jni_jargs_def:)) {
+.       if ->return.type = "nothing"
+        $(class.name:pascal).__$(c_name:) ($(jni_jargs_use:));
+.       else
         return $(class.name:pascal).__$(c_name:) ($(jni_jargs_use:));
+.       endif
     }
 .   endfor
 }
 .endmacro
 
 .macro generate_method_c (method)
-JNIEXPORT $(->return.jni_ctype) JNICALL
+JNIEXPORT $(->return.jni_ctype:) JNICALL
 Java_$(class.c_name)__1_1$(my.method.c_name) (JNIEnv *env, jclass c\
 .   if jni_cargs_def <> ""
 , \
@@ -562,7 +605,8 @@ $(jni_cargs_def:))
 .       if type = "string" | type = "format"
     char *$(c_name)_ = (char *) (*env)->GetStringUTFChars (env, $(c_name), NULL);
 .       elsif type = "buffer"
-    byte *$(c_name)_ = (byte *) (*env)->GetByteArrayElements (env, $(c_name), 0);
+.#  For now, buffers must be native C and not Java byte arrays
+.#    byte *$(c_name)_ = (byte *) (*env)->GetByteArrayElements (env, $(c_name), 0);
 .       endif
 .   endfor
 .   if ->return.type = "nothing"
@@ -579,14 +623,15 @@ $(jni_cargs_def:))
 .       endif
 .       my.return = "    return string;\n"
 .   else
-    $(->return.jni_ctype) $(c_name)_ = ($(->return.jni_ctype)) $(class.c_name)_$(c_name) ($(jni_cargs_use));
+    $(->return.jni_ctype:) $(c_name)_ = ($(->return.jni_ctype:)) $(class.c_name)_$(c_name) ($(jni_cargs_use));
 .       my.return = "    return $(c_name)_;\n"
 .   endif
 .   for argument
 .       if type = "string" | type = "format"
     (*env)->ReleaseStringUTFChars (env, $(c_name), $(c_name)_);
 .       elsif type = "buffer"
-    (*env)->ReleaseByteArrayElements (env, $(c_name), (jbyte *) $(c_name)_, 0);
+.#  For now, buffers must be native C and not Java byte arrays
+.#    (*env)->ReleaseByteArrayElements (env, $(c_name), (jbyte *) $(c_name)_, 0);
 .       endif
 .   endfor
 $(my.return)}
@@ -618,12 +663,12 @@ $(project.GENERATED_WARNING_HEADER:)
 .endmacro
 
 for project.class where defined (class.api)
-    if first ()
-        generate_cmake ()
-        generate_gradle ()
-    endif
+    class.jni_okay = 1
     for constructor
         resolve_jni_method (constructor)
+        if constructor.jni_okay = 0
+            class.jni_okay = 0
+        endif
     endfor
     for destructor
         resolve_jni_method (destructor)
@@ -631,8 +676,13 @@ for project.class where defined (class.api)
     for method
         resolve_jni_method (method)
     endfor
-    generate_class_java (class)
-    generate_class_c (class)
+    if class.jni_okay
+        generate_class_java (class)
+        generate_class_c (class)
+    endif
 endfor
+
+generate_cmake ()
+generate_gradle ()
 
 .endtemplate
