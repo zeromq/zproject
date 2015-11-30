@@ -16,12 +16,45 @@ global.namespace ?= switches.namespace? "org.zeromq.$(project.prefix)"
 global.name_path ?= switches.name_path? "org/zeromq/$(project.prefix)"
 global.topdir ?= switches.topdir? "bindings/jni"
 
+### Generate CMake infrastructure
+
+.macro generate_cmake
+.   project.save ("x.xml")
+.   output "$(topdir)/CMakeLists.txt"
+cmake_minimum_required (VERSION 2.8)
+
+project ($(project.prefix)jni CXX)
+enable_language (C)
+
+find_package (JNI REQUIRED)
+find_library (ZMQ_LIBRARY NAMES zmq libzmq REQUIRED)
+find_library ($(PROJECT.PREFIX)_LIBRARY NAMES $(project.prefix) REQUIRED)
+
+include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} src/native/include)
+
+set ($(project.prefix)jni_sources
+.for project.class where defined (class.api)
+.   my.cname = "$(namespace:c)_$(class.name:pascal)"
+.   echo my.cname
+   src/main/c/$(my.cname:).c
+.endfor
+)
+
+add_library ($(project.prefix)jni SHARED ${$(project.prefix)jni_sources})
+
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -O2")
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
+
+target_link_libraries ($(project.prefix)jni ${ZMQ_LIBRARY} ${$(PROJECT.PREFIX)_LIBRARY})
+.endmacro
+
 ### Generate Gradle infrastructure
 
 .macro generate_gradle
 .   directory.create ("$(topdir)/gradle/wrapper")
 .#
-.## -------------------------------------------------------------------------
 .   output "$(topdir)/gradle/wrapper/gradle-wrapper.properties"
 distributionBase=GRADLE_USER_HOME
 distributionPath=wrapper/dists
@@ -68,31 +101,6 @@ task buildNative(type: Exec, dependsOn: 'initCMake') {
 }
 jar.dependsOn buildNative
 test.dependsOn buildNative
-.#
-.## -------------------------------------------------------------------------
-.   output "$(topdir)/CMakeLists.txt"
-$(project.GENERATED_WARNING_HEADER:)
-cmake_minimum_required (VERSION 2.8)
-
-project ($(project.prefix)jni CXX)
-enable_language (C)
-find_package (JNI REQUIRED)
-find_library (ZMQ_LIBRARY NAMES zmq libzmq REQUIRED)
-find_library ($(PROJECT.PREFIX)_LIBRARY NAMES $(project.prefix) REQUIRED)
-include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} src/native/include)
-
-set ($(project.prefix)jni_sources
-.   for project.class where defined (class.api)
-   src/main/c/$(name).c
-.   endfor
-)
-add_library ($(project.prefix)jni SHARED ${$(project.prefix)jni_sources})
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -O2")
-set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
-set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
-
-target_link_libraries ($(project.prefix)jni ${ZMQ_LIBRARY} ${$(PROJECT.PREFIX)_LIBRARY})
 .#
 .## -------------------------------------------------------------------------
 .   output "$(topdir)/gradlew"
@@ -609,6 +617,7 @@ $(project.GENERATED_WARNING_HEADER:)
 
 for project.class where defined (class.api)
     if first ()
+        generate_cmake ()
         generate_gradle ()
     endif
     for constructor
