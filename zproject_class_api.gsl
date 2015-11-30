@@ -111,16 +111,16 @@ function resolve_c_container (container)
     elsif my.type = "string"
         my.c_type = "char"
         my.stars = "*"
-        my.container.constant ?= !my.container.fresh
+        my.container.mutable ?= my.container.fresh
     elsif my.type = "format"
         my.c_type = "char"
         my.stars = "*"
-        my.container.constant ?= 1
+        my.container.mutable ?= 0
         my.container.variadic = 1
     elsif my.type = "buffer"
         my.c_type = "byte"
         my.stars = "*"
-        my.container.constant ?= !my.container.fresh
+        my.container.mutable ?= my.container.fresh
     elsif my.container.callback
         my.c_type = "$(my.type:c)"
     elsif string.prefix(my.container.type, ":") = "enum"
@@ -141,8 +141,8 @@ function resolve_c_container (container)
     endif
 
     # This attribute is resolved late because it may be influenced during type resolution
-    my.container.constant ?= conv.number (my.container.constant? 0)
-    if my.container.constant
+    my.container.mutable ?= conv.number (my.container.mutable? 0)
+    if !my.container.mutable
         my.c_type = "const " + my.c_type
     endif
 
