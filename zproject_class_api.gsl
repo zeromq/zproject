@@ -200,6 +200,9 @@ function resolve_c_method (method, default_description)
     # Resolve each return container in the method.
     for my.method.return as container
         resolve_c_container (container)
+        if container.type = "format"
+            abort "method cannot return a 'format'"
+        endif
     endfor
 endfunction
 
