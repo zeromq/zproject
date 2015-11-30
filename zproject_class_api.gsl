@@ -141,7 +141,7 @@ function resolve_c_container (container)
     endif
 
     # This attribute is resolved late because it may be influenced during type resolution
-    my.container.mutable ?= conv.number (my.container.mutable? 0)
+    my.container.mutable ?= conv.number (my.container.mutable? 1)
     if !my.container.mutable
         my.c_type = "const " + my.c_type
     endif
