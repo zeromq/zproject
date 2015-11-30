@@ -20,21 +20,21 @@
 **<a href="#toc2-128">Configuration</a>**
 
 **<a href="#toc2-283">Sample API model</a>**
-&emsp;<a href="#toc3-499">Supported API Model Attributes</a>
-&emsp;<a href="#toc3-515">Tips</a>
+&emsp;<a href="#toc3-487">Supported API Model Attributes</a>
+&emsp;<a href="#toc3-503">Tips</a>
 
-**<a href="#toc2-526">Removal</a>**
-&emsp;<a href="#toc3-529">autotools</a>
+**<a href="#toc2-514">Removal</a>**
+&emsp;<a href="#toc3-517">autotools</a>
 
-**<a href="#toc2-536">Notes for Writing Language Bindings</a>**
-&emsp;<a href="#toc3-539">Schema/Architecture Overview</a>
-&emsp;<a href="#toc3-558">Informal Summary</a>
-&emsp;<a href="#toc3-568">Semantic Attributes</a>
-&emsp;<a href="#toc3-617">Language-Specific Implementation Attributes</a>
+**<a href="#toc2-524">Notes for Writing Language Bindings</a>**
+&emsp;<a href="#toc3-527">Schema/Architecture Overview</a>
+&emsp;<a href="#toc3-546">Informal Summary</a>
+&emsp;<a href="#toc3-551">Semantic Attributes</a>
+&emsp;<a href="#toc3-588">Language-Specific Implementation Attributes</a>
 
-**<a href="#toc2-640">Ownership and License</a>**
-&emsp;<a href="#toc3-649">Hints to Contributors</a>
-&emsp;<a href="#toc3-658">This Document</a>
+**<a href="#toc2-599">Ownership and License</a>**
+&emsp;<a href="#toc3-608">Hints to Contributors</a>
+&emsp;<a href="#toc3-617">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -512,23 +512,23 @@ Language bindings will also be generated in the following languages:
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
-<A name="toc3-499" title="Supported API Model Attributes" />
+<A name="toc3-487" title="Supported API Model Attributes" />
 ### Supported API Model Attributes
 
 The following attributes are supported for methods:
+
 - `name` - the name of the method (mandatory).
 - `singleton = "1"` - the method is not invoked within the context of a specific instance of an object. Use this if your method does not need to be passed a `self` pointer as the first argument as normal. Implicit for all `constructor`s and `destructor`s and for the implicit `test` method.
 
 The following attributes are supported for arguments and return values:
-- `type` - the conceptual type or class name of the argument or return value (default: `"nothing"`, which translates to `void` in C).
-- `constant = "1"` - the argument will not be modified, or the return valu
-e should not be modified (roughly translates to `const` in C).
-- `by_reference = "1"` - ownership of the argument (and responsibility for freeing it) is transferred from the caller to the function - in practice, the implementation code should also nullify the caller's reference, though this is not enforced by the API model.
-- `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it.
-- `variadic = "1"` - used for representing variadic arguments.
-- `is_format = "1"` - used for `printf`-style format strings preceding variadic arguments (which are added automatically).
 
-<A name="toc3-515" title="Tips" />
+- `type` - the conceptual type or class name of the argument or return value (default: `"nothing"`, which translates to `void` in C).
+- `mutable = "1"` - the argument or the return value can be modified. All string, format, and buffer arguments are immutable by default.
+- `by_reference = "1"` - ownership of the argument (and responsibility for freeing it) is transferred from the caller to the function - in practice, the implementation code should also nullify the caller's reference, though this is not enforced by the API model.
+- `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it. Implies mutable = "1".
+- `variadic = "1"` - used for representing variadic arguments.
+
+<A name="toc3-503" title="Tips" />
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
@@ -539,20 +539,20 @@ echo method.string()  # will print the model as an XML string.
 method.save(filename) # will save the model as an XML string to the given file.
 ```
 
-<A name="toc2-526" title="Removal" />
+<A name="toc2-514" title="Removal" />
 ## Removal
 
-<A name="toc3-529" title="autotools" />
+<A name="toc3-517" title="autotools" />
 ### autotools
 
 ```sh
 make uninstall
 ```
 
-<A name="toc2-536" title="Notes for Writing Language Bindings" />
+<A name="toc2-524" title="Notes for Writing Language Bindings" />
 ## Notes for Writing Language Bindings
 
-<A name="toc3-539" title="Schema/Architecture Overview" />
+<A name="toc3-527" title="Schema/Architecture Overview" />
 ### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
@@ -571,35 +571,19 @@ make uninstall
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-<A name="toc3-558" title="Informal Summary" />
+<A name="toc3-546" title="Informal Summary" />
 ### Informal Summary
 
-A `class` is always the top-level entity in an API model, and it will be merged
-with the corresponding `class` entity defined in the project model. A class
-contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s),
-and methods contain `argument`s and `return`s (collectively, "container"s). Each
-entity will contain both *semantic attributes* and *language-specific
-implementation attributes*.
+A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
 
-<A name="toc3-568" title="Semantic Attributes" />
+<A name="toc3-551" title="Semantic Attributes" />
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
 
-For example, arguments may be described as passed `by_reference` to indicate
-that ownership is transferred from the caller. Similarly, return values may be
-described as `fresh` to indicate that ownership is transferred to the caller,
-which must destroy the object when it is finished with it. It's important to
-remember that these attributes are primarily meant to be an abstraction that
-describes conceptual information, leaving the details of how code generators
-interpret (or ignore) each attribute up to the authors.
+For example, arguments may be described as passed `by_reference` to indicate that ownership is transferred from the caller. Similarly, return values may be described as `fresh` to indicate that ownership is transferred to the caller, which must destroy the object when it is finished with it. It's important to remember that these attributes are primarily meant to be an abstraction that describes conceptual information, leaving the details of how code generators interpret (or ignore) each attribute up to the authors.
 
-Semantic attributes may be implicit (not given a value in the written model).
-In this case, it is up to the [`zproject_class_api`](zproject_class_api.gsl)
-script to fully resolve default values for all attributes. Downstream code
-generators should *never* resolve or alter semantic attributes, as this could
-change the behavior of any code generator that is run after the errant code
-generator.
+Semantic attributes may be implicit (not given a value in the written model). In this case, it is up to the [`zproject_class_api`](zproject_class_api.gsl) script to fully resolve default values for all attributes. Downstream code generators should *never* resolve or alter semantic attributes, as this could change the behavior of any code generator that is run after the errant code generator.
 
 These are the semantic attributes for each kind of entity that will be resolved before language bindings generators are invoked:
 
@@ -622,7 +606,6 @@ container.constant     # 0/1 (default: 0)
 container.by_reference # 0/1 (default: 0)
 container.callback     # 0/1 (default: 0)
 container.fresh        # 0/1 (default: 0)
-container.is_format    # 0/1 (default: 0)
 container.is_enum      # 0/1 (default: 0)
 container.enum_name    # string if is_enum, otherwise undefined
 container.enum_class   # string if is_enum, otherwise undefined
@@ -630,30 +613,18 @@ container.variadic     # 0/1 (default: 0)
 container.va_start     # string - that holds the argment name for va_start ()
 ```
 
-<A name="toc3-617" title="Language-Specific Implementation Attributes" />
+<A name="toc3-588" title="Language-Specific Implementation Attributes" />
 ### Language-Specific Implementation Attributes
 
-Language-specific implementation attributes hold information that is not
-intrinsic to the concept of the container, but to the binding implementation.
+Language-specific implementation attributes hold information that is not intrinsic to the concept of the container, but to the binding implementation.
 
-In practice, language-specific attributes may contain any information that
-is useful to store as part of the container model to facilitate generation,
-according to any schema that is useful, but it may be helpful to try to follow
-patterns observed in other code generator scripts.
+In practice, language-specific attributes may contain any information that is useful to store as part of the container model to facilitate generation, according to any schema that is useful, but it may be helpful to try to follow patterns observed in other code generator scripts.
 
-However, because the container is shared between all generators, which are
-run in an unspecified order, it's important that generators not rely on
-information resolved in generators. The one exceptions is that many
-generators will rely directly on information from the C implementation
-to which they bind.
+However, because the container is shared between all generators, which are run in an unspecified order, it's important that generators not rely on information resolved in generators. The one exceptions is that many generators will rely directly on information from the C implementation to which they bind.
 
-It is also important that language-specific implementation attributes
-use a naming convention that avoids collisions. The easiest way to
-avoid collisions is to prefix all language-specific attributes with the
-name of the language, though in principle, any collision-free convention
-would be acceptable.
+It is also important that language-specific implementation attributes use a naming convention that avoids collisions. The easiest way to avoid collisions is to prefix all language-specific attributes with the name of the language, though in principle, any collision-free convention would be acceptable.
 
-<A name="toc2-640" title="Ownership and License" />
+<A name="toc2-599" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -662,7 +633,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-649" title="Hints to Contributors" />
+<A name="toc3-608" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -671,7 +642,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-658" title="This Document" />
+<A name="toc3-617" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).
