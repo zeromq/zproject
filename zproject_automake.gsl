@@ -107,27 +107,27 @@ include_HEADERS = \\
 .if file.exists ("include/$(project.prelude)")
     include/$(project.prelude) \\
 .endif
-.if count (class, class.name = project.name) = 0
+.if count (class, class.c_name = project.name) = 0
     include/$(project.header:) \\
 .endif
 .for header where !defined (header.private)
-    include/$(name).h \\
+    include/$(name:c).h \\
 .endfor
 .for class where !defined (class.private)
-    include/$(name).h \\
+    include/$(name:c).h \\
 .endfor
     include/$(project.prefix)_library.h
 
 src_$(project.libname:c)_la_SOURCES = \\
 .for class
 .   if file.exists ("src/$(name:c).cc")
-    src/$(name).cc \\
+    src/$(name:c).cc \\
 .   else
-    src/$(name).c \\
+    src/$(name:c).c \\
 .   endif
 .endfor
 .for extra
-    src/$(name) \\
+    src/$(name:c) \\
 .endfor
     src/platform.h
 
