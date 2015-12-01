@@ -112,7 +112,9 @@ function resolve_c_container (container)
     elsif my.type = "string"
         my.c_type = "char"
         my.stars = "*"
-        my.container.mutable ?= my.container.fresh
+        if my.container.fresh | my.container.by_reference
+            my.container.mutable ?= 1
+        endif
     elsif my.type = "format"
         my.c_type = "char"
         my.stars = "*"
@@ -121,7 +123,9 @@ function resolve_c_container (container)
     elsif my.type = "buffer"
         my.c_type = "byte"
         my.stars = "*"
-        my.container.mutable ?= my.container.fresh
+        if my.container.fresh | my.container.by_reference
+            my.container.mutable ?= 1
+        endif
     elsif my.container.callback
         my.c_type = "$(my.type:c)"
     elsif string.prefix(my.container.type, ":") = "enum"
