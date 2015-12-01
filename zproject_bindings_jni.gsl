@@ -427,7 +427,14 @@ function resolve_jni_container (container)
         my.container.jni_type = "byte []"
         my.container.jni_ctype = "jlong"
 
-    elsif my.container.type = "string" | my.container.type = "format"
+    elsif my.container.type = "string"
+        if my.container.by_reference
+            return 1        #   Skip methods that do this
+        endif
+        my.container.jni_type = "String"
+        my.container.jni_ctype = "jstring"
+
+    elsif my.container.type = "format"
         my.container.jni_type = "String"
         my.container.jni_ctype = "jstring"
 
@@ -453,9 +460,11 @@ function resolve_jni_container (container)
         my.container.jni_type = "long"
         my.container.jni_ctype = "jlong"
 
-    elsif my.container.is_enum \
-    |     my.container.type = "FILE" \
-    |     my.container.type = "va_list" \
+    elsif my.container.is_enum
+        my.container.jni_type = "int"
+        my.container.jni_ctype = "jint"
+
+    elsif my.container.type = "va_list" \
     |     my.container.type = "FILE" \
     |     my.container.type = "zmq_pollitem" \
     |     my.container.type = "socket"
