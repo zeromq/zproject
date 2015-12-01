@@ -429,7 +429,10 @@ function resolve_jni_container (container)
     elsif defined (project.imports_$(my.container.type))
         my.container.jni_type = "$(type:pascal)"
         my.container.jni_ctype = "jlong"
-    elsif count (project.class, class.name = my.container.type)
+    elsif count (project.class, class.c_name = my.container.type)
+        my.container.jni_type = "$(type:pascal)"
+        my.container.jni_ctype = "jlong"
+    elsif count (project->dependencies.class, class.c_name = my.container.type)
         my.container.jni_type = "$(type:pascal)"
         my.container.jni_ctype = "jlong"
 
@@ -442,7 +445,7 @@ function resolve_jni_container (container)
     |     my.container.type = "socket"
         return 1
     else
-        abort "Unhandled type '$(my.container.type:)' in $(class.name)"
+        abort "Unhandled type '$(my.container.type:)' in $(class.c_name)"
     endif
 
     return 0            #   Seems to be OK

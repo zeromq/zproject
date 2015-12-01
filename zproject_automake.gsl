@@ -241,7 +241,7 @@ dist_api_DATA = \\
 .   endif
 .# Install files that the api includes
 .   for class.include
-    $(include.filename) \\
+    api/$(include.filename) \\
 .   endfor
 .   if !last ()
     $(class.api) \\

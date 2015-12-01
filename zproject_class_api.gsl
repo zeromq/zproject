@@ -22,6 +22,7 @@ for project.class where defined (class.api)
         class.api = # undefined
     else
         new_class.api = class.api
+        new_class.api_dir = directory.resolve ('api/')
         move new_class after class
         delete class
     endif
@@ -218,7 +219,17 @@ function resolve_c_class (class)
     my.class.description ?= "$(string.trim (my.class.?""):left)"
 
     # Includes of XML files
-    resolve_includes (my.class)
+    for my.class.include
+        if !defined (include.filename)
+            abort "E: required attribute 'filename' not defined"
+        endif
+        my.include_file = my.class.load_file (my.class.api_dir + filename)?
+        if defined (my.include_file)
+            move my.include_file after include
+        else
+            abort "E: <include> failed: $(xml.error?)"
+        endif
+    endfor
 
     # All classes must have a test method
     if !count (my.class.method, method.name = "test")
@@ -298,16 +309,18 @@ endfunction
 #
 function resolve_container_dependencies (class_name, container)
     if my.container.foreign ?= 1 \
-    & count (project.class, class.name = my.container.type) = 0 \
-    & count (project->dependencies.class, class.name = my.container.type) = 0
+    & count (project.class, class.c_name = my.container.type) = 0 \
+    & count (project->dependencies.class, class.c_name = my.container.type) = 0
         resolved = 0
         dir = directory.open ("/usr/local/share/zproject")?
         if defined (dir)
             for dir.directory
                 api_file = directory.path + directory.name + "/"  + "$(my.container.type:c).xml"
-                if file.exists (api_file)
+                if resolved = 0 & file.exists (api_file)
                     new_dependency = XML.load_file (api_file)
+                    new_dependency.api_dir = directory.path + directory.name + "/"
                     new_dependency.resolved = 0
+                    resolve_c_class (new_dependency)
                     move new_dependency to project->dependencies
                     resolved = 1
                 endif
@@ -341,8 +354,7 @@ endfunction
 # Resolve each class using the functions written above.
 #
 # This includes creating implicit XML entities as well as resolving both
-# the semantic and the C-specific attributes of all entities. Further this will
-# find dependencies and load their XML entities, if any.
+# the semantic and the C-specific attributes of all entities
 #
 # Other code generation scripts can depend on these being fully resolved here,
 # though they should NOT depend on attributes resolved by other generators.
@@ -350,11 +362,19 @@ endfunction
 for project.class
     if defined (class.api)
         resolve_c_class (class)
-        resolve_class_dependencies (class)
     else
         # If there is no API model for this class,
         # all we can do is resolve the name.
         class.c_name = "$(class.name:c)"
+    endif
+endfor
+
+# Resolve the dependencies of the classes from this project and load their APIs
+#
+
+for project.class
+    if defined (class.api)
+        resolve_class_dependencies (class)
     endif
 endfor
 
@@ -365,7 +385,6 @@ endfor
 if defined (project->dependencies) & count (project->dependencies.class)
     while count (project->dependencies.class, !class.resolved)
         for project->dependencies.class where !class.resolved
-            resolve_c_class (class)
             resolve_class_dependencies (class)
             class.resolved = 1
         endfor
