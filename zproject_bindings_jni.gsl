@@ -373,6 +373,15 @@ $(project->license.:)
 .## -------------------------------------------------------------------------
 .   output "$(topdir)/settings.gradle"
 rootProject.name = '$(project.prefix)-jni'
+.   output "$(topdir)/.gitignore"
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+.gradle
+build/
+src/native
+gradle-app.setting
+lib$(project.prefix)jni.so
 .endmacro
 
 function resolve_jni_container (container)
@@ -446,11 +455,11 @@ function resolve_jni_container (container)
         my.container.jni_type = "long"
         my.container.jni_ctype = "jlong"
 
-    elsif defined (project.imports_$(my.container.type))
-        my.container.jni_type = "$(type:pascal)"
+    elsif count (project.class, class.c_name = my.container.type)
+        my.container.jni_type = "long"
         my.container.jni_ctype = "jlong"
 
-    elsif count (project.class, class.name = my.container.type)
+    elsif count (project->dependencies.class, class.c_name = my.container.type)
         my.container.jni_type = "long"
         my.container.jni_ctype = "jlong"
 
