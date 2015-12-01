@@ -39,7 +39,13 @@ The following build environments are currently supported:
 * vs2013
 * vs2015
 
-Thanks to the amazing ZeroMQ community you can do all the heavy lifting in C and then easily generate bindings to Python, Ruby and QML to write a nice GUI on top of it.
+Thanks to the amazing ZeroMQ community you can do all the heavy lifting in C and then easily generate bindings to:
+
+* Java
+* Python
+* Ruby
+* QML
+* Qt
 
 ## Demo on PLAYTerm
 
@@ -67,8 +73,8 @@ The following will install the zproject files to `/usr/local/bin`.
 ```sh
 git clone https://github.com/zeromq/zproject.git
 cd zproject
-./autogen.sh
-./configure
+autogen.sh
+configure
 make
 make install
 ```
@@ -96,8 +102,8 @@ Once you're done you can create your project's build environment and start compi
 
 ```sh
 gsl project.xml
-./autogen.sh
-./configure.sh
+autogen.sh
+configure.sh
 make
 ```
 
