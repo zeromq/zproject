@@ -239,6 +239,10 @@ $(project.name:c)_services_DATA = \\
 apidir = @datadir@/zproject/$(project.name)
 dist_api_DATA = \\
 .   endif
+.# Install files that the api includes
+.   for class.include
+    $(include.filename) \\
+.   endfor
 .   if !last ()
     $(class.api) \\
 .   else

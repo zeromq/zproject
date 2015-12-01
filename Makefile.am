@@ -8,6 +8,7 @@ ACLOCAL_AMFLAGS = -I config
 AM_CFLAGS = \
 	-Werror=format-security
 
+
 AM_CPPFLAGS = \
     -I$(srcdir)/include
 
