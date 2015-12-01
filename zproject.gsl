@@ -43,7 +43,7 @@ project.linkname ?= project.prefix
 project.libname ?= "lib" + project.linkname
 project.prelude ?= project.prefix + "_prelude.h"
 project.description ?= "Project"
-project.header ?= "$(project.name:).h"
+project.header ?= "$(project.name:c).h"
 
 if count (project.version) = 0
     new version to project
