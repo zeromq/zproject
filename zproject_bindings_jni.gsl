@@ -64,6 +64,10 @@ distributionUrl=https\\://services.gradle.org/distributions/gradle-2.8-bin.zip
 .#
 .## -------------------------------------------------------------------------
 .   output "$(topdir)/build.gradle"
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
+
 apply plugin: 'java'
 apply plugin: 'maven'
 group = "org.zeromq"
