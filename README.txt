@@ -174,7 +174,7 @@ Language bindings will also be generated in the following languages:
 * QML
 * Qt
 * Python
-* JNI (experimental)
+* JNI
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
@@ -202,6 +202,14 @@ At any time, you can examine a resolved model as an XML string with all of its c
 echo method.string()  # will print the model as an XML string.
 method.save(filename) # will save the model as an XML string to the given file.
 ```
+
+## Language Binding Notes
+
+### JNI Language Binding
+
+* Skips methods that it cannot handle properly.
+
+* To build, you need gradle (or equivalent). Run 'gradle build jar' in the bindings/jni directory.
 
 ## Removal
 

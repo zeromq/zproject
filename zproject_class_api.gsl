@@ -112,8 +112,10 @@ function resolve_c_container (container)
     elsif my.type = "string"
         my.c_type = "char"
         my.stars = "*"
-        if my.container.fresh | my.container.by_reference
+        if my.container.fresh = 1 | my.container.by_reference = 1
             my.container.mutable ?= 1
+        else
+            my.container.mutable ?= 0
         endif
     elsif my.type = "format"
         my.c_type = "char"
@@ -123,8 +125,10 @@ function resolve_c_container (container)
     elsif my.type = "buffer"
         my.c_type = "byte"
         my.stars = "*"
-        if my.container.fresh | my.container.by_reference
+        if my.container.fresh = 1 | my.container.by_reference = 1
             my.container.mutable ?= 1
+        else
+            my.container.mutable ?= 0
         endif
     elsif my.container.callback
         my.c_type = "$(my.type:c)"

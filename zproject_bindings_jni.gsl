@@ -99,6 +99,15 @@ task initCMake(type: Exec, dependsOn: 'generateJniHeaders') {
 task buildNative(type: Exec, dependsOn: 'initCMake') {
     commandLine "make"
 }
+publishing {
+    publications {
+        jniJar(MavenPublication) {
+            artifacts {
+                artifact "build/libs/${project.name}-${version}.jar"
+            }
+        }
+    }
+}
 jar.dependsOn buildNative
 test.dependsOn buildNative
 .#
@@ -373,6 +382,15 @@ $(project->license.:)
 .## -------------------------------------------------------------------------
 .   output "$(topdir)/settings.gradle"
 rootProject.name = '$(project.prefix)-jni'
+.   output "$(topdir)/.gitignore"
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+\.gradle
+build/
+src/native
+gradle-app.setting
+lib$(project.prefix)jni.so
 .endmacro
 
 function resolve_jni_container (container)
@@ -427,7 +445,14 @@ function resolve_jni_container (container)
         my.container.jni_type = "byte []"
         my.container.jni_ctype = "jlong"
 
-    elsif my.container.type = "string" | my.container.type = "format"
+    elsif my.container.type = "string"
+        if my.container.by_reference
+            return 1        #   Skip methods that do this
+        endif
+        my.container.jni_type = "String"
+        my.container.jni_ctype = "jstring"
+
+    elsif my.container.type = "format"
         my.container.jni_type = "String"
         my.container.jni_ctype = "jstring"
 
@@ -439,11 +464,11 @@ function resolve_jni_container (container)
         my.container.jni_type = "long"
         my.container.jni_ctype = "jlong"
 
-    elsif defined (project.imports_$(my.container.type))
-        my.container.jni_type = "$(type:pascal)"
+    elsif count (project.class, class.c_name = my.container.type)
+        my.container.jni_type = "long"
         my.container.jni_ctype = "jlong"
 
-    elsif count (project.class, class.name = my.container.type)
+    elsif count (project->dependencies.class, class.c_name = my.container.type)
         my.container.jni_type = "long"
         my.container.jni_ctype = "jlong"
 
@@ -453,9 +478,11 @@ function resolve_jni_container (container)
         my.container.jni_type = "long"
         my.container.jni_ctype = "jlong"
 
-    elsif my.container.is_enum \
-    |     my.container.type = "FILE" \
-    |     my.container.type = "va_list" \
+    elsif my.container.is_enum
+        my.container.jni_type = "int"
+        my.container.jni_ctype = "jint"
+
+    elsif my.container.type = "va_list" \
     |     my.container.type = "FILE" \
     |     my.container.type = "zmq_pollitem" \
     |     my.container.type = "socket"
@@ -480,9 +507,9 @@ function resolve_jni_method (method)
     |  my.method.name = "notify" \
     |  my.method.name = "notifyAll" \
     |  my.method.name = "wait"
-        my.method.jni_name = "$(Name:c)"
+        my.method.jni_name = "$(name:pascal)"   #   Leading capital letter
     else
-        my.method.jni_name = "$(name:c)"
+        my.method.jni_name = "$(name:camel)"
     endif
 
     if my.method.singleton = 1
@@ -543,7 +570,7 @@ package org.zeromq.$(project.name:c);
 
 public class $(my.class.name:pascal) \
 .   if count (my.class.constructor)
-implements AutoCloseable \
+implements AutoCloseable\
 .   endif
 {
     static {
@@ -555,7 +582,7 @@ implements AutoCloseable \
         }
     }
     long self;
-
+.   my.class.jni_void_new = 0
 .   for constructor
     /*
     $(description:no,block)
@@ -565,7 +592,15 @@ implements AutoCloseable \
         /*  TODO: if __init fails, self is null...  */
         self = __init ($(jni_jargs_use:));
     }
+.   if jni_jargs_def = ""
+.       my.class.jni_void_new = 1
+.   endif
 .   endfor
+.   if !my.class.jni_void_new
+    public $(my.class.name:pascal) () {
+        self = 0;
+    }
+.   endif
 .   for destructor
     /*
     $(description:no,block)
@@ -584,9 +619,9 @@ implements AutoCloseable \
     native static $(method.jni_method_type:) __$(c_name:) ($(jni_jargs_def:));
     public $(method.jni_method_type:) $(jni_name:) ($(jni_jargs_def:)) {
 .       if ->return.type = "nothing"
-        $(class.name:pascal).__$(c_name:) ($(jni_jargs_use:));
+        __$(c_name:) ($(jni_jargs_use:));
 .       else
-        return $(class.name:pascal).__$(c_name:) ($(jni_jargs_use:));
+        return __$(c_name:) ($(jni_jargs_use:));
 .       endif
     }
 .   endfor
@@ -662,6 +697,34 @@ $(project.GENERATED_WARNING_HEADER:)
 .   endfor
 .endmacro
 
+.macro generate_test (class)
+.   directory.create ("$(topdir)/src/test/java/$(name_path)")
+.   output "$(topdir)/src/test/java/$(name_path)/$(my.class.name:pascal)Test.java"
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
+package org.zeromq.$(project.name:c);
+
+import org.junit.Assert;
+import org.junit.Test;
+
+public class $(my.class.name:pascal)Test {
+    static {
+        try {
+            System.loadLibrary ("$(project.name:c)jni");
+        }
+        catch (Exception e) {
+            System.exit (-1);
+        }
+    }
+    @Test
+    public void test () {
+        $(my.class.name:pascal) $(c_name) = new $(my.class.name:pascal) ();
+        $(c_name).test (false);
+    }
+}
+.endmacro
+
 for project.class where defined (class.api)
     class.jni_okay = 1
     for constructor
@@ -679,6 +742,8 @@ for project.class where defined (class.api)
     if class.jni_okay
         generate_class_java (class)
         generate_class_c (class)
+        # can't build/run tests yet
+        # generate_test (class)
     endif
 endfor
 
