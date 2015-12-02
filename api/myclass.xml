@@ -56,13 +56,13 @@
         recognized as this method's `va_list` sibling (in GSL:
         `method.has_va_list_sibling = "1"`). This information might be used by
         the various language bindings.
-        <argument name = "string" type = "string" variadic = "1" constant = "1"/>
+        <argument name = "string" type = "string" variadic = "1" />
         <return type = "boolean" />
     </method>
     <method name = "vsend strings">
         This does something with a series of strings (until NULL). The strings
-        won't be touched.
-        <argument name = "string" type = "string" variadic = "1" constant = "1"/>
+        won't be touched (they're declared immutable by default).
+        <argument name = "string" type = "string" variadic = "1" />
         <return type = "boolean" />
     </method>
 
@@ -92,9 +92,18 @@
     </method>
 
     <method name = "free" singleton = "1">
-        Frees a provided string, and nullify the parent pointer.
-        <argument name = "string pointer" type = "string" constant = "0"
-            by_reference = "1" />
+        Frees a provided string, and nullify the parent pointer. Setting
+        `mutable = "1"` is not needed here, because transfering ownership from
+        the caller to the function using `by_reference = "1"` implies that it's
+        mutable.
+        <argument name = "string pointer" type = "string" by_reference = "1" />
+    </method>
+
+    <method name = "rotate" singleton = "1">
+        Rotates the characters in `data` in-place. This means that all
+        characters are shifted to the left by one, removing the left-most
+        character and appending it to the end.
+        <argument name = "data" type = "string" mutable = "1" />
     </method>
 
     <!-- These are the types we support
