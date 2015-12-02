@@ -260,7 +260,7 @@ method.has_va_list_sibling # 0/1 (default: 0)
 ```gsl
 container.name         # string (as given in the API model, or "_")
 container.type         # string (as given, or "nothing")
-container.constant     # 0/1 (default: 0)
+container.mutable      # 0/1 (default: 0)
 container.by_reference # 0/1 (default: 0)
 container.callback     # 0/1 (default: 0)
 container.fresh        # 0/1 (default: 0)
