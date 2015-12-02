@@ -99,6 +99,15 @@ task initCMake(type: Exec, dependsOn: 'generateJniHeaders') {
 task buildNative(type: Exec, dependsOn: 'initCMake') {
     commandLine "make"
 }
+publishing {
+    publications {
+        jniJar(MavenPublication) {
+            artifacts {
+                artifact "build/libs/${project.name}-${version}.jar"
+            }
+        }
+    }
+}
 jar.dependsOn buildNative
 test.dependsOn buildNative
 .#
@@ -377,7 +386,7 @@ rootProject.name = '$(project.prefix)-jni'
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
-.gradle
+\.gradle
 build/
 src/native
 gradle-app.setting
@@ -498,9 +507,9 @@ function resolve_jni_method (method)
     |  my.method.name = "notify" \
     |  my.method.name = "notifyAll" \
     |  my.method.name = "wait"
-        my.method.jni_name = "$(Name:c)"
+        my.method.jni_name = "$(name:pascal)"   #   Leading capital letter
     else
-        my.method.jni_name = "$(name:c)"
+        my.method.jni_name = "$(name:camel)"
     endif
 
     if my.method.singleton = 1
@@ -561,7 +570,7 @@ package org.zeromq.$(project.name:c);
 
 public class $(my.class.name:pascal) \
 .   if count (my.class.constructor)
-implements AutoCloseable \
+implements AutoCloseable\
 .   endif
 {
     static {
@@ -573,7 +582,7 @@ implements AutoCloseable \
         }
     }
     long self;
-
+.   my.class.jni_void_new = 0
 .   for constructor
     /*
     $(description:no,block)
@@ -583,7 +592,15 @@ implements AutoCloseable \
         /*  TODO: if __init fails, self is null...  */
         self = __init ($(jni_jargs_use:));
     }
+.   if jni_jargs_def = ""
+.       my.class.jni_void_new = 1
+.   endif
 .   endfor
+.   if !my.class.jni_void_new
+    public $(my.class.name:pascal) () {
+        self = 0;
+    }
+.   endif
 .   for destructor
     /*
     $(description:no,block)
@@ -602,9 +619,9 @@ implements AutoCloseable \
     native static $(method.jni_method_type:) __$(c_name:) ($(jni_jargs_def:));
     public $(method.jni_method_type:) $(jni_name:) ($(jni_jargs_def:)) {
 .       if ->return.type = "nothing"
-        $(class.name:pascal).__$(c_name:) ($(jni_jargs_use:));
+        __$(c_name:) ($(jni_jargs_use:));
 .       else
-        return $(class.name:pascal).__$(c_name:) ($(jni_jargs_use:));
+        return __$(c_name:) ($(jni_jargs_use:));
 .       endif
     }
 .   endfor
@@ -680,6 +697,34 @@ $(project.GENERATED_WARNING_HEADER:)
 .   endfor
 .endmacro
 
+.macro generate_test (class)
+.   directory.create ("$(topdir)/src/test/java/$(name_path)")
+.   output "$(topdir)/src/test/java/$(name_path)/$(my.class.name:pascal)Test.java"
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
+package org.zeromq.$(project.name:c);
+
+import org.junit.Assert;
+import org.junit.Test;
+
+public class $(my.class.name:pascal)Test {
+    static {
+        try {
+            System.loadLibrary ("$(project.name:c)jni");
+        }
+        catch (Exception e) {
+            System.exit (-1);
+        }
+    }
+    @Test
+    public void test () {
+        $(my.class.name:pascal) $(c_name) = new $(my.class.name:pascal) ();
+        $(c_name).test (false);
+    }
+}
+.endmacro
+
 for project.class where defined (class.api)
     class.jni_okay = 1
     for constructor
@@ -697,6 +742,8 @@ for project.class where defined (class.api)
     if class.jni_okay
         generate_class_java (class)
         generate_class_c (class)
+        # can't build/run tests yet
+        # generate_test (class)
     endif
 endfor
 
