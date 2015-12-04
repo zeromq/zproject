@@ -77,6 +77,7 @@ repositories {
     mavenLocal()
     mavenCentral()
 }
+
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
@@ -102,15 +103,6 @@ task initCMake(type: Exec, dependsOn: 'generateJniHeaders') {
 }
 task buildNative(type: Exec, dependsOn: 'initCMake') {
     commandLine "make"
-}
-publishing {
-    publications {
-        jniJar(MavenPublication) {
-            artifacts {
-                artifact "build/libs/${project.name}-${version}.jar"
-            }
-        }
-    }
 }
 jar.dependsOn buildNative
 test.dependsOn buildNative
@@ -446,6 +438,7 @@ function resolve_jni_container (container)
         my.container.jni_ctype = "jfloat"
 
     elsif my.container.type = "buffer"
+        return 1            #   Not yet implemented
         my.container.jni_type = "byte []"
         my.container.jni_ctype = "jlong"
 
@@ -591,10 +584,10 @@ implements AutoCloseable\
     /*
     $(description:no,block)
     */
-    native static long __init ($(jni_jargs_def:));
+    native static long __new ($(jni_jargs_def:));
     public $(my.class.name:pascal) ($(jni_jargs_def:)) {
-        /*  TODO: if __init fails, self is null...  */
-        self = __init ($(jni_jargs_use:));
+        /*  TODO: if __new fails, self is null...  */
+        self = __new ($(jni_jargs_use:));
     }
 .   if jni_jargs_def = ""
 .       my.class.jni_void_new = 1
@@ -620,12 +613,12 @@ implements AutoCloseable\
     /*
     $(description:no,block)
     */
-    native static $(method.jni_method_type:) __$(c_name:) ($(jni_jargs_def:));
+    native static $(method.jni_method_type:) __$(name:camel) ($(jni_jargs_def:));
     public $(method.jni_method_type:) $(jni_name:) ($(jni_jargs_def:)) {
 .       if ->return.type = "nothing"
-        __$(c_name:) ($(jni_jargs_use:));
+        __$(name:camel) ($(jni_jargs_use:));
 .       else
-        return __$(c_name:) ($(jni_jargs_use:));
+        return __$(name:camel) ($(jni_jargs_use:));
 .       endif
     }
 .   endfor
@@ -634,7 +627,7 @@ implements AutoCloseable\
 
 .macro generate_method_c (method)
 JNIEXPORT $(->return.jni_ctype:) JNICALL
-Java_$(class.c_name)__1_1$(my.method.c_name) (JNIEnv *env, jclass c\
+Java_$(namespace:c)_$(class.name:pascal)__1_1$(my.method.name:camel) (JNIEnv *env, jclass c\
 .   if jni_cargs_def <> ""
 , \
 .   endif
@@ -746,8 +739,7 @@ for project.class where defined (class.api)
     if class.jni_okay
         generate_class_java (class)
         generate_class_c (class)
-        # can't build/run tests yet
-        # generate_test (class)
+        generate_test (class)
     endif
 endfor
 
