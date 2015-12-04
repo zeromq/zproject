@@ -613,12 +613,12 @@ implements AutoCloseable\
     /*
     $(description:no,block)
     */
-    native static $(method.jni_method_type:) __$(c_name:) ($(jni_jargs_def:));
+    native static $(method.jni_method_type:) __$(name:camel) ($(jni_jargs_def:));
     public $(method.jni_method_type:) $(jni_name:) ($(jni_jargs_def:)) {
 .       if ->return.type = "nothing"
-        __$(c_name:) ($(jni_jargs_use:));
+        __$(name:camel) ($(jni_jargs_use:));
 .       else
-        return __$(c_name:) ($(jni_jargs_use:));
+        return __$(name:camel) ($(jni_jargs_use:));
 .       endif
     }
 .   endfor
@@ -627,7 +627,7 @@ implements AutoCloseable\
 
 .macro generate_method_c (method)
 JNIEXPORT $(->return.jni_ctype:) JNICALL
-Java_$(namespace:c)_$(class.name:pascal)__1_1$(my.method.c_name) (JNIEnv *env, jclass c\
+Java_$(namespace:c)_$(class.name:pascal)__1_1$(my.method.name:camel) (JNIEnv *env, jclass c\
 .   if jni_cargs_def <> ""
 , \
 .   endif
