@@ -72,6 +72,9 @@ function resolve_ruby_container (container)
     elsif my.container.c_type = "int"
         my.container.ruby_ffi_type = "int"
         my.container.coerce_to_c = "Integer($(my.container.ruby_name:))"
+    elsif regexp.match ("^(uint[0-9]+)_t$", my.container.c_type, match)
+        my.container.ruby_ffi_type = match
+        my.container.coerce_to_c = "Integer($(my.container.ruby_name:))"
     elsif my.container.c_type = "float"
         my.container.ruby_ffi_type = "float"
         my.container.coerce_to_c = "Float($(my.container.ruby_name:))"
