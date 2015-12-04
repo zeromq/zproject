@@ -496,6 +496,7 @@ function resolve_jni_method (method)
     my.method.jni_method_type = "void"
 
     if my.method.name = "clone" \
+    |  my.method.name = "close" \
     |  my.method.name = "equals" \
     |  my.method.name = "finalize" \
     |  my.method.name = "getClass" \
@@ -509,6 +510,7 @@ function resolve_jni_method (method)
         my.method.jni_name = "$(name:camel)"
     endif
 
+    my.method.jni_signature = ""
     if my.method.singleton = 1
         my.method.jni_jargs_def = ""
         my.method.jni_jargs_use = ""
@@ -525,6 +527,11 @@ function resolve_jni_method (method)
 
     for my.method.argument where variadic ?= 0
         if resolve_jni_container (argument) = 0
+            if jni_signature <> ""
+                jni_signature += ", "
+            endif
+            jni_signature += "$(argument.jni_type:) $(argument.name:camel)"
+
             jni_jargs_def += "$(comma)$(argument.jni_type:) $(argument.name:camel)"
             jni_jargs_use += "$(comma)$(argument.name:camel)"
             jni_cargs_def += "$(comma)$(argument.jni_ctype:) $(argument.c_name)"
@@ -585,7 +592,7 @@ implements AutoCloseable\
     $(description:no,block)
     */
     native static long __new ($(jni_jargs_def:));
-    public $(my.class.name:pascal) ($(jni_jargs_def:)) {
+    public $(my.class.name:pascal) ($(jni_signature:)) {
         /*  TODO: if __new fails, self is null...  */
         self = __new ($(jni_jargs_use:));
     }
@@ -614,7 +621,7 @@ implements AutoCloseable\
     $(description:no,block)
     */
     native static $(method.jni_method_type:) __$(name:camel) ($(jni_jargs_def:));
-    public $(method.jni_method_type:) $(jni_name:) ($(jni_jargs_def:)) {
+    public $(method.jni_method_type:) $(jni_name:) ($(jni_signature:)) {
 .       if ->return.type = "nothing"
         __$(name:camel) ($(jni_jargs_use:));
 .       else
