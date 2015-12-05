@@ -39,13 +39,15 @@ The following build environments are currently supported:
 * vs2013
 * vs2015
 
-Thanks to the amazing ZeroMQ community you can do all the heavy lifting in C and then easily generate bindings to:
+Thanks to the amazing ZeroMQ community, you can do all the heavy lifting in C and then easily generate bindings in the following languages:
 
-* Java
+* Java (JNI)
 * Python
-* Ruby
 * QML
 * Qt
+* Ruby
+
+The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
 ## Demo on PLAYTerm
 
@@ -167,16 +169,6 @@ MYPROJECT_EXPORT void
     myclass_test (bool verbose);
 //  @end
 ```
-
-Language bindings will also be generated in the following languages:
-
-* Ruby
-* QML
-* Qt
-* Python
-* JNI
-
-The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
 ### Supported API Model Attributes
 
