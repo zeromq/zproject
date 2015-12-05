@@ -325,11 +325,12 @@ function resolve_container_dependencies (class_name, container)
             for dir.directory
                 api_file = directory.path + directory.name + "/"  + "$(my.container.type:c).xml"
                 if resolved = 0 & file.exists (api_file)
-                    new_dependency = XML.load_file (api_file)
-                    new_dependency.api_dir = directory.path + directory.name + "/"
-                    new_dependency.resolved = 0
-                    resolve_c_class (new_dependency)
-                    move new_dependency to project->dependencies
+                    dependency = XML.load_file (api_file)
+                    dependency.api_dir = directory.path + directory.name + "/"
+                    dependency.resolved = 0
+                    dependency.project = directory.name
+                    resolve_c_class (dependency)
+                    move dependency to project->dependencies
                     resolved = 1
                 endif
             endfor

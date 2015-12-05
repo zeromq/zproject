@@ -210,6 +210,7 @@ method.save(filename) # will save the model as an XML string to the given file.
 * Skips methods that it cannot handle properly.
 
 * To build, you need gradle (or equivalent). Run 'gradle build jar' in the bindings/jni directory.
+* To install, run 'gradle install'. This puts the files into $HOME/.m2/repository.
 
 ## Removal
 
