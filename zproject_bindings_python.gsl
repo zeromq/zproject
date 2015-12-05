@@ -28,9 +28,9 @@ function python_register_type (container, struct, pointer)
 
     # First we need to determine whether we're 'importing' this type via
     # class declarations under the 'use' node.
-    for project.use
-        for use.class where class.name = my.container.type
-            my.externlib = use.project
+    for project.dependencies
+        for class where class.name = my.container.type
+            my.externlib = class.project
             last
         endfor
     endfor
