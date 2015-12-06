@@ -59,44 +59,57 @@ function resolve_ruby_container (container)
 
     # Defaults
     my.container.ruby_ffi_type = "pointer"
+    my.container.ruby_doc_type = "::FFI::Pointer, #to_ptr"
 
     # All C types should be transformed to a type name recognized by FFI.
     # To handle more C types, add support for them here.
     if my.container.variadic
+        my.container.ruby_doc_type = "Array<Object>"
         my.container.ruby_ffi_type = "varargs"
     elsif my.container.c_type = "void"
+        my.container.ruby_doc_type = "void"
         my.container.ruby_ffi_type = "void"
     elsif my.container.c_type = "size_t"
+        my.container.ruby_doc_type = "Integer, #to_int, #to_i"
         my.container.ruby_ffi_type = "size_t"
         my.container.coerce_to_c = "Integer($(my.container.ruby_name:))"
     elsif my.container.c_type = "int"
+        my.container.ruby_doc_type = "Integer, #to_int, #to_i"
         my.container.ruby_ffi_type = "int"
         my.container.coerce_to_c = "Integer($(my.container.ruby_name:))"
     elsif regexp.match ("^(uint[0-9]+)_t$", my.container.c_type, match)
+        my.container.ruby_doc_type = "Integer, #to_int, #to_i"
         my.container.ruby_ffi_type = match
         my.container.coerce_to_c = "Integer($(my.container.ruby_name:))"
     elsif my.container.c_type = "float"
+        my.container.ruby_doc_type = "Float, #to_f"
         my.container.ruby_ffi_type = "float"
         my.container.coerce_to_c = "Float($(my.container.ruby_name:))"
     elsif my.container.c_type = "double"
+        my.container.ruby_doc_type = "Float, #to_f"
         my.container.ruby_ffi_type = "double"
         my.container.coerce_to_c = "Float($(my.container.ruby_name:))"
     elsif my.container.c_type = "bool"
+        my.container.ruby_doc_type = "Boolean"
         my.container.ruby_ffi_type = "bool"
         my.container.coerce_to_c = "!(0==$(my.container.ruby_name:)||!$(my.container.ruby_name:)) # boolean"
     elsif my.container.c_type = "const char *"
+        my.container.ruby_doc_type = "String, #to_str, #to_s"
         my.container.ruby_ffi_type = "string"
         my.container.coerce_to_c = "String($(my.container.ruby_name:))"
     elsif my.container.c_type = "char *"
         if my.container.fresh
+            my.container.ruby_doc_return_type = "::FFI::AutoPointer"
             # if it's a fresh string that we have to free() when done with it,
             # wrap pointer in an FFI::AutoPointer
             my.container.coerce_to_ruby = "::FFI::AutoPointer.new($(my.container.ruby_name:), LibC.method(:free))"
         endif
     elsif my.container.c_type = "byte"
+        my.container.ruby_doc_type = "Integer, #to_int, #to_i"
         my.container.ruby_ffi_type = "char"
         my.container.coerce_to_c = "Integer($(my.container.ruby_name:))"
     elsif my.container.is_enum
+        my.container.ruby_doc_type = "Symbol"
         my.container.ruby_ffi_type = "$(my.container.enum_class:)_$(my.container.enum_name)"
     elsif count (project.class, defined (class.RubyName) & (my.container.type = class.c_name))
         for project.class where (defined (class.RubyName) & (my.container.type = class.c_name))
@@ -104,9 +117,11 @@ function resolve_ruby_container (container)
                 if defined (my.container.destructor_self)
                     my.container.coerce_to_c = "__ptr_give_ref"
                 else
+                    my.container.ruby_doc_type = "#__ptr_give_ref"
                     my.container.coerce_to_c = "$(my.container.ruby_name:).__ptr_give_ref"
                 endif
             else
+                my.container.ruby_doc_type = "$(class.RubyName:), #__ptr"
                 my.container.coerce_to_c = "$(my.container.ruby_name:).__ptr if $(my.container.ruby_name:)"
                 my.container.coerce_to_ruby = "$(class.RubyName:).__new $(my.container.ruby_name:), "
                 my.container.coerce_to_ruby += my.container.fresh ?? "true" ? "false"
@@ -212,6 +227,27 @@ function ruby_polymorphic_method_signature(method)
     return my.def_line
 endfunction
 
+function ruby_doc_return_type (method)
+    if defined(my.method->return.ruby_doc_return_type)
+        return my.method->return.ruby_doc_return_type
+    endif
+
+    if defined(string.locate (my.method->return.ruby_doc_type, ","))
+        # turn "Integer, #to_int, #to_i" into "Integer"
+        return string.prefix (my.method->return.ruby_doc_type, ",")
+    else
+        return my.method->return.ruby_doc_type
+    endif
+endfunction
+
+function ruby_doc_arg_description (argument)
+    if my.argument.variadic
+      return " see https://github.com/ffi/ffi/wiki/examples#using-varargs"
+    else
+      return ""
+    endif
+endfunction
+
 function resolve_ruby_class (class)
     resolve_ruby_enums (class)
     for my.class.constructor as method
@@ -261,6 +297,9 @@ module $(project.RubyName:)
 
     extend ::FFI::Library
 
+    # Raised when one tries to use an instance of one of the classes in the
+    # {$(project.RubyName:)::FFI} namespace after the internal pointer to the
+    # native object has been nullified.
     class DestroyedError < RuntimeError; end
 
     def self.available?
@@ -321,14 +360,21 @@ module $(project.RubyName:)
   module FFI
 
     # $(class.description:no,block)
+    # @note This class is 100% generated using zproject.
+.    # TODO: extract boilerplate into a reusable module
     class $(class.RubyName:)
       # Boilerplate for self pointer, initializer, and finalizer
       class << self
         alias :__new :new
       end
-      def initialize ptr, finalize=true
+      # Attaches the pointer _ptr_ to this instance and defines a finalizer for
+      # it if necessary.
+      # @param ptr [::FFI::Pointer]
+      # @param finalize [Boolean]
+      def initialize(ptr, finalize = true)
         @ptr = ptr
         if @ptr.null?
+.          # TODO: extract to method #attach_native(ptr)
           @ptr = nil # Remove null pointers so we don't have to test for them.
         elsif finalize
           @finalizer = self.class.create_finalizer_for @ptr
@@ -338,7 +384,9 @@ module $(project.RubyName:)
 .for class.destructor where count (destructor.argument) = 1
 .   if first ()
 .       class.has_ruby_finalizer = 1
-      def self.create_finalizer_for ptr
+      # @param ptr [::FFI::Pointer]
+      # @return [Proc]
+      def self.create_finalizer_for(ptr)
         Proc.new do
           ptr_ptr = ::FFI::MemoryPointer.new :pointer
           ptr_ptr.write_pointer ptr
@@ -349,7 +397,8 @@ module $(project.RubyName:)
 .endfor
 .if !defined (class.has_ruby_finalizer)
 .# TODO: just raise an ImplicitDestroyError
-      def self.create_finalizer_for ptr
+      # @return [Proc]
+      def self.create_finalizer_for(ptr)
         Proc.new do
           "WARNING: "\\
           "Objects of type #{self} cannot be destroyed implicitly. "\\
@@ -357,17 +406,23 @@ module $(project.RubyName:)
         end
       end
 .endif
+      # @return [Boolean]
       def null?
         !@ptr or @ptr.null?
       end
       # Return internal pointer
+      # @return [::FFI::Pointer]
       def __ptr
         raise DestroyedError unless @ptr
         @ptr
       end
       # So external Libraries can just pass the Object to a FFI function which expects a :pointer
       alias_method :to_ptr, :__ptr
-      # Nullify internal pointer and return pointer pointer
+      # Nullify internal pointer and return pointer pointer.
+      # @note This detaches the current instance from the native object
+      #   and thus makes it unusable.
+      # @return [::FFI::MemoryPointer] the pointer pointing to a pointer
+      #   pointing to the native object
       def __ptr_give_ref
         raise DestroyedError unless @ptr
         ptr_ptr = ::FFI::MemoryPointer.new :pointer
@@ -383,7 +438,7 @@ module $(project.RubyName:)
       # $(callback_type.description:no,block)
       #     $(c_callback_typedef (callback_type):no,block)
       #
-      # WARNING: If your Ruby code doesn't retain a reference to the
+      # @note WARNING: If your Ruby code doesn't retain a reference to the
       #   FFI::Function object after passing it to a C function call,
       #   it may be garbage collected while C still holds the pointer,
       #   potentially resulting in a segmentation fault.
@@ -424,6 +479,10 @@ $(argument.ruby_name)\
 .for constructor as method
 
       # $(method.description:no,block)
+.for method.argument
+      # @param $(argument.ruby_name:) [$(argument.ruby_doc_type:)]
+.endfor
+      # @return [$(project.RubyName:)::$(class.RubyName:)]
       def $(ruby_monomorphic_method_signature(method))
 .for method.argument where defined (argument.coerce_to_c)
         $(argument.ruby_name:) = $(argument.coerce_to_c:)
@@ -435,6 +494,8 @@ $(argument.ruby_name)\
 .for destructor as method
 
       # $(method.description:no,block)
+      #
+      # @return [void]
       def $(ruby_monomorphic_method_signature(method))
         return unless @ptr
 .for method.argument where defined (argument.coerce_to_c)
@@ -450,6 +511,11 @@ $(argument.ruby_name)\
 .for method
 
       # $(method.description:no,block)
+      #
+.for method.argument
+      # @param $(argument.ruby_name:) [$(argument.ruby_doc_type:)]$(ruby_doc_arg_description (argument):)
+.endfor
+      # @return [$(ruby_doc_return_type (method):)]
       def $(ruby_monomorphic_method_signature(method))
 .if !method.singleton
         raise DestroyedError unless @ptr
@@ -475,7 +541,12 @@ $(argument.ruby_name)\
       #
       # This is the polymorphic version of #$(method.ruby_name:).
       #
-      # @param self_p [$(project.RubyName:)::$(class.RubyName:), #__ptr, FFI::Pointer, nil] object reference to use this method on
+      # @param self_p [$(project.RubyName:)::$(class.RubyName:), #__ptr, ::FFI::Pointer, nil]
+      #   object reference to use this method on
+.for method.argument
+      # @param $(argument.ruby_name:) [$(argument.ruby_doc_type:)]$(ruby_doc_arg_description (argument):)
+.endfor
+      # @return [$(ruby_doc_return_type (method):)]
       def $(ruby_polymorphic_method_signature(method))
         self_p = self_p.__ptr if self_p.respond_to?(:__ptr)
 .for method.argument where defined (argument.coerce_to_c)
