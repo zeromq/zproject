@@ -261,6 +261,8 @@ module $(project.RubyName:)
 
     extend ::FFI::Library
 
+    class DestroyedError < RuntimeError; end
+
     def self.available?
       @available
     end
@@ -320,8 +322,6 @@ module $(project.RubyName:)
 
     # $(class.description:no,block)
     class $(class.RubyName:)
-      class DestroyedError < RuntimeError; end
-
       # Boilerplate for self pointer, initializer, and finalizer
       class << self
         alias :__new :new
