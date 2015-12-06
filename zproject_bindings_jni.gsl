@@ -82,18 +82,24 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 dependencies {
+.   for project.use
+.       if count (project->dependencies.class, class.project = use.project) > 0
+    compile 'org.zeromq:$(use.project)-jni:0.1.0-SNAPSHOT'
+.       endif
+.   endfor
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-all:1.3'
 }
 task generateJniHeaders(type: Exec, dependsOn: 'classes') {
     def classpath = sourceSets.main.output.classesDir
+    def appclasspath = configurations.runtime.files*.getAbsolutePath().join(":")
     def nativeIncludes = "src/native/include"
     def jniClasses = [
-.       for project.class where defined (class.api) & class.jni_okay ?= 1
+.   for project.class where defined (class.api) & class.jni_okay ?= 1
             '$(namespace).$(name:pascal)'$(last ()?? ""? ",")
-.       endfor
+.   endfor
     ]
-    commandLine("javah", "-d", "$nativeIncludes", "-classpath", "$classpath", *jniClasses)
+    commandLine("javah", "-d", "$nativeIncludes", "-classpath", "$classpath:$appclasspath", *jniClasses)
 }
 tasks.withType(Test) {
     systemProperty "java.library.path", "/usr/lib:/usr/local/lib:$projectDir"
@@ -589,6 +595,11 @@ endfunction
 $(project.GENERATED_WARNING_HEADER:)
 */
 package org.zeromq.$(project.name:c);
+.   for project.use
+.       if count (project->dependencies.class, class.project = use.project) > 0
+import org.zeromq.$(use.project).*;
+.       endif
+.   endfor
 
 public class $(my.class.name:pascal) \
 .   if count (my.class.constructor)
@@ -603,7 +614,7 @@ implements AutoCloseable\
             System.exit (-1);
         }
     }
-    long self;
+    public long self;
 .   my.class.jni_void_new = 0
 .   for constructor
     /*
