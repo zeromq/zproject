@@ -390,94 +390,98 @@ lib$(project.prefix)jni.so
 .endmacro
 
 function resolve_jni_container (container)
-    if my.container.type = "nothing"
-        my.container.jni_type = "void"
-        my.container.jni_ctype = "void"
+    #   Type of container shown to Java apps
+    my.container.jni_java_type = ""
+    #   Type of container passed to native code
+    my.container.jni_jni_type = ""
+    #   Mapping from Java to JNI type
+    my.container.jni_mapping = "$(my.container.name:camel)"
+    #   Is the container a known class type?
+    my.container.jni_is_class = 0
+    #   Is the container a self_p reference?
+    my.container.jni_self_p = 0
 
-    elsif my.container.type = "anything"
-        my.container.jni_type = "long"
-        my.container.jni_ctype = "jlong"
+    if my.container.type = "nothing"
+        my.container.jni_java_type = "void"
+        my.container.jni_jni_type = "void"
+
+    elsif my.container.type = "anything" \
+    |     my.container.type = "size" \
+    |     my.container.type = "time" \
+    |     my.container.type = "file_size"
+        my.container.jni_java_type = "long"
+        my.container.jni_jni_type = "jlong"
 
     elsif my.container.type = "boolean"
-        my.container.jni_type = "boolean"
-        my.container.jni_ctype = "jboolean"
+        my.container.jni_java_type = "boolean"
+        my.container.jni_jni_type = "jboolean"
 
     elsif my.container.type = "byte"
-        my.container.jni_type = "byte"
-        my.container.jni_ctype = "jbyte"
+        my.container.jni_java_type = "byte"
+        my.container.jni_jni_type = "jbyte"
 
     elsif my.container.type = "char"
-        my.container.jni_type = "char"
-        my.container.jni_ctype = "jchar"
+        my.container.jni_java_type = "char"
+        my.container.jni_jni_type = "jchar"
 
     elsif my.container.type = "integer"
-        my.container.jni_type = "int"
-        my.container.jni_ctype = "jint"
-
-    elsif my.container.type = "size"
-        my.container.jni_type = "long"
-        my.container.jni_ctype = "jlong"
+        my.container.jni_java_type = "int"
+        my.container.jni_jni_type = "jint"
 
     elsif my.container.type = "number"
         if my.container.size ?= "1"
-            my.container.jni_type = "byte"
-            my.container.jni_ctype = "jbyte"
+            my.container.jni_java_type = "byte"
+            my.container.jni_jni_type = "jbyte"
         elsif my.container.size = 2
-            my.container.jni_type = "short"
-            my.container.jni_ctype = "jshort"
+            my.container.jni_java_type = "short"
+            my.container.jni_jni_type = "jshort"
         elsif my.container.size = 4
-            my.container.jni_type = "int"
-            my.container.jni_ctype = "jint"
+            my.container.jni_java_type = "int"
+            my.container.jni_jni_type = "jint"
         elsif my.container.size = 8
-            my.container.jni_type = "long"
-            my.container.jni_ctype = "jlong"
+            my.container.jni_java_type = "long"
+            my.container.jni_jni_type = "jlong"
         endif
 
     elsif my.container.type = "real"
-        my.container.jni_type = "float"
-        my.container.jni_ctype = "jfloat"
+        my.container.jni_java_type = "float"
+        my.container.jni_jni_type = "jfloat"
 
     elsif my.container.type = "buffer"
-        return 1            #   Not yet implemented
-        my.container.jni_type = "byte []"
-        my.container.jni_ctype = "jlong"
+        my.container.jni_java_type = "byte []"
+        my.container.jni_jni_type = "jbyteArray"
 
     elsif my.container.type = "string"
         if my.container.by_reference
             return 1        #   Skip methods that do this
         endif
-        my.container.jni_type = "String"
-        my.container.jni_ctype = "jstring"
+        my.container.jni_java_type = "String"
+        my.container.jni_jni_type = "jstring"
 
     elsif my.container.type = "format"
-        my.container.jni_type = "String"
-        my.container.jni_ctype = "jstring"
+        my.container.jni_java_type = "String"
+        my.container.jni_jni_type = "jstring"
 
-    elsif my.container.type = "time"
-        my.container.jni_type = "long"
-        my.container.jni_ctype = "jlong"
+    elsif count (project.class, class.c_name = my.container.type & !defined (class.api))
+        return 1        #   Refers to class that has no API model
 
-    elsif my.container.type = "file_size"
-        my.container.jni_type = "long"
-        my.container.jni_ctype = "jlong"
+    elsif my.container.name = "self_p"
+        my.container.jni_self_p = 1
 
-    elsif count (project.class, class.c_name = my.container.type)
-        my.container.jni_type = "long"
-        my.container.jni_ctype = "jlong"
-
-    elsif count (project->dependencies.class, class.c_name = my.container.type)
-        my.container.jni_type = "long"
-        my.container.jni_ctype = "jlong"
+    elsif count (project.class, class.c_name = my.container.type) \
+    |     count (project->dependencies.class, class.c_name = my.container.type)
+        my.container.jni_java_type = "$(my.container.type:pascal)"
+        my.container.jni_mapping = "$(my.container.name:camel).self"
+        my.container.jni_shim_type = "long"
+        my.container.jni_jni_type = "jlong"
+        my.container.jni_is_class = 1
 
     elsif my.container.callback ?= 1
-        #   For now, don't stress about how we get the address of
-        #   a callback. Let's solve that later.
-        my.container.jni_type = "long"
-        my.container.jni_ctype = "jlong"
+        return 1        #   Don't implement callbacks yet
 
     elsif my.container.is_enum
-        my.container.jni_type = "int"
-        my.container.jni_ctype = "jint"
+        my.container.jni_java_type = "int"
+        my.container.jni_jni_type = "jint"
 
     elsif my.container.type = "va_list" \
     |     my.container.type = "FILE" \
@@ -488,12 +492,14 @@ function resolve_jni_container (container)
         abort "Unhandled type '$(my.container.type:)' in $(class.c_name)"
     endif
 
+    #   By default, shim gets Java type
+    my.container.jni_shim_type ?= my.container.jni_java_type
+
     return 0            #   Seems to be OK
 endfunction
 
 function resolve_jni_method (method)
     my.method.jni_okay = 1
-    my.method.jni_method_type = "void"
 
     if my.method.name = "clone" \
     |  my.method.name = "close" \
@@ -510,55 +516,67 @@ function resolve_jni_method (method)
         my.method.jni_name = "$(name:camel)"
     endif
 
-    my.method.jni_signature = ""
+    my.method.jni_method_signature = ""
     if my.method.singleton = 1
-        my.method.jni_jargs_def = ""
-        my.method.jni_jargs_use = ""
-        my.method.jni_cargs_def = ""
-        my.method.jni_cargs_use = ""
+        my.method.jni_shim_signature_java = ""
+        my.method.jni_shim_signature_c = ""
+        my.method.jni_shim_invocation_java = ""
+        my.method.jni_native_invocation_c = ""
         comma = ""
     else
-        my.method.jni_jargs_def = "long self"
-        my.method.jni_jargs_use = "self"
-        my.method.jni_cargs_def = "jlong self"
-        my.method.jni_cargs_use = "($(class.c_name)_t *) self"
+        my.method.jni_shim_signature_java = "long self"
+        my.method.jni_shim_signature_c = "jlong self"
+        my.method.jni_shim_invocation_java = "self"
+        my.method.jni_native_invocation_c = "($(class.c_name)_t *) self"
         comma = ", "
     endif
 
-    for my.method.argument where variadic ?= 0
-        if resolve_jni_container (argument) = 0
-            if jni_signature <> ""
-                jni_signature += ", "
-            endif
-            jni_signature += "$(argument.jni_type:) $(argument.name:camel)"
+    for my.method.argument
+        if resolve_jni_container (argument) = 1
+            my.method.jni_okay = 0
+            last
+        endif
 
-            jni_jargs_def += "$(comma)$(argument.jni_type:) $(argument.name:camel)"
-            jni_jargs_use += "$(comma)$(argument.name:camel)"
-            jni_cargs_def += "$(comma)$(argument.jni_ctype:) $(argument.c_name)"
+        if variadic = 1
+            if va_start <> "format"
+                jni_method_signature += " []"
+                jni_shim_invocation_java += " [0]"
+            endif
+        elsif jni_self_p = 1
+            jni_shim_signature_java += "$(comma)long self"
+            jni_shim_invocation_java += "$(comma)self"
+            jni_shim_signature_c += "$(comma)jlong self"
+            jni_native_invocation_c += "$(comma)($(argument.c_type)) &self"
+            my.method->return.jni_java_type = "long"
+            my.method.return_self_p = 1
+        else
+            if jni_method_signature <> ""
+                jni_method_signature += ", "
+            endif
+            jni_method_signature += "$(argument.jni_java_type:) $(argument.name:camel)"
+
+            jni_shim_signature_java += "$(comma)$(argument.jni_shim_type:) $(argument.name:camel)"
+            jni_shim_signature_c += "$(comma)$(argument.jni_jni_type:) $(argument.c_name)"
+            jni_shim_invocation_java += "$(comma)$(argument.jni_mapping:)"
 
             if type = "format"
-                jni_cargs_use += "$(comma)\"%s\", $(argument.c_name)_"
+                jni_native_invocation_c += "$(comma)\"%s\", $(argument.c_name)_"
             elsif type = "string"
 .#  For now, buffers must be native C and not Java byte arrays
 .#            elsif type = "string" | type = "buffer"
-                jni_cargs_use += "$(comma)$(argument.c_name)_"
+                jni_native_invocation_c += "$(comma)$(argument.c_name)_"
             elsif by_reference = 1
-                jni_cargs_use += "$(comma)($(argument.c_type)) &$(argument.c_name)"
-            elsif callback = 1
-                jni_cargs_use += "$(comma)($(argument.c_type) *) $(argument.c_name)"
+                jni_native_invocation_c += "$(comma)($(argument.c_type)) &$(argument.c_name)"
             else
-                jni_cargs_use += "$(comma)($(argument.c_type)) $(argument.c_name)"
+                jni_native_invocation_c += "$(comma)($(argument.c_type)) $(argument.c_name)"
             endif
-            comma = ", "
-        else
-            my.method.jni_okay = 0
         endif
+        comma = ", "
     endfor
 
     for my.method.return
-        if resolve_jni_container (return) = 0
-            my.method.jni_method_type = return.jni_type
-        else
+                                          # For now can't do buffer returns
+        if resolve_jni_container (return) | return.type = "buffer"
             my.method.jni_okay = 0
         endif
     endfor
@@ -591,12 +609,15 @@ implements AutoCloseable\
     /*
     $(description:no,block)
     */
-    native static long __new ($(jni_jargs_def:));
-    public $(my.class.name:pascal) ($(jni_signature:)) {
+    native static long __new ($(jni_shim_signature_java:));
+    public $(my.class.name:pascal) ($(jni_method_signature:)) {
         /*  TODO: if __new fails, self is null...  */
-        self = __new ($(jni_jargs_use:));
+        self = __new ($(jni_shim_invocation_java:));
     }
-.   if jni_jargs_def = ""
+    public $(my.class.name:pascal) (long pointer) {
+        self = pointer;
+    }
+.   if jni_shim_signature_java = ""
 .       my.class.jni_void_new = 1
 .   endif
 .   endfor
@@ -620,12 +641,17 @@ implements AutoCloseable\
     /*
     $(description:no,block)
     */
-    native static $(method.jni_method_type:) __$(name:camel) ($(jni_jargs_def:));
-    public $(method.jni_method_type:) $(jni_name:) ($(jni_signature:)) {
-.       if ->return.type = "nothing"
-        __$(name:camel) ($(jni_jargs_use:));
+    native static $(->return.jni_shim_type:) __$(name:camel) ($(jni_shim_signature_java:));
+    public $(->return.jni_java_type:) $(jni_name:) ($(jni_method_signature:)) {
+.       if defined (method.return_self_p)
+        self = __$(name:camel) ($(jni_shim_invocation_java:));
+        return 0;
+.       elsif ->return.type = "nothing"
+        __$(name:camel) ($(jni_shim_invocation_java:));
+.       elsif ->return.jni_is_class = 1
+        return new $(->return.type:pascal) (__$(name:camel) ($(jni_shim_invocation_java:)));
 .       else
-        return __$(name:camel) ($(jni_jargs_use:));
+        return __$(name:camel) ($(jni_shim_invocation_java:));
 .       endif
     }
 .   endfor
@@ -633,47 +659,56 @@ implements AutoCloseable\
 .endmacro
 
 .macro generate_method_c (method)
-JNIEXPORT $(->return.jni_ctype:) JNICALL
+JNIEXPORT $(->return.jni_jni_type:) JNICALL
 Java_$(namespace:c)_$(class.name:pascal)__1_1$(my.method.name:camel) (JNIEnv *env, jclass c\
-.   if jni_cargs_def <> ""
+.   if jni_shim_signature_c <> ""
 , \
 .   endif
-$(jni_cargs_def:))
+$(jni_shim_signature_c:))
 {
 .   for argument
 .       if type = "string" | type = "format"
     char *$(c_name)_ = (char *) (*env)->GetStringUTFChars (env, $(c_name), NULL);
 .       elsif type = "buffer"
-.#  For now, buffers must be native C and not Java byte arrays
-.#    byte *$(c_name)_ = (byte *) (*env)->GetByteArrayElements (env, $(c_name), 0);
+    jbyte *$(c_name)_ = (byte *) (*env)->GetByteArrayElements (env, $(c_name), 0);
 .       endif
 .   endfor
+.#
 .   if ->return.type = "nothing"
-    $(class.c_name)_$(c_name) ($(jni_cargs_use));
+    $(class.c_name)_$(c_name) ($(jni_native_invocation_c));
 .       my.return = ""
 .   elsif ->return.type = "buffer"
-    byte *$(c_name)_ = (byte *) $(class.c_name)_$(c_name) ($(jni_cargs_use));
+.#  At present, no way of knowing what 'size' is, so this code is disabled
+    byte *$(c_name)_ = (byte *) $(class.c_name)_$(c_name) ($(jni_native_invocation_c));
+    jbyteArray buffer = (*env)->NewByteArray (env, (jint) size);
+    (*env)->SetByteArrayRegion (env, buffer_, 0, size, (jbyte*) data);
+    return buffer_;
 .       my.return = "    return (jlong) $(c_name)_;\n"
 .   elsif ->return.type = "string"
-    char *$(c_name)_ = (char *) $(class.c_name)_$(c_name) ($(jni_cargs_use));
+    char *$(c_name)_ = (char *) $(class.c_name)_$(c_name) ($(jni_native_invocation_c));
     jstring string = (*env)->NewStringUTF (env, $(c_name)_);
 .       if ->return.fresh
     zstr_free (&$(c_name)_);
 .       endif
 .       my.return = "    return string;\n"
 .   else
-    $(->return.jni_ctype:) $(c_name)_ = ($(->return.jni_ctype:)) $(class.c_name)_$(c_name) ($(jni_cargs_use));
-.       my.return = "    return $(c_name)_;\n"
+    $(->return.jni_jni_type:) $(c_name)_ = ($(->return.jni_jni_type:)) $(class.c_name)_$(c_name) ($(jni_native_invocation_c));
+.       if defined (my.method.return_self_p)
+.           my.return = "    return self;\n"
+.       else
+.           my.return = "    return $(c_name)_;\n"
+.       endif
 .   endif
+.#
 .   for argument
 .       if type = "string" | type = "format"
     (*env)->ReleaseStringUTFChars (env, $(c_name), $(c_name)_);
 .       elsif type = "buffer"
-.#  For now, buffers must be native C and not Java byte arrays
-.#    (*env)->ReleaseByteArrayElements (env, $(c_name), (jbyte *) $(c_name)_, 0);
+    (*env)->ReleaseByteArrayElements (env, $(c_name), (jbyte *) $(c_name)_, 0);
 .       endif
 .   endfor
-$(my.return)}
+$(my.return)\
+}
 
 .endmacro
 
