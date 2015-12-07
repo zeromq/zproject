@@ -121,7 +121,7 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .endif
 %doc COPYING
 .# generate binary names
-.for project.main
+.for project.main where !defined (main.private)
 %{_bindir}/$(main.name)
 .endfor
 .# generate service file names
