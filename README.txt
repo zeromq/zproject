@@ -185,6 +185,46 @@ The following attributes are supported for arguments and return values:
 - `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it. Implies mutable = "1".
 - `variadic = "1"` - used for representing variadic arguments.
 
+### API Types
+
+This is an incomplete list of API types:
+
+* "nothing" -- for return only, means "void" in C.
+
+* "anything" -- means "void *" in C.
+
+* "size" -- long size (64 bits), "size_t" in C.
+
+* "time" -- long time (64 bits), "time_t" in C.
+
+* "file_size" -- long file size (64 bits).
+
+* "boolean" -- Boolean.
+
+* "byte" -- single octet.
+
+* "char" -- single character (possibly multibyte, do we care?)
+
+* "integer" -- 32-bit signed integer.
+
+* "number" -- unsigned number, with 'size = "1|2|4|8"'.
+
+* "real" -- single-precision floating point.
+
+* "buffer" -- byte array. To return a byte array, you should specify 'size' attribute that defines size. This can be a constant, 'size = "ZUUID_LEN"', or a dot followed by method name in the same class, e.g. 'size = ".size"'.
+
+* "string" -- character array.
+
+* "format" -- printf format, followed by zero or more arguments.
+
+* "FILE", "va_list", "zmq_pollitem", "socket" -- literally that, in C. (Not sure if it is wise to use raw C types.)
+
+* enumerations - to be reviewed as these have a specific syntax that crams multiple properties into one attribute, not our usual way of working.
+
+* callbacks - tbd.
+
+* Names of classes, e.g. zmsg.
+
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
