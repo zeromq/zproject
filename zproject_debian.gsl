@@ -19,9 +19,9 @@
 .   for project.license
 #    $(string.trim (license.):block                                         )
 .   endfor
-#
 
-Source:         $(project.name)
+
+Source:         $(string.replace (project.name, "_|-"))
 Section:        net
 Priority:       optional
 Maintainer:     John Doe <John.Doe@example.com>
@@ -38,44 +38,42 @@ Build-Depends: bison, debhelper (>= 8),
 .elsif defined(use.debian_name)
     $(use.debian_name),
 .elsif regexp.match("^lib", use.libname)
-    $(use.libname)-dev,
+    $(string.replace (use.libname, "_|-"))-dev,
 .else
-    lib$(use.libname)-dev,
+    lib$(string.replace (use.libname, "_|-"))-dev,
 .endif
 .endfor
     dh-autoreconf
 
 .if project.has_classes
-Package: $(project.libname)$(project->version.major)
+Package: $(string.replace (project.libname, "_|-"))$(project->version.major)
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: $(project.name)
  This package contains shared library for $(project.name): $(project.description)
 
-Package: $(project.name)-dev
+Package: $(string.replace (project.name, "_|-"))-dev
 Architecture: all
 Section: libdevel
 Depends:
-    $(project.libname)$(project->version.major) (= ${binary:Version}),
-    ${shlibs:Depends},
 .for project.use
 .if use.project = "libzmq"
     libzmq4-dev,
 .elsif defined(use.debian_name)
     $(use.debian_name),
 .elsif regexp.match("^lib", use.libname)
-    $(use.libname)-dev,
+    $(string.replace (use.libname, "_|-"))-dev,
 .else
-    lib$(use.project)-dev,
+    lib$(string.replace (use.libname, "_|-"))-dev,
 .endif
 .endfor
-    ${misc:Depends}
+    $(string.replace (project.libname, "_|-"))$(project->version.major) (= ${binary:Version})
 Description: development files for $(project.name)
  This package contains development files for $(project.name): $(project.description)
 .endif
 
 .if project.has_main
-Package: $(project.name)
+Package: $(string.replace (project.name, "_|"))
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: $(project.description)
@@ -88,9 +86,9 @@ Section: debug
 Priority: extra
 Depends:
 .if project.has_main
-    $(project.name) (= ${binary:Version}),
+    $(string.replace (project.name, "_|-")) (= ${binary:Version}),
 .else
-    $(project.libname)$(project->version.major) (= ${binary:Version}),
+    $(string.replace (project.libname, "_|-"))$(project->version.major) (= ${binary:Version}),
 .endif
     ${misc:Depends}
 Description: debugging symbols for $(project.name)
@@ -98,14 +96,10 @@ Description: debugging symbols for $(project.name)
 
 .output "builds/debian/$(project.name).dsc"
 Format:         1.0
-Source:         $(project.name)
+Source:         $(string.replace (project.name, "_|-"))
 Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)-1
-.if project.has_main & project.has_classes
-Binary:         $(project.name), $(project.libname)$(project->version.major)
-.elsif project.has_main
-Binary:         $(project.name)
-.elsif project.has_classes
-Binary:         $(project.libname)$(project->version.major)
+.if project.has_classes
+Binary:         $(string.replace (project.libname, "_|-"))$(project->version.major), $(string.replace (project.name, "_|-"))-dev
 .endif
 Architecture:   any all
 Maintainer:     John Doe <John.Doe@example.com>
@@ -121,19 +115,17 @@ Build-Depends: bison, debhelper (>= 8),
 .elsif defined(use.debian_name)
     $(use.debian_name),
 .elsif regexp.match("^lib", use.libname)
-    $(use.libname)-dev,
+    $(string.replace (use.libname, "_|-"))-dev,
 .else
-    lib$(use.libname)-dev,
+    lib$(string.replace (use.libname, "_|-"))-dev,
 .endif
 .endfor
     dh-autoreconf
 
-Package-List:
-.if project.has_main
- $(project.name) dev net optional arch-any
-.endif
 .if project.has_classes
- $(project.libname)$(project->version.major) dev net optional arch-any
+Package-List:
+ $(string.replace (project.libname, "_|-"))$(project->version.major) deb net optional arch=any
+ $(string.replace (project.name, "_|-"))-dev deb libdevel optional arch=any
 .endif
 
 .output "builds/debian/rules"
