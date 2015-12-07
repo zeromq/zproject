@@ -16,7 +16,7 @@ endfor
 
 # Replace each class item with the class model from its API file (if any)
 for project.class where defined (class.api)
-    new_class = XML.load_file (class.api)
+    new_class = XML.load_file (class.api)?
     if !defined (new_class)
         echo "Error loading api file: $(class.api): $(xml.error?)"
         class.api = # undefined
