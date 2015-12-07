@@ -376,10 +376,13 @@ for class.method where defined (qt_method_signature (method, 0))
 >    $(method->return.qtCallPre)$(class.c_name:)_$(method.c_name) (\
     endif
     if qt_method_has_self_pointer (method)
->&self, \
+>&self\
+        if count (method.argument) > 1
+>, \
+        endif
     elsif !method.singleton
 >self\
-        if !method.singleton & count (method.argument)
+        if count (method.argument)
 >, \
         endif
     endif
