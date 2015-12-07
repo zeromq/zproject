@@ -21,23 +21,24 @@
 
 **<a href="#toc2-291">Sample API model</a>**
 &emsp;<a href="#toc3-494">Supported API Model Attributes</a>
-&emsp;<a href="#toc3-510">Tips</a>
+&emsp;<a href="#toc3-510">API Types</a>
+&emsp;<a href="#toc3-551">Tips</a>
 
-**<a href="#toc2-521">Language Binding Notes</a>**
-&emsp;<a href="#toc3-524">JNI Language Binding</a>
+**<a href="#toc2-562">Language Binding Notes</a>**
+&emsp;<a href="#toc3-565">JNI Language Binding</a>
 
-**<a href="#toc2-532">Removal</a>**
-&emsp;<a href="#toc3-535">autotools</a>
+**<a href="#toc2-573">Removal</a>**
+&emsp;<a href="#toc3-576">autotools</a>
 
-**<a href="#toc2-542">Notes for Writing Language Bindings</a>**
-&emsp;<a href="#toc3-545">Schema/Architecture Overview</a>
-&emsp;<a href="#toc3-564">Informal Summary</a>
-&emsp;<a href="#toc3-569">Semantic Attributes</a>
-&emsp;<a href="#toc3-606">Language-Specific Implementation Attributes</a>
+**<a href="#toc2-583">Notes for Writing Language Bindings</a>**
+&emsp;<a href="#toc3-586">Schema/Architecture Overview</a>
+&emsp;<a href="#toc3-605">Informal Summary</a>
+&emsp;<a href="#toc3-610">Semantic Attributes</a>
+&emsp;<a href="#toc3-647">Language-Specific Implementation Attributes</a>
 
-**<a href="#toc2-617">Ownership and License</a>**
-&emsp;<a href="#toc3-626">Hints to Contributors</a>
-&emsp;<a href="#toc3-635">This Document</a>
+**<a href="#toc2-658">Ownership and License</a>**
+&emsp;<a href="#toc3-667">Hints to Contributors</a>
+&emsp;<a href="#toc3-676">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -538,7 +539,48 @@ The following attributes are supported for arguments and return values:
 - `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it. Implies mutable = "1".
 - `variadic = "1"` - used for representing variadic arguments.
 
-<A name="toc3-510" title="Tips" />
+<A name="toc3-510" title="API Types" />
+### API Types
+
+This is an incomplete list of API types:
+
+* "nothing" -- for return only, means "void" in C.
+
+* "anything" -- means "void *" in C.
+
+* "size" -- long size (64 bits), "size_t" in C.
+
+* "time" -- long time (64 bits), "time_t" in C.
+
+* "file_size" -- long file size (64 bits).
+
+* "boolean" -- Boolean.
+
+* "byte" -- single octet.
+
+* "char" -- single character (possibly multibyte, do we care?)
+
+* "integer" -- 32-bit signed integer.
+
+* "number" -- unsigned number, with 'size = "1|2|4|8"'.
+
+* "real" -- single-precision floating point.
+
+* "buffer" -- byte array. To return a byte array, you should specify 'size' attribute that defines size. This can be a constant, 'size = "ZUUID_LEN"', or a dot followed by method name in the same class, e.g. 'size = ".size"'.
+
+* "string" -- character array.
+
+* "format" -- printf format, followed by zero or more arguments.
+
+* "FILE", "va_list", "zmq_pollitem", "socket" -- literally that, in C. (Not sure if it is wise to use raw C types.)
+
+* enumerations - to be reviewed as these have a specific syntax that crams multiple properties into one attribute, not our usual way of working.
+
+* callbacks - tbd.
+
+* Names of classes, e.g. zmsg.
+
+<A name="toc3-551" title="Tips" />
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
@@ -549,10 +591,10 @@ echo method.string()  # will print the model as an XML string.
 method.save(filename) # will save the model as an XML string to the given file.
 ```
 
-<A name="toc2-521" title="Language Binding Notes" />
+<A name="toc2-562" title="Language Binding Notes" />
 ## Language Binding Notes
 
-<A name="toc3-524" title="JNI Language Binding" />
+<A name="toc3-565" title="JNI Language Binding" />
 ### JNI Language Binding
 
 * Skips methods that it cannot handle properly.
@@ -560,20 +602,20 @@ method.save(filename) # will save the model as an XML string to the given file.
 * To build, you need gradle (or equivalent). Run 'gradle build jar' in the bindings/jni directory.
 * To install, run 'gradle install'. This puts the files into $HOME/.m2/repository.
 
-<A name="toc2-532" title="Removal" />
+<A name="toc2-573" title="Removal" />
 ## Removal
 
-<A name="toc3-535" title="autotools" />
+<A name="toc3-576" title="autotools" />
 ### autotools
 
 ```sh
 make uninstall
 ```
 
-<A name="toc2-542" title="Notes for Writing Language Bindings" />
+<A name="toc2-583" title="Notes for Writing Language Bindings" />
 ## Notes for Writing Language Bindings
 
-<A name="toc3-545" title="Schema/Architecture Overview" />
+<A name="toc3-586" title="Schema/Architecture Overview" />
 ### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
@@ -592,12 +634,12 @@ make uninstall
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-<A name="toc3-564" title="Informal Summary" />
+<A name="toc3-605" title="Informal Summary" />
 ### Informal Summary
 
 A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
 
-<A name="toc3-569" title="Semantic Attributes" />
+<A name="toc3-610" title="Semantic Attributes" />
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
@@ -634,7 +676,7 @@ container.variadic     # 0/1 (default: 0)
 container.va_start     # string - that holds the argment name for va_start ()
 ```
 
-<A name="toc3-606" title="Language-Specific Implementation Attributes" />
+<A name="toc3-647" title="Language-Specific Implementation Attributes" />
 ### Language-Specific Implementation Attributes
 
 Language-specific implementation attributes hold information that is not intrinsic to the concept of the container, but to the binding implementation.
@@ -645,7 +687,7 @@ However, because the container is shared between all generators, which are run i
 
 It is also important that language-specific implementation attributes use a naming convention that avoids collisions. The easiest way to avoid collisions is to prefix all language-specific attributes with the name of the language, though in principle, any collision-free convention would be acceptable.
 
-<A name="toc2-617" title="Ownership and License" />
+<A name="toc2-658" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -654,7 +696,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-626" title="Hints to Contributors" />
+<A name="toc3-667" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -663,7 +705,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-635" title="This Document" />
+<A name="toc3-676" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).
