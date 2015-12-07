@@ -279,6 +279,9 @@ function resolve_c_class (class)
             move ret before method->return # Move to first slot
         endnew
         resolve_c_method (method, "Create a new $(my.class.c_name).")
+        if item () > 1
+            move method after class->constructor as method
+        endif
     endfor
 
     for my.class.destructor as method

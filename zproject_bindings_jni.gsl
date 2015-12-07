@@ -616,7 +616,7 @@ import org.zeromq.$(use.project).*;
 
 public class $(my.class.name:pascal) \
 .   if count (my.class.constructor)
-implements AutoCloseable\
+implements AutoCloseable \
 .   endif
 {
     static {
