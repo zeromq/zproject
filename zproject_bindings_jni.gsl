@@ -592,18 +592,10 @@ function resolve_jni_method (method)
             my.method.jni_okay = 0
             #echo "Skipping $(class.name).$(my.method.name) - can't deal with return type $(return.type:)"
         else
-            #   Deal with returned buffers here; they need special handling
-            if type = "buffer"
-                if fresh = "1"
-                    if !defined (return.size)
-                        #echo "Skipping $(class.name).$(my.method.name) - can't return unsized fresh buffer"
-                        my.method.jni_okay = 0
-                    endif
-                else
-                    jni_java_type = "long"
-                    jni_shim_type = "long"
-                    jni_jni_type = "jlong"
-                endif
+            #   returned buffers need a size attribute
+            if type = "buffer" & !defined (return.size)
+                #echo "Skipping $(class.name).$(my.method.name) - can't return unsized fresh buffer"
+                my.method.jni_okay = 0
             endif
         endif
     endfor
@@ -710,25 +702,17 @@ $(jni_shim_signature_c:))
     $(class.c_name)_$(c_name) ($(jni_native_invocation_c));
 .       my.return = ""
 .#
-.   elsif ->return.type = "buffer" & ->return.fresh = "1"
-.       if defined (->return.size)
-.           if regexp.match ("^\\.(.*)", ->return.size, my.size)
-.               my.size = "$(class.c_name)_$(my.size) (($(class.c_name)_t *) self)"
-.           else
-.               my.size = ->return.size
-.           endif
+.   elsif ->return.type = "buffer"
+.       if regexp.match ("^\\.(.*)", ->return.size, my.size)
+.           my.size = "$(class.c_name)_$(my.size) (($(class.c_name)_t *) self)"
 .       else
-.           abort "$(class.name).$(name): cannot return buffer without a 'size'"
+.           my.size = ->return.size
 .       endif
     jbyte *$(c_name)_ = (jbyte *) $(class.c_name)_$(c_name) ($(jni_native_invocation_c));
     jint return_size_ = (jint) $(my.size);
     jbyteArray return_data_ = (*env)->NewByteArray (env, return_size_);
     (*env)->SetByteArrayRegion (env, return_data_, 0, return_size_, (jbyte *) $(c_name)_);
 .       my.return = "    return return_data_;\n"
-.#
-.   elsif ->return.type = "buffer" & ->return.fresh = "0"
-    long $(c_name)_ = (long) $(class.c_name)_$(c_name) ($(jni_native_invocation_c));
-.       my.return = "    return $(c_name)_;\n"
 .#
 .   elsif ->return.type = "string"
     char *$(c_name)_ = (char *) $(class.c_name)_$(c_name) ($(jni_native_invocation_c));
