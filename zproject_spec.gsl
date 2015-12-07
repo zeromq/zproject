@@ -89,7 +89,7 @@ This package contains development files.
 %defattr(-,root,root)
 %{_includedir}/*
 %{_libdir}/$(project.libname).so
-%{_libdir}/pkgconfig/$(project.name).pc
+%{_libdir}/pkgconfig/$(project.libname).pc
 .endif
 
 %prep
@@ -119,7 +119,9 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .if file.exists ('README.asciidoc')
 %doc README.asciidoc
 .endif
+.if file.exists ('COPYING')
 %doc COPYING
+.endif
 .# generate binary names
 .for project.main where !defined (main.private)
 %{_bindir}/$(main.name)
