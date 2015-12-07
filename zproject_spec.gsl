@@ -89,7 +89,7 @@ This package contains development files.
 %defattr(-,root,root)
 %{_includedir}/*
 %{_libdir}/$(project.libname).so
-%{_libdir}/pkgconfig/$(project.name).pc
+%{_libdir}/pkgconfig/$(project.libname).pc
 .endif
 
 %prep
