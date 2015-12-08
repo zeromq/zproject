@@ -633,31 +633,34 @@ implements AutoCloseable\
     /*
     $(description:no,block)
     */
-    native static long __new ($(jni_shim_signature_java:));
+    native static $(->return.jni_shim_type:) __$(name:camel) ($(jni_shim_signature_java:));
+.       if index () = 1
     public $(my.class.name:pascal) ($(jni_method_signature:)) {
-        /*  TODO: if __new fails, self is null...  */
-        self = __new ($(jni_shim_invocation_java:));
+        /*  TODO: if __$(name:camel) fails, self is null...  */
+        self = __$(name:camel) ($(jni_shim_invocation_java:));
     }
     public $(my.class.name:pascal) (long pointer) {
         self = pointer;
     }
-.   if jni_shim_signature_java = ""
-.       my.class.jni_void_new = 1
-.   endif
-.   endfor
-.   if !my.class.jni_void_new
+.           if jni_shim_signature_java <> ""
     public $(my.class.name:pascal) () {
         self = 0;
     }
-.   endif
+.           endif
+.       else
+    public $(->return.jni_java_type:) $(jni_name:) ($(jni_method_signature:)) {
+        return new $(->return.type:pascal) (__$(name:camel) ($(jni_shim_invocation_java:)));
+    }
+.       endif
+.   endfor
 .   for destructor
     /*
     $(description:no,block)
     */
-    native static void __destroy (long self);
+    native static void __$(name:camel) (long self);
     @Override
     public void close () {
-        __destroy (self);
+        __$(name:camel) (self);
         self = 0;
     }
 .   endfor
