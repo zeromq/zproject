@@ -55,4 +55,17 @@ for use
     resolve_project_dependency (use)
 endfor
 
+function resolve_extra (main)
+    for extra where defined (extra.type)
+        if main->extra.type = "systemd-tmpfiles"
+            main->extra.name ?= "$(main.name).conf"
+            main->extra.path ?= "/usr/lib/tmpfiles.d"
+        endif
+    endfor
+endfunction
+
+for main
+    resolve_extra (main)
+endfor
+
 .endtemplate
