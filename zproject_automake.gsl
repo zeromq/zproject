@@ -205,6 +205,11 @@ src_$(main.name:c)_service_DATA = src/$(main.name).service
 src_$(main.name:c)_service_DATA = src/$(main.name)@.service
 .   endif
 .   endif
+
+.for project.main where defined (main->extra)
+src_$(main.name:c)_$(main->extra.type:c)dir = $(main->extra.path)
+src_$(main.name:c)_$(main->extra.type:c)_DATA = src/$(main->extra.name)
+.endfor
 endif
 .endfor
 .for bin
