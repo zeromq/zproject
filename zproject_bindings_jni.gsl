@@ -37,7 +37,7 @@ find_library ($(PROJECT.PREFIX)_LIBRARY NAMES $(project.prefix) REQUIRED)
 include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} src/native/include)
 
 set ($(project.prefix)jni_sources
-.for project.class where defined (class.api) & class.jni_okay ?= 1
+.for project.class where defined (class.api) & class.jni_okay = 1
 .   my.cname = "$(namespace:c)_$(class.name:pascal)"
     src/main/c/$(my.cname:).c
 .endfor
@@ -100,7 +100,7 @@ task generateJniHeaders(type: Exec, dependsOn: 'classes') {
     def appclasspath = configurations.runtime.files*.getAbsolutePath().join(":")
     def nativeIncludes = "src/native/include"
     def jniClasses = [
-.   for project.class where defined (class.api) & class.jni_okay ?= 1
+.   for project.class where defined (class.api) & class.jni_okay = 1
             '$(namespace).$(name:pascal)'$(last ()?? ""? ",")
 .   endfor
     ]
@@ -594,8 +594,8 @@ function resolve_jni_method (method)
         else
             #   returned buffers need a size attribute
             if type = "buffer" & !defined (return.size)
-                #echo "Skipping $(class.name).$(my.method.name) - can't return unsized fresh buffer"
                 my.method.jni_okay = 0
+                #echo "Skipping $(class.name).$(my.method.name) - can't return unsized fresh buffer"
             endif
         endif
     endfor
@@ -629,7 +629,7 @@ implements AutoCloseable\
     }
     public long self;
 .   my.class.jni_void_new = 0
-.   for constructor
+.   for constructor where jni_okay
     /*
     $(description:no,block)
     */
@@ -759,10 +759,10 @@ $(project.GENERATED_WARNING_HEADER:)
 #include "$(project.header:)"
 #include "../../native/include/$(my.cname:).h"
 
-.   for constructor
+.   for constructor where jni_okay
 .       generate_method_c (constructor)
 .   endfor
-.   for destructor
+.   for destructor where jni_okay
 .       generate_method_c (destructor)
 .   endfor
 .   for method where jni_okay
@@ -802,7 +802,7 @@ for project.class where defined (class.api)
     class.jni_okay = 1
     for constructor
         resolve_jni_method (constructor)
-        if constructor.jni_okay = 0
+        if index () = 1 & constructor.jni_okay = 0
             class.jni_okay = 0
         endif
     endfor
