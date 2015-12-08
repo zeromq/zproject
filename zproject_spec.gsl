@@ -142,10 +142,6 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .for project.service
 %{_prefix}/lib/systemd/system/$(service.name)*.service
 .endfor
-.# generate tmpfiles.d file names
-.for project.main where tmpfiles ?= 1
-%{_prefix}/lib/tmpfiles.d/$(main.name).cfg
-.endfor
 .endif
 
 %changelog
