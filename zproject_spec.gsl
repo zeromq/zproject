@@ -125,13 +125,22 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .# generate binary names
 .for project.main where !defined (main.private)
 %{_bindir}/$(main.name)
+.if file.exists ("src/$(main.name).cfg.example")
+%{_sysconfdir}/$(project.name)/$(main.name).cfg.example
+.endif
+.endfor
+.for project.bin
+%{_bindir}/$(bin.name)
 .endfor
 .# generate service file names
-.for project.main where main.service ?= 1
+.for project.main where main.service ?= 1 | main.services ?= 1
 .if main.no_config ?= 0
 %config(noreplace) %{_systemconfdir}/$(project.name)/$(main.name).cfg
 .endif
-%{_prefix}/lib/systemd/system/$(main.name).service
+%{_prefix}/lib/systemd/system/$(main.name)*.service
+.endfor
+.for project.service
+%{_prefix}/lib/systemd/system/$(service.name)*.service
 .endfor
 .endif
 
