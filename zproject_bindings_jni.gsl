@@ -37,7 +37,7 @@ find_library ($(PROJECT.PREFIX)_LIBRARY NAMES $(project.prefix) REQUIRED)
 include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} src/native/include)
 
 set ($(project.prefix)jni_sources
-.for project.class where defined (class.api) & class.jni_okay ?= 1
+.for project.class where defined (class.api) & class.jni_okay = 1
 .   my.cname = "$(namespace:c)_$(class.name:pascal)"
     src/main/c/$(my.cname:).c
 .endfor
@@ -100,7 +100,7 @@ task generateJniHeaders(type: Exec, dependsOn: 'classes') {
     def appclasspath = configurations.runtime.files*.getAbsolutePath().join(":")
     def nativeIncludes = "src/native/include"
     def jniClasses = [
-.   for project.class where defined (class.api) & class.jni_okay ?= 1
+.   for project.class where defined (class.api) & class.jni_okay = 1
             '$(namespace).$(name:pascal)'$(last ()?? ""? ",")
 .   endfor
     ]
@@ -594,8 +594,8 @@ function resolve_jni_method (method)
         else
             #   returned buffers need a size attribute
             if type = "buffer" & !defined (return.size)
-                #echo "Skipping $(class.name).$(my.method.name) - can't return unsized fresh buffer"
                 my.method.jni_okay = 0
+                #echo "Skipping $(class.name).$(my.method.name) - can't return unsized fresh buffer"
             endif
         endif
     endfor
@@ -629,35 +629,38 @@ implements AutoCloseable\
     }
     public long self;
 .   my.class.jni_void_new = 0
-.   for constructor
+.   for constructor where jni_okay
     /*
     $(description:no,block)
     */
-    native static long __new ($(jni_shim_signature_java:));
+    native static $(->return.jni_shim_type:) __$(name:camel) ($(jni_shim_signature_java:));
+.       if index () = 1
     public $(my.class.name:pascal) ($(jni_method_signature:)) {
-        /*  TODO: if __new fails, self is null...  */
-        self = __new ($(jni_shim_invocation_java:));
+        /*  TODO: if __$(name:camel) fails, self is null...  */
+        self = __$(name:camel) ($(jni_shim_invocation_java:));
     }
     public $(my.class.name:pascal) (long pointer) {
         self = pointer;
     }
-.   if jni_shim_signature_java = ""
-.       my.class.jni_void_new = 1
-.   endif
-.   endfor
-.   if !my.class.jni_void_new
+.           if jni_shim_signature_java <> ""
     public $(my.class.name:pascal) () {
         self = 0;
     }
-.   endif
+.           endif
+.       else
+    public $(->return.jni_java_type:) $(jni_name:) ($(jni_method_signature:)) {
+        return new $(->return.type:pascal) (__$(name:camel) ($(jni_shim_invocation_java:)));
+    }
+.       endif
+.   endfor
 .   for destructor
     /*
     $(description:no,block)
     */
-    native static void __destroy (long self);
+    native static void __$(name:camel) (long self);
     @Override
     public void close () {
-        __destroy (self);
+        __$(name:camel) (self);
         self = 0;
     }
 .   endfor
@@ -756,10 +759,10 @@ $(project.GENERATED_WARNING_HEADER:)
 #include "$(project.header:)"
 #include "../../native/include/$(my.cname:).h"
 
-.   for constructor
+.   for constructor where jni_okay
 .       generate_method_c (constructor)
 .   endfor
-.   for destructor
+.   for destructor where jni_okay
 .       generate_method_c (destructor)
 .   endfor
 .   for method where jni_okay
@@ -799,7 +802,7 @@ for project.class where defined (class.api)
     class.jni_okay = 1
     for constructor
         resolve_jni_method (constructor)
-        if constructor.jni_okay = 0
+        if index () = 1 & constructor.jni_okay = 0
             class.jni_okay = 0
         endif
     endfor
