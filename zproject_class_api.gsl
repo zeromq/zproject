@@ -449,6 +449,9 @@ function c_method_declaration (method, implementation_style)
         endif
         my.current_argument_index += 1
     endfor
+    if my.current_argument_index = 0 # no arguments
+        out += "void"
+    endif
     out += ")"
     if my.format_index >= 0
         out += " CHECK_PRINTF (" + (my.format_index) + ")"
