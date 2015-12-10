@@ -642,11 +642,6 @@ implements AutoCloseable\
     public $(my.class.name:pascal) (long pointer) {
         self = pointer;
     }
-.           if jni_shim_signature_java <> ""
-    public $(my.class.name:pascal) () {
-        self = 0;
-    }
-.           endif
 .       else
     public $(->return.jni_java_type:) $(jni_name:) ($(jni_method_signature:)) {
         return new $(->return.type:pascal) (__$(name:camel) ($(jni_shim_invocation_java:)));
@@ -665,11 +660,16 @@ implements AutoCloseable\
     }
 .   endfor
 .   for method where jni_okay
+.       if name = "test"
+.           my.prefix = "public static"
+.       else
+.           my.prefix = "public"
+.       endif
     /*
     $(description:no,block)
     */
     native static $(->return.jni_shim_type:) __$(name:camel) ($(jni_shim_signature_java:));
-    public $(->return.jni_java_type:) $(jni_name:) ($(jni_method_signature:)) {
+    $(my.prefix) $(->return.jni_java_type:) $(jni_name:) ($(jni_method_signature:)) {
 .       if defined (method.return_self_p)
         self = __$(name:camel) ($(jni_shim_invocation_java:));
         return 0;
@@ -792,8 +792,7 @@ public class $(my.class.name:pascal)Test {
     }
     @Test
     public void test () {
-        $(my.class.name:pascal) $(c_name) = new $(my.class.name:pascal) ();
-        $(c_name).test (false);
+        $(my.class.name:pascal).test (false);
     }
 }
 .endmacro
