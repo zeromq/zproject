@@ -701,6 +701,10 @@ $(jni_shim_signature_c:))
 .       endif
 .   endfor
 .#
+.   if name = "new"
+    //  Disable CZMQ signal handling; allow Java to deal with it
+    zsys_handler_set (NULL);
+.   endif
 .   if ->return.type = "nothing"
     $(class.c_name)_$(c_name) ($(jni_native_invocation_c));
 .       my.return = ""
