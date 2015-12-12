@@ -94,9 +94,8 @@ function resolve_ruby_container (container)
         my.container.ruby_ffi_type = "bool"
         my.container.coerce_to_c = "!(0==$(my.container.ruby_name:)||!$(my.container.ruby_name:)) # boolean"
     elsif my.container.c_type = "const char *"
-        my.container.ruby_doc_type = "String, #to_str, #to_s"
+        my.container.ruby_doc_type = "String, #to_s, nil"
         my.container.ruby_ffi_type = "string"
-        my.container.coerce_to_c = "String($(my.container.ruby_name:))"
     elsif my.container.c_type = "char *"
         if my.container.fresh
             my.container.ruby_doc_return_type = "::FFI::AutoPointer"
