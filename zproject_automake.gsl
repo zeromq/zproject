@@ -189,6 +189,7 @@ src_$(name:c)_SOURCES = src/$(name).cc
 .   else
 src_$(name:c)_SOURCES = src/$(name).c
 .   endif
+if WITH_SYSTEMD
 .   if main.service ?= 1 | main.services ?= 1
 src_$(main.name:c)_servicedir = @prefix@/lib/systemd/system
 .   if ! (main.no_config ?= 1)
@@ -205,12 +206,13 @@ src_$(main.name:c)_service_DATA = src/$(main.name).service
 src_$(main.name:c)_service_DATA = src/$(main.name)@.service
 .   endif
 .   endif
-
-.for project.main where defined (main->extra)
+.for project.main where (defined (main->extra) & extra.type ?= systemd-tmpfiles)
 src_$(main.name:c)_$(main->extra.type:c)dir = $(main->extra.path)
 src_$(main.name:c)_$(main->extra.type:c)_DATA = src/$(main->extra.name)
 .endfor
-endif
+endif #WITH_SYSTEMD
+
+endif #WITH_$(NAME:c)
 .endfor
 .for bin
 .   if first()
