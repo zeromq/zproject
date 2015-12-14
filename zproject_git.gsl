@@ -63,8 +63,8 @@ src/stamp-h1
 src/test-suite.log
 src/.dirstamp
 
-# qt-android build results
-builds/qt-android/prefix
+# android build results
+builds/android/prefix
 
 # Android - generated directories
 src/app/bin/
@@ -73,11 +73,6 @@ src/app/obj/
 src/app/local.properties
 
 # Android -dependencies
-builds/android/libsodium
-builds/android/libzmq
-builds/android/czmq
-builds/android/e2fsprogs
-builds/android/zyre
 src/app/jni/output
 
 # Temporary files

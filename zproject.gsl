@@ -93,7 +93,6 @@ endfunction
 .gsl from "zproject_lib.gsl"
 .gsl from "zproject_mingw32.gsl"
 .gsl from "zproject_cygwin.gsl"
-.gsl from "zproject_qt_android.gsl"
 .gsl from "zproject_vs2008.gsl"
 .gsl from "zproject_vs2010.gsl"
 .gsl from "zproject_vs2012.gsl"
