@@ -162,6 +162,17 @@ function resolve_c_container (container)
     my.container.c_type = my.c_type
 endfunction
 
+
+# Resolve missing or implicit details in a C method model.
+#
+# Here, "actor" refers to a <actor/> entity in the model XML.
+#
+function resolve_c_actor (actor, default_description)
+    # Resolve semantic attributes
+    my.actor.description ?= "$(string.trim (my.actor.?my.default_description):left)"
+endfunction
+
+
 # Resolve missing or implicit details in a C method model.
 #
 # Here, "method" refers to a <method/> entity in the model XML.
@@ -255,6 +266,12 @@ function resolve_c_class (class)
     # Resolve details of each method
     for my.class.callback_type as method
         resolve_c_method (method, "")
+    endfor
+
+    # Resolve details of an actor
+    for my.class.actor
+        actor.name ?= "$(class.name:c)"
+        resolve_c_actor (actor, "")
     endfor
 
     for my.class.method
@@ -400,9 +417,19 @@ if defined (project->dependencies) & count (project->dependencies.class)
     endwhile
 endif
 
+
 ##
 # The following functions are entirely C-specific code generation helpers.
 # They contain no useful information for higher-level language bindings.
+#
+# Construct the string for a actor declaration in a C header
+#
+function c_actor_declaration (method)
+    out =  "$(PROJECT.PREFIX:c)_EXPORT void\n"
+    out += "    $(actor.name:c) (zsock_t *pipe, void *args);"
+    return out
+endfunction
+
 #
 # Construct the string for a method declaration in a C header
 #
@@ -462,7 +489,9 @@ function c_method_declaration (method, implementation_style)
     return out
 endfunction
 
+#
 # Construct the string for a callback typedef in a C header
+#
 function c_callback_typedef (method)
     out = "typedef $(my.method->return.c_type:) "
     out += "($(class.c_name)_$(my.method.c_name)) ("
