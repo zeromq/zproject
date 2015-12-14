@@ -541,7 +541,7 @@ function resolve_jni_method (method)
         my.method.jni_shim_signature_java = "long self"
         my.method.jni_shim_signature_c = "jlong self"
         my.method.jni_shim_invocation_java = "self"
-        my.method.jni_native_invocation_c = "($(class.c_name)_t *) self"
+        my.method.jni_native_invocation_c = "($(class.c_name)_t *) (intptr_t) self"
         comma = ", "
     endif
 
@@ -579,7 +579,9 @@ function resolve_jni_method (method)
             elsif type = "string" | type = "buffer"
                 jni_native_invocation_c += "$(comma)$(argument.c_name)_"
             elsif by_reference = 1
-                jni_native_invocation_c += "$(comma)($(argument.c_type)) &$(argument.c_name)"
+                jni_native_invocation_c += "$(comma)($(argument.c_type)) (intptr_t) &$(argument.c_name)"
+            elsif jni_is_class = 1 | type = "anything"
+                jni_native_invocation_c += "$(comma)($(argument.c_type)) (intptr_t) $(argument.c_name)"
             else
                 jni_native_invocation_c += "$(comma)($(argument.c_type)) $(argument.c_name)"
             endif
@@ -711,7 +713,7 @@ $(jni_shim_signature_c:))
 .#
 .   elsif ->return.type = "buffer"
 .       if regexp.match ("^\\.(.*)", ->return.size, my.size)
-.           my.size = "$(class.c_name)_$(my.size) (($(class.c_name)_t *) self)"
+.           my.size = "$(class.c_name)_$(my.size) (($(class.c_name)_t *) (intptr_t) self)"
 .       else
 .           my.size = ->return.size
 .       endif
@@ -729,6 +731,9 @@ $(jni_shim_signature_c:))
 .       endif
 .       my.return = "    return return_string_;\n"
 .#
+.   elsif ->return.jni_is_class = 1 | ->return.type = "anything"
+    jlong $(c_name)_ = (jlong) (intptr_t) $(class.c_name)_$(c_name) ($(jni_native_invocation_c));
+.   my.return = "    return $(c_name)_;\n"
 .   else
     $(->return.jni_jni_type:) $(c_name)_ = ($(->return.jni_jni_type:)) $(class.c_name)_$(c_name) ($(jni_native_invocation_c));
 .       if defined (my.method.return_self_p)
