@@ -28,11 +28,10 @@ All you need is a project.xml file in the project's root directory which is your
 
 The following build environments are currently supported:
 
-* android
 * autotools
 * cmake
 * mingw32
-* qt-android
+* Android
 * vs2008
 * vs2010
 * vs2012
