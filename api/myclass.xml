@@ -1,5 +1,5 @@
 <!--
-    This model defines a public API for binding. 
+    This model defines a public API for binding.
 
     It shows a language binding developer what to expect from the API XML
     files.
@@ -33,6 +33,25 @@
         * is passed by reference
         * is marked as the self pointer for the destructor (`destructor_self = "1"`)
     </destructor>
+
+    <!-- This models an CZMQ actor. By default the actor method equals the
+         class name.
+    -->
+    <actor>
+        To work with my_actor, use the CZMQ zactor API:
+
+        Create new my_actor instance.
+
+            zactor_t *actor = zactor_new (my_actor, NULL);
+
+        Destroy my_actor instance
+
+            zactor_destroy (&amp;actor);
+
+        Enable verbose logging of commands and activity:
+
+            zstr_send (actor, "VERBOSE");
+    </actor>
 
     <!-- This models a method with no return value -->
     <method name = "sleep">

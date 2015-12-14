@@ -572,6 +572,12 @@ $(c_method_declaration (method):)
 $(c_method_declaration (method):)
 .endfor
 .-
+.for class.actor
+
+//  $(actor.description:no,block)
+$(c_actor_declaration (actor):)
+.endfor
+.-
 .for class.method
 
 //  $(method.description:no,block)
