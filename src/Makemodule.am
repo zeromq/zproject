@@ -37,7 +37,6 @@ myproject_SCRIPTS = \
     zproject_mkman.gsl \
     zproject_mingw32.gsl \
     zproject_projects.gsl \
-    zproject_qt_android.gsl \
     zproject_spec.gsl \
     zproject_tools.gsl \
     zproject_vs2008.gsl \

@@ -136,7 +136,6 @@
     <bin name = "zproject_mkman.gsl" />
     <bin name = "zproject_mingw32.gsl" />
     <bin name = "zproject_projects.gsl" />
-    <bin name = "zproject_qt_android.gsl" />
     <bin name = "zproject_spec.gsl" />
     <bin name = "zproject_tools.gsl" />
     <bin name = "zproject_vs2008.gsl" />
