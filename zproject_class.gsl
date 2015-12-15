@@ -397,7 +397,7 @@ $(PROJECT.PREFIX:c)_EXPORT void
 .   resolve_c_class(class)
 .endif
 /*  =========================================================================
-    $(class.c_name) - $(class.?'':)
+    $(class.c_name) - $(string.trim (class.?''):no,left)
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -407,7 +407,7 @@ $(PROJECT.PREFIX:c)_EXPORT void
 
 /*
 @header
-    $(class.c_name) - $(class.?'':)
+    $(class.c_name) - $(string.trim (class.?''):no,left)
 @discuss
 @end
 */
