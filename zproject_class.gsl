@@ -397,7 +397,7 @@ $(PROJECT.PREFIX:c)_EXPORT void
 .   resolve_c_class(class)
 .endif
 /*  =========================================================================
-    $(class.c_name) - $(class.?'':)
+    $(class.c_name) - $(string.trim (class.?''):no,left)
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -407,22 +407,20 @@ $(PROJECT.PREFIX:c)_EXPORT void
 
 /*
 @header
-    $(class.c_name) - $(class.?'':)
+    $(class.c_name) - $(string.trim (class.?''):no,left)
 @discuss
 @end
 */
 
-#include "../include/$(project.header:)"
-.   if (project.has_private_classes)
 #include "$(project.prefix)_classes.h"
-.   endif
+.if count (project.constructor)
 
 //  Structure of our class
 
 struct _$(class.c_name)_t {
     int filler;     //  TODO: Declare properties
 };
-
+.endif
 .for class.constructor as method
 
 //  --------------------------------------------------------------------------
@@ -432,9 +430,7 @@ $(c_method_declaration (method, 1):)
 {
     $(class.c_name)_t *self = ($(class.c_name)_t *) zmalloc (sizeof ($(class.c_name)_t));
     assert (self);
-
     //  TODO: Initialize properties
-
     return self;
 }
 .endfor
@@ -448,9 +444,7 @@ $(c_method_declaration (method, 1):)
     assert (self_p);
     if (*self_p) {
         $(class.c_name)_t *self = *self_p;
-
         //  TODO: Free class properties
-
         //  Free object itself
         free (self);
         *self_p = NULL;
@@ -465,12 +459,25 @@ $(c_method_declaration (method, 1):)
 
 $(c_method_declaration (method, 1):)
 {
+.   if singleton = 0
     assert (self);
+.   endif
+.   if ->return.type = "boolean"
+    return false;
+.   elsif ->return.type = "byte" \
+    |     ->return.type = "char" \
+    |     ->return.type = "number" \
+    |     ->return.type = "integer" \
+    |     ->return.type = "real"
+    return 0;
+.   elsif ->return.type = "nothing"
+.   else
+    return NULL;
+.   endif
 }
+
 .endfor
-
 .for class.method where method.name = "test"
-
 //  --------------------------------------------------------------------------
 //  $(method.description:no,block)
 
@@ -479,10 +486,12 @@ $(c_method_declaration (method, 1):)
     printf (" * $(class.c_name): ");
 
     //  @selftest
+.   if count (project.constructor)
     //  Simple create/destroy test
     $(class.c_name)_t *self = $(class.c_name)_new ();
     assert (self);
     $(class.c_name)_destroy (&self);
+.   endif
     //  @end
 
     printf ("OK\\n");

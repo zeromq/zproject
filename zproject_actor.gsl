@@ -122,7 +122,7 @@ $(PROJECT.PREFIX)_EXPORT void
 .if !file.exists (source_file)
 .   output source_file
 /*  =========================================================================
-    $(actor.c_name) - $(actor.?'':)
+    $(actor.c_name) - $(string.trim (actor.?''):no,left)
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -132,15 +132,12 @@ $(PROJECT.PREFIX)_EXPORT void
 
 /*
 @header
-    $(actor.c_name) - $(actor.?'':)
+    $(actor.c_name) - $(string.trim (actor.?''):no,left)
 @discuss
 @end
 */
 
-#include "../include/$(project.header:)"
-.   if (project.has_private_classes)
 #include "$(project.prefix)_classes.h"
-.   endif
 
 .   if actor.private ?= 0
 typedef struct _$(actor.c_name)_t $(actor.c_name)_t;
