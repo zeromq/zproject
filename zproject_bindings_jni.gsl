@@ -38,8 +38,7 @@ include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} src/native/inclu
 
 set ($(project.prefix)jni_sources
 .for project.class where defined (class.api) & class.jni_okay = 1
-.   my.cname = "$(namespace:c)_$(class.name:pascal)"
-    src/main/c/$(my.cname:).c
+    src/main/c/$(namespace:c)_$(class.name:pascal).c
 .endfor
 )
 
@@ -74,7 +73,7 @@ $(project.GENERATED_WARNING_HEADER:)
 apply plugin: 'java'
 apply plugin: 'maven'
 group = "org.zeromq"
-version = "0.1.0-SNAPSHOT"
+version = "$(->version.major).$(->version.minor).$(->version.patch)"
 
 repositories {
     mavenLocal()
@@ -398,6 +397,160 @@ build/
 src/native
 gradle-app.setting
 lib$(project.prefix)jni.so
+.endmacro
+
+### Generate Android build infrastructure
+
+.macro generate_android
+.   directory.create ("$(topdir)/android")
+.   output "$(topdir)/android/build.sh"
+#!/bin/bash
+$(project.GENERATED_WARNING_HEADER:)
+#   Build JNI interface for Android
+#   Targets Android API level 8, ARM architecture (see below)
+#
+#   Requires these environment variables be set, e.g.:
+#
+#     ANDROID_NDK_ROOT=$HOME/android-ndk-r10e
+#     TOOLCHAIN_NAME=arm-linux-androideabi-4.9
+#     TOOLCHAIN_HOST=arm-linux-androideabi
+#     TOOLCHAIN_ARCH=arm
+#     TOOLCHAIN_PATH=$ANDROID_NDK_ROOT/toolchains/$TOOLCHAIN_NAME/prebuilt/linux-x86_64/bin
+#
+export ANDROID_API_LEVEL=android-8
+export ANDROID_SYS_ROOT=$ANDROID_NDK_ROOT/platforms/$ANDROID_API_LEVEL/arch-$TOOLCHAIN_ARCH
+if [ "$1" = "-d" ]; then
+    MAKE_OPTIONS=VERBOSE=1
+fi
+
+source ../../../builds/android/android_build_helper.sh
+android_build_env
+
+#   Ensure we've built dependencies for Android
+echo "********  Building Android native libraries"
+( cd ../../../builds/android && ./build.sh )
+
+#   Ensure we've built JNI interface
+# echo "********  Building JNI interface & classes"
+# ( cd .. && gradle build jar )
+
+rm -Rf build
+mkdir build
+cd build
+cmake -v -DCMAKE_TOOLCHAIN_FILE=../android_toolchain.cmake ..
+
+#   CMake wrongly searches current directory and then toolchain path instead
+#   of lib path for these files, so make them available temporarily
+ln -s $ANDROID_SYS_ROOT/usr/lib/crtend_so.o
+ln -s $ANDROID_SYS_ROOT/usr/lib/crtbegin_so.o
+
+echo "********  Building JNI for Android"
+make $MAKE_OPTIONS
+rm crtend_so.o crtbegin_so.o
+cd ..
+
+mkdir build/libs
+mv build/*.so build/libs
+cp ../build/libs/* build/libs
+cp ../../../builds/android/prefix/*/lib/*.so build/libs
+
+echo "********  Complete: build products are in ./build/libs"
+ls build/libs
+.   chmod_x ("$(topdir)/android/build.sh")
+.   output "$(topdir)/android/CMakeLists.txt"
+$(project.GENERATED_WARNING_HEADER:)
+cmake_minimum_required (VERSION 2.8)
+
+project ($(project.name:c)jni CXX)
+enable_language (C)
+
+find_package (JNI REQUIRED)
+
+include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} ../src/native/include)
+
+# message (STATUS "JNI_INCLUDE_DIRS=${JNI_INCLUDE_DIRS}")
+# message (STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
+# message (STATUS "JNI_FOUND=${JNI_FOUND}")
+# message (STATUS "JAVA_AWT_LIBRARY=${JAVA_AWT_LIBRARY}")
+# message (STATUS "JAVA_JVM_LIBRARY=${JAVA_JVM_LIBRARY}")
+# message (STATUS "JAVA_INCLUDE_PATH=${JAVA_INCLUDE_PATH}")
+# message (STATUS "JAVA_INCLUDE_PATH2=${JAVA_INCLUDE_PATH2}")
+# message (STATUS "JAVA_AWT_INCLUDE_PATH=${JAVA_AWT_INCLUDE_PATH}")
+# message (STATUS "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
+
+set ($(project.prefix)jni_sources
+.for project.class where defined (class.api) & class.jni_okay = 1
+    ../src/main/c/$(namespace:c)_$(class.name:pascal).c
+.endfor
+)
+
+add_library ($(project.prefix)jni SHARED ${$(project.prefix)jni_sources})
+
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -O2")
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
+.   output "$(topdir)/android/android_toolchain.cmake"
+$(project.GENERATED_WARNING_HEADER:)
+#   CMake toolchain script
+#
+#   Targets Android 8, ARM
+#   Called from build.sh via cmake
+
+set (CMAKE_SYSTEM_NAME Linux)  # Tell CMake we're cross-compiling
+set (ANDROID True)
+set (BUILD_ANDROID True)
+
+include (CMakeForceCompiler)
+include (FindPkgConfig)
+
+# where is the target environment
+set (ANDROID_NDK_ROOT $ENV{ANDROID_NDK_ROOT})
+set (ANDROID_SYS_ROOT $ENV{ANDROID_SYS_ROOT})
+set (ANDROID_API_LEVEL $ENV{ANDROID_API_LEVEL})
+set (TOOLCHAIN_PATH $ENV{TOOLCHAIN_PATH})
+set (TOOLCHAIN_HOST $ENV{TOOLCHAIN_HOST})
+set (TOOLCHAIN_ARCH $ENV{TOOLCHAIN_ARCH})
+
+# api level see doc https://github.com/taka-no-me/android-cmake
+set (CMAKE_INSTALL_PREFIX /tmp)
+set (CMAKE_FIND_ROOT_PATH
+    "${TOOLCHAIN_PATH}"
+    "${CMAKE_INSTALL_PREFIX}"
+    "${CMAKE_INSTALL_PREFIX}/share")
+
+# Prefix detection only works with compiler id "GNU"
+# CMake will look for prefixed g++, cpp, ld, etc. automatically
+CMAKE_FORCE_C_COMPILER (${TOOLCHAIN_PATH}/arm-linux-androideabi-gcc GNU)
+
+.for use where optional = 0
+#   Find location of $(use.cmake_name:) header file
+pkg_check_modules (PC_$(USE.CMAKE_NAME) "$(use.libname)")
+if (NOT PC_$(USE.CMAKE_NAME)_FOUND)
+    pkg_check_modules(PC_$(USE.CMAKE_NAME) "$(use.prefix)")
+endif (NOT PC_$(USE.CMAKE_NAME)_FOUND)
+
+if (PC_$(USE.CMAKE_NAME)_FOUND)
+    set (PC_$(USE.CMAKE_NAME)_INCLUDE_HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS} ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS}/*)
+endif (PC_$(USE.CMAKE_NAME)_FOUND)
+find_path ($(USE.CMAKE_NAME)_INCLUDE_DIR NAMES $(use.prefix).h HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_HINTS})
+
+.endfor
+cmake_policy (SET CMP0015 NEW)   #  Use relative paths in link_directories
+
+include_directories (
+.for use where optional = 0
+    ${$(USE.CMAKE_NAME)_INCLUDE_DIR}
+.endfor
+    ../../../include
+    ../../../bindings/jni/src/native/include
+    ../../../builds/android/prefix/arm-linux-androideabi-4.9/include
+    ${ANDROID_SYS_ROOT}/usr/include
+)
+link_directories (
+    ../../../builds/android/prefix/arm-linux-androideabi-4.9/lib
+    ${ANDROID_SYS_ROOT}/usr/lib
+)
 .endmacro
 
 function resolve_jni_container (container)
@@ -829,5 +982,6 @@ endfor
 
 generate_cmake ()
 generate_gradle ()
+generate_android ()
 
 .endtemplate
