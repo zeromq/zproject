@@ -74,7 +74,7 @@ $(project.GENERATED_WARNING_HEADER:)
 apply plugin: 'java'
 apply plugin: 'maven'
 group = "org.zeromq"
-version = "0.1.0-SNAPSHOT"
+version = "$(->version.major).$(->version.minor).$(->version.patch)"
 
 repositories {
     mavenLocal()
