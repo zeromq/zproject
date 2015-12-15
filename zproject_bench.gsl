@@ -120,7 +120,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .if !file.exists ("bench/$(bench.name).c")
 .   output "bench/$(bench.name).c"
 /*  =========================================================================
-    $(bench.name) - $(bench.?'':)
+    $(bench.c_name) - $(string.trim (bench.?''):no,left)
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -130,19 +130,15 @@ $(project.GENERATED_WARNING_HEADER:)
 
 /*
 @header
-    $(bench.name) - $(bench.?'':)
+    $(bench.c_name) - $(string.trim (bench.?''):no,left)
 @discuss
 @end
 */
 
-#include "../include/$(project.header:)"
-.   if (project.has_private_classes)
 #include "$(project.prefix)_classes.h"
-.   endif
 #include "bench.h"
 
-int
-main ()
+int main (void)
 {
     printf ("Run benchmarks for $(bench.name):\n");
     //  TODO: Prepare benchmark
@@ -163,6 +159,5 @@ main ()
 
     return 0;
 }
-
 .endif
 .endfor
