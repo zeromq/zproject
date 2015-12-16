@@ -139,8 +139,5 @@
     <bin name = "zproject_spec.gsl" />
     <bin name = "zproject_tools.gsl" />
     <bin name = "zproject_vs2008.gsl" />
-    <bin name = "zproject_vs2010.gsl" />
-    <bin name = "zproject_vs2012.gsl" />
-    <bin name = "zproject_vs2013.gsl" />
-    <bin name = "zproject_vs2015.gsl" />
+    <bin name = "zproject_vs20xx.gsl" />
 </project>

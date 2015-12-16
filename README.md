@@ -9,36 +9,36 @@
 **<a href="#toc2-11">Overview</a>**
 &emsp;<a href="#toc3-18">Scope and Goals</a>
 
-**<a href="#toc2-55">Demo on PLAYTerm</a>**
+**<a href="#toc2-54">Demo on PLAYTerm</a>**
 
-**<a href="#toc2-60">Installation</a>**
-&emsp;<a href="#toc3-63">Requirements</a>
-&emsp;<a href="#toc3-75">Getting started</a>
+**<a href="#toc2-59">Installation</a>**
+&emsp;<a href="#toc3-62">Requirements</a>
+&emsp;<a href="#toc3-74">Getting started</a>
 
-**<a href="#toc2-99">Setup your project environment</a>**
+**<a href="#toc2-98">Setup your project environment</a>**
 
-**<a href="#toc2-136">Configuration</a>**
+**<a href="#toc2-135">Configuration</a>**
 
-**<a href="#toc2-291">Sample API model</a>**
-&emsp;<a href="#toc3-494">Supported API Model Attributes</a>
-&emsp;<a href="#toc3-510">API Types</a>
-&emsp;<a href="#toc3-551">Tips</a>
+**<a href="#toc2-286">Sample API model</a>**
+&emsp;<a href="#toc3-508">Supported API Model Attributes</a>
+&emsp;<a href="#toc3-524">API Types</a>
+&emsp;<a href="#toc3-565">Tips</a>
 
-**<a href="#toc2-562">Language Binding Notes</a>**
-&emsp;<a href="#toc3-565">JNI Language Binding</a>
+**<a href="#toc2-576">Language Binding Notes</a>**
+&emsp;<a href="#toc3-579">JNI Language Binding</a>
 
-**<a href="#toc2-573">Removal</a>**
-&emsp;<a href="#toc3-576">autotools</a>
+**<a href="#toc2-587">Removal</a>**
+&emsp;<a href="#toc3-590">autotools</a>
 
-**<a href="#toc2-583">Notes for Writing Language Bindings</a>**
-&emsp;<a href="#toc3-586">Schema/Architecture Overview</a>
-&emsp;<a href="#toc3-605">Informal Summary</a>
-&emsp;<a href="#toc3-610">Semantic Attributes</a>
-&emsp;<a href="#toc3-647">Language-Specific Implementation Attributes</a>
+**<a href="#toc2-597">Notes for Writing Language Bindings</a>**
+&emsp;<a href="#toc3-600">Schema/Architecture Overview</a>
+&emsp;<a href="#toc3-619">Informal Summary</a>
+&emsp;<a href="#toc3-624">Semantic Attributes</a>
+&emsp;<a href="#toc3-661">Language-Specific Implementation Attributes</a>
 
-**<a href="#toc2-658">Ownership and License</a>**
-&emsp;<a href="#toc3-667">Hints to Contributors</a>
-&emsp;<a href="#toc3-676">This Document</a>
+**<a href="#toc2-672">Ownership and License</a>**
+&emsp;<a href="#toc3-681">Hints to Contributors</a>
+&emsp;<a href="#toc3-690">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -63,10 +63,10 @@ All you need is a project.xml file in the project's root directory which is your
 
 The following build environments are currently supported:
 
-* Android
 * autotools
 * cmake
 * mingw32
+* Android
 * vs2008
 * vs2010
 * vs2012
@@ -83,15 +83,15 @@ Thanks to the amazing ZeroMQ community, you can do all the heavy lifting in C an
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
-<A name="toc2-55" title="Demo on PLAYTerm" />
+<A name="toc2-54" title="Demo on PLAYTerm" />
 ## Demo on PLAYTerm
 
 There is a short Demo on PLAYTerm that shows how easy it is to get started with zproject: [ZeroMQ - Create new zproject](http://www.playterm.org/r/zeromq---create-new-zproject-1424116766)
 
-<A name="toc2-60" title="Installation" />
+<A name="toc2-59" title="Installation" />
 ## Installation
 
-<A name="toc3-63" title="Requirements" />
+<A name="toc3-62" title="Requirements" />
 ### Requirements
 
 zproject uses the universal code generator called GSL to process its XML inputs and create its outputs. Before you start you'll need to install GSL (https://github.com/imatix/gsl) on your system.
@@ -103,7 +103,7 @@ make
 make install
 ```
 
-<A name="toc3-75" title="Getting started" />
+<A name="toc3-74" title="Getting started" />
 ### Getting started
 
 GSL must be able to find the zproject resources on your system. Therefore you'll need to install them.
@@ -127,7 +127,7 @@ sudo make install
 
 NB: If you don't have superuser rights on a system you'll have to make sure zproject's gsl scripts can be found on your PATH.
 
-<A name="toc2-99" title="Setup your project environment" />
+<A name="toc2-98" title="Setup your project environment" />
 ## Setup your project environment
 
 The easiest way to start is to create a minimal project.xml.
@@ -164,7 +164,7 @@ This disclaimer can be included in your project.xml and is used whenever zprojec
 <include filename = "license.xml" />
 ```
 
-<A name="toc2-136" title="Configuration" />
+<A name="toc2-135" title="Configuration" />
 ## Configuration
 
 zproject's `project.xml` contains an extensive description of the available configuration: The following snippet is taken from the `project.xml`:
@@ -308,25 +308,21 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_mkman.gsl" />
     <bin name = "zproject_mingw32.gsl" />
     <bin name = "zproject_projects.gsl" />
-    <bin name = "zproject_qt_android.gsl" />
     <bin name = "zproject_spec.gsl" />
     <bin name = "zproject_tools.gsl" />
     <bin name = "zproject_vs2008.gsl" />
-    <bin name = "zproject_vs2010.gsl" />
-    <bin name = "zproject_vs2012.gsl" />
-    <bin name = "zproject_vs2013.gsl" />
-    <bin name = "zproject_vs2015.gsl" />
+    <bin name = "zproject_vs20xx.gsl" />
 </project>
 ```
 
-<A name="toc2-291" title="Sample API model" />
+<A name="toc2-286" title="Sample API model" />
 ## Sample API model
 
 The zproject scripts can also optionally generate the `@interface` in your class headers from an API model, in addition to a host of language bindings.  To opt-in to this behavior, just make a model to the `api` directory of your project.  For example, if your `project.xml` contains `<class name = "myclass"/>`, you could create the following `api/myclass.xml` file:
 
 ```xml
 <!--
-    This model defines a public API for binding. 
+    This model defines a public API for binding.
 
     It shows a language binding developer what to expect from the API XML
     files.
@@ -360,6 +356,25 @@ The zproject scripts can also optionally generate the `@interface` in your class
         * is passed by reference
         * is marked as the self pointer for the destructor (`destructor_self = "1"`)
     </destructor>
+
+    <!-- This models an CZMQ actor. By default the actor method equals the
+         class name.
+    -->
+    <actor>
+        To work with my_actor, use the CZMQ zactor API:
+
+        Create new my_actor instance.
+
+            zactor_t *actor = zactor_new (my_actor, NULL);
+
+        Destroy my_actor instance
+
+            zactor_destroy (&amp;actor);
+
+        Enable verbose logging of commands and activity:
+
+            zstr_send (actor, "VERBOSE");
+    </actor>
 
     <!-- This models a method with no return value -->
     <method name = "sleep">
@@ -522,7 +537,7 @@ MYPROJECT_EXPORT void
 //  @end
 ```
 
-<A name="toc3-494" title="Supported API Model Attributes" />
+<A name="toc3-508" title="Supported API Model Attributes" />
 ### Supported API Model Attributes
 
 The following attributes are supported for methods:
@@ -538,7 +553,7 @@ The following attributes are supported for arguments and return values:
 - `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it. Implies mutable = "1".
 - `variadic = "1"` - used for representing variadic arguments.
 
-<A name="toc3-510" title="API Types" />
+<A name="toc3-524" title="API Types" />
 ### API Types
 
 This is an incomplete list of API types:
@@ -579,7 +594,7 @@ This is an incomplete list of API types:
 
 * Names of classes, e.g. zmsg.
 
-<A name="toc3-551" title="Tips" />
+<A name="toc3-565" title="Tips" />
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
@@ -590,10 +605,10 @@ echo method.string()  # will print the model as an XML string.
 method.save(filename) # will save the model as an XML string to the given file.
 ```
 
-<A name="toc2-562" title="Language Binding Notes" />
+<A name="toc2-576" title="Language Binding Notes" />
 ## Language Binding Notes
 
-<A name="toc3-565" title="JNI Language Binding" />
+<A name="toc3-579" title="JNI Language Binding" />
 ### JNI Language Binding
 
 * Skips methods that it cannot handle properly.
@@ -601,20 +616,20 @@ method.save(filename) # will save the model as an XML string to the given file.
 * To build, you need gradle (or equivalent). Run 'gradle build jar' in the bindings/jni directory.
 * To install, run 'gradle install'. This puts the files into $HOME/.m2/repository.
 
-<A name="toc2-573" title="Removal" />
+<A name="toc2-587" title="Removal" />
 ## Removal
 
-<A name="toc3-576" title="autotools" />
+<A name="toc3-590" title="autotools" />
 ### autotools
 
 ```sh
 make uninstall
 ```
 
-<A name="toc2-583" title="Notes for Writing Language Bindings" />
+<A name="toc2-597" title="Notes for Writing Language Bindings" />
 ## Notes for Writing Language Bindings
 
-<A name="toc3-586" title="Schema/Architecture Overview" />
+<A name="toc3-600" title="Schema/Architecture Overview" />
 ### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
@@ -633,12 +648,12 @@ make uninstall
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-<A name="toc3-605" title="Informal Summary" />
+<A name="toc3-619" title="Informal Summary" />
 ### Informal Summary
 
 A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
 
-<A name="toc3-610" title="Semantic Attributes" />
+<A name="toc3-624" title="Semantic Attributes" />
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
@@ -675,7 +690,7 @@ container.variadic     # 0/1 (default: 0)
 container.va_start     # string - that holds the argment name for va_start ()
 ```
 
-<A name="toc3-647" title="Language-Specific Implementation Attributes" />
+<A name="toc3-661" title="Language-Specific Implementation Attributes" />
 ### Language-Specific Implementation Attributes
 
 Language-specific implementation attributes hold information that is not intrinsic to the concept of the container, but to the binding implementation.
@@ -686,7 +701,7 @@ However, because the container is shared between all generators, which are run i
 
 It is also important that language-specific implementation attributes use a naming convention that avoids collisions. The easiest way to avoid collisions is to prefix all language-specific attributes with the name of the language, though in principle, any collision-free convention would be acceptable.
 
-<A name="toc2-658" title="Ownership and License" />
+<A name="toc2-672" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -695,7 +710,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-667" title="Hints to Contributors" />
+<A name="toc3-681" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -704,7 +719,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-676" title="This Document" />
+<A name="toc3-690" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).
