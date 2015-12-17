@@ -7,9 +7,11 @@ config.status
 config/
 src/
 builds/
+bindings/
 doc/
 configure
 libtool
+*.log
 *.gz
 *.zip
 *.la

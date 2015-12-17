@@ -8,7 +8,9 @@
 #   All Visual Studio versions from 2010 onwards use the same solution
 #   format with a different platform toolset
 
-.macro generate_solution (path, level)
+.##########################################################################
+
+.macro generate_variation (path, level)
 .directory.create("builds/msvc/$(my.path)/$(project.name:c)")
 .output "builds/msvc/$(my.path)/$(project.name:c)/$(project.name:c).vcxproj"
 <?xml version="1.0" encoding="utf-8"?>
@@ -444,7 +446,158 @@ GOTO end
 ECHO *** ERROR, build tools not found: %tools%
 
 :end
+.output "builds/msvc/$(my.path)/$(project.name:c)/$(project.name:c).props"
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Label="Globals">
+    <_PropertySheetDisplayName>$(project.name:) Common Settings</_PropertySheetDisplayName>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
+
+  <!-- Configuration -->
+
+  <ItemDefinitionGroup>
+    <PreBuildEvent>
+      <Command>copy $\(BuildRoot)platform.h $\(RepoRoot)include\</Command>
+    </PreBuildEvent>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$\(RepoRoot)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <EnablePREfast>false</EnablePREfast>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$\(ConfigurationType)' == 'StaticLibrary'">$(PROJECT.LIBNAME)_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$\(ConfigurationType)' == 'DynamicLibrary'">$(PROJECT.LIBNAME)_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>Rpcrt4.lib;Ws2_32.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- Dependencies -->
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$\(SolutionDir)libzmq.import.props" />
+    <Import Project="$\(SolutionDir)libsodium.import.props" />
+  </ImportGroup>
+
+  <PropertyGroup Condition="'$\(DefaultLinkage)' == 'dynamic'">
+    <Linkage-libzmq>dynamic</Linkage-libzmq>
+    <Linkage-libsodium>dynamic</Linkage-libsodium>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$\(DefaultLinkage)' == 'ltcg'">
+    <Linkage-libzmq>ltcg</Linkage-libzmq>
+    <Linkage-libsodium>ltcg</Linkage-libsodium>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$\(DefaultLinkage)' == 'static'">
+    <Linkage-libzmq>static</Linkage-libzmq>
+    <Linkage-libsodium>static</Linkage-libsodium>
+  </PropertyGroup>
+
+  <!-- Messages -->
+
+  <Target Name="CustomInfo" BeforeTargets="PrepareForBuild">
+    <Message Text="Will copy $\(BuildRoot)platform.h -&gt; $\(RepoRoot)include\platform.h" Importance="high"/>
+  </Target>
+
+  <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
+    <Message Text="Linkage-libzmq    : $\(Linkage-libzmq)" Importance="high"/>
+    <Message Text="Linkage-libsodium : $\(Linkage-libsodium)" Importance="high"/>
+  </Target>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+</Project>
+.output "builds/msvc/$(my.path)/$(project.name:c)/$(project.name:c).import.props"
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Label="Globals">
+    <_PropertySheetDisplayName>$(PROJECT.NAME) Import Settings</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <!-- User Interface -->
+
+  <ItemGroup Label="BuildOptionsExtension">
+    <PropertyPageSchema Include="$\(MSBuildThisFileDirectory)$(project.name).import.xml" />
+  </ItemGroup>
+
+  <!-- Linkage -->
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$\(ProjectDir)..\..\..\..\..\$(project.name)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions Condition="'$\(Linkage-$(project.linkname))' == 'static' Or '$\(Linkage-$(project.linkname))' == 'ltcg'">$(PROJECT.LIBNAME)_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies Condition="'$\(Linkage-$(project.linkname))' != ''">$(project.linkname).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Debug')) != -1">$\(ProjectDir)..\..\..\..\..\$(project.name)\bin\$\(PlatformName)\Debug\$\(PlatformToolset)\$\(Linkage-$(project.linkname))\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Release')) != -1">$\(ProjectDir)..\..\..\..\..\$(project.name)\bin\$\(PlatformName)\Release\$\(PlatformToolset)\$\(Linkage-$(project.linkname))\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- Copy -->
+
+  <Target Name="Linkage-$(project.linkname)-dynamic" AfterTargets="AfterBuild" Condition="'$\(Linkage-$(project.linkname))' == 'dynamic'">
+    <Copy Condition="$\(Configuration.IndexOf('Debug')) != -1"
+          SourceFiles="$\(ProjectDir)..\..\..\..\..\$(project.name)\bin\$\(PlatformName)\Debug\$\(PlatformToolset)\dynamic\$(project.linkname).dll"
+          DestinationFiles="$\(TargetDir)$(project.linkname).dll"
+          SkipUnchangedFiles="true" />
+    <Copy Condition="$\(Configuration.IndexOf('Debug')) != -1"
+          SourceFiles="$\(ProjectDir)..\..\..\..\..\$(project.name)\bin\$\(PlatformName)\Debug\$\(PlatformToolset)\dynamic\$(project.linkname).pdb"
+          DestinationFiles="$\(TargetDir)$(project.linkname).pdb"
+          SkipUnchangedFiles="true" />
+    <Copy Condition="$\(Configuration.IndexOf('Release')) != -1"
+          SourceFiles="$\(ProjectDir)..\..\..\..\..\$(project.name)\bin\$\(PlatformName)\Release\$\(PlatformToolset)\dynamic\$(project.linkname).dll"
+          DestinationFiles="$\(TargetDir)$(project.linkname).dll"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Messages -->
+
+  <Target Name="$(project.name)-info" BeforeTargets="AfterBuild" Condition="'$\(Linkage-$(project.linkname))' == 'dynamic'">
+    <Message Text="Copying $(project.linkname).dll -&gt; $\(TargetDir)$(project.linkname).dll" Importance="high"/>
+    <Message Text="Copying $(project.linkname).pdb -&gt; $\(TargetDir)$(project.linkname).pdb" Importance="high" Condition="$\(Configuration.IndexOf('Debug')) != -1" />
+  </Target>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+</Project>
+.output "builds/msvc/$(my.path)/$(project.name:c)/$(project.name:c).import.xml"
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+<ProjectSchemaDefinitions xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework">
+  <Rule Name="$(project.linkname)-linkage-uiextension" PageTemplate="tool" DisplayName="Local Dependencies" SwitchPrefix="/" Order="1">
+    <Rule.Categories>
+      <Category Name="$(project.name)" DisplayName="$(project.name:)" />
+    </Rule.Categories>
+    <Rule.DataSource>
+      <DataSource Persistence="ProjectFile" ItemType="" />
+    </Rule.DataSource>
+    <EnumProperty Name="Linkage-$(project.linkname)" DisplayName="Linkage" Description="How $(project.name:) will be linked into the output of this project" Category="$(project.linkname)">
+      <EnumValue Name="" DisplayName="Not linked" />
+      <EnumValue Name="dynamic" DisplayName="Dynamic (DLL)" />
+      <EnumValue Name="static" DisplayName="Static (LIB)" />
+      <EnumValue Name="ltcg" DisplayName="Static using link time compile generation (LTCG)" />
+    </EnumProperty>
+  </Rule>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+</ProjectSchemaDefinitions>
 .endmacro
+
+.##########################################################################
 
 .macro generate_wrapping
 .output "builds/msvc/.gitignore"
@@ -454,11 +607,116 @@ ECHO *** ERROR, build tools not found: %tools%
 *.user
 *.aps
 *.log
-*.rc
-resource.h
-*.props
-*.import.xml
-properties
+.output "builds/msvc/resource.rc"
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE
+BEGIN
+    "resource.h\\0"
+END
+
+2 TEXTINCLUDE
+BEGIN
+    "#include ""winres.h""\\r\\n"
+    "\\0"
+END
+
+3 TEXTINCLUDE
+BEGIN
+    "\\r\\n"
+    "\\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION $(->version.major),$(->version.minor),$(->version.patch),0
+ PRODUCTVERSION $(->version.major),$(->version.minor),$(->version.patch),0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x7L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "The AUTHORS"
+            VALUE "FileDescription", "$(project.description:)"
+            VALUE "FileVersion", "$(->version.major).$(->version.minor).$(->version.patch).0"
+            VALUE "InternalName", "$(project.name:)"
+            VALUE "LegalCopyright", "Copyright (c) the Authors"
+            VALUE "OriginalFilename", "$(project.libname).dll"
+            VALUE "ProductName", "$(project.name:)"
+            VALUE "ProductVersion", "$(->version.major).$(->version.minor).$(->version.patch).0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+.output "builds/msvc/resource.h"
+//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ generated include file.
+// Used by resource.rc
+
+// Next default values for new objects
+//
+#ifdef APSTUDIO_INVOKED
+#ifndef APSTUDIO_READONLY_SYMBOLS
+#define _APS_NEXT_RESOURCE_VALUE        101
+#define _APS_NEXT_COMMAND_VALUE         40001
+#define _APS_NEXT_CONTROL_VALUE         1001
+#define _APS_NEXT_SYMED_VALUE           101
+#endif
+#endif
 .output "builds/msvc/platform.h"
 
 /*  =========================================================================
@@ -480,10 +738,12 @@ $(project.GENERATED_WARNING_HEADER:)
 #endif
 .endmacro
 
-generate_solution ("vs2010", "10")
-generate_solution ("vs2012", "11")
-generate_solution ("vs2013", "12")
-generate_solution ("vs2015", "14")
+.##########################################################################
+
+generate_variation ("vs2010", "10")
+generate_variation ("vs2012", "11")
+generate_variation ("vs2013", "12")
+generate_variation ("vs2015", "14")
 generate_wrapping ()
 
 .endtemplate

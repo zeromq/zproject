@@ -1,0 +1,530 @@
+.macro generate_properties (path)
+.directory.create (my.path)
+.output "$(my.path)/Common.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Common Settings</_PropertySheetDisplayName>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$\(Platform).props" />
+  </ImportGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/DebugDEXE.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Console Debug Dynamic</_PropertySheetDisplayName>
+    <DefaultLinkage>dynamic</DefaultLinkage>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Debug.props" />
+    <Import Project="EXE.props" />
+  </ImportGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LinkIncremental>true</LinkIncremental>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/DebugDLL.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Dynamic Debug Library</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Debug.props" />
+    <Import Project="DLL.props" />
+  </ImportGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LinkIncremental>true</LinkIncremental>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/DebugLEXE.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Console Debug Link Time Code Generation</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Debug.props" />
+    <Import Project="Link.props" />
+    <Import Project="EXE.props" />
+  </ImportGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/DebugLIB.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Static Debug Library</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Debug.props" />
+    <Import Project="LIB.props" />
+  </ImportGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LinkIncremental>true</LinkIncremental>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/DebugLTCG.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Static Debug Link Time Code Generation Library</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Debug.props" />
+    <Import Project="LTCG.props" />
+  </ImportGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/Debug.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Common.props" />
+  </ImportGroup>
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Debug Settings</_PropertySheetDisplayName>
+    <DebugOrRelease>Debug</DebugOrRelease>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/DebugSEXE.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Console Debug Static</_PropertySheetDisplayName>
+    <DefaultLinkage>static</DefaultLinkage>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Debug.props" />
+    <Import Project="EXE.props" />
+  </ImportGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LinkIncremental>true</LinkIncremental>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/DLL.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Dynamic Library</_PropertySheetDisplayName>
+    <DefaultLinkage>dynamic</DefaultLinkage>
+    <TargetExt>.dll</TargetExt>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>_DLL;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/EXE.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Console Application</_PropertySheetDisplayName>
+    <IsExe>true</IsExe>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>
+.output "$(my.path)/LIB.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Static Library</_PropertySheetDisplayName>
+    <DefaultLinkage>static</DefaultLinkage>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/Link.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Link Time Code Generation Settings</_PropertySheetDisplayName>
+    <DefaultLinkage>ltcg</DefaultLinkage>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+    </ClCompile>
+    <Link>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <Lib>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/LTCG.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Link Time Code Generation Library</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="LIB.props" />
+    <Import Project="Link.props" />
+  </ImportGroup>
+
+</Project>
+.output "$(my.path)/Messages.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Build Messages</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <Target Name="ConfigInfo" BeforeTargets="PrepareForBuild">
+    <Message Text="ConfigurationType : $\(ConfigurationType)" Importance="high"/>
+    <Message Text="Configuration     : $\(Configuration)" Importance="high"/>
+    <Message Text="PlatformToolset   : $\(PlatformToolset)" Importance="high"/>
+    <Message Text="TargetPath        : $\(TargetPath)" Importance="high"/>
+  </Target>
+
+</Project>
+.output "$(my.path)/Output.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Output Settings</_PropertySheetDisplayName>
+    <!-- BuildRoot, RepoRoot, SourceRoot, DebugOrRelease and DefaultLinkage are custom props and should therefore not be referenced from *.import.props or nuget target files. -->
+    <BuildRoot>$\(ProjectDir)..\..\</BuildRoot>
+    <RepoRoot>$\(ProjectDir)..\..\..\..\</RepoRoot>
+    <SourceRoot>$\(ProjectDir)..\..\..\..\..\</SourceRoot>
+    <OutDir>$\(ProjectDir)..\..\..\..\bin\$\(PlatformName)\$\(DebugOrRelease)\$\(PlatformToolset)\$\(DefaultLinkage)\</OutDir>
+    <IntDir>$\(ProjectDir)..\..\..\..\obj\$\(TargetName)\$\(PlatformName)\$\(DebugOrRelease)\$\(PlatformToolset)\$\(DefaultLinkage)\</IntDir>
+    <TargetDir>$\(OutDir)</TargetDir>
+    <TargetName>$\(TargetName)</TargetName>
+    <TargetPath>$\(TargetDir)$\(TargetName)$\(TargetExt)</TargetPath>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <Link>
+      <ImportLibrary>$\(OutDir)$\(TargetName).lib</ImportLibrary>
+    </Link>
+    <BuildLog>
+      <Path>$\(OutDir)$\(TargetName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Messages.props" />
+  </ImportGroup>
+
+</Project>
+.output "$(my.path)/ReleaseDEXE.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Console Release Dynamic</_PropertySheetDisplayName>
+    <DefaultLinkage>dynamic</DefaultLinkage>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Release.props" />
+    <Import Project="EXE.props" />
+  </ImportGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/ReleaseDLL.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Dynamic Release Library</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Release.props" />
+    <Import Project="DLL.props" />
+  </ImportGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/ReleaseLEXE.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Console Release Link Time Code Generation</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Release.props" />
+    <Import Project="Link.props" />
+    <Import Project="EXE.props" />
+  </ImportGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/ReleaseLIB.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Static Release Library</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Release.props" />
+    <Import Project="LIB.props" />
+  </ImportGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/ReleaseLTCG.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Static Release Link Time Code Generation Library</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Release.props" />
+    <Import Project="LTCG.props" />
+  </ImportGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/Release.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Common.props" />
+  </ImportGroup>
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Release Settings</_PropertySheetDisplayName>
+    <DebugOrRelease>Release</DebugOrRelease>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalOptions>/Oy- %(AdditionalOptions)</AdditionalOptions>
+      <!--<DebugInformationFormat>ProgramDatabase</DebugInformationFormat>-->
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MinimalRebuild>false</MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <!--<GenerateDebugInformation>true</GenerateDebugInformation>-->
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$\(Processor)' == 'x86'">
+    <ClCompile>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/ReleaseSEXE.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Console Release Static</_PropertySheetDisplayName>
+    <DefaultLinkage>static</DefaultLinkage>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Release.props" />
+    <Import Project="EXE.props" />
+  </ImportGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/Win32.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>x86 Settings</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Lib>
+      <AdditionalOptions>/MACHINE:X86 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+
+</Project>
+.output "$(my.path)/x64.props"
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>x64 Settings</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <!-- Note that Win64 defines may cause WIN32 to become defined when using windows headers,
+      but _WIN32 implies Windows 32 bit or above. If the standard headers are not included
+      these are sometimes required even for 64 bit builds and should never cause harm there.-->
+      <PreprocessorDefinitions>WIN32;_WIN32;WIN64;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <Lib>
+      <AdditionalOptions>/MACHINE:X64 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+
+</Project>
+.endmacro
+.generate_properties ("builds/msvc/properties")

@@ -40,7 +40,8 @@ myproject_SCRIPTS = \
     zproject_spec.gsl \
     zproject_tools.gsl \
     zproject_vs2008.gsl \
-    zproject_vs20xx.gsl
+    zproject_vs20xx.gsl \
+    zproject_vs20xx_props.gsl
 
 
 check-local: src/myproject_selftest

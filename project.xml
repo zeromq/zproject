@@ -140,4 +140,5 @@
     <bin name = "zproject_tools.gsl" />
     <bin name = "zproject_vs2008.gsl" />
     <bin name = "zproject_vs20xx.gsl" />
+    <bin name = "zproject_vs20xx_props.gsl" />
 </project>
