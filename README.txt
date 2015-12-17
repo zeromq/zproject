@@ -234,6 +234,12 @@ echo method.string()  # will print the model as an XML string.
 method.save(filename) # will save the model as an XML string to the given file.
 ```
 
+You can save a snapshot of the entire resolved project model using this syntax:
+
+```
+gsl -save:1 project.xml
+```
+
 ## Language Binding Notes
 
 ### JNI Language Binding
