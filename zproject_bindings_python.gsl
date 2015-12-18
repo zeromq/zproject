@@ -419,7 +419,7 @@ for class where defined (class.api)
         else
 >            assert(len(args) == $(count (method.argument)))
         endif
->            self._as_parameter_ = lib.$(class.name:c)_$(method.name)($(callargs:)) # Creation of new raw type
+>            self._as_parameter_ = lib.$(class.name:c)_$(method.name:c)($(callargs:)) # Creation of new raw type
 >            self.allow_destruct = True
 >
     endfor
