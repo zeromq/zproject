@@ -87,7 +87,7 @@ dependencies {
 .if defined (project->dependencies)
 .   for project.use
 .       if count (project->dependencies.class, class.project = use.project) > 0
-    compile 'org.zeromq:$(use.project)-jni:0.1.0-SNAPSHOT'
+    compile 'org.zeromq:$(use.project)-jni:+'
 .       endif
 .   endfor
     testCompile 'junit:junit:4.12'

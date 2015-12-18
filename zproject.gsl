@@ -77,6 +77,9 @@ endfunction
 .#  implicit details in the model before code generation.
 .gsl from "zproject_projects.gsl"
 .gsl from "zproject_class_api.gsl"
+.if switches.save ?= 1
+.   project.save ("save.xml")
+.endif
 .#
 .#  These scripts generate code independently from one another
 .#  so are not run in any particular order other than alphabetically.
@@ -94,6 +97,7 @@ endfunction
 .gsl from "zproject_cygwin.gsl"
 .gsl from "zproject_vs2008.gsl"
 .gsl from "zproject_vs20xx.gsl"
+.gsl from "zproject_vs20xx_props.gsl"
 .echo "Generating language bindings..."
 .echo " - Python..."
 .gsl from "zproject_bindings_python.gsl"
