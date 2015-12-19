@@ -126,7 +126,7 @@ export TOOLCHAIN_ARCH="arm"
 
 .for use where defined (use.repository)
 export $(USE.PROJECT)_ROOT="/tmp/$(use.project)"
-git clone $(use.repository) $$(USE.PROJECT)_ROOT
+git clone --depth 1 $(use.repository) $$(USE.PROJECT)_ROOT
 
 .endfor
 source ./build.sh
