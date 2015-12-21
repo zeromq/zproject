@@ -4,9 +4,7 @@
 .#  language. See https://github.com/imatix/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
-.if !file.exists ('builds/msvc/vs2008/$(project.name:c)')
-.   directory.create('builds/msvc/vs2008/$(project.name:c)')
-.endif
+.directory.create ('builds/msvc/vs2008/$(project.name:c)')
 .output "builds/msvc/vs2008/$(project.name:c)/$(project.name:c).sln"
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008

@@ -11,7 +11,7 @@
 .##########################################################################
 
 .macro generate_variation (path, level)
-.directory.create("builds/msvc/$(my.path)/$(project.name:c)")
+.directory.create ("builds/msvc/$(my.path)/$(project.name:c)")
 .output "builds/msvc/$(my.path)/$(project.name:c)/$(project.name:c).vcxproj"
 <?xml version="1.0" encoding="utf-8"?>
 <!--
@@ -220,7 +220,7 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 -->
 </Project>
-.directory.create("builds/msvc/$(my.path)/$(project.prefix)_selftest")
+.directory.create ("builds/msvc/$(my.path)/$(project.prefix)_selftest")
 .output "builds/msvc/$(my.path)/$(project.prefix)_selftest/$(project.prefix)_selftest.vcxproj"
 <?xml version="1.0" encoding="utf-8"?>
 <!--
@@ -384,9 +384,9 @@ EndGlobal
 SET solution=$(project.name:c).sln
 SET version=$(my.level)
 SET log=build.log
-SET tools=Microsoft Visual Studio %version%.0\VC\vcvarsall.bat
-SET environment="%programfiles(x86)%\%tools%"
-IF NOT EXIST %environment% SET environment="%programfiles%\%tools%"
+SET tools=Microsoft Visual Studio %version%.0\\VC\\vcvarsall.bat
+SET environment="%programfiles(x86)%\\%tools%"
+IF NOT EXIST %environment% SET environment="%programfiles%\\%tools%"
 IF NOT EXIST %environment% GOTO no_tools
 
 ECHO Building %solution%...
@@ -463,10 +463,10 @@ $(project.GENERATED_WARNING_HEADER:)
 
   <ItemDefinitionGroup>
     <PreBuildEvent>
-      <Command>copy $\(BuildRoot)platform.h $\(RepoRoot)include\</Command>
+      <Command>copy $\(BuildRoot)platform.h $\(RepoRoot)include\\</Command>
     </PreBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>$\(RepoRoot)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$\(RepoRoot)include\\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <EnablePREfast>false</EnablePREfast>
@@ -502,7 +502,7 @@ $(project.GENERATED_WARNING_HEADER:)
   <!-- Messages -->
 
   <Target Name="CustomInfo" BeforeTargets="PrepareForBuild">
-    <Message Text="Will copy $\(BuildRoot)platform.h -&gt; $\(RepoRoot)include\platform.h" Importance="high"/>
+    <Message Text="Will copy $\(BuildRoot)platform.h -&gt; $\(RepoRoot)include\\platform.h" Importance="high"/>
   </Target>
 
   <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
@@ -534,13 +534,13 @@ $(project.GENERATED_WARNING_HEADER:)
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$\(ProjectDir)..\..\..\..\..\$(project.name)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\include\\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$\(Linkage-$(project.linkname))' == 'static' Or '$\(Linkage-$(project.linkname))' == 'ltcg'">$(PROJECT.LIBNAME)_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies Condition="'$\(Linkage-$(project.linkname))' != ''">$(project.linkname).lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Debug')) != -1">$\(ProjectDir)..\..\..\..\..\$(project.name)\bin\$\(PlatformName)\Debug\$\(PlatformToolset)\$\(Linkage-$(project.linkname))\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Release')) != -1">$\(ProjectDir)..\..\..\..\..\$(project.name)\bin\$\(PlatformName)\Release\$\(PlatformToolset)\$\(Linkage-$(project.linkname))\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Debug')) != -1">$\(ProjectDir)..\\..\\..\\..\\..\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\$\(Linkage-$(project.linkname))\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Release')) != -1">$\(ProjectDir)..\\..\\..\\..\\..\$(project.name)\\bin\\$\(PlatformName)\\Release\\$\(PlatformToolset)\\$\(Linkage-$(project.linkname))\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
 
@@ -548,15 +548,15 @@ $(project.GENERATED_WARNING_HEADER:)
 
   <Target Name="Linkage-$(project.linkname)-dynamic" AfterTargets="AfterBuild" Condition="'$\(Linkage-$(project.linkname))' == 'dynamic'">
     <Copy Condition="$\(Configuration.IndexOf('Debug')) != -1"
-          SourceFiles="$\(ProjectDir)..\..\..\..\..\$(project.name)\bin\$\(PlatformName)\Debug\$\(PlatformToolset)\dynamic\$(project.linkname).dll"
+          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\$(project.linkname).dll"
           DestinationFiles="$\(TargetDir)$(project.linkname).dll"
           SkipUnchangedFiles="true" />
     <Copy Condition="$\(Configuration.IndexOf('Debug')) != -1"
-          SourceFiles="$\(ProjectDir)..\..\..\..\..\$(project.name)\bin\$\(PlatformName)\Debug\$\(PlatformToolset)\dynamic\$(project.linkname).pdb"
+          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\\$(project.linkname).pdb"
           DestinationFiles="$\(TargetDir)$(project.linkname).pdb"
           SkipUnchangedFiles="true" />
     <Copy Condition="$\(Configuration.IndexOf('Release')) != -1"
-          SourceFiles="$\(ProjectDir)..\..\..\..\..\$(project.name)\bin\$\(PlatformName)\Release\$\(PlatformToolset)\dynamic\$(project.linkname).dll"
+          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\$(project.name)\\bin\\$\(PlatformName)\\Release\\$\(PlatformToolset)\\dynamic\\$(project.linkname).dll"
           DestinationFiles="$\(TargetDir)$(project.linkname).dll"
           SkipUnchangedFiles="true" />
   </Target>
