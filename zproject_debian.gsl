@@ -43,7 +43,8 @@ Build-Depends: bison, debhelper (>= 8),
     lib$(string.replace (use.libname, "_|-"))-dev,
 .endif
 .endfor
-    dh-autoreconf
+    dh-autoreconf,
+    systemd
 
 .if project.has_classes
 Package: $(string.replace (project.libname, "_|-"))$(project->version.major)
@@ -137,6 +138,10 @@ override_dh_strip:
 
 override_dh_auto_test:
 	echo "Skipped for now"
+
+override_dh_auto_configure:
+	dh_auto_configure -- --with-systemd
+
 %:
 	dh $@ --with=autoreconf
 

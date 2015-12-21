@@ -33,6 +33,7 @@ BuildRequires:  automake
 BuildRequires:  autoconf
 BuildRequires:  libtool
 BuildRequires:  pkg-config
+BuildRequires:  systemd-devel
 .if project.use_cxx
 BuildRequires:  gcc-c++
 .endif
@@ -97,7 +98,7 @@ This package contains development files.
 
 %build
 sh autogen.sh
-%{configure}
+%{configure} --with-systemd
 make %{_smp_mflags}
 
 %install
