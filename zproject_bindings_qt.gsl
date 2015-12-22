@@ -76,7 +76,7 @@ function resolve_qt_container (container)
         my.container.qtCallPre = "char *retStr_ = "
         my.container.qtCallPost = ";\n" + \
         "    QString rv = QString (retStr_);\n" + \
-        "    free (retStr_);"
+        "    zstr_free (&retStr_)"
     elsif my.container.type = "format"
         my.container.qtName = "param" # Rename as 'format' is confusing, due to not being format in Qt
         my.container.qtArgType = "const QString &"
