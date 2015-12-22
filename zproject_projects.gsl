@@ -32,14 +32,17 @@ function resolve_project_dependency (use)
     my.use.libname ?= my.use.project
     my.use.cmake_name ?= "$(my.use.project:Pascal)"
     my.use.optional ?= 0
-    
+    my.use.min_major ?= 0
+    my.use.min_minor ?= 0
+    my.use.min_patch ?= 0
+
     # For values with no reasonable fallback, print error
     if !defined (my.use.test)
         echo "Project $(my.use.project) needs a 'test' attribute"
     endif
     
     # Calculate all non-model values from model values
-    my.use.min_version = "$(min_major?'0').$(min_minor?'0').$(min_patch?'0')"
+    my.use.min_version = "$(min_major).$(min_minor).$(min_patch)"
     
     # Copy all dependencies implied by this one into the project
     for my.use.use as implied_use
