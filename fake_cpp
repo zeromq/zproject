@@ -1,0 +1,9 @@
+#!/bin/sh
+# postprocessor of C preprocessor - removes __attribute__ declarations, which are not compatible for pycparser
+
+cpp "${@}" | sed \
+    -e 's/__attribute__ ((visibility("default"))) //' \
+    -e 's/__attribute__((format.*)));$/;/' \
+    -e 's/__THROW;$/;/' \
+    -e 's/__END_DECLS//' \
+    -e 's/__BEGIN_DECLS//'
