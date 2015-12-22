@@ -14,12 +14,14 @@
         Also, 'cmake name' is target specific and must go.
 
         <use
-            project = "libzmq"
-            pretty = "ZeroMQ"
+            project = "libzmq"          required
+            pretty = "ZeroMQ"           default project
             location = "https://github.com/zeromq"
-            libname = "libzmq"
-            prefix = "zmq"
-            test = "zmq_init"
+                                        required
+            libname = "libzmq"          default lib<prefix>
+            prefix = "zmq"              default project
+            test = "zmq_init"           required
+            release = "<tagname>"       default "master"
             <use project = "libsodium" />
             <alias name = "zmq" />
         </use>
@@ -53,6 +55,13 @@
         <use project = "libzmq" min_major= "4" min_minor = "2" min_patch = "0" />
         <use project = "czmq" min_major = "3" min_minor = "0" min_patch = "1" />
     </use>
+
+    <!-- Core dependencies -->
+
+    <use project = "libsodium" prefix = "sodium"
+        repository = "https://github.com/jedisct1/libsodium"
+        release = "1.0.7"
+        test = "sodium_init" />
 
     <!-- Edgenet Projects -->
 
@@ -97,10 +106,6 @@
     <use project = "msgpack"
         repository = "https://github.com/msgpack/msgpack-c.git"
         test = "msgpack_version" />
-
-    <use project = "libsodium" prefix = "sodium"
-        repository = "https://github.com/jedisct1/libsodium"
-        test = "sodium_init" />
 
     <use project = "uuid"
         test = "uuid_generate"
