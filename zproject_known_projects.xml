@@ -1,11 +1,36 @@
 <known_projects>
 
     <!-- ZeroMQ Projects -->
+    <!--
+        Problem: naming style is inconsistent
+        we sometimes use libxxx and sometimes xxx; the git repo name
+        is unpredictable; sometimes we override with the prefix and
+        sometimes with libname.
+
+        Proposed solution: project name should always be git repo
+        name; prefix and libname should always be specified. For
+        compatibility we can define aliases. E.g.:
+
+        Also, 'cmake name' is target specific and must go.
+
+        <use
+            project = "libzmq"
+            pretty = "ZeroMQ"
+            location = "https://github.com/zeromq"
+            libname = "libzmq"
+            prefix = "zmq"
+            test = "zmq_init"
+            <use project = "libsodium" />
+            <alias name = "zmq" />
+        </use>
+    -->
 
     <use project = "libzmq" prefix = "zmq"
         repository = "https://github.com/zeromq/libzmq"
         test = "zmq_init"
-        cmake_name = "ZeroMQ" />
+        cmake_name = "ZeroMQ">
+        <use project = "libsodium" />
+    </use>
 
     <use project = "czmq" libname = "libczmq"
         repository = "https://github.com/zeromq/czmq"
