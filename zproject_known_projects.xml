@@ -22,6 +22,7 @@
             prefix = "zmq"              default project
             test = "zmq_init"           required
             release = "<tagname>"       default "master"
+            abi = "version"             default "0:0:0"
             <use project = "libsodium" />
             <alias name = "zmq" />
         </use>
@@ -38,13 +39,13 @@
         repository = "https://github.com/zeromq/czmq"
         test = "zctx_test"
         cmake_name = "CZMQ">
-        <use project = "libzmq" min_major = "2" min_minor = "2" />
+        <use project = "libzmq" />
     </use>
 
     <use project = "zyre" libname = "libzyre"
         repository = "https://github.com/zeromq/zyre"
         test = "zyre_test">
-        <use project = "czmq" min_major = "3" min_minor = "0" />
+        <use project = "czmq" />
     </use>
 
     <use project = "malamute" libname = "libmlm"
@@ -52,8 +53,8 @@
         includename = "malamute"
         prefix = "mlm"
         test = "mlm_server_test">
-        <use project = "libzmq" min_major= "4" min_minor = "2" min_patch = "0" />
-        <use project = "czmq" min_major = "3" min_minor = "0" min_patch = "1" />
+        <use project = "libzmq" />
+        <use project = "czmq" />
     </use>
 
     <!-- Core dependencies -->
@@ -75,7 +76,7 @@
     <use project = "hydra" libname = "libhydra"
         repository = "https://github.com/edgenet/hydra"
         test = "hydra_server_test">
-        <use project = "czmq" min_major = "3" min_minor = "0" min_patch = "1" />
+        <use project = "czmq" />
     </use>
 
     <!-- Various known third-party projects
