@@ -194,12 +194,16 @@ def get_func_decls(filename, args):
 
 def s_decl_to_zproto_type(arg):
     dct = {
+            ("void", "")  : "nothing",
             ("void", "*") : "anything",
-            ("int", "")   : "integer",
-            ("float", "") : "real",
+            ("size_t", "") : "size",
+            ("time_t", "") : "time",
             ("bool", "")  : "boolean",
             ("_Bool", "")  : "boolean",
+            ("int", "")   : "integer",
+            ("float", "") : "real",
             ("char", "*") : "string",
+            ("byte", "*") : "buffer",
           }
     if arg.type.endswith("_t") and arg.ptr in ("*", "**"):
         return arg.type[:-2]
