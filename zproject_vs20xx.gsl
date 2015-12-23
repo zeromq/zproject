@@ -11,8 +11,8 @@
 .##########################################################################
 
 .macro generate_variation (path, level)
-.directory.create ("builds/msvc/$(my.path)/$(project.name:c)")
-.output "builds/msvc/$(my.path)/$(project.name:c)/$(project.name:c).vcxproj"
+.directory.create ("builds/msvc/$(my.path)/$(project.libname)")
+.output "builds/msvc/$(my.path)/$(project.libname)/$(project.libname).vcxproj"
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 $(project.GENERATED_WARNING_HEADER:)
@@ -20,7 +20,7 @@ $(project.GENERATED_WARNING_HEADER:)
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}</ProjectGuid>
-    <ProjectName>$(project.name:c)</ProjectName>
+    <ProjectName>$(project.libname)</ProjectName>
     <PlatformToolset>v$(my.level)0</PlatformToolset>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
@@ -126,7 +126,7 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
   -->
 </Project>
-.output "builds/msvc/$(my.path)/$(project.name:c)/$(project.name:c).vcxproj.filters"
+.output "builds/msvc/$(my.path)/$(project.libname)/$(project.libname).vcxproj.filters"
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 $(project.GENERATED_WARNING_HEADER:)
@@ -294,7 +294,7 @@ $(project.GENERATED_WARNING_HEADER:)
     <ClCompile Include="..\\..\\..\\..\\src\\$(project.prefix)_selftest.c" />
   </ItemGroup>
     <ItemGroup>
-    <ProjectReference Include="..\\$(project.name:c)\\$(project.name:c).vcxproj">
+    <ProjectReference Include="..\\$(project.libname)\\$(project.libname).vcxproj">
       <Project>{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -304,9 +304,9 @@ $(project.GENERATED_WARNING_HEADER:)
 -->
 </Project>
 .output "builds/msvc/$(my.path)/$(project.name:c).sln"
-Microsoft Visual Studio Solution File, Format Version 11.00
+Microsoft Visual Studio Solution File, Format Version $(my.level).00
 # $(my.path)
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.prefix)", "$(project.prefix)\\$(project.prefix).vcxproj", "{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.libname)", "$(project.libname)\\$(project.libname).vcxproj", "{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.prefix)_selftest", "$(project.prefix)_selftest\\$(project.prefix)_selftest.vcxproj", "{A5497C4B-1CD1-4779-9458-2CF7908E7E26}"
 EndProject
@@ -446,7 +446,7 @@ GOTO end
 ECHO *** ERROR, build tools not found: %tools%
 
 :end
-.output "builds/msvc/$(my.path)/$(project.name:c)/$(project.name:c).props"
+.output "builds/msvc/$(my.path)/$(project.libname)/$(project.libname).props"
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 $(project.GENERATED_WARNING_HEADER:)
@@ -496,17 +496,17 @@ $(project.GENERATED_WARNING_HEADER:)
 
   <PropertyGroup Condition="'$\(DefaultLinkage)' == 'dynamic'">
 .for project.use where optional = 0
-    <Linkage-$(libname)>dynamic</Linkage-$(libname)>
+    <Linkage-$(use.project)>dynamic</Linkage-$(use.project)>
 .endfor
   </PropertyGroup>
   <PropertyGroup Condition="'$\(DefaultLinkage)' == 'ltcg'">
 .for project.use where optional = 0
-    <Linkage-$(libname)>ltcg</Linkage-$(libname)>
+    <Linkage-$(use.project)>ltcg</Linkage-$(use.project)>
 .endfor
   </PropertyGroup>
   <PropertyGroup Condition="'$\(DefaultLinkage)' == 'static'">
 .for project.use where optional = 0
-    <Linkage-$(libname)>static</Linkage-$(libname)>
+    <Linkage-$(use.project)>static</Linkage-$(use.project)>
 .endfor
   </PropertyGroup>
 
@@ -518,7 +518,7 @@ $(project.GENERATED_WARNING_HEADER:)
 
   <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
 .for project.use where optional = 0
-    <Message Text="Linkage-$(libname) : $\(Linkage-$(libname))" Importance="high"/>
+    <Message Text="Linkage-$(use.project) : $\(Linkage-$(use.project))" Importance="high"/>
 .endfor
   </Target>
 <!--
@@ -550,7 +550,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <PreprocessorDefinitions Condition="'$\(Linkage-$(project.linkname))' == 'static' Or '$\(Linkage-$(project.linkname))' == 'ltcg'">$(PROJECT.LIBNAME)_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies Condition="'$\(Linkage-$(project.linkname))' != ''">$(project.linkname).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$\(Linkage-$(project.linkname))' != ''">$(project.libname).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Debug')) != -1">$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\$\(Linkage-$(project.linkname))\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Release')) != -1">$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Release\\$\(PlatformToolset)\\$\(Linkage-$(project.linkname))\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
@@ -560,30 +560,30 @@ $(project.GENERATED_WARNING_HEADER:)
 
   <Target Name="Linkage-$(project.linkname)-dynamic" AfterTargets="AfterBuild" Condition="'$\(Linkage-$(project.linkname))' == 'dynamic'">
     <Copy Condition="$\(Configuration.IndexOf('Debug')) != -1"
-          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\\$(project.linkname).dll"
-          DestinationFiles="$\(TargetDir)$(project.linkname).dll"
+          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\\$(project.libname).dll"
+          DestinationFiles="$\(TargetDir)$(project.libname).dll"
           SkipUnchangedFiles="true" />
     <Copy Condition="$\(Configuration.IndexOf('Debug')) != -1"
-          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\\$(project.linkname).pdb"
-          DestinationFiles="$\(TargetDir)$(project.linkname).pdb"
+          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\\$(project.libname).pdb"
+          DestinationFiles="$\(TargetDir)$(project.libname).pdb"
           SkipUnchangedFiles="true" />
     <Copy Condition="$\(Configuration.IndexOf('Release')) != -1"
-          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Release\\$\(PlatformToolset)\\dynamic\\$(project.linkname).dll"
-          DestinationFiles="$\(TargetDir)$(project.linkname).dll"
+          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Release\\$\(PlatformToolset)\\dynamic\\$(project.libname).dll"
+          DestinationFiles="$\(TargetDir)$(project.libname).dll"
           SkipUnchangedFiles="true" />
   </Target>
 
   <!-- Messages -->
 
   <Target Name="$(project.name)-info" BeforeTargets="AfterBuild" Condition="'$\(Linkage-$(project.linkname))' == 'dynamic'">
-    <Message Text="Copying $(project.linkname).dll -&gt; $\(TargetDir)$(project.linkname).dll" Importance="high"/>
-    <Message Text="Copying $(project.linkname).pdb -&gt; $\(TargetDir)$(project.linkname).pdb" Importance="high" Condition="$\(Configuration.IndexOf('Debug')) != -1" />
+    <Message Text="Copying $(project.libname).dll -&gt; $\(TargetDir)$(project.libname).dll" Importance="high"/>
+    <Message Text="Copying $(project.libname).pdb -&gt; $\(TargetDir)$(project.libname).pdb" Importance="high" Condition="$\(Configuration.IndexOf('Debug')) != -1" />
   </Target>
 <!--
 $(project.GENERATED_WARNING_HEADER:)
 -->
 </Project>
-.output "builds/msvc/$(my.path)/$(project.name:c)/$(project.name:c).import.xml"
+.output "builds/msvc/$(my.path)/$(project.libname)/$(project.libname).import.xml"
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 $(project.GENERATED_WARNING_HEADER:)
@@ -591,7 +591,7 @@ $(project.GENERATED_WARNING_HEADER:)
 <ProjectSchemaDefinitions xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework">
   <Rule Name="$(project.linkname)-linkage-uiextension" PageTemplate="tool" DisplayName="Local Dependencies" SwitchPrefix="/" Order="1">
     <Rule.Categories>
-      <Category Name="$(project.name)" DisplayName="$(project.name:)" />
+      <Category Name="$(project.libname)" DisplayName="$(project.name:)" />
     </Rule.Categories>
     <Rule.DataSource>
       <DataSource Persistence="ProjectFile" ItemType="" />
@@ -634,7 +634,7 @@ $(project.GENERATED_WARNING_HEADER:)
 
   <!-- Dependencies -->
   <ImportGroup Label="PropertySheets">
-    <Import Project="$\(SolutionDir)$(project.prefix).import.props" />
+    <Import Project="$\(SolutionDir)$(project.name:c).import.props" />
 .for project.use where optional = 0
     <Import Project="$\(SolutionDir)$(use.project).import.props" />
 .endfor
@@ -643,19 +643,19 @@ $(project.GENERATED_WARNING_HEADER:)
   <PropertyGroup Condition="$\(Configuration.IndexOf('DEXE')) != -1">
     <Linkage-$(project.prefix)>dynamic</Linkage-$(project.prefix)>
 .for project.use where optional = 0
-    <Linkage-$(libname)>dynamic</Linkage-$(libname)>
+    <Linkage-$(use.project)>dynamic</Linkage-$(use.project)>
 .endfor
   </PropertyGroup>
   <PropertyGroup Condition="$\(Configuration.IndexOf('LEXE')) != -1">
     <Linkage-$(project.prefix)>ltcg</Linkage-$(project.prefix)>
 .for project.use where optional = 0
-    <Linkage-$(libname)>ltcg</Linkage-$(libname)>
+    <Linkage-$(use.project)>ltcg</Linkage-$(use.project)>
 .endfor
   </PropertyGroup>
   <PropertyGroup Condition="$\(Configuration.IndexOf('SEXE')) != -1">
     <Linkage-$(project.prefix)>static</Linkage-$(project.prefix)>
 .for project.use where optional = 0
-    <Linkage-$(libname)>static</Linkage-$(libname)>
+    <Linkage-$(use.project)>static</Linkage-$(use.project)>
 .endfor
   </PropertyGroup>
 
@@ -663,7 +663,7 @@ $(project.GENERATED_WARNING_HEADER:)
   <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
     <Message Text="Linkage-$(project.prefix)      : $\(Linkage-$(project.prefix))" Importance="high"/>
 .for project.use where optional = 0
-    <Message Text="Linkage-$(libname) : $\(Linkage-$(libname))" Importance="high"/>
+    <Message Text="Linkage-$(use.project) : $\(Linkage-$(use.project))" Importance="high"/>
 .endfor
   </Target>
 <!--
@@ -801,7 +801,7 @@ $(project.GENERATED_WARNING_HEADER:)
     <ClCompile Include="..\\..\\..\\..\\src\\$(project.prefix)_selftest.c" />
   </ItemGroup>
     <ItemGroup>
-    <ProjectReference Include="..\\$(project.prefix)\\$(project.prefix).vcxproj">
+    <ProjectReference Include="..\\$(project.libname)\\$(project.libname).vcxproj">
       <Project>{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}</Project>
     </ProjectReference>
   </ItemGroup>
