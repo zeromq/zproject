@@ -209,6 +209,8 @@ def s_decl_to_zproto_type(arg):
 def s_show_zproto_model_arguments(fp, decl_dict):
     was_format = False
     for arg in decl_dict["args"]:
+        if (arg.name, arg.type) == ("", "void"):
+            continue
         if arg.name in ("self", "self_p") and arg.type != "void":
             continue
         if was_format and arg.type == "...":
