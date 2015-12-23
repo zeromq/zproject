@@ -163,7 +163,7 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
             return
 
 def s_cpp_args(args):
-    cpp_args = list()
+    cpp_args = [args.cpp, ]
     try:
         for d in args.DEFINE:
             cpp_args.append("-D" + d)
@@ -179,10 +179,13 @@ def s_cpp_args(args):
 
 def get_func_decls(filename, args):
     cpp_args = s_cpp_args(args)
-    ast = parse_file(filename,
-            use_cpp=True,
-            cpp_path=os.path.join(os.path.dirname(__file__), "fake_cpp"),
-            cpp_args=cpp_args)
+    if args.cpp.lower() == "none":
+        ast = parse_file(filename)
+    else:
+        ast = parse_file(filename,
+                use_cpp=True,
+                cpp_path=os.path.join(os.path.dirname(__file__), "fake_cpp"),
+                cpp_args=cpp_args)
     v = FuncDeclVisitor()
     for idx, node in ast.children():
         v.visit(node)
@@ -302,15 +305,42 @@ def get_classes_from_decls(decls):
         seen.add(klass)
         yield klass
 
+def s_which(binary):
+    for d in os.getenv("PATH").split(':'):
+        full_path = os.path.join(d, binary)
+        if os.path.isfile(full_path):
+            return full_path
+    return None
+
+def s_detect_system_preprocessor():
+    if sys.platform == "darwin":
+        if s_which("clang") is None:
+            return None
+        return "clang -E"
+    if s_which("gcc") is not None:
+        return "gcc -E"
+    if s_which("clang") is not None:
+        return "clang -E"
+
+    return None
+
 def main(argv=sys.argv[1:]):
 
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("header", help="main header file of the project")
     p.add_argument("-D", "--define", help="extra defines, which will be passed to c preprocessor", dest="DEFINE", action='append')
     p.add_argument("-I", "--include", help="extra includes, which will be passed to c preprocessor", dest="INCLUDE", action='append')
+    p.add_argument("--cpp", help="Define c preprocessor to use (gcc -E, clang -E, auto for autodetect and none for not calling preprocessor at all", default="auto")
     args = p.parse_args(argv)
 
     args.output = "api"
+
+    if args.cpp == "auto":
+        foo = s_detect_system_preprocessor()
+        if foo is None:
+            print ("E: Can't detect system preprocessor for platform '%s', neither gcc neither clang are found. Specify it via --cpp parameter" % sys.platform, file=sys.stderr)
+            sys.exit(1)
+        args.cpp = foo
 
     try:
         os.makedirs(args.output)
