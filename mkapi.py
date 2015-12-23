@@ -126,7 +126,8 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
 
     @staticmethod
     def s_enum_items(enumerators):
-        return [MacroDecl(n.name, n.value.value, "") for n in enumerators if n.value is not None]
+        return [MacroDecl(n.name, n.value.value if n.value is not None else "", "")
+                for n in enumerators]
 
     @staticmethod
     def s_enum_dict(node):
@@ -243,7 +244,8 @@ def s_show_zproto_enum(fp, klass_l, decl_dict):
     print("""    <enum name="%s">""" % (decl_dict["name"][klass_l:-2].lower()), file=fp)
     for name, value, comment in decl_dict["items"]:
         name = name[klass_l:].lower()
-        print ("""        <constant name="%s" value="%s" />""" % (name, value), file=fp)
+        value = ' value="%s"' % value if value != "" else ""
+        print ("""        <constant name="%s"%s />""" % (name, value), file=fp)
     print("""    </enum>""", file=fp)
 
 def show_zproto_model(fp, klass, decls, comments, macros):
