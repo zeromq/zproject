@@ -85,7 +85,8 @@ function resolve_python_container (container)
     elsif my.container.type = "real"
         my.container.python_type = "c_float"
     elsif my.container.type = "buffer"
-        my.container.python_type = "POINTER(c_byte)"
+#        my.container.python_type = "POINTER(c_byte)"
+        my.container.python_type = "c_void_p"
     elsif my.container.type = "FILE"
         python_register_type(my.container, "FILE", "FILE_p")
         my.container.python_coerce = "coerce_py_file(<>)"
@@ -347,16 +348,20 @@ for class where defined (class.api)
 >$(class.name:c)_$(type.name:c) = $(python_callback_create(type))
     endfor
 
-    for constructor as method
-        python_method_annotation(method)
+    for constructor as method where item () = 1
+        python_method_annotation (method)
     endfor
 
     for destructor as method
-        python_method_annotation(method)
+        python_method_annotation (method)
+    endfor
+
+    for constructor as method where item () > 1
+        python_method_annotation (method)
     endfor
 
     for method
-        python_method_annotation(method)
+        python_method_annotation (method)
     endfor
 
 >
@@ -386,9 +391,10 @@ for class where defined (class.api)
 >
         endif
     endfor
+>    allow_destruct = False
 
     anyvariadic = 0
-    for constructor as method
+    for constructor as method where item () = 1
         callargs = ""
         for method.argument
             if argument.variadic
@@ -440,12 +446,14 @@ for class where defined (class.api)
 >        "Determine whether the object is valid by converting to boolean" # Python 2
 >        return self._as_parameter_.__nonzero__()
 >
+    for constructor as method where item () > 1
+        python_method_definition (method)
+    endfor
 
     for method
-        python_method_definition(method)
+        python_method_definition (method)
     endfor
 endfor
-
 
 >$(project.GENERATED_WARNING_HEADER:)
 

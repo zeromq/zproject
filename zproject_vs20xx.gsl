@@ -111,7 +111,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .endfor
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\\..\\$(project.name:c).rc" />
+    <ResourceCompile Include="..\\..\\resource.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\\..\\..\\..\\packaging\\nuget\\package.bat" />
@@ -175,7 +175,7 @@ $(project.GENERATED_WARNING_HEADER:)
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\\..\\$(project.name:c).rc">
+    <ResourceCompile Include="..\\..\\resource.rc">
       <Filter>resource</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -306,9 +306,9 @@ $(project.GENERATED_WARNING_HEADER:)
 .output "builds/msvc/$(my.path)/$(project.name:c).sln"
 Microsoft Visual Studio Solution File, Format Version 11.00
 # $(my.path)
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.prefix)", "$(project.prefix)\$(project.prefix).vcxproj", "{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.prefix)", "$(project.prefix)\\$(project.prefix).vcxproj", "{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.prefix)_selftest", "$(project.prefix)_selftest\$(project.prefix)_selftest.vcxproj", "{A5497C4B-1CD1-4779-9458-2CF7908E7E26}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.prefix)_selftest", "$(project.prefix)_selftest\\$(project.prefix)_selftest.vcxproj", "{A5497C4B-1CD1-4779-9458-2CF7908E7E26}"
 EndProject
 Global
     GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -439,7 +439,7 @@ ECHO Complete: %solution%
 GOTO end
 
 :error
-ECHO *** ERROR, build terminated early, see: %log%
+ECHO *** ERROR, build terminated early: see %log%
 GOTO end
 
 :no_tools
@@ -482,21 +482,32 @@ $(project.GENERATED_WARNING_HEADER:)
   <!-- Dependencies -->
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="$\(SolutionDir)libzmq.import.props" />
-    <Import Project="$\(SolutionDir)libsodium.import.props" />
+.for project.use where optional = 0
+    <Import Project="$\(SolutionDir)$(use.project).import.props" />
+.   my.filename = "../$(use.project)/builds/msvc/$(my.path)/$(use.project).import.props"
+.   if file.exists (my.filename)
+.       my.shell = proc.new ("cp $(my.filename) builds/msvc/$(my.path)")
+.       my.shell.run ()
+.   else
+.       echo "Can't find ../$(use.project)/builds/msvc/$(my.path)/$(use.project).import.props"
+.   endif
+.endfor
   </ImportGroup>
 
   <PropertyGroup Condition="'$\(DefaultLinkage)' == 'dynamic'">
-    <Linkage-libzmq>dynamic</Linkage-libzmq>
-    <Linkage-libsodium>dynamic</Linkage-libsodium>
+.for project.use where optional = 0
+    <Linkage-$(libname)>dynamic</Linkage-$(libname)>
+.endfor
   </PropertyGroup>
   <PropertyGroup Condition="'$\(DefaultLinkage)' == 'ltcg'">
-    <Linkage-libzmq>ltcg</Linkage-libzmq>
-    <Linkage-libsodium>ltcg</Linkage-libsodium>
+.for project.use where optional = 0
+    <Linkage-$(libname)>ltcg</Linkage-$(libname)>
+.endfor
   </PropertyGroup>
   <PropertyGroup Condition="'$\(DefaultLinkage)' == 'static'">
-    <Linkage-libzmq>static</Linkage-libzmq>
-    <Linkage-libsodium>static</Linkage-libsodium>
+.for project.use where optional = 0
+    <Linkage-$(libname)>static</Linkage-$(libname)>
+.endfor
   </PropertyGroup>
 
   <!-- Messages -->
@@ -506,14 +517,15 @@ $(project.GENERATED_WARNING_HEADER:)
   </Target>
 
   <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
-    <Message Text="Linkage-libzmq    : $\(Linkage-libzmq)" Importance="high"/>
-    <Message Text="Linkage-libsodium : $\(Linkage-libsodium)" Importance="high"/>
+.for project.use where optional = 0
+    <Message Text="Linkage-$(libname) : $\(Linkage-$(libname))" Importance="high"/>
+.endfor
   </Target>
 <!--
 $(project.GENERATED_WARNING_HEADER:)
 -->
 </Project>
-.output "builds/msvc/$(my.path)/$(project.name:c)/$(project.name:c).import.props"
+.output "builds/msvc/$(my.path)/$(project.name:c).import.props"
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 $(project.GENERATED_WARNING_HEADER:)
@@ -539,8 +551,8 @@ $(project.GENERATED_WARNING_HEADER:)
     </ClCompile>
     <Link>
       <AdditionalDependencies Condition="'$\(Linkage-$(project.linkname))' != ''">$(project.linkname).lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Debug')) != -1">$\(ProjectDir)..\\..\\..\\..\\..\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\$\(Linkage-$(project.linkname))\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Release')) != -1">$\(ProjectDir)..\\..\\..\\..\\..\$(project.name)\\bin\\$\(PlatformName)\\Release\\$\(PlatformToolset)\\$\(Linkage-$(project.linkname))\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Debug')) != -1">$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\$\(Linkage-$(project.linkname))\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Release')) != -1">$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Release\\$\(PlatformToolset)\\$\(Linkage-$(project.linkname))\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
 
@@ -548,15 +560,15 @@ $(project.GENERATED_WARNING_HEADER:)
 
   <Target Name="Linkage-$(project.linkname)-dynamic" AfterTargets="AfterBuild" Condition="'$\(Linkage-$(project.linkname))' == 'dynamic'">
     <Copy Condition="$\(Configuration.IndexOf('Debug')) != -1"
-          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\$(project.linkname).dll"
+          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\\$(project.linkname).dll"
           DestinationFiles="$\(TargetDir)$(project.linkname).dll"
           SkipUnchangedFiles="true" />
     <Copy Condition="$\(Configuration.IndexOf('Debug')) != -1"
-          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\\$(project.linkname).pdb"
+          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\\$(project.linkname).pdb"
           DestinationFiles="$\(TargetDir)$(project.linkname).pdb"
           SkipUnchangedFiles="true" />
     <Copy Condition="$\(Configuration.IndexOf('Release')) != -1"
-          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\$(project.name)\\bin\\$\(PlatformName)\\Release\\$\(PlatformToolset)\\dynamic\\$(project.linkname).dll"
+          SourceFiles="$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Release\\$\(PlatformToolset)\\dynamic\\$(project.linkname).dll"
           DestinationFiles="$\(TargetDir)$(project.linkname).dll"
           SkipUnchangedFiles="true" />
   </Target>
@@ -595,6 +607,209 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 -->
 </ProjectSchemaDefinitions>
+.output "builds/msvc/$(my.path)/$(project.prefix)_selftest/$(project.prefix)_selftest.props"
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Label="Globals">
+    <_PropertySheetDisplayName>$(project.name:) Self Test Common Settings</_PropertySheetDisplayName>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
+
+  <!-- Configuration -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <EnablePREfast>false</EnablePREfast>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>Iphlpapi.lib;Rpcrt4.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- Dependencies -->
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$\(SolutionDir)$(project.prefix).import.props" />
+.for project.use where optional = 0
+    <Import Project="$\(SolutionDir)$(use.project).import.props" />
+.endfor
+  </ImportGroup>
+
+  <PropertyGroup Condition="$\(Configuration.IndexOf('DEXE')) != -1">
+    <Linkage-$(project.prefix)>dynamic</Linkage-$(project.prefix)>
+.for project.use where optional = 0
+    <Linkage-$(libname)>dynamic</Linkage-$(libname)>
+.endfor
+  </PropertyGroup>
+  <PropertyGroup Condition="$\(Configuration.IndexOf('LEXE')) != -1">
+    <Linkage-$(project.prefix)>ltcg</Linkage-$(project.prefix)>
+.for project.use where optional = 0
+    <Linkage-$(libname)>ltcg</Linkage-$(libname)>
+.endfor
+  </PropertyGroup>
+  <PropertyGroup Condition="$\(Configuration.IndexOf('SEXE')) != -1">
+    <Linkage-$(project.prefix)>static</Linkage-$(project.prefix)>
+.for project.use where optional = 0
+    <Linkage-$(libname)>static</Linkage-$(libname)>
+.endfor
+  </PropertyGroup>
+
+  <!-- Messages -->
+  <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
+    <Message Text="Linkage-$(project.prefix)      : $\(Linkage-$(project.prefix))" Importance="high"/>
+.for project.use where optional = 0
+    <Message Text="Linkage-$(libname) : $\(Linkage-$(libname))" Importance="high"/>
+.endfor
+  </Target>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+</Project>
+.output "builds/msvc/$(my.path)/$(project.prefix)_selftest/$(project.prefix)_selftest.vcxproj"
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A5497C4B-1CD1-4779-9458-2CF7908E7E26}</ProjectGuid>
+    <ProjectName>$(project.prefix)_selftest</ProjectName>
+    <RootNamespace>$(project.prefix)_selftest12</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="DebugDEXE|Win32">
+      <Configuration>DebugDEXE</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseDEXE|Win32">
+      <Configuration>ReleaseDEXE</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DebugDEXE|x64">
+      <Configuration>DebugDEXE</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseDEXE|x64">
+      <Configuration>ReleaseDEXE</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DebugLEXE|Win32">
+      <Configuration>DebugLEXE</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseLEXE|Win32">
+      <Configuration>ReleaseLEXE</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DebugLEXE|x64">
+      <Configuration>DebugLEXE</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseLEXE|x64">
+      <Configuration>ReleaseLEXE</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DebugSEXE|Win32">
+      <Configuration>DebugSEXE</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseSEXE|Win32">
+      <Configuration>ReleaseSEXE</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DebugSEXE|x64">
+      <Configuration>DebugSEXE</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseSEXE|x64">
+      <Configuration>ReleaseSEXE</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Configuration">
+    <PlatformToolset>v120</PlatformToolset>
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.Default.props" />
+  <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.props" />
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugDEXE|Win32'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugDEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseDEXE|Win32'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseDEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugDEXE|x64'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugDEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseDEXE|x64'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseDEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugLEXE|Win32'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugLEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseLEXE|Win32'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseLEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugLEXE|x64'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugLEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseLEXE|x64'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseLEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugSEXE|Win32'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugSEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseSEXE|Win32'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseSEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugSEXE|x64'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugSEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseSEXE|x64'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseSEXE.props" />
+  </ImportGroup>
+  <ItemGroup>
+    <ClCompile Include="..\\..\\..\\..\\src\\$(project.prefix)_selftest.c" />
+  </ItemGroup>
+    <ItemGroup>
+    <ProjectReference Include="..\\$(project.prefix)\\$(project.prefix).vcxproj">
+      <Project>{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.targets" />
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+</Project>
 .endmacro
 
 .##########################################################################
@@ -607,6 +822,7 @@ $(project.GENERATED_WARNING_HEADER:)
 *.user
 *.aps
 *.log
+ipch/
 .output "builds/msvc/resource.rc"
 // Microsoft Visual C++ generated resource script.
 //
