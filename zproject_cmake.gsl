@@ -175,10 +175,16 @@ install(
 )
 
 ########################################################################
+# executables
+########################################################################
+.for project.main
+add_executable($(main.name) "${SOURCE_DIR}/src/$(name).c")
+target_link_libraries($(main.name) $(project.name) ${ZEROMQ_LIBRARIES})
+.endfor
+
+########################################################################
 # tests
 ########################################################################
-add_executable($(project.prefix)_selftest "${SOURCE_DIR}/src/$(project.prefix)_selftest.c")
-target_link_libraries($(project.prefix)_selftest $(project.name) ${ZEROMQ_LIBRARIES})
 set(CLASSTEST_TIMEOUT 5 CACHE STRING "Timeout of the selftest of a class")
 set(TOTAL_TIMEOUT 20 CACHE STRING "Timout of the total testsuite")
 
