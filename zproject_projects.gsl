@@ -54,21 +54,47 @@ function resolve_project_dependency (use)
     endfor
 endfunction
 
-for use
-    resolve_project_dependency (use)
-endfor
-
 function resolve_extra (main)
     for extra where defined (extra.type)
-        if main->extra.type = "systemd-tmpfiles"
-            main->extra.name ?= "$(main.name).conf"
-            main->extra.path ?= "/usr/lib/tmpfiles.d"
+        if my.main->extra.type = "systemd-tmpfiles"
+            my.main->extra.name ?= "$(main.name).conf"
+            my.main->extra.path ?= "/usr/lib/tmpfiles.d"
         endif
     endfor
 endfunction
 
-for main
+function resolve_scope (item)
+    if my.item.private ?= 1
+        my.item.scope = "private"
+    else
+        my.item.scope = "public"
+    endif
+endfunction
+
+for project.use
+    resolve_project_dependency (use)
+endfor
+for project.main
+    resolve_scope (main)
     resolve_extra (main)
 endfor
+for project.class
+    resolve_scope (class)
+endfor
+for project.constant
+    resolve_scope (constant)
+endfor
+for project.header
+    resolve_scope (header)
+endfor
+
+#   All projects contain a selftest main
+if count (project.main, name = "$(prefix)_selftest") = 0
+    new main to project
+        main.name = "$(prefix)_selftest"
+        main.test = 1
+        main.scope = "private"
+    endnew
+endif
 
 .endtemplate

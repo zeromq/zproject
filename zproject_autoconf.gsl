@@ -371,10 +371,10 @@ AM_CONDITIONAL(BUILD_DOC, test "x$$(project.name:c)_build_doc" = "xyes")
 # Check for $(name) intent
 AC_ARG_WITH([$(name)],
     AS_HELP_STRING([--with-$(name)],
-.   if private ?= 1
-        [Compile the $(name) program [default=yes].]),
-.   else
+.   if scope = "public"
         [Compile and install the $(name) program [default=yes].]),
+.   else
+        [Compile the $(name) program [default=yes].]),
 .   endif
     [with_$(name:c)=$withval],
     [with_$(name:c)=yes])

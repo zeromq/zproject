@@ -20,7 +20,7 @@ endfunction
 
 resolve_includes (project)
 
-# Find c++ sources in the project
+# Check if project contains one or more C++ sources
 function project_use_cxx ()
     use_cxx = 0
     for class
