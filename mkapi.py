@@ -20,8 +20,8 @@ Generate zproto API XML model from CLASS compatible function declarations
 """
 
 MacroDecl = namedtuple("MacroDecl", "name, value, comment")
-TypeDecl  = namedtuple("TypeDecl", "type, ptr")
-ArgDecl   = namedtuple("ArgDecl", "name, type, ptr")
+TypeDecl  = namedtuple("TypeDecl", "type, ptr, quals")
+ArgDecl   = namedtuple("ArgDecl", "name, type, ptr, quals")
 
 def s_parse_comments_and_macros(fp):
 
@@ -95,21 +95,21 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
         for attr in ("names", "name"):
             if not hasattr(node.type, attr):
                 continue
-            return TypeDecl(' '.join(getattr(node.type, attr)), ptr)
+            return TypeDecl(' '.join(getattr(node.type, attr)), ptr, node.quals)
         raise AttributeError("%s do not have .type.names or .type.name" % (node.__class__.__name__))
 
     @staticmethod
     def s_func_args(node):
         if node.args is None:
-            return (ArgDecl('', "void", ''), )
+            return (ArgDecl('', "void", '', []), )
 
         ret = list()
         for idx, n in node.args.children():
             if isinstance(n, (c_ast.Decl, c_ast.Typename)):
-                typ, ptr = FuncDeclVisitor.s_decl_type(n.type)
-                ret.append((ArgDecl(n.name, typ, ptr)))
+                typ, ptr, quals = FuncDeclVisitor.s_decl_type(n.type)
+                ret.append((ArgDecl(n.name, typ, ptr, quals)))
             elif isinstance(n, c_ast.EllipsisParam):
-                ret.append(ArgDecl("", "...", ""))
+                ret.append(ArgDecl("", "...", "", []))
             else:
                 raise NotImplementedError("%s is not supported in s_func_args" % (n.__class__.__name__))
         return tuple(ret)
@@ -221,10 +221,11 @@ def s_show_zproto_model_arguments(fp, decl_dict):
             continue
         if arg.name == "format" and arg.type == "char" and arg.ptr == "*":
             was_format = True
-        print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s/>""" %
+        print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(constant)s/>""" %
                 {   "name" : arg.name,
                     "type" : s_decl_to_zproto_type(arg),
                     "byref" : """ by_reference="1" """ if arg.ptr == "**" else "",
+                    "constant" : ' constant="1" ' if "const" in arg.quals else "",
                 }, file=fp)
 
 def s_show_zproto_mc(fp, klass_l, dct, comments):
@@ -242,7 +243,11 @@ def s_show_zproto_mc(fp, klass_l, dct, comments):
 
     s_show_zproto_model_arguments(fp, dct)
     if dct["return_type"].type != "void":
-        print("""        <return type = "%s" />""" % (s_decl_to_zproto_type(dct["return_type"])), file=fp)
+        constant = ' constant="1" ' if 'const' in dct["return_type"].quals else ''
+        print("""        <return type = "%(type)s"%(constant)s/>""" % {
+            "type" : s_decl_to_zproto_type(dct["return_type"]),
+                "constant" : constant}
+             , file=fp)
     print("""    </%s>\n""" % (typ, ), file=fp)
 
 
