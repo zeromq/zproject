@@ -143,6 +143,7 @@ if (NOT DEFINED BUILD_SHARED_LIBS)
 endif()
 add_library($(project.name) ${$(project.name)_sources})
 set_target_properties($(project.name) PROPERTIES DEFINE_SYMBOL "$(PROJECT.LIBNAME)_EXPORTS")
+set_target_properties($(project.name) PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${SOURCE_DIR}/src")
 target_link_libraries($(project.name) ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES})
 
 install(TARGETS $(project.name)
@@ -179,7 +180,7 @@ install(
 .for project.main
 add_executable($(main.name) "${SOURCE_DIR}/src/$(name).c")
 target_link_libraries($(main.name) $(project.name) ${ZEROMQ_LIBRARIES})
-set_target_properties ($(main.name) PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${SOURCE_DIR}/src")
+set_target_properties($(main.name) PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${SOURCE_DIR}/src")
 .endfor
 
 ########################################################################
