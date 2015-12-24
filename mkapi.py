@@ -96,7 +96,13 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
             if not hasattr(node.type, attr):
                 continue
             return TypeDecl(' '.join(getattr(node.type, attr)), ptr, node.quals)
-        raise AttributeError("%s do not have .type.names or .type.name" % (node.__class__.__name__))
+
+        return TypeDecl("", "void", "")
+        raise AttributeError("%s:%s:%s: %s do not have .type.names or .type.name" % (
+            node.coord.file,
+            node.coord.line,
+            node.coord.column,
+            node.__class__.__name__))
 
     @staticmethod
     def s_func_args(node):
