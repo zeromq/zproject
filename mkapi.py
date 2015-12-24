@@ -20,8 +20,8 @@ Generate zproto API XML model from CLASS compatible function declarations
 """
 
 MacroDecl = namedtuple("MacroDecl", "name, value, comment")
-TypeDecl  = namedtuple("TypeDecl", "type, ptr")
-ArgDecl   = namedtuple("ArgDecl", "name, type, ptr")
+TypeDecl  = namedtuple("TypeDecl", "type, ptr, quals")
+ArgDecl   = namedtuple("ArgDecl", "name, type, ptr, quals")
 
 def s_parse_comments_and_macros(fp):
 
@@ -95,21 +95,21 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
         for attr in ("names", "name"):
             if not hasattr(node.type, attr):
                 continue
-            return TypeDecl(' '.join(getattr(node.type, attr)), ptr)
+            return TypeDecl(' '.join(getattr(node.type, attr)), ptr, node.quals)
         raise AttributeError("%s do not have .type.names or .type.name" % (node.__class__.__name__))
 
     @staticmethod
     def s_func_args(node):
         if node.args is None:
-            return (ArgDecl('', "void", ''), )
+            return (ArgDecl('', "void", '', []), )
 
         ret = list()
         for idx, n in node.args.children():
             if isinstance(n, (c_ast.Decl, c_ast.Typename)):
-                typ, ptr = FuncDeclVisitor.s_decl_type(n.type)
-                ret.append((ArgDecl(n.name, typ, ptr)))
+                typ, ptr, quals = FuncDeclVisitor.s_decl_type(n.type)
+                ret.append((ArgDecl(n.name, typ, ptr, quals)))
             elif isinstance(n, c_ast.EllipsisParam):
-                ret.append(ArgDecl("", "...", ""))
+                ret.append(ArgDecl("", "...", "", []))
             else:
                 raise NotImplementedError("%s is not supported in s_func_args" % (n.__class__.__name__))
         return tuple(ret)
@@ -126,7 +126,8 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
 
     @staticmethod
     def s_enum_items(enumerators):
-        return [MacroDecl(n.name, n.value.value, "") for n in enumerators if n.value is not None]
+        return [MacroDecl(n.name, n.value.value if n.value is not None else "", "")
+                for n in enumerators]
 
     @staticmethod
     def s_enum_dict(node):
@@ -193,12 +194,16 @@ def get_func_decls(filename, args):
 
 def s_decl_to_zproto_type(arg):
     dct = {
+            ("void", "")  : "nothing",
             ("void", "*") : "anything",
-            ("int", "")   : "integer",
-            ("float", "") : "real",
+            ("size_t", "") : "size",
+            ("time_t", "") : "time",
             ("bool", "")  : "boolean",
             ("_Bool", "")  : "boolean",
+            ("int", "")   : "integer",
+            ("float", "") : "real",
             ("char", "*") : "string",
+            ("byte", "*") : "buffer",
           }
     if arg.type.endswith("_t") and arg.ptr in ("*", "**"):
         return arg.type[:-2]
@@ -208,16 +213,19 @@ def s_decl_to_zproto_type(arg):
 def s_show_zproto_model_arguments(fp, decl_dict):
     was_format = False
     for arg in decl_dict["args"]:
+        if (arg.name, arg.type) == ("", "void"):
+            continue
         if arg.name in ("self", "self_p") and arg.type != "void":
             continue
         if was_format and arg.type == "...":
             continue
         if arg.name == "format" and arg.type == "char" and arg.ptr == "*":
             was_format = True
-        print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s/>""" %
+        print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(constant)s/>""" %
                 {   "name" : arg.name,
                     "type" : s_decl_to_zproto_type(arg),
                     "byref" : """ by_reference="1" """ if arg.ptr == "**" else "",
+                    "constant" : ' constant="1" ' if "const" in arg.quals else "",
                 }, file=fp)
 
 def s_show_zproto_mc(fp, klass_l, dct, comments):
@@ -235,7 +243,11 @@ def s_show_zproto_mc(fp, klass_l, dct, comments):
 
     s_show_zproto_model_arguments(fp, dct)
     if dct["return_type"].type != "void":
-        print("""        <return type = "%s" />""" % (s_decl_to_zproto_type(dct["return_type"])), file=fp)
+        constant = ' constant="1" ' if 'const' in dct["return_type"].quals else ''
+        print("""        <return type = "%(type)s"%(constant)s/>""" % {
+            "type" : s_decl_to_zproto_type(dct["return_type"]),
+                "constant" : constant}
+             , file=fp)
     print("""    </%s>\n""" % (typ, ), file=fp)
 
 
@@ -243,7 +255,8 @@ def s_show_zproto_enum(fp, klass_l, decl_dict):
     print("""    <enum name="%s">""" % (decl_dict["name"][klass_l:-2].lower()), file=fp)
     for name, value, comment in decl_dict["items"]:
         name = name[klass_l:].lower()
-        print ("""        <constant name="%s" value="%s" />""" % (name, value), file=fp)
+        value = ' value="%s"' % value if value != "" else ""
+        print ("""        <constant name="%s"%s />""" % (name, value), file=fp)
     print("""    </enum>""", file=fp)
 
 def show_zproto_model(fp, klass, decls, comments, macros):
