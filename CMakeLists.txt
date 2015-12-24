@@ -14,20 +14,6 @@ enable_testing()
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 ########################################################################
-# determine version
-########################################################################
-foreach(which MAJOR MINOR PATCH)
-    file(STRINGS "${SOURCE_DIR}/include/myproject_library.h" MYPROJECT_VERSION_STRING REGEX "#define MYPROJECT_VERSION_${which}")
-    string(REGEX MATCH "#define MYPROJECT_VERSION_${which} ([0-9_]+)" MYPROJECT_REGEX_MATCH "${MYPROJECT_VERSION_STRING}")
-    if (NOT MYPROJECT_REGEX_MATCH)
-        message(FATAL_ERROR "failed to parse MYPROJECT_VERSION_${which} from myproject.h")
-    endif()
-    set(MYPROJECT_${which}_VERSION ${CMAKE_MATCH_1})
-endforeach(which)
-
-set(MYPROJECT_VERSION ${MYPROJECT_MAJOR_VERSION}.${MYPROJECT_MINOR_VERSION}.${MYPROJECT_PATCH_VERSION})
-
-########################################################################
 # platform.h
 ########################################################################
 include(CheckIncludeFile)
@@ -84,45 +70,6 @@ set (myproject_headers
 )
 source_group ("Header Files" FILES ${myproject_headers})
 install(FILES ${myproject_headers} DESTINATION include)
-
-########################################################################
-# library
-########################################################################
-include_directories("${SOURCE_DIR}/src" "${SOURCE_DIR}/include")
-set (myproject_sources
-)
-source_group ("Source Files" FILES ${myproject_sources})
-if (NOT DEFINED BUILD_SHARED_LIBS)
-    SET(BUILD_SHARED_LIBS ON)
-endif()
-add_library(myproject ${myproject_sources})
-set_target_properties(myproject PROPERTIES DEFINE_SYMBOL "LIBMYPROJECT_EXPORTS")
-set_target_properties(myproject PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${SOURCE_DIR}/src")
-target_link_libraries(myproject ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES})
-
-install(TARGETS myproject
-    LIBRARY DESTINATION "lib${LIB_SUFFIX}" # .so file
-    ARCHIVE DESTINATION "lib${LIB_SUFFIX}" # .lib file
-    RUNTIME DESTINATION bin              # .dll file
-)
-
-########################################################################
-# pkgconfig
-########################################################################
-set(VERSION "${MYPROJECT_VERSION}")
-set(prefix "${CMAKE_INSTALL_PREFIX}")
-set(exec_prefix "\${prefix}")
-set(libdir "\${prefix}/lib${LIB_SUFFIX}")
-set(includedir "\${prefix}/include")
-configure_file(
-    "${SOURCE_DIR}/src/libmyproject.pc.in"
-    "${SOURCE_DIR}/src/libmyproject.pc"
-@ONLY)
-
-install(
-    FILES "${SOURCE_DIR}/src/libmyproject.pc"
-    DESTINATION "lib${LIB_SUFFIX}/pkgconfig"
-)
 
 ########################################################################
 # executables

@@ -16,3 +16,7 @@ libtool
 *.zip
 *.la
 *.swp
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+cmake_install.cmake
