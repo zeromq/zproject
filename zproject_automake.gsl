@@ -249,9 +249,13 @@ dist_api_DATA = \\
 .   endif
 .endfor
 
-.if (count (class) > 0)
+.if count (project.class)
 # define custom target for all products of /src
-src: src/$(project.libname).la src/$(project.prefix)_selftest
+src:
+.   for project.main
+\tsrc/$(main.name) \
+.   endfor
+\tsrc/$(project.libname).la
 .endif
 .for model
 .   if first ()
