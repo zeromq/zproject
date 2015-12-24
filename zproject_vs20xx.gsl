@@ -85,7 +85,7 @@ $(project.GENERATED_WARNING_HEADER:)
     <Import Project="$\(ProjectDir)$\(ProjectName).props" />
   </ImportGroup>
   <ItemGroup>
-    <ClInclude Include="..\\..\\..\\..\\builds\\msvc\\platform.h" />
+    <ClInclude Include="..\\..\\platform.h" />
     <ClInclude Include="..\\..\\resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -114,12 +114,10 @@ $(project.GENERATED_WARNING_HEADER:)
     <ResourceCompile Include="..\\..\\resource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\\..\\..\\..\\packaging\\nuget\\package.bat" />
-    <None Include="..\\..\\..\\..\\packaging\\nuget\\package.config" />
-    <None Include="..\\..\\..\\..\\packaging\\nuget\\package.gsl" />
-    <None Include="..\\..\\..\\..\\packaging\\nuget\\package.nuspec" />
-    <None Include="..\\..\\..\\..\\packaging\\nuget\\package.targets" />
-    <None Include="..\\..\\..\\..\\packaging\\nuget\\package.xml" />
+    <None Include="..\\..\\nuget\\package.bat" />
+    <None Include="..\\..\\nuget\\package.nuspec" />
+    <None Include="..\\..\\nuget\\package.targets" />
+    <None Include="..\\..\\nuget\\package.xml" />
   </ItemGroup>
   <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.targets" />
   <!--
@@ -165,7 +163,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .endfor
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\\..\\..\\..\\builds\\msvc\\platform.h">
+    <ClInclude Include="..\\..\\platform.h">
       <Filter>src\\include</Filter>
     </ClInclude>
   </ItemGroup>
@@ -197,22 +195,16 @@ $(project.GENERATED_WARNING_HEADER:)
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\\..\\..\\..\\packaging\\nuget\\package.bat">
+    <None Include="..\\..\\nuget\\package.bat">
       <Filter>packaging</Filter>
     </None>
-    <None Include="..\\..\\..\\..\\packaging\\nuget\\package.config">
+    <None Include="..\\..\\nuget\\package.nuspec">
       <Filter>packaging</Filter>
     </None>
-    <None Include="..\\..\\..\\..\\packaging\\nuget\\package.gsl">
+    <None Include="..\\..\\nuget\\package.targets">
       <Filter>packaging</Filter>
     </None>
-    <None Include="..\\..\\..\\..\\packaging\\nuget\\package.nuspec">
-      <Filter>packaging</Filter>
-    </None>
-    <None Include="..\\..\\..\\..\\packaging\\nuget\\package.targets">
-      <Filter>packaging</Filter>
-    </None>
-    <None Include="..\\..\\..\\..\\packaging\\nuget\\package.xml">
+    <None Include="..\\..\\nuget\\package.xml">
       <Filter>packaging</Filter>
     </None>
   </ItemGroup>
@@ -220,16 +212,17 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 -->
 </Project>
-.directory.create ("builds/msvc/$(my.path)/$(project.prefix)_selftest")
-.output "builds/msvc/$(my.path)/$(project.prefix)_selftest/$(project.prefix)_selftest.vcxproj"
+.for project.main
+.   directory.create ("builds/msvc/$(my.path)/$(main.name)")
+.   output "builds/msvc/$(my.path)/$(main.name)/$(main.name).vcxproj"
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 $(project.GENERATED_WARNING_HEADER:)
 -->
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="$(my.level).0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A5497C4B-1CD1-4779-9458-2CF7908E7E26}</ProjectGuid>
-    <ProjectName>$(project.prefix)_selftest</ProjectName>
+    <ProjectName>$(main.name)</ProjectName>
     <PlatformToolset>v$(my.level)0</PlatformToolset>
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
@@ -283,15 +276,74 @@ $(project.GENERATED_WARNING_HEADER:)
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <PropertyGroup Label="Configuration">
+    <PlatformToolset>v$(my.level)0</PlatformToolset>
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
   <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.Default.props" />
   <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.props" />
-  <ImportGroup Label="PropertySheets">
-    <Import Project="$\(ProjectDir)..\\..\\properties\\$\(Configuration).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\Output.props" />
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugDEXE|Win32'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugDEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseDEXE|Win32'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseDEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugDEXE|x64'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugDEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseDEXE|x64'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseDEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugLEXE|Win32'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugLEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseLEXE|Win32'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseLEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugLEXE|x64'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugLEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseLEXE|x64'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseLEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugSEXE|Win32'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugSEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseSEXE|Win32'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseSEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugSEXE|x64'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugSEXE.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseSEXE|x64'" Label="PropertySheets">
+    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseSEXE.props" />
   </ImportGroup>
   <ItemGroup>
-    <ClCompile Include="..\\..\\..\\..\\src\\$(project.prefix)_selftest.c" />
+    <ClCompile Include="..\\..\\..\\..\\src\\$(main.name).c" />
   </ItemGroup>
     <ItemGroup>
     <ProjectReference Include="..\\$(project.libname)\\$(project.libname).vcxproj">
@@ -303,13 +355,16 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 -->
 </Project>
+.endfor
 .output "builds/msvc/$(my.path)/$(project.name:c).sln"
 Microsoft Visual Studio Solution File, Format Version $(my.level).00
 # $(my.path)
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.libname)", "$(project.libname)\\$(project.libname).vcxproj", "{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.prefix)_selftest", "$(project.prefix)_selftest\\$(project.prefix)_selftest.vcxproj", "{A5497C4B-1CD1-4779-9458-2CF7908E7E26}"
+.for project.main
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(main.name)", "$(main.name)\\$(main.name).vcxproj", "{A5497C4B-1CD1-4779-9458-2CF7908E7E26}"
 EndProject
+.endfor
 Global
     GlobalSection(SolutionConfigurationPlatforms) = preSolution
         DynDebug|Win32 = DynDebug|Win32
@@ -607,7 +662,8 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 -->
 </ProjectSchemaDefinitions>
-.output "builds/msvc/$(my.path)/$(project.prefix)_selftest/$(project.prefix)_selftest.props"
+.for project.main
+.   output "builds/msvc/$(my.path)/$(main.name)/$(main.name).props"
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 $(project.GENERATED_WARNING_HEADER:)
@@ -670,146 +726,7 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 -->
 </Project>
-.output "builds/msvc/$(my.path)/$(project.prefix)_selftest/$(project.prefix)_selftest.vcxproj"
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-$(project.GENERATED_WARNING_HEADER:)
--->
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Label="Globals">
-    <ProjectGuid>{A5497C4B-1CD1-4779-9458-2CF7908E7E26}</ProjectGuid>
-    <ProjectName>$(project.prefix)_selftest</ProjectName>
-    <RootNamespace>$(project.prefix)_selftest12</RootNamespace>
-  </PropertyGroup>
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="DebugDEXE|Win32">
-      <Configuration>DebugDEXE</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ReleaseDEXE|Win32">
-      <Configuration>ReleaseDEXE</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="DebugDEXE|x64">
-      <Configuration>DebugDEXE</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ReleaseDEXE|x64">
-      <Configuration>ReleaseDEXE</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="DebugLEXE|Win32">
-      <Configuration>DebugLEXE</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ReleaseLEXE|Win32">
-      <Configuration>ReleaseLEXE</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="DebugLEXE|x64">
-      <Configuration>DebugLEXE</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ReleaseLEXE|x64">
-      <Configuration>ReleaseLEXE</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="DebugSEXE|Win32">
-      <Configuration>DebugSEXE</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ReleaseSEXE|Win32">
-      <Configuration>ReleaseSEXE</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="DebugSEXE|x64">
-      <Configuration>DebugSEXE</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ReleaseSEXE|x64">
-      <Configuration>ReleaseSEXE</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
-  <PropertyGroup Label="Configuration">
-    <PlatformToolset>v120</PlatformToolset>
-    <ConfigurationType>Application</ConfigurationType>
-  </PropertyGroup>
-  <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.Default.props" />
-  <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.props" />
-  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugDEXE|Win32'" Label="PropertySheets">
-    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugDEXE.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseDEXE|Win32'" Label="PropertySheets">
-    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseDEXE.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugDEXE|x64'" Label="PropertySheets">
-    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugDEXE.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseDEXE|x64'" Label="PropertySheets">
-    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseDEXE.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugLEXE|Win32'" Label="PropertySheets">
-    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugLEXE.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseLEXE|Win32'" Label="PropertySheets">
-    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseLEXE.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugLEXE|x64'" Label="PropertySheets">
-    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugLEXE.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseLEXE|x64'" Label="PropertySheets">
-    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseLEXE.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugSEXE|Win32'" Label="PropertySheets">
-    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugSEXE.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseSEXE|Win32'" Label="PropertySheets">
-    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseSEXE.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='DebugSEXE|x64'" Label="PropertySheets">
-    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\DebugSEXE.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$\(Configuration)|$\(Platform)'=='ReleaseSEXE|x64'" Label="PropertySheets">
-    <Import Project="$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props" Condition="exists('$\(UserRootDir)\\Microsoft.Cpp.$\(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\ReleaseSEXE.props" />
-  </ImportGroup>
-  <ItemGroup>
-    <ClCompile Include="..\\..\\..\\..\\src\\$(project.prefix)_selftest.c" />
-  </ItemGroup>
-    <ItemGroup>
-    <ProjectReference Include="..\\$(project.libname)\\$(project.libname).vcxproj">
-      <Project>{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.targets" />
-<!--
-$(project.GENERATED_WARNING_HEADER:)
--->
-</Project>
+.endfor
 .endmacro
 
 .##########################################################################
