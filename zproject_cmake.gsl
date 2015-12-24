@@ -180,6 +180,7 @@ install(
 .for project.main
 add_executable($(main.name) "${SOURCE_DIR}/src/$(name).c")
 target_link_libraries($(main.name) $(project.name) ${ZEROMQ_LIBRARIES})
+set_target_properties ($(main.name) PROPERTIES RUNTIME_OUTPUT_DIRECTORY "src")
 .endfor
 
 ########################################################################
