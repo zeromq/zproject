@@ -343,6 +343,16 @@ def s_detect_system_preprocessor():
 
     return None
 
+def s_expand_dirs(args):
+    ret = list()
+    for d in args.INCLUDE:
+        path = os.path.expandvars(
+                os.path.expanduser(d))
+        if not os.path.isdir(path):
+            print("W: '%s' is not directory" % path)
+        ret.append(path)
+    return ret
+
 def main(argv=sys.argv[1:]):
 
     p = argparse.ArgumentParser(description=__doc__)
@@ -351,6 +361,8 @@ def main(argv=sys.argv[1:]):
     p.add_argument("-I", "--include", help="extra includes, which will be passed to c preprocessor", dest="INCLUDE", action='append')
     p.add_argument("--cpp", help="Define c preprocessor to use (gcc -E, clang -E, auto for autodetect and none for not calling preprocessor at all", default="auto")
     args = p.parse_args(argv)
+
+    args.INCLUDE = s_expand_dirs(args)
 
     args.output = "api"
 
