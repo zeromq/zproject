@@ -88,8 +88,8 @@ for project.header
     resolve_scope (header)
 endfor
 
-#   All projects contain a selftest main
-if count (project.main, name = "$(prefix)_selftest") = 0
+#   All projects with classes contain a selftest main
+if count (project.class)
     new main to project
         main.name = "$(prefix)_selftest"
         main.test = 1

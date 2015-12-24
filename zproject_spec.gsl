@@ -51,7 +51,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 %description
 $(project.name) $(project.description).
 
-.if project.has_classes
+.if project.exports_classes
 %package -n $(project.libname)$(project->version.major)
 Group:          System/Libraries
 Summary:        $(project.description)
