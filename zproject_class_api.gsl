@@ -23,6 +23,7 @@ for project.class where defined (class.api)
     else
         new_class.api = class.api
         new_class.api_dir = directory.resolve ('api/')
+        new_class.scope = class.scope
         move new_class after class
         delete class
     endif
@@ -367,12 +368,12 @@ function resolve_class_dependencies (class)
         move dependencies to project
     endif
     # Resolve argument and return containers
-    for class.method
+    for my.class.method
         for method.argument
-            resolve_container_dependencies (class.name, argument)
+            resolve_container_dependencies (my.class.name, argument)
         endfor
         for method.return
-            resolve_container_dependencies (class.name, return)
+            resolve_container_dependencies (my.class.name, return)
         endfor
     endfor
 endfunction
@@ -397,7 +398,6 @@ endfor
 
 # Resolve the dependencies of the classes from this project and load their APIs
 #
-
 for project.class
     if defined (class.api)
         resolve_class_dependencies (class)

@@ -20,7 +20,6 @@
 #    $(string.trim (license.):block                                         )
 .   endfor
 
-
 Source:         $(string.replace (project.name, "_|-"))
 Section:        net
 Priority:       optional
@@ -46,7 +45,7 @@ Build-Depends: bison, debhelper (>= 8),
     dh-autoreconf,
     systemd
 
-.if project.has_classes
+.if project.exports_classes
 Package: $(string.replace (project.libname, "_|-"))$(project->version.major)
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -99,7 +98,7 @@ Description: debugging symbols for $(project.name)
 Format:         1.0
 Source:         $(string.replace (project.name, "_|-"))
 Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)-1
-.if project.has_classes
+.if project.exports_classes
 Binary:         $(string.replace (project.libname, "_|-"))$(project->version.major), $(string.replace (project.name, "_|-"))-dev
 .endif
 Architecture:   any all
@@ -111,19 +110,19 @@ Build-Depends: bison, debhelper (>= 8),
     autoconf,
     libtool,
 .for project.use
-.if use.project = "libzmq"
+.   if use.project = "libzmq"
     libzmq4-dev,
-.elsif defined(use.debian_name)
+.   elsif defined(use.debian_name)
     $(use.debian_name),
-.elsif regexp.match("^lib", use.libname)
+.   elsif regexp.match("^lib", use.libname)
     $(string.replace (use.libname, "_|-"))-dev,
-.else
+.   else
     lib$(string.replace (use.libname, "_|-"))-dev,
-.endif
+.   endif
 .endfor
     dh-autoreconf
 
-.if project.has_classes
+.if project.exports_classes
 Package-List:
  $(string.replace (project.libname, "_|-"))$(project->version.major) deb net optional arch=any
  $(string.replace (project.name, "_|-"))-dev deb libdevel optional arch=any

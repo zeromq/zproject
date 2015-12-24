@@ -5,9 +5,9 @@
 .#   existing files.
 .#   See project.xml for instructions on how to specify an actor.
 .#
-.#  This script will generate the following files:
-.#      * (include|src)$(actor.c_name).h - public/private header file for actors
-.#      * src/$(actor.c_name).c - source code file for actors
+.#  This script will generate the following files for each actor:
+.#  * (src/include)/$(actor.c_name).h - private/public header file
+.#  * src/$(actor.c_name).c - source code file
 .#  ===========================================================================
 .-
 .-  Resolve missing or implicit details
@@ -15,17 +15,22 @@
 .template 0
 
 function resolve_actor (actor)
-   my.actor.c_name ?= "$(actor.name:c)"
-   my.actor.description ?= "$(string.trim (actor.?""):left)"
-   my.actor.actordir ?= "include"
-   my.actor.private ?= "0"
+    my.actor.c_name ?= "$(actor.name:c)"
+    my.actor.description ?= "$(string.trim (actor.?""):left)"
+    if my.actor.private ?= 1
+        my.actor.header = "src"
+        my.actor.scope = "private"
+    else
+        my.actor.header ?= "include"
+        my.actor.scope = "public"
+    endif
 
-   my.class = XML.new ("class")
-   my.class.name ?= my.actor.name
-   my.class.private ?= my.actor.private
-   my.class.c_name ?= my.actor.c_name
-   my.class.description ?= my.actor.description
-   move my.class to project
+    new class to project
+        class.name = my.actor.name
+        class.scope = my.actor.scope
+        class.c_name = my.actor.c_name
+        class.description = my.actor.description
+    endnew
 endfunction
 
 for actor
@@ -36,14 +41,11 @@ endfor
 .-
 .-  Build the header file for an actor
 .-
-.if !file.exists ("include")
-.   directory.create ("include")
-.endif
 .for actor
-.   if actor.private ?= 1
-.       actor.actordir = "src"
-.   endif
-.header_file = "$(actor.actordir)/$(actor.c_name).h"
+.if !file.exists (actor.header)
+.   directory.create (actor.header)
+.endif
+.header_file = "$(actor.header)/$(actor.c_name).h"
 .if !file.exists (header_file)
 .   output header_file
 /*  =========================================================================
@@ -67,7 +69,7 @@ extern "C" {
 #include "$(actor.c_name)_library.h"
 
 .   endif
-.   if actor.private ?= 1
+.   if actor.scope = "private"
 typedef struct _$(actor.c_name)_t $(actor.c_name)_t;
 .   endif
 
@@ -139,10 +141,10 @@ $(PROJECT.PREFIX)_EXPORT void
 
 #include "$(project.prefix)_classes.h"
 
-.   if actor.private ?= 0
+.   if actor.scope = "public"
 typedef struct _$(actor.c_name)_t $(actor.c_name)_t;
-.   endif
 
+.   endif
 //  Structure of our actor
 
 struct _$(actor.c_name)_t {

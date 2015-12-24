@@ -307,8 +307,11 @@ $(project.GENERATED_WARNING_HEADER:)
     </Filter>
     <Filter Name="Header Files">
       <File RelativePath="..\\..\\..\\..\\builds\\msvc\\platform.h" />
-.for class
-      <File RelativePath="..\\..\\..\\..\\$((class.private ?= 1)?? "src"? "include")\\$(name:c).h" />
+.for class where scope = "private"
+      <File RelativePath="..\\..\\..\\..\\src\\$(name:c).h" />
+.endfor
+.for class where scope = "public"
+      <File RelativePath="..\\..\\..\\..\\include\\$(name:c).h" />
 .endfor
       <File RelativePath="..\\..\\..\\..\\include\\$(project.prefix)_library.h" />
 .if file.exists ("include/$(project.prelude)")
@@ -317,7 +320,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .if count (class, class.name = project.name) = 0
       <File RelativePath="..\\..\\..\\..\\include\\$(project.header:)" />
 .endif
-.for header where !defined (header.private)
+.for header where scope = "public"
       <File RelativePath="..\\..\\..\\..\\include\\$(name:c).h" />
 .endfor
 .for extra

@@ -1,0 +1,262 @@
+.template 0
+.#  Generate NuGet nuspec file (for subsequent packing).
+.#
+.#  This is a code generator built using the iMatix GSL code generation
+.#  language. See https://github.com/imatix/gsl for details. This script
+.#  is licensed under MIT/X11.
+.#
+.macro generate_nuget (config)
+.directory.create ("builds/msvc/nuget")
+.output "builds/msvc/nuget/package.bat"
+@ECHO OFF
+ECHO Started nuget packaging build.
+ECHO.
+REM http://nuget.codeplex.com/releases
+nuget pack package.nuspec -verbosity detailed
+ECHO.
+ECHO NOTE: Ignore warnings not applicable to native code: "Issue: Assembly outside lib folder."
+ECHO.
+ECHO Completed nuget packaging build. The package is in the following folder:
+CD
+.output "builds/msvc/nuget/package.nuspec"
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+<package xmlns="http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd">
+    <metadata minClientVersion="2.5">
+        <id>$(my.config.id)</id>
+        <version>$(my.config.version)</version>
+        <title>$(my.config.id)</title>
+        <authors>See AUTHORS</authors>
+        <owners>Eric Voskuil</owners>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <developmentDependency>false</developmentDependency>
+        <description>$(project.description:)</description>
+        <summary></summary>
+        <copyright>Copyright the AUTHORS</copyright>
+        <tags>native</tags>
+        <dependencies>
+.for dependency
+            <dependency id="$(id)" version="$(version)" />
+.endfor
+        </dependencies>
+    </metadata>
+    <files>
+        <!-- include -->
+        <file src="..\\..\\..\\include\\*.h" target="build\\native\\include" />
+
+        <!-- targets -->
+        <file src="package.targets" target="build\\native\\$(my.config.id).targets" />
+        <file src="package.xml" target="build\\native\\package.xml" />
+
+        <!-- docs -->
+        <!-- Documents (.*) -->
+        <!--<file src="..\\..\\..\\docs\\*" target="build\\native\\docs" />-->
+
+        <!-- libraries -->
+        <!-- x86 Dynamic libraries (.dll) -->
+        <file src="..\\..\\..\\bin\\Win32\\Release\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).dll" target="build\\native\\bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-$(my.config.pathversion).dll" />
+        <file src="..\\..\\..\\bin\\Win32\\Debug\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).dll" target="build\\native\\bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).dll" />
+
+        <!-- x86 Debugging symbols (.pdb) -->
+        <!--<file src="..\\..\\..\\bin\\Win32\\Release\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).pdb" target="build\\native\\bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-$(my.config.pathversion).pdb" />-->
+        <file src="..\\..\\..\\bin\\Win32\\Debug\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).pdb" target="build\\native\\bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).pdb" />
+
+        <!-- x86 Import libraries (.imp.lib) -->
+        <file src="..\\..\\..\\bin\\Win32\\Release\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).lib" target="build\\native\\bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-$(my.config.pathversion).imp.lib" />
+        <file src="..\\..\\..\\bin\\Win32\\Debug\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).lib" target="build\\native\\bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).imp.lib" />
+
+        <!-- x86 Export libraries (.exp) -->
+        <file src="..\\..\\..\\bin\\Win32\\Release\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).exp" target="build\\native\\bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-$(my.config.pathversion).exp" />
+        <file src="..\\..\\..\\bin\\Win32\\Debug\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).exp" target="build\\native\\bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).exp" />
+
+        <!-- x86 Static libraries (.lib) -->
+        <file src="..\\..\\..\\bin\\Win32\\Release\\$(my.config.platformtoolset)\\static\\$(my.config.name).lib" target="build\\native\\bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-s-$(my.config.pathversion).lib" />
+        <file src="..\\..\\..\\bin\\Win32\\Debug\\$(my.config.platformtoolset)\\static\\$(my.config.name).lib" target="build\\native\\bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-sgd-$(my.config.pathversion).lib" />
+
+        <!-- x86 Static link time code generation libraries (.ltcg.lib) -->
+        <file src="..\\..\\..\\bin\\Win32\\Release\\$(my.config.platformtoolset)\\ltcg\\$(my.config.name).lib" target="build\\native\\bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-s-$(my.config.pathversion).ltcg.lib" />
+        <file src="..\\..\\..\\bin\\Win32\\Debug\\$(my.config.platformtoolset)\\ltcg\\$(my.config.name).lib" target="build\\native\\bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-sgd-$(my.config.pathversion).ltcg.lib" />
+
+        <!-- x64 Dynamic libraries (.dll) -->
+        <file src="..\\..\\..\\bin\\x64\\Release\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).dll" target="build\\native\\bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-$(my.config.pathversion).dll" />
+        <file src="..\\..\\..\\bin\\x64\\Debug\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).dll" target="build\\native\\bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).dll" />
+
+        <!-- x64 Debugging symbols (.pdb) -->
+        <!--<file src="..\\..\\..\\bin\\x64\\Release\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).pdb" target="build\\native\\bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-$(my.config.pathversion).pdb" />-->
+        <file src="..\\..\\..\\bin\\x64\\Debug\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).pdb" target="build\\native\\bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).pdb" />
+
+        <!-- x64 Import libraries (.imp.lib) -->
+        <file src="..\\..\\..\\bin\\x64\\Release\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).lib" target="build\\native\\bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-$(my.config.pathversion).imp.lib" />
+        <file src="..\\..\\..\\bin\\x64\\Debug\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).lib" target="build\\native\\bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).imp.lib" />
+
+        <!-- x64 Export libraries (.exp) -->
+        <file src="..\\..\\..\\bin\\x64\\Release\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).exp" target="build\\native\\bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-$(my.config.pathversion).exp" />
+        <file src="..\\..\\..\\bin\\x64\\Debug\\$(my.config.platformtoolset)\\dynamic\\$(my.config.name).exp" target="build\\native\\bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).exp" />
+
+        <!-- x64 Static libraries (.lib) -->
+        <file src="..\\..\\..\\bin\\x64\\Release\\$(my.config.platformtoolset)\\static\\$(my.config.name).lib" target="build\\native\\bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-s-$(my.config.pathversion).lib" />
+        <file src="..\\..\\..\\bin\\x64\\Debug\\$(my.config.platformtoolset)\\static\\$(my.config.name).lib" target="build\\native\\bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-sgd-$(my.config.pathversion).lib" />
+
+        <!-- x64 Static link time code generation libraries (.ltcg.lib) -->
+        <file src="..\\..\\..\\bin\\Win32\\Release\\$(my.config.platformtoolset)\\ltcg\\$(my.config.name).lib" target="build\\native\\bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-s-$(my.config.pathversion).ltcg.lib" />
+        <file src="..\\..\\..\\bin\\Win32\\Debug\\$(my.config.platformtoolset)\\ltcg\\$(my.config.name).lib" target="build\\native\\bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-sgd-$(my.config.pathversion).ltcg.lib" />
+    </files>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+</package>
+.output "builds/msvc/nuget/package.targets"
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- user interface -->
+  <ItemGroup>
+    <PropertyPageSchema Include="$\(MSBuildThisFileDirectory)package.xml" />
+  </ItemGroup>
+
+  <!-- general -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$\(MSBuildThisFileDirectory)include\\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$\(MSBuildThisFileDirectory)bin\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$\(Linkage-$(my.config.name))' == 'static' Or '$\(Linkage-$(my.config.name))' == 'ltcg'">
+    <ClCompile>
+      <PreprocessorDefinitions>$(PROJECT.LIBNAME)_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <!-- static libraries -->
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'static' And $\(Configuration.IndexOf('Release')) != -1">
+    <Link>
+      <AdditionalDependencies>$(my.config.name)-x86-$(my.config.platformtoolset)-mt-s-$(my.config.pathversion).lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'static' And $\(Configuration.IndexOf('Debug')) != -1">
+    <Link>
+      <AdditionalDependencies>$(my.config.name)-x86-$(my.config.platformtoolset)-mt-sgd-$(my.config.pathversion).lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'static' And $\(Configuration.IndexOf('Release')) != -1">
+    <Link>
+      <AdditionalDependencies>$(my.config.name)-x64-$(my.config.platformtoolset)-mt-s-$(my.config.pathversion).lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'static' And $\(Configuration.IndexOf('Debug')) != -1">
+    <Link>
+      <AdditionalDependencies>$(my.config.name)-x64-$(my.config.platformtoolset)-mt-sgd-$(my.config.pathversion).lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- static ltcg libraries -->
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'ltcg' And $\(Configuration.IndexOf('Release')) != -1">
+    <Link>
+      <AdditionalDependencies>$(my.config.name)-x86-$(my.config.platformtoolset)-mt-s-$(my.config.pathversion).ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'ltcg' And $\(Configuration.IndexOf('Debug')) != -1">
+    <Link>
+      <AdditionalDependencies>$(my.config.name)-x86-$(my.config.platformtoolset)-mt-sgd-$(my.config.pathversion).ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'ltcg' And $\(Configuration.IndexOf('Release')) != -1">
+    <Link>
+      <AdditionalDependencies>$(my.config.name)-x64-$(my.config.platformtoolset)-mt-s-$(my.config.pathversion).ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'ltcg' And $\(Configuration.IndexOf('Debug')) != -1">
+    <Link>
+      <AdditionalDependencies>$(my.config.name)-x64-$(my.config.platformtoolset)-mt-sgd-$(my.config.pathversion).ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- dynamic import libraries -->
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'dynamic' And $\(Configuration.IndexOf('Release')) != -1">
+    <Link>
+      <AdditionalDependencies>$(my.config.name)-x86-$(my.config.platformtoolset)-mt-$(my.config.pathversion).imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'dynamic' And $\(Configuration.IndexOf('Debug')) != -1">
+    <Link>
+      <AdditionalDependencies>$(my.config.name)-x86-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'dynamic' And $\(Configuration.IndexOf('Release')) != -1">
+    <Link>
+      <AdditionalDependencies>$(my.config.name)-x64-$(my.config.platformtoolset)-mt-$(my.config.pathversion).imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'dynamic' And $\(Configuration.IndexOf('Debug')) != -1">
+    <Link>
+      <AdditionalDependencies>$(my.config.name)-x64-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- dynamic libraries with debug symbols -->
+  <Target Name="$(my.config.name)_AfterBuild" AfterTargets="AfterBuild" />
+  <Target Name="$(my.config.name)_AfterBuild_Win32_$(my.config.platformtoolset)_Dynamic_Release"
+          Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'dynamic' And $\(Configuration.IndexOf('Release')) != -1"
+          AfterTargets="$(my.config.name)_AfterBuild">
+    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-$(my.config.pathversion).dll" DestinationFiles="$\(TargetDir)$(my.config.name).dll" SkipUnchangedFiles="true" />
+    <!--<Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-$(my.config.pathversion).pdb" DestinationFiles="$\(TargetDir)$(my.config.name).pdb" SkipUnchangedFiles="true" />-->
+  </Target>
+  <Target Name="$(my.config.name)_AfterBuild_Win32_$(my.config.platformtoolset)_Dynamic_Debug"
+          Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'dynamic' And $\(Configuration.IndexOf('Debug')) != -1"
+          AfterTargets="$(my.config.name)_AfterBuild">
+    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).dll" DestinationFiles="$\(TargetDir)$(my.config.name).dll" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(my.config.name)-x86-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).pdb" DestinationFiles="$\(TargetDir)$(my.config.name).pdb" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="$(my.config.name)_AfterBuild_x64_$(my.config.platformtoolset)_Dynamic_Release"
+          Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'dynamic' And $\(Configuration.IndexOf('Release')) != -1"
+          AfterTargets="$(my.config.name)_AfterBuild">
+    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-$(my.config.pathversion).dll" DestinationFiles="$\(TargetDir)$(my.config.name).dll" SkipUnchangedFiles="true" />
+    <!--<Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-$(my.config.pathversion).pdb" DestinationFiles="$\(TargetDir)$(my.config.name).pdb" SkipUnchangedFiles="true" />-->
+  </Target>
+  <Target Name="$(my.config.name)_AfterBuild_x64_$(my.config.platformtoolset)_Dynamic_Debug"
+          Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(my.config.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(my.config.name))' == 'dynamic' And $\(Configuration.IndexOf('Debug')) != -1"
+          AfterTargets="$(my.config.name)_AfterBuild">
+    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).dll" DestinationFiles="$\(TargetDir)$(my.config.name).dll" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(my.config.name)-x64-$(my.config.platformtoolset)-mt-gd-$(my.config.pathversion).pdb" DestinationFiles="$\(TargetDir)$(my.config.name).pdb" SkipUnchangedFiles="true" />
+  </Target>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+</Project>
+.output "builds/msvc/nuget/package.xml"
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+<ProjectSchemaDefinitions xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework">
+  <Rule Name="Linkage-$(my.config.name)-uiextension" PageTemplate="tool" DisplayName="NuGet Dependencies" SwitchPrefix="/" Order="1">
+    <Rule.Categories>
+      <Category Name="$(my.config.name)" DisplayName="$(my.config.name)" />
+    </Rule.Categories>
+    <Rule.DataSource>
+      <DataSource Persistence="ProjectFile" ItemType="" />
+    </Rule.DataSource>
+    <EnumProperty Name="Linkage-$(my.config.name)" DisplayName="Linkage" Description="How NuGet $(my.config.name) will be linked into the output of this project" Category="$(my.config.name)">
+      <EnumValue Name="" DisplayName="Not linked" />
+      <EnumValue Name="dynamic" DisplayName="Dynamic (DLL)" />
+      <EnumValue Name="static" DisplayName="Static (LIB)" />
+      <EnumValue Name="ltcg" DisplayName="Static using link time compile generation (LTCG)" />
+    </EnumProperty>
+  </Rule>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+</ProjectSchemaDefinitions>
+.endmacro
+
+for project.packaging where target = "nuget"
+    generate_nuget (packaging)
+endfor
+.endtemplate

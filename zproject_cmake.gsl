@@ -16,7 +16,6 @@ enable_language(C)
 enable_testing()
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-set(BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
 ########################################################################
 # determine version
@@ -49,7 +48,7 @@ if (NOT HAVE_NET_IF_H)
     CHECK_INCLUDE_FILE("net/if.h" HAVE_NET_IF_H)
 endif()
 
-file(WRITE "${BINARY_DIR}/platform.h.in" "
+file(WRITE "${SOURCE_DIR}/src/platform.h.in" "
 #cmakedefine HAVE_LINUX_WIRELESS_H
 #cmakedefine HAVE_NET_IF_H
 #cmakedefine HAVE_NET_IF_MEDIA_H
@@ -57,7 +56,7 @@ file(WRITE "${BINARY_DIR}/platform.h.in" "
 #cmakedefine HAVE_FREEIFADDRS
 ")
 
-configure_file("${BINARY_DIR}/platform.h.in" "${BINARY_DIR}/platform.h")
+configure_file("${SOURCE_DIR}/src/platform.h.in" "${SOURCE_DIR}/src/platform.h")
 
 #The MSVC C compiler is too out of date,
 #so the sources have to be compiled as c++
@@ -113,11 +112,14 @@ set ($(project.name)_headers
 .if count (class, class.name = project.name) = 0
     include/$(project.header:)
 .endif
-.for header where !defined (header.private)
+.for header where scope = "public"
     include/$(name:c).h
 .endfor
-.for class
-    $((class.private ?= 1)?? "src"? "include")/$(name:c).h
+.for class where scope = "public"
+    include/$(name:c).h
+.endfor
+.for class where scope = "private"
+    src/$(name:c).h
 .endfor
 .for extra
     src/$(name)
@@ -129,7 +131,7 @@ install(FILES ${$(project.name)_headers} DESTINATION include)
 ########################################################################
 # library
 ########################################################################
-include_directories("${BINARY_DIR}" "${SOURCE_DIR}/include")
+include_directories("${SOURCE_DIR}/src" "${SOURCE_DIR}/include")
 set ($(project.name)_sources
 .for class
     src/$(name:c).c
@@ -141,6 +143,7 @@ if (NOT DEFINED BUILD_SHARED_LIBS)
 endif()
 add_library($(project.name) ${$(project.name)_sources})
 set_target_properties($(project.name) PROPERTIES DEFINE_SYMBOL "$(PROJECT.LIBNAME)_EXPORTS")
+set_target_properties($(project.name) PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${SOURCE_DIR}/src")
 target_link_libraries($(project.name) ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES})
 
 install(TARGETS $(project.name)
@@ -163,20 +166,26 @@ set(libdir "\\${prefix}/lib${LIB_SUFFIX}")
 set(includedir "\\${prefix}/include")
 configure_file(
     "${SOURCE_DIR}/src/$(project.libname).pc.in"
-    "${BINARY_DIR}/$(project.libname).pc"
+    "${SOURCE_DIR}/src/$(project.libname).pc"
 @ONLY)
 
 install(
-    FILES "${BINARY_DIR}/$(project.libname).pc"
+    FILES "${SOURCE_DIR}/src/$(project.libname).pc"
     DESTINATION "lib${LIB_SUFFIX}/pkgconfig"
 )
 
 ########################################################################
+# executables
+########################################################################
+.for project.main
+add_executable($(main.name) "${SOURCE_DIR}/src/$(name).c")
+target_link_libraries($(main.name) $(project.name) ${ZEROMQ_LIBRARIES})
+set_target_properties($(main.name) PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${SOURCE_DIR}/src")
+.endfor
+
+########################################################################
 # tests
 ########################################################################
-add_executable($(project.prefix)_selftest "${SOURCE_DIR}/src/$(project.prefix)_selftest.c")
-target_link_libraries($(project.prefix)_selftest $(project.name) ${ZEROMQ_LIBRARIES})
-
 set(CLASSTEST_TIMEOUT 5 CACHE STRING "Timeout of the selftest of a class")
 set(TOTAL_TIMEOUT 20 CACHE STRING "Timout of the total testsuite")
 
@@ -193,6 +202,7 @@ endforeach(TEST_CLASS)
 
 add_test($(project.prefix)_selftest $(project.prefix)_selftest)
 set_tests_properties($(project.prefix)_selftest PROPERTIES TIMEOUT ${TOTAL_TIMEOUT})
+
 ########################################################################
 # summary
 ########################################################################

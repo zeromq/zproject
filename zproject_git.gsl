@@ -22,15 +22,14 @@
 
 # Shared objects (inc. Windows DLLs)
 *.dll
-*.so
 *.so.*
 *.dylib
 *.lo
 
 # Executables
-$(project.name)_selftest
+src/$(project.name)_selftest
 .for project.main
-$(main.name)
+src/$(main.name)
 .endfor
 *.exe
 *.out
@@ -63,7 +62,14 @@ src/stamp-h1
 src/test-suite.log
 src/.dirstamp
 
-# android build results
+# CMake cache
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+cmake_install.cmake
+install_manifest.txt
+
+# Android build results
 builds/android/prefix
 
 # Android - generated directories

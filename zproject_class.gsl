@@ -98,12 +98,12 @@ $(project.GENERATED_WARNING_HEADER:)
 #endif
 
 //  Opaque class structures to allow forward references
-.for project.class where !defined (class.private)
+.for project.class where scope = "public"
 typedef struct _$(class.c_name)_t $(class.c_name)_t;
 #define $(CLASS.C_NAME)_T_DEFINED
 .endfor
 
-.for constant where !defined (constant.private)
+.for constant where scope = "public"
 .   if first ()
 //  Public constants
 .   endif
@@ -111,10 +111,10 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 .endfor
 
 //  Public API classes
-.for header where !defined (header.private)
+.for header where scope = "public"
 #include "$(header.name).h"
 .endfor
-.for class where !defined (class.private) & class.c_name <> "$(project.name)"
+.for class where scope = "public" & class.c_name <> "$(project.name)"
 #include "$(class.c_name).h"
 .endfor
 
@@ -312,14 +312,14 @@ $(project.GENERATED_WARNING_HEADER:)
 #include "../include/$(project.header:)"
 
 //  Internal API
-.for class where defined (class.private)
+.for class where scope = "private"
 #include "$(class.c_name).h"
 .endfor
-.for header where defined (header.private)
+.for header where scope = "private"
 #include "$(header.name).h"
 .endfor
 
-.for constant where defined (constant.private)
+.for constant where scope = "private"
 .   if first ()
 //  Private constants
 .   endif
@@ -330,7 +330,11 @@ $(project.GENERATED_WARNING_HEADER:)
 .-  Build the header file for a class
 .-
 .for class
-.header_file = "$((class.private ?= 1)?? "src"? "include")/$(class.c_name).h"
+.   if scope = "private"
+.       header_file = "src/$(class.c_name).h"
+.   else
+.       header_file = "include/$(class.c_name).h"
+.   endif
 .if !file.exists (header_file)
 .   output header_file
 /*  =========================================================================
@@ -354,7 +358,7 @@ extern "C" {
 #include "$(class.c_name)_library.h"
 
 .   endif
-.   if class.private ?= 1
+.   if class.scope = "private"
 typedef struct _$(class.c_name)_t $(class.c_name)_t;
 .   endif
 

@@ -17,14 +17,14 @@
 $(project.GENERATED_WARNING_HEADER:)
 .project.manpage = "$(project.name:c).7"
 .man3 = ""
-.for project.class where private?0 = 0
+.for project.class where scope = "public"
 .   man3 += " $(name:c).3"
 .   if class.name = project.name
 .       project.manpage = ""
 .   endif
 .endfor
 .man1 = ""
-.for project.main where private?0 = 0
+.for project.main where scope = "public"
 .   man1 += " $(name:c).1"
 .   if main.name = project.name
 .       project.manpage = ""
@@ -62,21 +62,21 @@ SUFFIXES=.txt .xml .1 .3 .7
 \.xml.7:
 \txmlto man $<
 
-.for project.class where private?0 = 0
+.for project.class where scope = "public"
 $(name:c).txt:
 \t./mkman $@
 .endfor
-.for project.main where private?0 = 0
+.for project.main where scope = "public"
 $(name:c).txt:
 \t./mkman $@
 .endfor
 clean:
 \trm -f *.1 *.3
 \t./mkman \
-.for project.class where private?0 = 0
+.for project.class where scope = "public"
 $(name:c) \
 .endfor
-.for project.main where private?0 = 0
+.for project.main where scope = "public"
 $(name:c) \
 .endfor
 

@@ -135,6 +135,7 @@
     <bin name = "zproject_lib.gsl" />
     <bin name = "zproject_mkman.gsl" />
     <bin name = "zproject_mingw32.gsl" />
+    <bin name = "zproject_nuget.gsl" />
     <bin name = "zproject_projects.gsl" />
     <bin name = "zproject_spec.gsl" />
     <bin name = "zproject_tools.gsl" />

@@ -51,7 +51,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 %description
 $(project.name) $(project.description).
 
-.if project.has_classes
+.if project.exports_classes
 %package -n $(project.libname)$(project->version.major)
 Group:          System/Libraries
 Summary:        $(project.description)
@@ -124,7 +124,7 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %doc COPYING
 .endif
 .# generate binary names
-.for project.main where !defined (main.private)
+.for project.main where scope = "public"
 %{_bindir}/$(main.name)
 .if file.exists ("src/$(main.name).cfg.example")
 %{_sysconfdir}/$(project.name)/$(main.name).cfg.example

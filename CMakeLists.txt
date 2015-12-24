@@ -12,7 +12,6 @@ enable_language(C)
 enable_testing()
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-set(BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
 ########################################################################
 # determine version
@@ -45,7 +44,7 @@ if (NOT HAVE_NET_IF_H)
     CHECK_INCLUDE_FILE("net/if.h" HAVE_NET_IF_H)
 endif()
 
-file(WRITE "${BINARY_DIR}/platform.h.in" "
+file(WRITE "${SOURCE_DIR}/src/platform.h.in" "
 #cmakedefine HAVE_LINUX_WIRELESS_H
 #cmakedefine HAVE_NET_IF_H
 #cmakedefine HAVE_NET_IF_MEDIA_H
@@ -53,7 +52,7 @@ file(WRITE "${BINARY_DIR}/platform.h.in" "
 #cmakedefine HAVE_FREEIFADDRS
 ")
 
-configure_file("${BINARY_DIR}/platform.h.in" "${BINARY_DIR}/platform.h")
+configure_file("${SOURCE_DIR}/src/platform.h.in" "${SOURCE_DIR}/src/platform.h")
 
 #The MSVC C compiler is too out of date,
 #so the sources have to be compiled as c++
@@ -89,7 +88,7 @@ install(FILES ${myproject_headers} DESTINATION include)
 ########################################################################
 # library
 ########################################################################
-include_directories("${BINARY_DIR}" "${SOURCE_DIR}/include")
+include_directories("${SOURCE_DIR}/src" "${SOURCE_DIR}/include")
 set (myproject_sources
 )
 source_group ("Source Files" FILES ${myproject_sources})
@@ -98,6 +97,7 @@ if (NOT DEFINED BUILD_SHARED_LIBS)
 endif()
 add_library(myproject ${myproject_sources})
 set_target_properties(myproject PROPERTIES DEFINE_SYMBOL "LIBMYPROJECT_EXPORTS")
+set_target_properties(myproject PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${SOURCE_DIR}/src")
 target_link_libraries(myproject ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES})
 
 install(TARGETS myproject
@@ -116,20 +116,21 @@ set(libdir "\${prefix}/lib${LIB_SUFFIX}")
 set(includedir "\${prefix}/include")
 configure_file(
     "${SOURCE_DIR}/src/libmyproject.pc.in"
-    "${BINARY_DIR}/libmyproject.pc"
+    "${SOURCE_DIR}/src/libmyproject.pc"
 @ONLY)
 
 install(
-    FILES "${BINARY_DIR}/libmyproject.pc"
+    FILES "${SOURCE_DIR}/src/libmyproject.pc"
     DESTINATION "lib${LIB_SUFFIX}/pkgconfig"
 )
 
 ########################################################################
+# executables
+########################################################################
+
+########################################################################
 # tests
 ########################################################################
-add_executable(myproject_selftest "${SOURCE_DIR}/src/myproject_selftest.c")
-target_link_libraries(myproject_selftest myproject ${ZEROMQ_LIBRARIES})
-
 set(CLASSTEST_TIMEOUT 5 CACHE STRING "Timeout of the selftest of a class")
 set(TOTAL_TIMEOUT 20 CACHE STRING "Timout of the total testsuite")
 
@@ -143,6 +144,7 @@ endforeach(TEST_CLASS)
 
 add_test(myproject_selftest myproject_selftest)
 set_tests_properties(myproject_selftest PROPERTIES TIMEOUT ${TOTAL_TIMEOUT})
+
 ########################################################################
 # summary
 ########################################################################
