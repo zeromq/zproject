@@ -8,7 +8,6 @@
 .#  This script will generate the following files:
 .#      * Makefile.am
 .#      * src/Makemodule.am
-.#      * bench/Makemodule.am
 .#  ===========================================================================
 .output "Makefile.am"
 $(project.GENERATED_WARNING_HEADER:)
@@ -71,14 +70,7 @@ include \$(srcdir)/src/Makemodule.am
 .if file.exists ("src/Makemodule-local.am")
 include \$(srcdir)/src/Makemodule-local.am # Optional project-local hook
 .endif
-.if count (bench) > 0
-include \$(srcdir)/bench/Makemodule.am
-.endif
-
-$(project.GENERATED_WARNING_HEADER:)
-.if !file.exists ("src")
-.   directory.create ("src")
-.endif
+.directory.create ("src")
 .#
 .#  ===========================================================================
 .output "src/Makemodule.am"
@@ -363,52 +355,3 @@ WantedBy=multi-user.target
 .endif
 .endfor
 .close
-.-
-.-  Generate the Makemodule.am for the benchmarks
-.-
-.if count (bench) > 0
-.if !file.exists ("bench")
-.   directory.create ("bench")
-.endif
-.output "bench/Makemodule.am"
-$(project.GENERATED_WARNING_HEADER:)
-
-benchmark_progs = \\
-.for bench
-.   if !last()
-    bench/$(bench.name) \\
-.   else
-    bench/$(bench.name)
-.   endif
-.endfor
-
-.for bench
-noinst_PROGRAMS += bench/$(bench.name)
-bench_$(bench.name)_CPPFLAGS = ${AM_CPPFLAGS}
-bench_$(bench.name)_LDADD = ${program_libs}
-bench_$(bench.name)_SOURCES = bench/$(bench.name).c
-
-.endfor
-# Run the benchmark binaries
-\.PHONY: bench
-bench: \$(benchmark_progs)
-\tfor f in \$^; do \$(LIBTOOL) --mode=execute \$(srcdir)/\$\$f; done
-
-# Run the selftest binary under valgrind to check for memory leaks
-bench-memcheck: \$(benchmark_progs)
-\tfor f in \$^; do \\
-\t\t$\(LIBTOOL) --mode=execute valgrind --tool=memcheck \\
-\t\t\t--leak-check=full --show-reachable=yes --error-exitcode=1 \\
-\t\t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
-\t\t\t$\(srcdir)/\$\$f; \\
-\tdone
-
-# Run the selftest binary under valgrind to check for performance leaks
-bench-callcheck: \$(benchmark_progs)
-\tfor f in \$^; do \\
-\t\t$\(LIBTOOL) --mode=execute valgrind --tool=callgrind \\
-\t\t\t$\(srcdir)/\$\$f; \\
-\tdone
-
-$(project.GENERATED_WARNING_HEADER:)
-.endif
