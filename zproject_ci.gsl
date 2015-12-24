@@ -18,16 +18,16 @@ sudo: false
 env:
 - BUILD_TYPE=default
 - BUILD_TYPE=android
+- BUILD_TYPE=check-py
+- BUILD_TYPE=cmake
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils ; fi
 
 # Build and check this project according to the BUILD_TYPE
 script: ./ci_build.sh
+.endif
 .
-.# Don't want to generate ci_build.sh if travis config exists,
-.# as the existing travis config may not use ci_build.sh at all.
-.if !file.exists ("ci_build.sh")
 .output "ci_build.sh"
 #!/usr/bin/env bash
 
@@ -58,5 +58,3 @@ else
 fi
 .close
 .chmod_x ("ci_build.sh")
-.endif # !file.exists ("ci_build.sh")
-.endif # !file.exists (".travis.yml")

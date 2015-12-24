@@ -4,10 +4,7 @@
 .#  language. See https://github.com/imatix/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
-.if !file.exists ("src")
-.   directory.create("src")
-.endif
-.#
+.directory.create ("src")
 .if !file.exists ("src/.valgrind.supp")
 .output "src/.valgrind.supp"
 {

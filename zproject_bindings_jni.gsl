@@ -17,9 +17,7 @@
 global.namespace ?= switches.namespace? "org.zeromq.$(project.prefix)"
 global.name_path ?= switches.name_path? "org/zeromq/$(project.prefix)"
 global.topdir ?= switches.topdir? "bindings/jni"
-if !file.exists ("$(global.topdir)")
-   directory.create("$(global.topdir)")
-endif
+directory.create("$(global.topdir)")
 
 ### Generate CMake infrastructure
 

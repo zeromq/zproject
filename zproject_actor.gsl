@@ -42,9 +42,7 @@ endfor
 .-  Build the header file for an actor
 .-
 .for actor
-.if !file.exists (actor.header)
-.   directory.create (actor.header)
-.endif
+.directory.create (actor.header)
 .header_file = "$(actor.header)/$(actor.c_name).h"
 .if !file.exists (header_file)
 .   output header_file
@@ -117,9 +115,7 @@ $(PROJECT.PREFIX)_EXPORT void
 .-
 .-  Build the source file for a actor
 .-
-.if !file.exists ("src")
-.   directory.create ("src")
-.endif
+.directory.create ("src")
 .source_file = "src/$(actor.c_name).c"
 .if !file.exists (source_file)
 .   output source_file

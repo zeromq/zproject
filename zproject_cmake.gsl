@@ -107,12 +107,14 @@ ENDIF ($(USE.CMAKE_NAME)_FOUND)
 # includes
 ########################################################################
 set ($(project.name)_headers
+.if count (project.class)
     include/$(project.prefix)_library.h
-.if file.exists ("include/$(project.prelude)")
+.   if file.exists ("include/$(project.prelude)")
     include/$(project.prelude)
-.endif
-.if count (class, class.name = project.name) = 0
+.   endif
+.   if count (class, class.name = project.name) = 0
     include/$(project.header:)
+.   endif
 .endif
 .for header where scope = "public"
     include/$(name:c).h

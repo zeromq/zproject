@@ -65,8 +65,6 @@ list(APPEND CMAKE_MODULE_PATH "${SOURCE_DIR}")
 # includes
 ########################################################################
 set (myproject_headers
-    include/myproject_library.h
-    include/myproject.h
 )
 source_group ("Header Files" FILES ${myproject_headers})
 install(FILES ${myproject_headers} DESTINATION include)
