@@ -10,9 +10,7 @@
 .#      * doc/asciidoc.conf
 .#      * doc/$(project.name:c).txt (once)
 .#  ===========================================================================
-.if !file.exists ("doc")
-.   directory.create ("doc")
-.endif    
+.directory.create ("doc")
 .output "doc/Makefile.am"
 $(project.GENERATED_WARNING_HEADER:)
 .project.manpage = "$(project.name:c).7"
