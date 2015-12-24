@@ -17,6 +17,7 @@ enable_testing()
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
+.if count (project.class)
 ########################################################################
 # determine version
 ########################################################################
@@ -31,6 +32,7 @@ endforeach(which)
 
 set($(PROJECT.NAME)_VERSION ${$(PROJECT.NAME)_MAJOR_VERSION}.${$(PROJECT.NAME)_MINOR_VERSION}.${$(PROJECT.NAME)_PATCH_VERSION})
 
+.endif
 ########################################################################
 # platform.h
 ########################################################################
@@ -128,6 +130,7 @@ set ($(project.name)_headers
 source_group ("Header Files" FILES ${$(project.name)_headers})
 install(FILES ${$(project.name)_headers} DESTINATION include)
 
+.if count (project.class)
 ########################################################################
 # library
 ########################################################################
@@ -174,6 +177,7 @@ install(
     DESTINATION "lib${LIB_SUFFIX}/pkgconfig"
 )
 
+.endif
 ########################################################################
 # executables
 ########################################################################
