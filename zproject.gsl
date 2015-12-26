@@ -110,6 +110,7 @@ endfunction
 .gsl from "zproject_bindings_ruby.gsl"
 .echo " - Java JNI..."
 .gsl from "zproject_bindings_jni.gsl"
+.gsl from "zproject_bindings_jni_vs20xx.gsl"
 .echo "Generating miscellaneous support..."
 .gsl from "zproject_ci.gsl"
 .gsl from "zproject_bench.gsl"

@@ -26,6 +26,7 @@ myproject_SCRIPTS = \
     zproject_bindings_qt.gsl \
     zproject_bindings_ruby.gsl \
     zproject_bindings_jni.gsl \
+    zproject_bindings_jni_vs20xx.gsl \
     zproject_ci.gsl \
     zproject_class.gsl \
     zproject_class_api.gsl \

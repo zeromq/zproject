@@ -21,4 +21,4 @@ CMakeFiles/
 CTestTestfile.cmake
 cmake_install.cmake
 install_manifest.txt
-
+ci_build.sh
