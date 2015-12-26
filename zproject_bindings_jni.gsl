@@ -21,7 +21,7 @@ directory.create("$(global.topdir)")
 
 ### Generate CMake infrastructure
 
-.macro generate_cmake
+.macro generate_jni_cmake
 .   output "$(topdir)/CMakeLists.txt"
 cmake_minimum_required (VERSION 2.8)
 
@@ -35,7 +35,7 @@ find_library ($(PROJECT.PREFIX)_LIBRARY NAMES $(project.prefix) REQUIRED)
 include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} src/native/include)
 
 set ($(project.prefix)jni_sources
-.for project.class where defined (class.api) & class.jni_okay = 1
+.for project.class where class.jni_okay
     src/main/c/$(namespace:c)_$(class.name:pascal).c
 .endfor
 )
@@ -52,7 +52,7 @@ target_link_libraries ($(project.prefix)jni ${ZMQ_LIBRARY} ${$(PROJECT.PREFIX)_L
 
 ### Generate Gradle infrastructure
 
-.macro generate_gradle
+.macro generate_jni_gradle
 .   directory.create ("$(topdir)/gradle/wrapper")
 .#
 .   output "$(topdir)/gradle/wrapper/gradle-wrapper.properties"
@@ -97,7 +97,7 @@ task generateJniHeaders(type: Exec, dependsOn: 'classes') {
     def appclasspath = configurations.runtime.files*.getAbsolutePath().join(":")
     def nativeIncludes = "src/native/include"
     def jniClasses = [
-.   for project.class where defined (class.api) & class.jni_okay = 1
+.   for project.class where class.jni_okay
             '$(namespace).$(name:pascal)'$(last ()?? ""? ",")
 .   endfor
     ]
@@ -399,7 +399,7 @@ lib$(project.prefix)jni.so
 
 ### Generate Android build infrastructure
 
-.macro generate_android
+.macro generate_jni_android
 .   directory.create ("$(topdir)/android")
 .   output "$(topdir)/android/build.sh"
 #!/bin/bash
@@ -477,7 +477,7 @@ include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} ../src/native/in
 # message (STATUS "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
 
 set ($(project.prefix)jni_sources
-.for project.class where defined (class.api) & class.jni_okay = 1
+.for project.class where class.jni_okay
     ../src/main/c/$(namespace:c)_$(class.name:pascal).c
 .endfor
 )
@@ -713,7 +713,6 @@ function resolve_jni_method (method)
             jni_shim_invocation_java += "$(comma)self"
             jni_shim_signature_c += "$(comma)jlong self"
             jni_native_invocation_c += "$(comma)($(argument.c_type)) &self"
-            my.method->return.jni_java_type = "long"
             my.method.return_self_p = 1
         else
             if jni_method_signature <> ""
@@ -754,7 +753,7 @@ function resolve_jni_method (method)
     endfor
 endfunction
 
-.macro generate_class_java (class)
+.macro generate_jni_class_java (class)
 .   directory.create ("$(topdir)/src/main/java/$(name_path)")
 .   output "$(topdir)/src/main/java/$(name_path)/$(my.class.name:pascal).java"
 /*
@@ -838,8 +837,12 @@ implements AutoCloseable\
 }
 .endmacro
 
-.macro generate_method_c (method)
+.macro generate_jni_method_c (method)
+.   if defined (my.method.return_self_p)
+JNIEXPORT jlong JNICALL
+.   else
 JNIEXPORT $(->return.jni_jni_type:) JNICALL
+.   endif
 Java_$(namespace:c)_$(class.name:pascal)__1_1$(my.method.name:camel) (JNIEnv *env, jclass c\
 .   if jni_shim_signature_c <> ""
 , \
@@ -906,7 +909,7 @@ $(my.return)\
 
 .endmacro
 
-.macro generate_class_c (class)
+.macro generate_jni_class_c (class)
 .   directory.create ("$(topdir)/src/main/c/")
 .   my.cname = "$(namespace:c)_$(my.class.name:pascal)"
 .   output "$(topdir)/src/main/c/$(my.cname:).c"
@@ -920,17 +923,17 @@ $(project.GENERATED_WARNING_HEADER:)
 #include "../../native/include/$(my.cname:).h"
 
 .   for constructor where jni_okay
-.       generate_method_c (constructor)
+.       generate_jni_method_c (constructor)
 .   endfor
 .   for destructor where jni_okay
-.       generate_method_c (destructor)
+.       generate_jni_method_c (destructor)
 .   endfor
 .   for method where jni_okay
-.       generate_method_c (method)
+.       generate_jni_method_c (method)
 .   endfor
 .endmacro
 
-.macro generate_test (class)
+.macro generate_jni_test (class)
 .   directory.create ("$(topdir)/src/test/java/$(name_path)")
 .   output "$(topdir)/src/test/java/$(name_path)/$(my.class.name:pascal)Test.java"
 /*
@@ -957,29 +960,34 @@ public class $(my.class.name:pascal)Test {
 }
 .endmacro
 
-for project.class where defined (class.api)
-    class.jni_okay = 1
-    for constructor
-        resolve_jni_method (constructor)
-        if index () = 1 & constructor.jni_okay = 0
-            class.jni_okay = 0
-        endif
-    endfor
-    for destructor
-        resolve_jni_method (destructor)
-    endfor
-    for method
-        resolve_jni_method (method)
-    endfor
+for project.class
+    if defined (class.api)
+        class.jni_okay = 1
+        for constructor
+            resolve_jni_method (constructor)
+            if index () = 1 & constructor.jni_okay = 0
+                class.jni_okay = 0
+            endif
+        endfor
+        for destructor
+            resolve_jni_method (destructor)
+        endfor
+        for method
+            resolve_jni_method (method)
+        endfor
+    else
+        class.jni_okay = 0
+    endif
+
     if class.jni_okay
-        generate_class_java (class)
-        generate_class_c (class)
-        generate_test (class)
+        generate_jni_class_java (class)
+        generate_jni_class_c (class)
+        generate_jni_test (class)
     endif
 endfor
 
-generate_cmake ()
-generate_gradle ()
-generate_android ()
+generate_jni_cmake ()
+generate_jni_gradle ()
+generate_jni_android ()
 
 .endtemplate
