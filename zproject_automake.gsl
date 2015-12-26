@@ -70,6 +70,8 @@ include \$(srcdir)/src/Makemodule.am
 .if file.exists ("src/Makemodule-local.am")
 include \$(srcdir)/src/Makemodule-local.am # Optional project-local hook
 .endif
+
+$(project.GENERATED_WARNING_HEADER:)
 .directory.create ("src")
 .#
 .#  ===========================================================================
