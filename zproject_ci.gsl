@@ -18,8 +18,8 @@ sudo: false
 env:
 - BUILD_TYPE=default
 - BUILD_TYPE=android
-- BUILD_TYPE=check-py
-- BUILD_TYPE=cmake
+#- BUILD_TYPE=check-py
+#- BUILD_TYPE=cmake
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils ; fi
