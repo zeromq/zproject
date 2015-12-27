@@ -19,10 +19,8 @@ global.name_path ?= switches.name_path? "org/zeromq/$(project.prefix)"
 global.topdir ?= switches.topdir? "bindings/jni"
 directory.create("$(global.topdir)")
 
-### Generate CMake infrastructure
-
-.macro generate_jni_cmake
-.   output "$(topdir)/CMakeLists.txt"
+.macro generate_jni_main
+.output "$(topdir)/CMakeLists.txt"
 cmake_minimum_required (VERSION 2.8)
 
 project ($(project.prefix)jni CXX)
@@ -48,22 +46,16 @@ set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
 target_link_libraries ($(project.prefix)jni ${ZMQ_LIBRARY} ${$(PROJECT.PREFIX)_LIBRARY})
-.endmacro
-
-### Generate Gradle infrastructure
-
-.macro generate_jni_gradle
-.   directory.create ("$(topdir)/gradle/wrapper")
-.#
-.   output "$(topdir)/gradle/wrapper/gradle-wrapper.properties"
+.
+.directory.create ("$(topdir)/gradle/wrapper")
+.output "$(topdir)/gradle/wrapper/gradle-wrapper.properties"
 distributionBase=GRADLE_USER_HOME
 distributionPath=wrapper/dists
 zipStoreBase=GRADLE_USER_HOME
 zipStorePath=wrapper/dists
 distributionUrl=https\\://services.gradle.org/distributions/gradle-2.8-bin.zip
-.#
-.## -------------------------------------------------------------------------
-.   output "$(topdir)/build.gradle"
+.
+.output "$(topdir)/build.gradle"
 /*
 $(project.GENERATED_WARNING_HEADER:)
 */
@@ -114,9 +106,8 @@ task buildNative(type: Exec, dependsOn: 'initCMake') {
 }
 jar.dependsOn buildNative
 test.dependsOn buildNative
-.#
-.## -------------------------------------------------------------------------
-.   output "$(topdir)/gradlew"
+.
+.output "$(topdir)/gradlew"
 #!/usr/bin/env bash
 #   Gradle start up script for Linux/UN*X
 #
@@ -274,9 +265,8 @@ eval splitJvmOpts $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS
 JVM_OPTS[${#JVM_OPTS[*]}]="-Dorg.gradle.appname=$APP_BASE_NAME"
 
 exec "$JAVACMD" "${JVM_OPTS[@]}" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
-.#
-.## -------------------------------------------------------------------------
-.   output "$(topdir)/gradlew.bat"
+.
+.output "$(topdir)/gradlew.bat"
 @if "%DEBUG%" == "" @echo off
 @rem  Gradle startup script for Windows
 
@@ -364,29 +354,63 @@ exit /b 1
 if "%OS%"=="Windows_NT" endlocal
 
 :omega
-.#
-.## -------------------------------------------------------------------------
-.   output "$(topdir)/README.md"
+.
+.output "$(topdir)/README.md"
 # $(project.prefix)-jni
 
 JNI Binding for $(project.name:)
 
-## Usage
+## Building the JNI Layer for Linux
 
-Ensure you have cmake installed
+Ensure you have cmake installed, then run:
 
-```
-\./grade test
-```
+    ./gradle build jar
+    ./gradle test
+
+This calls javah to build the headers in src/native/c, and then compiles the C and Java pieces to create a jar file a sharable library (.so).
+
+## Building the JNI Layer for Android
+
+See bindings/jni/android/build.sh.
+
+You need the Android Native Development Kit (NDK) installed.
+
+Set these environment variables, e.g:
+
+    ANDROID_NDK_ROOT=$HOME/android-ndk-r10e
+    TOOLCHAIN_NAME=arm-linux-androideabi-4.9
+    TOOLCHAIN_HOST=arm-linux-androideabi
+    TOOLCHAIN_ARCH=arm
+    TOOLCHAIN_PATH=$ANDROID_NDK_ROOT/toolchains/$TOOLCHAIN_NAME/prebuilt/linux-x86_64/bin
+
+Then in the android directory, to build $(project.prefix)jni.so run:
+
+    ./build.sh
+
+Note that this implicitly builds the Android library and all dependencies. It also builds the JNI layer for Linux.
+
+All results are placed in bindings/jni/android/build/libs.
+
+## Building the JNI Layer for Windows
+
+You need MS Visual Studio 2010 or later.
+
+You need the Java SDK. Set the JAVA_HOME environment to the installation location, e.g. C:\Program Files\Java\jdk1.8.0_66.
+
+1. Check out all dependent projects from github, at the same level as this project. E.g.: libsodium, libzmq, czmq.
+2. In each project, open a console in builds/msvc/vs2010 and run the build.bat batch file.
+3. In this project, open a console in bindings/jni/msvc/vs2010 and run the build.bat batch file.
+
+The resulting libraries ($(project.prefix)jni.dll, $(project.prefix)jni.lib) are created in bindings/jni/msvc/bin.
 
 ## License
 
 $(project->license.:)
-.#
-.## -------------------------------------------------------------------------
-.   output "$(topdir)/settings.gradle"
+.
+.output "$(topdir)/settings.gradle"
 rootProject.name = '$(project.prefix)-jni'
-.   output "$(topdir)/.gitignore"
+.
+.output "$(topdir)/.gitignore"
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
@@ -395,13 +419,9 @@ build/
 src/native
 gradle-app.setting
 lib$(project.prefix)jni.so
-.endmacro
-
-### Generate Android build infrastructure
-
-.macro generate_jni_android
-.   directory.create ("$(topdir)/android")
-.   output "$(topdir)/android/build.sh"
+.
+.directory.create ("$(topdir)/android")
+.output "$(topdir)/android/build.sh"
 #!/bin/bash
 $(project.GENERATED_WARNING_HEADER:)
 #   Build JNI interface for Android
@@ -429,8 +449,8 @@ echo "********  Building Android native libraries"
 ( cd ../../../builds/android && ./build.sh )
 
 #   Ensure we've built JNI interface
-# echo "********  Building JNI interface & classes"
-# ( cd .. && gradle build jar )
+echo "********  Building JNI interface & classes"
+( cd .. && gradle build jar )
 
 rm -Rf build
 mkdir build
@@ -454,8 +474,9 @@ cp ../../../builds/android/prefix/*/lib/*.so build/libs
 
 echo "********  Complete: build products are in ./build/libs"
 ls build/libs
-.   chmod_x ("$(topdir)/android/build.sh")
-.   output "$(topdir)/android/CMakeLists.txt"
+.chmod_x ("$(topdir)/android/build.sh")
+.
+.output "$(topdir)/android/CMakeLists.txt"
 $(project.GENERATED_WARNING_HEADER:)
 cmake_minimum_required (VERSION 2.8)
 
@@ -488,7 +509,8 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -O2")
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
-.   output "$(topdir)/android/android_toolchain.cmake"
+.
+.output "$(topdir)/android/android_toolchain.cmake"
 $(project.GENERATED_WARNING_HEADER:)
 #   CMake toolchain script
 #
@@ -987,8 +1009,5 @@ for project.class
     endif
 endfor
 
-generate_jni_cmake ()
-generate_jni_gradle ()
-generate_jni_android ()
-
+generate_jni_main ()
 .endtemplate
