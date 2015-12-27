@@ -46,9 +46,8 @@ $(project.GENERATED_WARNING_HEADER:)
   <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.Default.props" />
   <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.props" />
   <ImportGroup Label="PropertySheets">
-    <Import Project="$\(ProjectDir)..\\..\\properties\\$\(Configuration).props" />
-    <Import Project="$\(ProjectDir)..\\..\\properties\\Output.props" />
-    <Import Project="$\(ProjectDir)$\(ProjectName).props" />
+    <Import Project="..\\..\\properties\\$\(Configuration).props" />
+    <Import Project="$\(ProjectName).props" />
   </ImportGroup>
   <ItemGroup>
     <ClInclude Include="..\\..\\platform.h" />
@@ -232,6 +231,15 @@ $(project.GENERATED_WARNING_HEADER:)
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Output Settings</_PropertySheetDisplayName>
+    <OutDir>..\\..\\bin\\$\(PlatformName)\\$\(DebugOrRelease)\\$\(PlatformToolset)\\$\(DefaultLinkage)\\</OutDir>
+    <IntDir>..\\..\\..\\..\\obj\\$\(TargetName)\\$\(PlatformName)\\$\(DebugOrRelease)\\$\(PlatformToolset)\\$\(DefaultLinkage)\\</IntDir>
+    <TargetDir>$\(OutDir)</TargetDir>
+    <TargetName>$\(TargetName)</TargetName>
+    <TargetPath>$\(TargetDir)$\(TargetName)$\(TargetExt)</TargetPath>
+  </PropertyGroup>
+
   <!-- Configuration -->
 
   <ItemDefinitionGroup>
@@ -254,6 +262,16 @@ $(project.GENERATED_WARNING_HEADER:)
     </ClCompile>
     <Link>
       <AdditionalDependencies>Rpcrt4.lib;Ws2_32.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- Pull in our own library -->
+      <AdditionalDependencies>$(project.libname).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Debug')) != -1">..\\..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Release')) != -1">..\\..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Release\\$\(PlatformToolset)\\dynamic\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+.for project.use where optional = 0
+      <!-- Pull in $(use.project) dependency -->
+      <AdditionalDependencies>$(use.libname).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Debug')) != -1">..\\..\\..\\..\\..\\..\\$(use.project)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Release')) != -1">..\\..\\..\\..\\..\\..\\$(use.project)\\bin\\$\(PlatformName)\\Release\\$\(PlatformToolset)\\dynamic\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+.endfor
     </Link>
   </ItemDefinitionGroup>
 
