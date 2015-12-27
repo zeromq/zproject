@@ -234,7 +234,7 @@ $(project.GENERATED_WARNING_HEADER:)
   <PropertyGroup>
     <_PropertySheetDisplayName>Output Settings</_PropertySheetDisplayName>
     <OutDir>..\\..\\bin\\$\(PlatformName)\\$\(DebugOrRelease)\\$\(PlatformToolset)\\$\(DefaultLinkage)\\</OutDir>
-    <IntDir>..\\..\\..\\..\\obj\\$\(TargetName)\\$\(PlatformName)\\$\(DebugOrRelease)\\$\(PlatformToolset)\\$\(DefaultLinkage)\\</IntDir>
+    <IntDir>..\\..\\obj\\$\(PlatformName)\\$\(DebugOrRelease)\\$\(PlatformToolset)\\$\(DefaultLinkage)\\</IntDir>
     <TargetDir>$\(OutDir)</TargetDir>
     <TargetName>$\(TargetName)</TargetName>
     <TargetPath>$\(TargetDir)$\(TargetName)$\(TargetExt)</TargetPath>
