@@ -125,6 +125,7 @@
     <bin name = "zproject_bindings_qt.gsl" />
     <bin name = "zproject_bindings_ruby.gsl" />
     <bin name = "zproject_bindings_jni.gsl" />
+    <bin name = "zproject_bindings_jni_vs20xx.gsl" />
     <bin name = "zproject_ci.gsl" />
     <bin name = "zproject_class.gsl" />
     <bin name = "zproject_class_api.gsl" />

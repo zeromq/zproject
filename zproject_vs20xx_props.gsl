@@ -1,4 +1,16 @@
-.macro generate_properties (path)
+.template 0
+#  Generate VC++ properties directory
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+#
+#   All Visual Studio versions from 2010 onwards use the same solution
+#   format with a different platform toolset
+
+##########################################################################
+
+.macro generate_vs20xx_props (path)
 .directory.create (my.path)
 .output "$(my.path)/Common.props"
 <?xml version="1.0" encoding="utf-8"?>
@@ -527,4 +539,6 @@
 
 </Project>
 .endmacro
-.generate_properties ("builds/msvc/properties")
+
+generate_vs20xx_props ("builds/msvc/properties")
+.endtemplate

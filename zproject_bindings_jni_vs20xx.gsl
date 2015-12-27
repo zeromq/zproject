@@ -1,0 +1,298 @@
+.template 0
+#  Generate VC++ project file for project
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+#
+#   All Visual Studio versions from 2010 onwards use the same solution
+#   format with a different platform toolset
+
+.macro generate_vs20xx_build_jni (path, level)
+.directory.create ("$(my.path)/$(project.libname)jni")
+.output "$(my.path)/$(project.libname)jni/$(project.libname)jni.vcxproj"
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}</ProjectGuid>
+    <ProjectName>$(project.libname)jni</ProjectName>
+    <PlatformToolset>v$(my.level)0</PlatformToolset>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="DebugDLL|Win32">
+      <Configuration>DebugDLL</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseDLL|Win32">
+      <Configuration>ReleaseDLL</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DebugDLL|x64">
+      <Configuration>DebugDLL</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseDLL|x64">
+      <Configuration>ReleaseDLL</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType Condition="$\(Configuration.IndexOf('DLL')) == -1">StaticLibrary</ConfigurationType>
+    <ConfigurationType Condition="$\(Configuration.IndexOf('DLL')) != -1">DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.Default.props" />
+  <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="..\\..\\properties\\$\(Configuration).props" />
+    <Import Project="$\(ProjectName).props" />
+  </ImportGroup>
+  <ItemGroup>
+    <ClInclude Include="..\\..\\platform.h" />
+    <ClInclude Include="..\\..\\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\\..\\..\\..\\..\\include\\$(project.header)" />
+.for header where scope = "public"
+    <ClInclude Include="..\\..\\..\\..\\..\\include\\$(name:c).h" />
+.endfor
+.for class where jni_okay
+    <ClInclude Include="..\\..\\..\\src\\native\\include\\$(namespace:c)_$(class.name:pascal).h" />
+.endfor
+  </ItemGroup>
+  <ItemGroup>
+.for class where jni_okay
+    <ClCompile Include="..\\..\\..\\src\\main\\c\\$(namespace:c)_$(class.name:pascal).c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+.endfor
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\\..\\resource.rc" />
+  </ItemGroup>
+  <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.targets" />
+  <!--
+$(project.GENERATED_WARNING_HEADER:)
+  -->
+</Project>
+.output "$(my.path)/$(project.libname)jni/$(project.libname)jni.vcxproj.filters"
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+.for class where jni_okay
+    <ClCompile Include="..\\..\\..\\src\\main\\c\\$(namespace:c)_$(class.name:pascal).c">
+      <Filter>src</Filter>
+    </ClCompile>
+.endfor
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\\..\\..\\..\\..\\include\\$(project.header)">
+      <Filter>include</Filter>
+    </ClInclude>
+.for header where scope = "public"
+    <ClInclude Include="..\\..\\..\\..\\..\\include\\$(name:c).h">
+      <Filter>include</Filter>
+    </ClInclude>
+.endfor
+.for class where jni_okay
+    <ClInclude Include="..\\..\\..\\src\\native\\include\\$(namespace:c)_$(class.name:pascal).h">
+      <Filter>include</Filter>
+    </ClInclude>
+.endfor
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\\..\\platform.h">
+      <Filter>src\\include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\\..\\resource.h">
+      <Filter>resource</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\\..\\resource.rc">
+      <Filter>resource</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{48f852d3-9723-4499-bf1a-35c0234b8ba9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{95e5d24a-57a2-429a-a1f1-304165f2e3da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\\include">
+      <UniqueIdentifier>{d0c837b5-cb58-4b82-b9bf-38727c7b25bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resource">
+      <UniqueIdentifier>{48e93f8c-156c-4379-a901-4b5ad39a4eac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="packaging">
+      <UniqueIdentifier>{04a473ca-1d88-4e12-9190-8d9cc20efd74}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+</Project>
+.output "$(my.path)/$(project.name:c).sln"
+Microsoft Visual Studio Solution File, Format Version $(my.level).00
+# $(my.path)
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$(project.libname)jni", "$(project.libname)jni\\$(project.libname)jni.vcxproj", "{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}"
+EndProject
+Global
+    GlobalSection(SolutionConfigurationPlatforms) = preSolution
+        DynDebug|Win32 = DynDebug|Win32
+        DynDebug|x64 = DynDebug|x64
+        DynRelease|Win32 = DynRelease|Win32
+        DynRelease|x64 = DynRelease|x64
+    EndGlobalSection
+    GlobalSection(ProjectConfigurationPlatforms) = postSolution
+        {0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}.DynDebug|Win32.ActiveCfg = DebugDLL|Win32
+        {0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}.DynDebug|Win32.Build.0 = DebugDLL|Win32
+        {0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}.DynDebug|x64.ActiveCfg = DebugDLL|x64
+        {0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}.DynDebug|x64.Build.0 = DebugDLL|x64
+        {0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}.DynRelease|Win32.ActiveCfg = ReleaseDLL|Win32
+        {0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}.DynRelease|Win32.Build.0 = ReleaseDLL|Win32
+        {0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}.DynRelease|x64.ActiveCfg = ReleaseDLL|x64
+        {0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}.DynRelease|x64.Build.0 = ReleaseDLL|x64
+    EndGlobalSection
+    GlobalSection(SolutionProperties) = preSolution
+        HideSolutionNode = FALSE
+    EndGlobalSection
+EndGlobal
+.output "$(my.path)/build.bat"
+@ECHO OFF
+SET solution=$(project.name:c).sln
+SET version=$(my.level)
+SET log=build.log
+SET tools=Microsoft Visual Studio %version%.0\\VC\\vcvarsall.bat
+SET environment="%programfiles(x86)%\\%tools%"
+IF NOT EXIST %environment% SET environment="%programfiles%\\%tools%"
+IF NOT EXIST %environment% GOTO no_tools
+
+ECHO Building %solution%...
+
+CALL %environment% x86 > nul
+ECHO Platform=x86
+
+ECHO Configuration=DynDebug
+msbuild /m /v:n /p:Configuration=DynDebug /p:Platform=Win32 %solution% > %log%
+IF errorlevel 1 GOTO error
+ECHO Configuration=DynRelease
+msbuild /m /v:n /p:Configuration=DynRelease /p:Platform=Win32 %solution% >> %log%
+IF errorlevel 1 GOTO error
+
+CALL %environment% x86_amd64 > nul
+ECHO Platform=x64
+
+ECHO Configuration=DynDebug
+msbuild /m /v:n /p:Configuration=DynDebug /p:Platform=x64 %solution% > %log%
+IF errorlevel 1 GOTO error
+ECHO Configuration=DynRelease
+msbuild /m /v:n /p:Configuration=DynRelease /p:Platform=x64 %solution% >> %log%
+IF errorlevel 1 GOTO error
+
+ECHO Complete: %solution%
+GOTO end
+
+:error
+ECHO *** ERROR, build terminated early: see %log%
+GOTO end
+
+:no_tools
+ECHO *** ERROR, build tools not found: %tools%
+
+:end
+.output "$(my.path)/call_javah.bat"
+@ECHO OFF
+ECHO Generating native JNI headers...
+.for class where jni_okay
+IF EXIST ..\\..\\..\\src\\native\\include\\$(namespace:c)_$(class.name:pascal).h GOTO HAVE_$(class.name:pascal)
+"%JAVA_HOME%\\bin\\javah.exe" -d ..\\..\\..\\src\\native\\include -classpath ..\\..\\..\\src\\main\\java $(namespace).$(name:pascal)
+:HAVE_$(class.name:pascal)
+.endfor
+.output "$(my.path)/$(project.libname)jni/$(project.libname)jni.props"
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Label="Globals">
+    <_PropertySheetDisplayName>$(project.name:) Common Settings</_PropertySheetDisplayName>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Output Settings</_PropertySheetDisplayName>
+    <OutDir>..\\..\\bin\\$\(PlatformName)\\$\(DebugOrRelease)\\$\(PlatformToolset)\\$\(DefaultLinkage)\\</OutDir>
+    <IntDir>..\\..\\..\\..\\obj\\$\(TargetName)\\$\(PlatformName)\\$\(DebugOrRelease)\\$\(PlatformToolset)\\$\(DefaultLinkage)\\</IntDir>
+    <TargetDir>$\(OutDir)</TargetDir>
+    <TargetName>$\(TargetName)</TargetName>
+    <TargetPath>$\(TargetDir)$\(TargetName)$\(TargetExt)</TargetPath>
+  </PropertyGroup>
+
+  <!-- Configuration -->
+
+  <ItemDefinitionGroup>
+    <PreBuildEvent>
+      <Command>copy ..\\..\\platform.h ..\\..\\..\\..\\..\\include\\</Command>
+      <Command>..\\call_javah.bat</Command>
+    </PreBuildEvent>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\\..\\..\\..\\..\\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$\(JAVA_HOME)\\include;$\(JAVA_HOME)\\include\\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+.for project.use where file.exists ("../$(use.project)/include")
+      <AdditionalIncludeDirectories>..\\..\\..\\..\\..\\..\\$(use.project)\\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+.endfor
+      <CompileAs>CompileAsC</CompileAs>
+      <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <EnablePREfast>false</EnablePREfast>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$\(ConfigurationType)' == 'StaticLibrary'">$(PROJECT.LIBNAME)JNI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$\(ConfigurationType)' == 'DynamicLibrary'">$(PROJECT.LIBNAME)JNI_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>Rpcrt4.lib;Ws2_32.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- Pull in our own library -->
+      <AdditionalDependencies>$(project.libname).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Debug')) != -1">..\\..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Release')) != -1">..\\..\\..\\..\\..\\..\\$(project.name)\\bin\\$\(PlatformName)\\Release\\$\(PlatformToolset)\\dynamic\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+.for project.use where optional = 0
+      <!-- Pull in $(use.project) dependency -->
+      <AdditionalDependencies>$(use.libname).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Debug')) != -1">..\\..\\..\\..\\..\\..\\$(use.project)\\bin\\$\(PlatformName)\\Debug\\$\(PlatformToolset)\\dynamic\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="$\(Configuration.IndexOf('Release')) != -1">..\\..\\..\\..\\..\\..\\$(use.project)\\bin\\$\(PlatformName)\\Release\\$\(PlatformToolset)\\dynamic\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+.endfor
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- Messages -->
+  <Target Name="CustomInfo" BeforeTargets="PrepareForBuild">
+    <Message Text="Will copy ..\\..\\platform.h -&gt; ..\\..\\..\\..\\..\\include\\platform.h" Importance="high"/>
+  </Target>
+
+  <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
+  </Target>
+<!--
+$(project.GENERATED_WARNING_HEADER:)
+-->
+</Project>
+.endmacro
+
+generate_vs20xx_main      ("bindings/jni/msvc")
+generate_vs20xx_props     ("bindings/jni/msvc/properties")
+generate_vs20xx_build_jni ("bindings/jni/msvc/vs2010", "10")
+generate_vs20xx_build_jni ("bindings/jni/msvc/vs2012", "11")
+generate_vs20xx_build_jni ("bindings/jni/msvc/vs2013", "12")
+generate_vs20xx_build_jni ("bindings/jni/msvc/vs2015", "14")
+
+.endtemplate
