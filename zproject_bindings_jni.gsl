@@ -1009,5 +1009,7 @@ for project.class
     endif
 endfor
 
-generate_jni_main ()
+if count (project.class, jni_okay = 1)
+    generate_jni_main ()
+endif
 .endtemplate
