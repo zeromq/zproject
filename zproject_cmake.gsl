@@ -215,8 +215,12 @@ add_executable(
 )
 target_link_libraries(
     $(main.name)
+.if count (project.class)
     $(project.linkname)
-    ${ZEROMQ_LIBRARIES}
+.endif
+.for project.use
+    ${$(USE.CMAKE_NAME)_LIBRARIES}
+.endfor
 )
 set_target_properties(
     $(main.name)
