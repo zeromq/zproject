@@ -247,7 +247,7 @@ dist_api_DATA = \\
 # define custom target for all products of /src
 src:
 .   for project.main
-\tsrc/$(main.name) \
+\tsrc/$(main.name) \\
 .   endfor
 \tsrc/$(project.libname).la
 .endif
