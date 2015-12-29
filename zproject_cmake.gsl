@@ -22,15 +22,31 @@ set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 # determine version
 ########################################################################
 foreach(which MAJOR MINOR PATCH)
-    file(STRINGS "${SOURCE_DIR}/include/$(project.prefix)_library.h" $(PROJECT.NAME)_VERSION_STRING REGEX "#define $(PROJECT.NAME)_VERSION_${which}")
-    string(REGEX MATCH "#define $(PROJECT.NAME)_VERSION_${which} ([0-9_]+)" $(PROJECT.NAME)_REGEX_MATCH "${$(PROJECT.NAME)_VERSION_STRING}")
+    file(
+        STRINGS
+        "${SOURCE_DIR}/include/$(project.prefix)_library.h"
+        $(PROJECT.NAME)_VERSION_STRING REGEX
+        "#define $(PROJECT.NAME)_VERSION_${which}"
+    )
+    string(
+        REGEX MATCH
+        "#define $(PROJECT.NAME)_VERSION_${which} ([0-9_]+)"
+        $(PROJECT.NAME)_REGEX_MATCH
+        "${$(PROJECT.NAME)_VERSION_STRING}"
+    )
     if (NOT $(PROJECT.NAME)_REGEX_MATCH)
-        message(FATAL_ERROR "failed to parse $(PROJECT.NAME)_VERSION_${which} from $(project.header:)")
+        message(
+            FATAL_ERROR
+            "failed to parse $(PROJECT.NAME)_VERSION_${which} from $(project.header:)"
+        )
     endif()
     set($(PROJECT.NAME)_${which}_VERSION ${CMAKE_MATCH_1})
 endforeach(which)
 
-set($(PROJECT.NAME)_VERSION ${$(PROJECT.NAME)_MAJOR_VERSION}.${$(PROJECT.NAME)_MINOR_VERSION}.${$(PROJECT.NAME)_PATCH_VERSION})
+set(
+    $(PROJECT.NAME)_VERSION
+    ${$(PROJECT.NAME)_MAJOR_VERSION}.${$(PROJECT.NAME)_MINOR_VERSION}.${$(PROJECT.NAME)_PATCH_VERSION}
+)
 
 .endif
 ########################################################################
@@ -65,7 +81,10 @@ configure_file("${SOURCE_DIR}/src/platform.h.in" "${SOURCE_DIR}/src/platform.h")
 if (MSVC)
     enable_language(CXX)
     file(GLOB sources "${SOURCE_DIR}/src/*.c")
-    set_source_files_properties(${sources} PROPERTIES LANGUAGE CXX)
+    set_source_files_properties(
+        ${sources}
+        PROPERTIES LANGUAGE CXX
+    )
     set(MORE_LIBRARIES ws2_32 Rpcrt4 Iphlpapi)
 endif()
 
@@ -91,14 +110,14 @@ find_package($(use.cmake_name:) REQUIRED)
 find_package($(use.cmake_name:))
 .endif
 IF ($(USE.CMAKE_NAME)_FOUND)
-include_directories(${$(USE.CMAKE_NAME)_INCLUDE_DIRS})
-list(APPEND MORE_LIBRARIES ${$(USE.CMAKE_NAME)_LIBRARIES})
+    include_directories(${$(USE.CMAKE_NAME)_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${$(USE.CMAKE_NAME)_LIBRARIES})
 .if use.optional = 1
-add_definitions(-DHAVE_$(USE.CMAKE_NAME))
+    add_definitions(-DHAVE_$(USE.CMAKE_NAME))
 .endif
 .if use.optional = 0
 ELSE ($(USE.CMAKE_NAME)_FOUND)
-message( FATAL_ERROR "$(use.cmake_name:) not found." )
+    message( FATAL_ERROR "$(use.cmake_name:) not found." )
 .endif
 ENDIF ($(USE.CMAKE_NAME)_FOUND)
 .endfor
@@ -142,14 +161,20 @@ set ($(project.name)_sources
     src/$(name:c).c
 .endfor
 )
-source_group ("Source Files" FILES ${$(project.name)_sources})
+source_group("Source Files" FILES ${$(project.name)_sources})
 if (NOT DEFINED BUILD_SHARED_LIBS)
     SET(BUILD_SHARED_LIBS ON)
 endif()
 add_library($(project.name) ${$(project.name)_sources})
-set_target_properties($(project.name) PROPERTIES DEFINE_SYMBOL "$(PROJECT.LIBNAME)_EXPORTS")
-set_target_properties($(project.name) PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${SOURCE_DIR}/src")
-target_link_libraries($(project.name) ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES})
+set_target_properties($(project.name)
+    PROPERTIES DEFINE_SYMBOL "$(PROJECT.LIBNAME)_EXPORTS"
+)
+set_target_properties($(project.name)
+    PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${SOURCE_DIR}/src"
+)
+target_link_libraries($(project.name)
+    ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES}
+)
 
 install(TARGETS $(project.name)
     LIBRARY DESTINATION "lib${LIB_SUFFIX}" # .so file
@@ -184,9 +209,19 @@ install(
 # executables
 ########################################################################
 .for project.main
-add_executable($(main.name) "${SOURCE_DIR}/src/$(name).c")
-target_link_libraries($(main.name) $(project.name) ${ZEROMQ_LIBRARIES})
-set_target_properties($(main.name) PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${SOURCE_DIR}/src")
+add_executable(
+    $(main.name)
+    "${SOURCE_DIR}/src/$(name).c"
+)
+target_link_libraries(
+    $(main.name)
+    $(project.name)
+    ${ZEROMQ_LIBRARIES}
+)
+set_target_properties(
+    $(main.name)
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${SOURCE_DIR}/src"
+)
 .endfor
 
 ########################################################################
@@ -197,17 +232,26 @@ set(TOTAL_TIMEOUT 20 CACHE STRING "Timout of the total testsuite")
 
 set(TEST_CLASSES
 .for class
-  $(name)_test
+    $(name)_test
 .endfor
 )
 
 foreach(TEST_CLASS ${TEST_CLASSES})
-  add_test(NAME ${TEST_CLASS} COMMAND $(project.prefix)_selftest -e -v --test ${TEST_CLASS})
-  set_tests_properties(${TEST_CLASS} PROPERTIES TIMEOUT ${CLASSTEST_TIMEOUT})
+    add_test(
+        NAME ${TEST_CLASS}
+        COMMAND $(project.prefix)_selftest -e -v --test ${TEST_CLASS}
+    )
+    set_tests_properties(
+        ${TEST_CLASS}
+        PROPERTIES TIMEOUT ${CLASSTEST_TIMEOUT}
+    )
 endforeach(TEST_CLASS)
 
 add_test($(project.prefix)_selftest $(project.prefix)_selftest)
-set_tests_properties($(project.prefix)_selftest PROPERTIES TIMEOUT ${TOTAL_TIMEOUT})
+set_tests_properties(
+    $(project.prefix)_selftest
+    PROPERTIES TIMEOUT ${TOTAL_TIMEOUT}
+)
 
 ########################################################################
 # summary
@@ -222,18 +266,18 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 
 if (NOT MSVC)
-  include(FindPkgConfig)
-  pkg_check_modules(PC_$(USE.CMAKE_NAME) "$(use.libname)")
-  if (NOT PC_$(USE.CMAKE_NAME)_FOUND)
-    pkg_check_modules(PC_$(USE.CMAKE_NAME) "$(use.prefix)")
-  endif(NOT PC_$(USE.CMAKE_NAME)_FOUND)
-  if (PC_$(USE.CMAKE_NAME)_FOUND)
-    # some libraries install the headers is a subdirectory of the include dir
-    # returned by pkg-config, so use a wildcard match to improve chances of finding
-    # headers and SOs.
-    set(PC_$(USE.CMAKE_NAME)_INCLUDE_HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS} ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS}/*)
-    set(PC_$(USE.CMAKE_NAME)_LIBRARY_HINTS ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS} ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS}/*)
-  endif(PC_$(USE.CMAKE_NAME)_FOUND)
+    include(FindPkgConfig)
+    pkg_check_modules(PC_$(USE.CMAKE_NAME) "$(use.libname)")
+    if (NOT PC_$(USE.CMAKE_NAME)_FOUND)
+        pkg_check_modules(PC_$(USE.CMAKE_NAME) "$(use.prefix)")
+    endif (NOT PC_$(USE.CMAKE_NAME)_FOUND)
+    if (PC_$(USE.CMAKE_NAME)_FOUND)
+        # some libraries install the headers is a subdirectory of the include dir
+        # returned by pkg-config, so use a wildcard match to improve chances of finding
+        # headers and SOs.
+        set(PC_$(USE.CMAKE_NAME)_INCLUDE_HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS} ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS}/*)
+        set(PC_$(USE.CMAKE_NAME)_LIBRARY_HINTS ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS} ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS}/*)
+    endif(PC_$(USE.CMAKE_NAME)_FOUND)
 endif (NOT MSVC)
 
 find_path(
@@ -249,11 +293,15 @@ find_library(
 )
 
 include(FindPackageHandleStandardArgs)
+
 find_package_handle_standard_args(
-  $(USE.CMAKE_NAME)
-  REQUIRED_VARS $(USE.CMAKE_NAME)_LIBRARIES $(USE.CMAKE_NAME)_INCLUDE_DIRS
+    $(USE.CMAKE_NAME)
+    REQUIRED_VARS $(USE.CMAKE_NAME)_LIBRARIES $(USE.CMAKE_NAME)_INCLUDE_DIRS
 )
-mark_as_advanced($(USE.CMAKE_NAME)_FOUND $(USE.CMAKE_NAME)_LIBRARIES $(USE.CMAKE_NAME)_INCLUDE_DIRS)
+mark_as_advanced(
+    $(USE.CMAKE_NAME)_FOUND
+    $(USE.CMAKE_NAME)_LIBRARIES $(USE.CMAKE_NAME)_INCLUDE_DIRS
+)
 
 $(project.GENERATED_WARNING_HEADER:)
 .endfor
