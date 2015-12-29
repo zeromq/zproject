@@ -156,27 +156,27 @@ install(FILES ${$(project.name)_headers} DESTINATION include)
 # library
 ########################################################################
 include_directories("${SOURCE_DIR}/src" "${SOURCE_DIR}/include")
-set ($(project.name)_sources
+set ($(project.linkname)_sources
 .for class
     src/$(name:c).c
 .endfor
 )
-source_group("Source Files" FILES ${$(project.name)_sources})
+source_group("Source Files" FILES ${$(project.linkname)_sources})
 if (NOT DEFINED BUILD_SHARED_LIBS)
     SET(BUILD_SHARED_LIBS ON)
 endif()
-add_library($(project.name) ${$(project.name)_sources})
-set_target_properties($(project.name)
+add_library($(project.linkname) ${$(project.linkname)_sources})
+set_target_properties($(project.linkname)
     PROPERTIES DEFINE_SYMBOL "$(PROJECT.LIBNAME)_EXPORTS"
 )
-set_target_properties($(project.name)
+set_target_properties($(project.linkname)
     PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${SOURCE_DIR}/src"
 )
-target_link_libraries($(project.name)
+target_link_libraries($(project.linkname)
     ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES}
 )
 
-install(TARGETS $(project.name)
+install(TARGETS $(project.linkname)
     LIBRARY DESTINATION "lib${LIB_SUFFIX}" # .so file
     ARCHIVE DESTINATION "lib${LIB_SUFFIX}" # .lib file
     RUNTIME DESTINATION bin              # .dll file
@@ -215,7 +215,7 @@ add_executable(
 )
 target_link_libraries(
     $(main.name)
-    $(project.name)
+    $(project.linkname)
     ${ZEROMQ_LIBRARIES}
 )
 set_target_properties(
