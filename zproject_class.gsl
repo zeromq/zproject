@@ -166,7 +166,8 @@ typedef struct
 
 #define DECLARE_TEST(TEST) {#TEST, TEST}
 
-test_item_t all_tests [] = {
+static test_item_t
+all_tests [] = {
 .for class
     DECLARE_TEST($(class.c_name)_test),
 .endfor
@@ -180,11 +181,7 @@ test_item_t all_tests [] = {
 static inline unsigned
 test_get_number (void)
 {
-    unsigned count = 0;
-    test_item_t *item;
-    for (item = all_tests; item->test; item++)
-        count++;
-    return count;
+    return sizeof (all_tests) / sizeof (test_item_t) - 1;
 }
 
 //  -------------------------------------------------------------------------
@@ -244,7 +241,7 @@ main (int argc, char **argv)
             verbose = true;
         else
         if (streq (argv [argn], "--nb")) {
-            printf("%d\\n", test_get_number ());
+            printf ("%d\\n", test_get_number ());
             return 0;
         }
         else
