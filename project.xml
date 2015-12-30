@@ -20,6 +20,7 @@
     name := The name of your project (optional)
     description := A short description for your project (optional)
     email := The email address where to reach you (optional)
+    repository := git repository holding project (optional)
 -->
 <project script = "zproject.gsl" name = "myproject">
 
@@ -131,6 +132,7 @@
     <bin name = "zproject_class_api.gsl" />
     <bin name = "zproject_cmake.gsl" />
     <bin name = "zproject_cygwin.gsl" />
+    <bin name = "zproject_docker.gsl" />
     <bin name = "zproject_docs.gsl" />
     <bin name = "zproject_git.gsl" />
     <bin name = "zproject_lib.gsl" />

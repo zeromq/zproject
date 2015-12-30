@@ -32,6 +32,7 @@ myproject_SCRIPTS = \
     zproject_class_api.gsl \
     zproject_cmake.gsl \
     zproject_cygwin.gsl \
+    zproject_docker.gsl \
     zproject_docs.gsl \
     zproject_git.gsl \
     zproject_lib.gsl \
