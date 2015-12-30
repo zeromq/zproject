@@ -119,3 +119,4 @@ endfunction
 .echo "Generating distro packaging recipes"
 .gsl from "zproject_debian.gsl"
 .gsl from "zproject_spec.gsl"
+.gsl from "zproject_docker.gsl"

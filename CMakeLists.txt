@@ -45,7 +45,10 @@ configure_file("${SOURCE_DIR}/src/platform.h.in" "${SOURCE_DIR}/src/platform.h")
 if (MSVC)
     enable_language(CXX)
     file(GLOB sources "${SOURCE_DIR}/src/*.c")
-    set_source_files_properties(${sources} PROPERTIES LANGUAGE CXX)
+    set_source_files_properties(
+        ${sources}
+        PROPERTIES LANGUAGE CXX
+    )
     set(MORE_LIBRARIES ws2_32 Rpcrt4 Iphlpapi)
 endif()
 
@@ -83,12 +86,21 @@ set(TEST_CLASSES
 )
 
 foreach(TEST_CLASS ${TEST_CLASSES})
-  add_test(NAME ${TEST_CLASS} COMMAND myproject_selftest -e -v --test ${TEST_CLASS})
-  set_tests_properties(${TEST_CLASS} PROPERTIES TIMEOUT ${CLASSTEST_TIMEOUT})
+    add_test(
+        NAME ${TEST_CLASS}
+        COMMAND myproject_selftest -e -v --test ${TEST_CLASS}
+    )
+    set_tests_properties(
+        ${TEST_CLASS}
+        PROPERTIES TIMEOUT ${CLASSTEST_TIMEOUT}
+    )
 endforeach(TEST_CLASS)
 
 add_test(myproject_selftest myproject_selftest)
-set_tests_properties(myproject_selftest PROPERTIES TIMEOUT ${TOTAL_TIMEOUT})
+set_tests_properties(
+    myproject_selftest
+    PROPERTIES TIMEOUT ${TOTAL_TIMEOUT}
+)
 
 ########################################################################
 # summary
