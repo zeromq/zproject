@@ -6,6 +6,7 @@
 .#  is licensed under MIT/X11.
 .#
 .#  This script will generate the following files:
+.#   * builds/debian/compat
 .#   * builds/debian/control
 .#   * builds/debian/$(project.name).dsc
 .#   * builds/debian/rules
@@ -14,6 +15,8 @@
 .if !file.exists ('builds/debian')
 .   directory.create('builds/debian')
 .endif
+.output "builds/debian/compat"
+9
 .output "builds/debian/control"
 #
 #    $(project.name) - $(project.description?'':)
