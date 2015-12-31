@@ -6,12 +6,18 @@
 .#  is licensed under MIT/X11.
 .#
 .#  This script will generate the following files:
+.#   * builds/debian/compat
 .#   * builds/debian/control
+.#   * builds/debian/$(project.name).dsc
+.#   * builds/debian/rules
+.#   * builds/debian/*.install
 .#  ===========================================================================
 .#
 .if !file.exists ('builds/debian')
 .   directory.create('builds/debian')
 .endif
+.output "builds/debian/compat"
+9
 .output "builds/debian/control"
 #
 #    $(project.name) - $(project.description?'':)
@@ -144,4 +150,41 @@ override_dh_auto_configure:
 %:
 	dh $@ --with=autoreconf
 
-\.PHONY: override_dh_strip override_dh_auto_test
+\.PHONY: override_dh_strip override_dh_auto_test override_dh_auto_configure
+
+.if project.has_main
+.   output ("builds/debian/$(string.replace (project.name, "_|-")).install")
+.# generate binary names
+.   for project.main where scope = "public"
+debian/tmp/usr/bin/$(main.name)
+.       if file.exists ("src/$(main.name).cfg.example")
+debian/tmp/etc/$(project.name)/$(main.name).cfg.example
+.       endif
+.   endfor
+.   for project.bin
+debian/tmp/usr/bin/$(bin.name)
+.   endfor
+.# generate service file names
+.   for project.main where main.service ?= 1 | main.services ?= 1
+.       if main.no_config ?= 0
+debian/tmp/etc/$(project.name)/$(main.name).cfg
+.       endif
+debian/tmp/usr/lib/systemd/system/$(main.name)*.service
+.   endfor
+.   for project.service
+debian/tmp/lib/systemd/system/$(service.name)*.service
+.   endfor
+
+.   for project.main where defined (main->extra)
+debian/tmp/$(main->extra.path)/$(main->extra.name)
+.   endfor
+.endif
+
+.if project.exports_classes
+.   output ("builds/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
+debian/tmp/usr/lib/$(project.libname).so.*
+.   output ("builds/debian/$(string.replace (project.name, "_|-"))-dev")
+debian/tmp/usr/include/*
+debian/tmp/usr/lib/$(project.libname).so
+debian/tmp/usr/lib/pkgconfig/$(project.libname).pc
+.endif
