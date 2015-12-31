@@ -281,9 +281,6 @@ def s_show_zproto_enum(fp, klass_l, decl_dict):
 
 def show_zproto_model(fp, klass, decls, comments, macros):
     print("""
-<!--
-    This model defines a public API for binding.
--->
 <class name = "%s" >
 
     <include filename = "../license.xml" />
@@ -308,7 +305,6 @@ def show_zproto_model(fp, klass, decls, comments, macros):
 
         if decl_dict["name"] == klass + "_new":
             print("""
-    <!-- Constructor is optional; default one has no arguments -->
     <constructor>
         Create a new %s""" % (klass, ), file=fp)
             s_show_zproto_model_arguments(fp, decl_dict)
@@ -317,7 +313,6 @@ def show_zproto_model(fp, klass, decls, comments, macros):
 
         if decl_dict["name"] == klass + "_destroy":
             print("""
-    <!-- Destructor is optional; default one follows standard style -->
     <destructor />\n""", file=fp)
             continue
 
