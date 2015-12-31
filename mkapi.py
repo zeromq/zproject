@@ -8,6 +8,7 @@ import argparse
 import re
 import os
 import sys
+import textwrap
 
 from collections import namedtuple
 from xml.sax.saxutils import quoteattr as s_xml_quoteattr
@@ -22,6 +23,18 @@ Generate zproto API XML model from CLASS compatible function declarations
 MacroDecl = namedtuple("MacroDecl", "name, value, comment")
 TypeDecl  = namedtuple("TypeDecl", "type, ptr, quals")
 ArgDecl   = namedtuple("ArgDecl", "name, type, ptr, quals")
+
+COMMENTWRAPPER = textwrap.TextWrapper(
+        width=80,
+        initial_indent=8*' ',
+        replace_whitespace=True,
+        drop_whitespace=True,
+        subsequent_indent=8*' ')
+
+def s_comment_fill(comment):
+    global COMMENTWRAPPER
+    return COMMENTWRAPPER.fill(
+            s_xml_escape(comment))
 
 def s_parse_comments_and_macros(fp):
 
@@ -245,7 +258,8 @@ def s_show_zproto_mc(fp, klass_l, dct, comments):
 
     for i in range(3):
         if dct["coord"].line -i in comments:
-            print(s_xml_escape(comments[dct["coord"].line-i]), file=fp)
+            print(s_comment_fill(comments[dct["coord"].line-i]),
+                  file=fp)
 
     s_show_zproto_model_arguments(fp, dct)
     if dct["return_type"].type != "void":
@@ -273,13 +287,13 @@ def show_zproto_model(fp, klass, decls, comments, macros):
 <class name = "%s" >
 
     <include filename = "../license.xml" />
-    """ % (klass, ), file=fp)
+""" % (klass, ), file=fp)
 
     klass_l = len(klass) + 1
     include = os.path.join("include", klass + ".h")
 
     for macro_decl in macros:
-        print("""    <constant name = "%s" value = %s >%s</constant>\n""" % (
+        print("""    <constant name = "%s" value = %s >%s</constant>""" % (
             macro_decl.name[klass_l:].lower(),
             s_xml_quoteattr(macro_decl.value),
             macro_decl.comment),
