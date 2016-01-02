@@ -89,7 +89,7 @@ android_build_verify_so "$(project.libname).so"\
  "$(use.libname).so"\
 .endfor
 
-echo "Qt Android build successful"
+echo "Android build successful"
 $(project.GENERATED_WARNING_HEADER:)
 .close
 .chmod_x ("builds/android/build.sh")
