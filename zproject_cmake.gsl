@@ -236,14 +236,14 @@ set(TOTAL_TIMEOUT 20 CACHE STRING "Timout of the total testsuite")
 
 set(TEST_CLASSES
 .for class
-    $(name)_test
+    $(name)
 .endfor
 )
 
 foreach(TEST_CLASS ${TEST_CLASSES})
     add_test(
         NAME ${TEST_CLASS}
-        COMMAND $(project.prefix)_selftest -e -v --test ${TEST_CLASS}
+        COMMAND $(project.prefix)_selftest --continue --verbose --test ${TEST_CLASS}
     )
     set_tests_properties(
         ${TEST_CLASS}
