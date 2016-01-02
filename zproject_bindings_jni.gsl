@@ -74,7 +74,6 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 dependencies {
-.if defined (project->dependencies)
 .   for project.use
 .       if count (project->dependencies.class, class.project = use.project) > 0
     compile 'org.zeromq:$(use.project)-jni:+'
@@ -82,7 +81,6 @@ dependencies {
 .   endfor
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-all:1.3'
-.endif
 }
 task generateJniHeaders(type: Exec, dependsOn: 'classes') {
     def classpath = sourceSets.main.output.classesDir
@@ -383,13 +381,21 @@ Set these environment variables, e.g:
     TOOLCHAIN_ARCH=arm
     TOOLCHAIN_PATH=$ANDROID_NDK_ROOT/toolchains/$TOOLCHAIN_NAME/prebuilt/linux-x86_64/bin
 
-Then in the android directory, to build $(project.prefix)jni.so run:
+Then in the android directory, run:
 
     ./build.sh
 
-Note that this implicitly builds the Android library and all dependencies. It also builds the JNI layer for Linux.
+This does the following:
 
-All results are placed in bindings/jni/android/build/libs.
+* It compiles the $(project.name:) C sources for Android, into a native library $(project.libname).so in builds/android/
+* It compiles the JNI Java classes into a jar file $(project.prefix)-jni-$(->version.major).$(->version.minor).$(->version.patch).jar in bindings/jni/build/libs
+* It compiles the JNI C sources for Android, into a native library $(project.libname)jni.so.
+.for project.use
+.   if count (project->dependencies.class, class.project = use.project) > 0
+* It takes $(use.project)-jni-*.jar, which must already be built in ../$(use.project)/bindings/jni/build/libs/
+.   endif
+.endfor
+* It combines all these into $(project.name)-android.jar, which you can use in your Android projects.
 
 ## Building the JNI Layer for Windows
 
@@ -402,6 +408,10 @@ You need the Java SDK. Set the JAVA_HOME environment to the installation locatio
 3. In this project, open a console in bindings/jni/msvc/vs2010 and run the build.bat batch file.
 
 The resulting libraries ($(project.prefix)jni.dll, $(project.prefix)jni.lib) are created in bindings/jni/msvc/bin.
+
+## Using the JNI API
+
+- to be written.
 
 ## License
 
@@ -418,7 +428,7 @@ cmake_install.cmake
 build/
 src/native
 gradle-app.setting
-lib$(project.prefix)jni.so
+$(project.libname)jni.so
 .
 .directory.create ("$(topdir)/android")
 .output "$(topdir)/android/build.sh"
@@ -452,10 +462,7 @@ echo "********  Building Android native libraries"
 echo "********  Building JNI interface & classes"
 ( cd .. && gradle build jar )
 
-rm -Rf build
-mkdir build
-cd build
-cmake -v -DCMAKE_TOOLCHAIN_FILE=../android_toolchain.cmake ..
+cmake -v -DCMAKE_TOOLCHAIN_FILE=android_toolchain.cmake .
 
 #   CMake wrongly searches current directory and then toolchain path instead
 #   of lib path for these files, so make them available temporarily
@@ -465,15 +472,25 @@ ln -s $ANDROID_SYS_ROOT/usr/lib/crtbegin_so.o
 echo "********  Building JNI for Android"
 make $MAKE_OPTIONS
 rm crtend_so.o crtbegin_so.o
-cd ..
 
-mkdir build/libs
-mv build/*.so build/libs
-cp ../build/libs/* build/libs
-cp ../../../builds/android/prefix/*/lib/*.so build/libs
+echo "********  Building $(project.name:c).jar for Android"
 
-echo "********  Complete: build products are in ./build/libs"
-ls build/libs
+#   Copy class files into org/zeromq/etc.
+unzip -q ../build/libs/$(project.prefix)*.jar
+.for project.use
+.   if count (project->dependencies.class, class.project = use.project) > 0
+unzip -q -o ../../../../$(use.project)/bindings/jni/build/libs/$(use.project)*.jar
+.   endif
+.endfor
+
+#   Copy native libraries into lib/armeabi
+mkdir -p lib/armeabi
+mv $(project.libname)jni.so lib/armeabi
+cp ../../../builds/android/prefix/*/lib/*.so lib/armeabi
+
+zip -r -m $(project.name)-android.jar lib/ org/ META-INF/
+
+echo "********  Complete"
 .chmod_x ("$(topdir)/android/build.sh")
 .
 .output "$(topdir)/android/CMakeLists.txt"
