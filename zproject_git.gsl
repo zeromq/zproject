@@ -68,6 +68,7 @@ CMakeFiles/
 CTestTestfile.cmake
 cmake_install.cmake
 install_manifest.txt
+Testing/
 
 # Android build results
 builds/android/prefix
