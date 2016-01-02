@@ -251,11 +251,6 @@ foreach(TEST_CLASS ${TEST_CLASSES})
     )
 endforeach(TEST_CLASS)
 
-add_test($(project.prefix)_selftest $(project.prefix)_selftest)
-set_tests_properties(
-    $(project.prefix)_selftest
-    PROPERTIES TIMEOUT ${TOTAL_TIMEOUT}
-)
 
 ########################################################################
 # summary
