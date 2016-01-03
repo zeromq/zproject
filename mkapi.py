@@ -277,11 +277,12 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
     s_show_zproto_model_comment(fp, decl_dict, comments)
     s_show_zproto_model_arguments(fp, decl_dict)
 
-    if typ not in ("constructor", "destructor") and \
-       decl_dict["return_type"].type != "void":
-        constant = ' constant="1" ' if 'const' in decl_dict["return_type"].quals else ''
-        print("""        <return type = "%(type)s"%(constant)s/>""" % {
-            "type" : s_decl_to_zproto_type(decl_dict["return_type"]),
+    if typ not in ("constructor", "destructor") and decl_dict["return_type"].type != "void":
+        arg = decl_dict["return_type"]
+        constant = ' constant="1" ' if 'const' in arg.quals else ''
+        print("""        <return type = "%(type)s"%(constant)s%(fresh)s/>""" % {
+                "type" : s_decl_to_zproto_type(arg),
+                "fresh"    : ' fresh="1"' if arg.ptr == "*" and not "const" in arg.quals else "",
                 "constant" : constant}
              , file=fp)
     print("""    </%s>\n""" % (typ, ), file=fp)
