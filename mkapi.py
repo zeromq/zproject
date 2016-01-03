@@ -129,7 +129,6 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
                 xtra = {}
                 if typ in self._callbacks:
                     xtra["callback"] = True
-                    print("D: callback='1' for %s" % n.name, file=sys.stderr)
                 ret.append((ArgDecl(n.name, typ, ptr, quals, xtra)))
             elif isinstance(n, c_ast.EllipsisParam):
                 ret.append(ArgDecl("", "...", "", [], {}))
@@ -180,7 +179,6 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
             decl_dict["type"] = "callback_type"
             self._ret.append(decl_dict)
             self._callbacks.add(decl_dict["name"])
-            print ("D: _callbacks <- %s" % decl_dict["name"], file=sys.stderr)
             return
         elif isinstance(node.type.type, c_ast.Enum):
             decl_dict = FuncDeclVisitor.s_enum_dict(node)
