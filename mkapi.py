@@ -22,7 +22,7 @@ Generate zproto API XML model from CLASS compatible function declarations
 
 MacroDecl = namedtuple("MacroDecl", "name, value, comment")
 TypeDecl  = namedtuple("TypeDecl", "type, ptr, quals")
-ArgDecl   = namedtuple("ArgDecl", "name, type, ptr, quals")
+ArgDecl   = namedtuple("ArgDecl", "name, type, ptr, quals, xtra")
 
 COMMENTWRAPPER = textwrap.TextWrapper(
         width=80,
@@ -96,6 +96,7 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
     def __init__(self, *args, **kwargs):
         super(FuncDeclVisitor, self).__init__(*args, **kwargs)
         self._ret = list()
+        self._callbacks = set()
 
     @staticmethod
     def s_decl_type(node):
@@ -117,28 +118,30 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
             node.coord.column,
             node.__class__.__name__))
 
-    @staticmethod
-    def s_func_args(node):
+    def func_args(self, node):
         if node.args is None:
-            return (ArgDecl('', "void", '', []), )
+            return (ArgDecl('', "void", '', [], {}), )
 
         ret = list()
         for idx, n in node.args.children():
             if isinstance(n, (c_ast.Decl, c_ast.Typename)):
                 typ, ptr, quals = FuncDeclVisitor.s_decl_type(n.type)
-                ret.append((ArgDecl(n.name, typ, ptr, quals)))
+                xtra = {}
+                if typ in self._callbacks:
+                    xtra["callback"] = True
+                    print("D: callback='1' for %s" % n.name, file=sys.stderr)
+                ret.append((ArgDecl(n.name, typ, ptr, quals, xtra)))
             elif isinstance(n, c_ast.EllipsisParam):
-                ret.append(ArgDecl("", "...", "", []))
+                ret.append(ArgDecl("", "...", "", [], {}))
             else:
-                raise NotImplementedError("%s is not supported in s_func_args" % (n.__class__.__name__))
+                raise NotImplementedError("%s is not supported in func_args" % (n.__class__.__name__))
         return tuple(ret)
 
-    @staticmethod
-    def s_decl_dict(node):
+    def decl_dict(self, node):
         decl_dict = {
                     "return_type" : FuncDeclVisitor.s_decl_type(node.type.type),
                     "name" : node.name,
-                    "args" : FuncDeclVisitor.s_func_args(node.type),
+                    "args" : self.func_args(node.type),
                     "coord" : node.coord,
                     }
         return decl_dict
@@ -161,7 +164,7 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
     def visit_Decl(self, node):
         if not isinstance (node.type, c_ast.FuncDecl):
             return
-        decl_dict = FuncDeclVisitor.s_decl_dict(node)
+        decl_dict = self.decl_dict(node)
         typ = "singleton"
         if  decl_dict["args"] and \
             decl_dict["args"][0].name in ("self", "self_p") and \
@@ -173,9 +176,11 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
 
     def visit_Typedef(self, node):
         if isinstance(node.type, c_ast.FuncDecl):
-            decl_dict = FuncDeclVisitor.s_decl_dict(node)
+            decl_dict = self.decl_dict(node)
             decl_dict["type"] = "callback_type"
             self._ret.append(decl_dict)
+            self._callbacks.add(decl_dict["name"])
+            print ("D: _callbacks <- %s" % decl_dict["name"], file=sys.stderr)
             return
         elif isinstance(node.type.type, c_ast.Enum):
             decl_dict = FuncDeclVisitor.s_enum_dict(node)
@@ -240,11 +245,12 @@ def s_show_zproto_model_arguments(fp, decl_dict):
             continue
         if arg.name == "format" and arg.type == "char" and arg.ptr == "*":
             was_format = True
-        print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(constant)s/>""" %
+        print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(constant)s%(callback)s/>""" %
                 {   "name" : arg.name,
                     "type" : s_decl_to_zproto_type(arg),
                     "byref" : """ by_reference="1" """ if arg.ptr == "**" else "",
-                    "constant" : ' constant="1" ' if "const" in arg.quals else "",
+                    "constant" : ' constant="1"' if "const" in arg.quals else "",
+                    "callback" : ' callback="1"' if "callback" in arg.xtra else "",
                 }, file=fp)
 
 def s_show_zproto_model_comment(fp, decl_dict, comments):
