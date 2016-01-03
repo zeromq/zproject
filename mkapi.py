@@ -129,7 +129,6 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
                 xtra = {}
                 if typ in self._callbacks:
                     xtra["callback"] = True
-                    print("D: callback='1' for %s" % n.name, file=sys.stderr)
                 ret.append((ArgDecl(n.name, typ, ptr, quals, xtra)))
             elif isinstance(n, c_ast.EllipsisParam):
                 ret.append(ArgDecl("", "...", "", [], {}))
@@ -180,7 +179,6 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
             decl_dict["type"] = "callback_type"
             self._ret.append(decl_dict)
             self._callbacks.add(decl_dict["name"])
-            print ("D: _callbacks <- %s" % decl_dict["name"], file=sys.stderr)
             return
         elif isinstance(node.type.type, c_ast.Enum):
             decl_dict = FuncDeclVisitor.s_enum_dict(node)
@@ -279,11 +277,12 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
     s_show_zproto_model_comment(fp, decl_dict, comments)
     s_show_zproto_model_arguments(fp, decl_dict)
 
-    if typ not in ("constructor", "destructor") and \
-       decl_dict["return_type"].type != "void":
-        constant = ' constant="1" ' if 'const' in decl_dict["return_type"].quals else ''
-        print("""        <return type = "%(type)s"%(constant)s/>""" % {
-            "type" : s_decl_to_zproto_type(decl_dict["return_type"]),
+    if typ not in ("constructor", "destructor") and decl_dict["return_type"].type != "void":
+        arg = decl_dict["return_type"]
+        constant = ' constant="1" ' if 'const' in arg.quals else ''
+        print("""        <return type = "%(type)s"%(constant)s%(fresh)s/>""" % {
+                "type" : s_decl_to_zproto_type(arg),
+                "fresh"    : ' fresh="1"' if arg.ptr == "*" and not "const" in arg.quals else "",
                 "constant" : constant}
              , file=fp)
     print("""    </%s>\n""" % (typ, ), file=fp)
@@ -324,6 +323,9 @@ def show_zproto_model(fp, klass, decls, comments, macros):
 
         if decl_dict["type"] == "enum":
             s_show_zproto_enum(fp, klass_l, decl_dict)
+            continue
+
+        if decl_dict["name"].endswith("_test"):
             continue
 
         s_show_zproto_mc(fp, klass, decl_dict, comments)
