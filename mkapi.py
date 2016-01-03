@@ -325,6 +325,9 @@ def show_zproto_model(fp, klass, decls, comments, macros):
             s_show_zproto_enum(fp, klass_l, decl_dict)
             continue
 
+        if decl_dict["name"].endswith("_test"):
+            continue
+
         s_show_zproto_mc(fp, klass, decl_dict, comments)
 
     print("</class>", file=fp)
