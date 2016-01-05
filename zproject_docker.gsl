@@ -2,24 +2,37 @@
 .macro generate_docker_file ()
 .output "Dockerfile"
 FROM ubuntu:trusty
-
 MAINTAINER Benjamin Henrion <zoobab@gmail.com>
 
-RUN apt-get update && \\
-    apt-get install -y uuid-dev build-essential git-core libtool unzip && \\
-    apt-get install -y autotools-dev autoconf automake pkg-config libkrb5-dev && \\
-    mkdir -p /tmp/$(project.name:c) && \\
-    cd /tmp/$(project.name:c) && \\
-.for use where optional = 0
-    git clone $(use.repository) && \\
-    ( cd $(use.project); ./autogen.sh; ./configure; make check; make install; ldconfig; cd .. ) && \\
-.endfor
-    git clone $(project.repository) && \\
-    ( cd $(project.name:c); ./autogen.sh; ./configure; make check; make install; ldconfig; cd .. ) && \\
-    cd ../.. && \\
-    rm -rf /tmp/$(project.name:c)
+RUN DEBIAN_FRONTEND=noninteractive apt-get update -y -q
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y -q --force-yes uuid-dev build-essential git-core libtool autotools-dev autoconf automake pkg-config unzip libkrb5-dev cmake
 
-CMD ["$(project.name:c)"]
+RUN useradd -d /home/zmq -m -s /bin/bash zmq
+RUN echo "zmq ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/zmq
+RUN chmod 0440 /etc/sudoers.d/zmq
+
+USER zmq
+
+.for use where optional = 0
+WORKDIR /home/zmq
+RUN git clone $(use.repository).git
+WORKDIR /home/zmq/$(use.project)
+RUN ./autogen.sh
+RUN ./configure
+RUN make
+RUN sudo make install
+RUN sudo ldconfig
+
+.endfor
+WORKDIR /home/zmq
+RUN git clone git://github.com/zeromq/$(project.name:c).git
+WORKDIR /home/zmq/$(project.name:c)
+RUN mkdir build
+WORKDIR /home/zmq/$(project.name:c)/build
+RUN cmake ..
+RUN make
+RUN sudo make install
+RUN sudo ldconfig
 .endmacro
 
 if defined (project.repository)
