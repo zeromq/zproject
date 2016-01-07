@@ -446,6 +446,9 @@ $(project.GENERATED_WARNING_HEADER:)
 #     TOOLCHAIN_ARCH=arm
 #     TOOLCHAIN_PATH=$ANDROID_NDK_ROOT/toolchains/$TOOLCHAIN_NAME/prebuilt/linux-x86_64/bin
 #
+#   Exit if any step fails
+set -e
+
 export ANDROID_API_LEVEL=android-8
 export ANDROID_SYS_ROOT=$ANDROID_NDK_ROOT/platforms/$ANDROID_API_LEVEL/arch-$TOOLCHAIN_ARCH
 if [ "$1" = "-d" ]; then
@@ -525,6 +528,12 @@ set ($(project.prefix)jni_sources
 )
 
 add_library ($(project.prefix)jni SHARED ${$(project.prefix)jni_sources})
+target_link_libraries ($(project.prefix)jni
+    $(project.linkname)
+.for project.use
+    $(use.linkname)
+.endfor
+)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -O2")
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
