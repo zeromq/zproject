@@ -236,7 +236,7 @@ set(TOTAL_TIMEOUT 20 CACHE STRING "Timout of the total testsuite")
 
 set(TEST_CLASSES
 .for class
-    $(name)
+    $(name:c)
 .endfor
 )
 
