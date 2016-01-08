@@ -458,12 +458,19 @@ fi
 source ../../../builds/android/android_build_helper.sh
 android_build_env
 
+#   Build any dependent libraries
+.for project.use
+.   if count (project->dependencies.class, class.project = use.project) > 0
+( cd ../../../../$(use.project)/bindings/jni/android; ./build.sh )
+.   endif
+.endfor
+
 #   Ensure we've built dependencies for Android
-echo "********  Building Android native libraries"
+echo "********  Building $(project.name:) Android native libraries"
 ( cd ../../../builds/android && ./build.sh )
 
 #   Ensure we've built JNI interface
-echo "********  Building JNI interface & classes"
+echo "********  Building $(project.name:) JNI interface & classes"
 ( cd .. && gradle build jar )
 
 rm -rf build && mkdir build && cd build
@@ -474,16 +481,15 @@ cmake -v -DCMAKE_TOOLCHAIN_FILE=../android_toolchain.cmake ..
 ln -s $ANDROID_SYS_ROOT/usr/lib/crtend_so.o
 ln -s $ANDROID_SYS_ROOT/usr/lib/crtbegin_so.o
 
-echo "********  Building JNI for Android"
+echo "********  Building $(project.name:) JNI for Android"
 make $MAKE_OPTIONS
 
 echo "********  Building $(project.name:c).jar for Android"
-
 #   Copy class files into org/zeromq/etc.
 unzip -q ../../build/libs/$(project.prefix)*.jar
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-unzip -q -o ../../../../../$(use.project)/bindings/jni/build/libs/$(use.project)*.jar
+unzip -q -o ../../../../../$(use.project)/bindings/jni/android/$(use.project)-android.jar
 .   endif
 .endfor
 
@@ -491,6 +497,7 @@ unzip -q -o ../../../../../$(use.project)/bindings/jni/build/libs/$(use.project)
 mkdir -p lib/armeabi
 mv $(project.libname)jni.so lib/armeabi
 cp ../../../../builds/android/prefix/*/lib/*.so lib/armeabi
+
 cp $ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/$TOOLCHAIN_VERSION/libs/armeabi/libgnustl_shared.so lib/armeabi
 
 zip -r -m ../$(project.name)-android.jar lib/ org/ META-INF/
@@ -530,7 +537,7 @@ set ($(project.prefix)jni_sources
 add_library ($(project.prefix)jni SHARED ${$(project.prefix)jni_sources})
 target_link_libraries ($(project.prefix)jni
     $(project.linkname)
-.for project.use
+.for project.use where optional = 0
     $(use.linkname)
 .endfor
 )
