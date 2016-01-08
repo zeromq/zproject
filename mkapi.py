@@ -140,8 +140,12 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
         return tuple(ret)
 
     def decl_dict(self, node):
+        typ, ptr, quals = FuncDeclVisitor.s_decl_type(node.type.type)
+        rtyp = ArgDecl("", typ, ptr, quals, {})
+        if typ in self._enums:
+            rtyp.xtra["enum"] = True
         decl_dict = {
-                    "return_type" : FuncDeclVisitor.s_decl_type(node.type.type),
+                    "return_type" : rtyp,
                     "name" : node.name,
                     "args" : self.func_args(node.type),
                     "coord" : node.coord,
@@ -362,19 +366,28 @@ def get_classes_from_decls(decls):
         seen.add(klass)
         yield klass
 
+def s_mangle_enum_type(arg, klass):
+    typ = arg.type[len(klass)+1:]
+    if typ.endswith("_t"):
+        typ = typ[:-2]
+    arg.xtra["enum_type"] = "enum:%(klass)s.%(type)s" % {
+            "klass" : klass,
+            "type"  : typ
+            }
+
 # brute force the enum type
+# TODO: a saner approach would be to add klass name to each xtra first
+#       and then reiterate once
 def s_update_enum_type(decls):
     for klass in sorted(get_classes_from_decls(decls), reverse=True):
         for decl_dict in (d for d in decls if "args" in d):
-            for arg in (a for a in decl_dict["args"] if "enum_type" not in a.xtra and "enum" in a.xtra and a.type.startswith(klass)):
-                typ = arg.type[len(klass)+1:]
 
-                if typ.endswith("_t"):
-                    typ = typ[:-2]
-                arg.xtra["enum_type"] = "enum:%(klass)s.%(type)s" % {
-                    "klass" : klass,
-                    "type"  : typ
-                }
+            ret = decl_dict["return_type"]
+            if ret.type.startswith(klass):
+                s_mangle_enum_type(ret, klass)
+
+            for arg in (a for a in decl_dict["args"] if "enum_type" not in a.xtra and "enum" in a.xtra and a.type.startswith(klass)):
+                s_mangle_enum_type(arg, klass)
 
 
 def s_which(binary):
