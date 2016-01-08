@@ -97,6 +97,7 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
         super(FuncDeclVisitor, self).__init__(*args, **kwargs)
         self._ret = list()
         self._callbacks = set()
+        self._enums = set()
 
     @staticmethod
     def s_decl_type(node):
@@ -129,6 +130,8 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
                 xtra = {}
                 if typ in self._callbacks:
                     xtra["callback"] = True
+                if typ in self._enums:
+                    xtra["enum"] = True
                 ret.append((ArgDecl(n.name, typ, ptr, quals, xtra)))
             elif isinstance(n, c_ast.EllipsisParam):
                 ret.append(ArgDecl("", "...", "", [], {}))
@@ -183,6 +186,7 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
         elif isinstance(node.type.type, c_ast.Enum):
             decl_dict = FuncDeclVisitor.s_enum_dict(node)
             self._ret.append(decl_dict)
+            self._enums.add(decl_dict["name"])
             return
 
 def s_cpp_args(args):
@@ -228,6 +232,8 @@ def s_decl_to_zproject_type(arg):
             ("byte", "*") : "buffer",
             ("off_t", "") : "file_size",
           }
+    if hasattr(arg, "xtra") and "enum" in arg.xtra:
+        return arg.xtra["enum_type"]
     if arg.type.endswith("_t") and arg.ptr in ("*", "**"):
         return arg.type[:-2]
     return dct.get((arg.type, arg.ptr), arg.type)
@@ -356,6 +362,21 @@ def get_classes_from_decls(decls):
         seen.add(klass)
         yield klass
 
+# brute force the enum type
+def s_update_enum_type(decls):
+    for klass in sorted(get_classes_from_decls(decls), reverse=True):
+        for decl_dict in (d for d in decls if "args" in d):
+            for arg in (a for a in decl_dict["args"] if "enum_type" not in a.xtra and "enum" in a.xtra and a.type.startswith(klass)):
+                typ = arg.type[len(klass)+1:]
+
+                if typ.endswith("_t"):
+                    typ = typ[:-2]
+                arg.xtra["enum_type"] = "enum:%(klass)s.%(type)s" % {
+                    "klass" : klass,
+                    "type"  : typ
+                }
+
+
 def s_which(binary):
     for d in os.getenv("PATH").split(':'):
         full_path = os.path.join(d, binary)
@@ -412,6 +433,7 @@ def main(argv=sys.argv[1:]):
             raise e
 
     decls = get_func_decls(args.header, args)
+    s_update_enum_type (decls)
     for klass in get_classes_from_decls(decls):
         include = os.path.join("include", klass + ".h")
         comments, macros = parse_comments_and_macros(include)
