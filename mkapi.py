@@ -214,7 +214,7 @@ def get_func_decls(filename, args):
         v.visit(node)
     return v._ret
 
-def s_decl_to_zproto_type(arg):
+def s_decl_to_zproject_type(arg):
     dct = {
             ("void", "")  : "nothing",
             ("void", "*") : "anything",
@@ -233,7 +233,7 @@ def s_decl_to_zproto_type(arg):
     return dct.get((arg.type, arg.ptr), arg.type)
 
 def s_is_arg_constant(arg):
-    return "const" in arg.quals and s_decl_to_zproto_type(arg) not in ("string", "buffer")
+    return "const" in arg.quals and s_decl_to_zproject_type(arg) not in ("string", "buffer")
 
 def s_show_zproto_model_arguments(fp, decl_dict):
     was_format = False
@@ -249,7 +249,7 @@ def s_show_zproto_model_arguments(fp, decl_dict):
 
         print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(constant)s%(callback)s/>""" %
                 {   "name" : arg.name,
-                    "type" : s_decl_to_zproto_type(arg),
+                    "type" : s_decl_to_zproject_type(arg),
                     "byref" : """ by_reference="1" """ if arg.ptr == "**" else "",
                     "constant" : ' constant="1"' if s_is_arg_constant(arg) else "",
                     "callback" : ' callback="1"' if "callback" in arg.xtra else "",
@@ -292,7 +292,7 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
     if typ not in ("constructor", "destructor") and decl_dict["return_type"].type != "void":
         arg = decl_dict["return_type"]
         print("""        <return type = "%(type)s"%(constant)s/>""" % {
-                "type" : s_decl_to_zproto_type(arg),
+                "type" : s_decl_to_zproject_type(arg),
                 "constant" : ' constant="1"' if s_is_arg_constant(arg) else "",
                 }
              , file=fp)
