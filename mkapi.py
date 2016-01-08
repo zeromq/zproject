@@ -273,6 +273,13 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
     elif typ == "singleton":
         typ = "method"
         singleton=""" singleton = "1" """
+
+    if typ == "method":
+        arg = decl_dict["return_type"]
+        if arg.ptr == "*" and not "const" in arg.quals:
+            print("    <!-- function returns non const pointer, if it allocates new object, add fresh=\"1\" to <return/> -->",
+                file=fp)
+
     print("""    <%s%s%s>""" % (typ, name, singleton), file=fp)
     s_show_zproto_model_comment(fp, decl_dict, comments)
     s_show_zproto_model_arguments(fp, decl_dict)
@@ -280,9 +287,8 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
     if typ not in ("constructor", "destructor") and decl_dict["return_type"].type != "void":
         arg = decl_dict["return_type"]
         constant = ' constant="1" ' if 'const' in arg.quals else ''
-        print("""        <return type = "%(type)s"%(constant)s%(fresh)s/>""" % {
+        print("""        <return type = "%(type)s"%(constant)s/>""" % {
                 "type" : s_decl_to_zproto_type(arg),
-                "fresh"    : ' fresh="1"' if arg.ptr == "*" and not "const" in arg.quals else "",
                 "constant" : constant}
              , file=fp)
     print("""    </%s>\n""" % (typ, ), file=fp)
