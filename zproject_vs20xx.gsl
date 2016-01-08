@@ -146,7 +146,6 @@ $(project.GENERATED_WARNING_HEADER:)
 #define __PLATFORM_H_INCLUDED__
 
 #define $(PROJECT.PREFIX)_HAVE_WINDOWS
-#define HAVE_LIBUUID 1
 
 #endif
 .endmacro
