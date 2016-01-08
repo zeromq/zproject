@@ -226,6 +226,7 @@ def s_decl_to_zproto_type(arg):
             ("float", "") : "real",
             ("char", "*") : "string",
             ("byte", "*") : "buffer",
+            ("off_t", "") : "file_size",
           }
     if arg.type.endswith("_t") and arg.ptr in ("*", "**"):
         return arg.type[:-2]
