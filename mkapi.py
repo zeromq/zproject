@@ -231,6 +231,8 @@ def s_decl_to_zproto_type(arg):
         return arg.type[:-2]
     return dct.get((arg.type, arg.ptr), arg.type)
 
+def s_is_arg_constant(arg):
+    return "const" in arg.quals and s_decl_to_zproto_type(arg) not in ("string", "buffer")
 
 def s_show_zproto_model_arguments(fp, decl_dict):
     was_format = False
@@ -243,11 +245,12 @@ def s_show_zproto_model_arguments(fp, decl_dict):
             continue
         if arg.name == "format" and arg.type == "char" and arg.ptr == "*":
             was_format = True
+
         print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(constant)s%(callback)s/>""" %
                 {   "name" : arg.name,
                     "type" : s_decl_to_zproto_type(arg),
                     "byref" : """ by_reference="1" """ if arg.ptr == "**" else "",
-                    "constant" : ' constant="1"' if "const" in arg.quals else "",
+                    "constant" : ' constant="1"' if s_is_arg_constant(arg) else "",
                     "callback" : ' callback="1"' if "callback" in arg.xtra else "",
                 }, file=fp)
 
@@ -280,16 +283,17 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
             print("    <!-- function returns non const pointer, if it allocates new object, add fresh=\"1\" to <return/> -->",
                 file=fp)
 
+
     print("""    <%s%s%s>""" % (typ, name, singleton), file=fp)
     s_show_zproto_model_comment(fp, decl_dict, comments)
     s_show_zproto_model_arguments(fp, decl_dict)
 
     if typ not in ("constructor", "destructor") and decl_dict["return_type"].type != "void":
         arg = decl_dict["return_type"]
-        constant = ' constant="1" ' if 'const' in arg.quals else ''
         print("""        <return type = "%(type)s"%(constant)s/>""" % {
                 "type" : s_decl_to_zproto_type(arg),
-                "constant" : constant}
+                "constant" : ' constant="1"' if s_is_arg_constant(arg) else "",
+                }
              , file=fp)
     print("""    </%s>\n""" % (typ, ), file=fp)
 
