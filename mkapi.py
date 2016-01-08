@@ -97,6 +97,7 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
         super(FuncDeclVisitor, self).__init__(*args, **kwargs)
         self._ret = list()
         self._callbacks = set()
+        self._enums = set()
 
     @staticmethod
     def s_decl_type(node):
@@ -129,6 +130,8 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
                 xtra = {}
                 if typ in self._callbacks:
                     xtra["callback"] = True
+                if typ in self._enums:
+                    xtra["enum"] = True
                 ret.append((ArgDecl(n.name, typ, ptr, quals, xtra)))
             elif isinstance(n, c_ast.EllipsisParam):
                 ret.append(ArgDecl("", "...", "", [], {}))
@@ -137,8 +140,12 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
         return tuple(ret)
 
     def decl_dict(self, node):
+        typ, ptr, quals = FuncDeclVisitor.s_decl_type(node.type.type)
+        rtyp = ArgDecl("", typ, ptr, quals, {})
+        if typ in self._enums:
+            rtyp.xtra["enum"] = True
         decl_dict = {
-                    "return_type" : FuncDeclVisitor.s_decl_type(node.type.type),
+                    "return_type" : rtyp,
                     "name" : node.name,
                     "args" : self.func_args(node.type),
                     "coord" : node.coord,
@@ -183,6 +190,7 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
         elif isinstance(node.type.type, c_ast.Enum):
             decl_dict = FuncDeclVisitor.s_enum_dict(node)
             self._ret.append(decl_dict)
+            self._enums.add(decl_dict["name"])
             return
 
 def s_cpp_args(args):
@@ -214,7 +222,7 @@ def get_func_decls(filename, args):
         v.visit(node)
     return v._ret
 
-def s_decl_to_zproto_type(arg):
+def s_decl_to_zproject_type(arg):
     dct = {
             ("void", "")  : "nothing",
             ("void", "*") : "anything",
@@ -228,12 +236,14 @@ def s_decl_to_zproto_type(arg):
             ("byte", "*") : "buffer",
             ("off_t", "") : "file_size",
           }
+    if hasattr(arg, "xtra") and "enum" in arg.xtra:
+        return arg.xtra["enum_type"]
     if arg.type.endswith("_t") and arg.ptr in ("*", "**"):
         return arg.type[:-2]
     return dct.get((arg.type, arg.ptr), arg.type)
 
 def s_is_arg_constant(arg):
-    return "const" in arg.quals and s_decl_to_zproto_type(arg) not in ("string", "buffer")
+    return "const" in arg.quals and s_decl_to_zproject_type(arg) not in ("string", "buffer")
 
 def s_show_zproto_model_arguments(fp, decl_dict):
     was_format = False
@@ -249,7 +259,7 @@ def s_show_zproto_model_arguments(fp, decl_dict):
 
         print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(constant)s%(callback)s/>""" %
                 {   "name" : arg.name,
-                    "type" : s_decl_to_zproto_type(arg),
+                    "type" : s_decl_to_zproject_type(arg),
                     "byref" : """ by_reference="1" """ if arg.ptr == "**" else "",
                     "constant" : ' constant="1"' if s_is_arg_constant(arg) else "",
                     "callback" : ' callback="1"' if "callback" in arg.xtra else "",
@@ -292,7 +302,7 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
     if typ not in ("constructor", "destructor") and decl_dict["return_type"].type != "void":
         arg = decl_dict["return_type"]
         print("""        <return type = "%(type)s"%(constant)s/>""" % {
-                "type" : s_decl_to_zproto_type(arg),
+                "type" : s_decl_to_zproject_type(arg),
                 "constant" : ' constant="1"' if s_is_arg_constant(arg) else "",
                 }
              , file=fp)
@@ -356,6 +366,30 @@ def get_classes_from_decls(decls):
         seen.add(klass)
         yield klass
 
+def s_mangle_enum_type(arg, klass):
+    typ = arg.type[len(klass)+1:]
+    if typ.endswith("_t"):
+        typ = typ[:-2]
+    arg.xtra["enum_type"] = "enum:%(klass)s.%(type)s" % {
+            "klass" : klass,
+            "type"  : typ
+            }
+
+# brute force the enum type
+# TODO: a saner approach would be to add klass name to each xtra first
+#       and then reiterate once
+def s_update_enum_type(decls):
+    for klass in sorted(get_classes_from_decls(decls), reverse=True):
+        for decl_dict in (d for d in decls if "args" in d):
+
+            ret = decl_dict["return_type"]
+            if ret.type.startswith(klass):
+                s_mangle_enum_type(ret, klass)
+
+            for arg in (a for a in decl_dict["args"] if "enum_type" not in a.xtra and "enum" in a.xtra and a.type.startswith(klass)):
+                s_mangle_enum_type(arg, klass)
+
+
 def s_which(binary):
     for d in os.getenv("PATH").split(':'):
         full_path = os.path.join(d, binary)
@@ -412,6 +446,7 @@ def main(argv=sys.argv[1:]):
             raise e
 
     decls = get_func_decls(args.header, args)
+    s_update_enum_type (decls)
     for klass in get_classes_from_decls(decls):
         include = os.path.join("include", klass + ".h")
         comments, macros = parse_comments_and_macros(include)
