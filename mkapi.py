@@ -245,7 +245,7 @@ def s_decl_to_zproject_type(arg):
     return dct.get((arg.type, arg.ptr), arg.type)
 
 def s_is_arg_constant(arg):
-    return "const" in arg.quals and s_decl_to_zproject_type(arg) not in ("string", "buffer")
+    return "const" in arg.quals and s_decl_to_zproject_type(arg) not in ("string", "buffer", "format")
 
 def s_show_zproto_model_arguments(fp, decl_dict, typ):
     was_format = False
