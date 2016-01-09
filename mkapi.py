@@ -301,7 +301,8 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
     s_show_zproto_model_comment(fp, decl_dict, comments)
     s_show_zproto_model_arguments(fp, decl_dict, typ)
 
-    if typ not in ("constructor", "destructor") and decl_dict["return_type"].type != "void":
+    if typ not in ("constructor", "destructor") and \
+        (decl_dict["return_type"].type != "void" or decl_dict["return_type"].ptr != ""):
         arg = decl_dict["return_type"]
         print("""        <return type = "%(type)s"%(constant)s/>""" % {
                 "type" : s_decl_to_zproject_type(arg),
