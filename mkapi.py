@@ -262,12 +262,12 @@ def s_show_zproto_model_arguments(fp, decl_dict, typ):
         typ = s_decl_to_zproject_type(arg)
         was_format = (typ == "format")
 
-        print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(constant)s%(callback)s/>""" %
+        print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(constant)s%(callback)s />""" %
                 {   "name" : arg.name,
                     "type" : typ,
-                    "byref" : """ by_reference="1" """ if arg.ptr == "**" else "",
-                    "constant" : ' constant="1"' if s_is_arg_constant(arg) else "",
-                    "callback" : ' callback="1"' if "callback" in arg.xtra else "",
+                    "byref" : ' by_reference = "1"' if arg.ptr == "**" else "",
+                    "constant" : ' constant = "1"' if s_is_arg_constant(arg) else "",
+                    "callback" : ' callback = "1"' if "callback" in arg.xtra else "",
                 }, file=fp)
 
 def s_show_zproto_model_comment(fp, decl_dict, comments):
@@ -282,7 +282,7 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
     klass_l = len(klass) + 1
     typ = decl_dict["type"]
     singleton=''
-    name = ' name="%s"' % decl_dict["name"][klass_l:]
+    name = ' name = "%s"' % decl_dict["name"][klass_l:]
     if decl_dict["name"] == klass + "_new":
         typ = "constructor"
         name = ""
@@ -291,7 +291,7 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
         name = ""
     elif typ == "singleton":
         typ = "method"
-        singleton=""" singleton = "1" """
+        singleton=' singleton = "1"'
 
     if typ == "method":
         arg = decl_dict["return_type"]
@@ -307,9 +307,9 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
     if typ not in ("constructor", "destructor") and \
         (decl_dict["return_type"].type != "void" or decl_dict["return_type"].ptr != ""):
         arg = decl_dict["return_type"]
-        print("""        <return type = "%(type)s"%(constant)s/>""" % {
+        print("""        <return type = "%(type)s"%(constant)s />""" % {
                 "type" : s_decl_to_zproject_type(arg),
-                "constant" : ' constant="1"' if s_is_arg_constant(arg) else "",
+                "constant" : ' constant= "1"' if s_is_arg_constant(arg) else "",
                 }
              , file=fp)
     print("""    </%s>\n""" % (typ, ), file=fp)
