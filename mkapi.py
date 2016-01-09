@@ -282,7 +282,8 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
     klass_l = len(klass) + 1
     typ = decl_dict["type"]
     singleton=''
-    name = ' name = "%s"' % decl_dict["name"][klass_l:]
+    nam = decl_dict["name"][klass_l:] if decl_dict["name"] != klass else klass
+    name = ' name = "%s"' % nam
     if decl_dict["name"] == klass + "_new":
         typ = "constructor"
         name = ""
@@ -330,7 +331,7 @@ def show_zproto_model(fp, klass, decls, comments, macros):
     please review the result carefully and especially don't forget
     to add fresh="1" to all methods allocating new functions
 -->
-    <class name = "%s" >
+<class name = "%s" >
 
     <include filename = "../license.xml" />
 """ % (klass, ), file=fp)
@@ -344,7 +345,6 @@ def show_zproto_model(fp, klass, decls, comments, macros):
             s_xml_quoteattr(macro_decl.value),
             macro_decl.comment),
             file=fp)
-
 
     for decl_dict in (d for d in decls if d["coord"].file == include):
 
