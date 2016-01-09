@@ -173,7 +173,7 @@ class FuncDeclVisitor(c_ast.NodeVisitor):
         decl_dict = self.decl_dict(node)
         typ = "singleton"
         if  decl_dict["args"] and \
-            decl_dict["args"][0].name in ("self", "self_p") and \
+            decl_dict["args"][0].name == "self" and \
             decl_dict["args"][0].type.endswith("_t") and \
             decl_dict["args"][0].ptr == "*":
             typ = "method"
@@ -240,26 +240,31 @@ def s_decl_to_zproject_type(arg):
         return arg.xtra["enum_type"]
     if arg.type.endswith("_t") and arg.ptr in ("*", "**"):
         return arg.type[:-2]
+    if arg.name == "format" and arg.type == "char" and arg.ptr == "*":
+        return "format"
     return dct.get((arg.type, arg.ptr), arg.type)
 
 def s_is_arg_constant(arg):
-    return "const" in arg.quals and s_decl_to_zproject_type(arg) not in ("string", "buffer")
+    return "const" in arg.quals and s_decl_to_zproject_type(arg) not in ("string", "buffer", "format")
 
-def s_show_zproto_model_arguments(fp, decl_dict):
+def s_show_zproto_model_arguments(fp, decl_dict, typ):
     was_format = False
     for arg in decl_dict["args"]:
         if (arg.name, arg.type) == ("", "void"):
             continue
-        if arg.name in ("self", "self_p") and arg.type != "void":
+        if arg.name == "self" and arg.type != "void":
+            continue
+        if typ == "destructor" and arg.name == "self_p" and arg.ptr == "**":
             continue
         if was_format and arg.type == "...":
             continue
-        if arg.name == "format" and arg.type == "char" and arg.ptr == "*":
-            was_format = True
+
+        typ = s_decl_to_zproject_type(arg)
+        was_format = (typ == "format")
 
         print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(constant)s%(callback)s/>""" %
                 {   "name" : arg.name,
-                    "type" : s_decl_to_zproject_type(arg),
+                    "type" : typ,
                     "byref" : """ by_reference="1" """ if arg.ptr == "**" else "",
                     "constant" : ' constant="1"' if s_is_arg_constant(arg) else "",
                     "callback" : ' callback="1"' if "callback" in arg.xtra else "",
@@ -297,9 +302,10 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
 
     print("""    <%s%s%s>""" % (typ, name, singleton), file=fp)
     s_show_zproto_model_comment(fp, decl_dict, comments)
-    s_show_zproto_model_arguments(fp, decl_dict)
+    s_show_zproto_model_arguments(fp, decl_dict, typ)
 
-    if typ not in ("constructor", "destructor") and decl_dict["return_type"].type != "void":
+    if typ not in ("constructor", "destructor") and \
+        (decl_dict["return_type"].type != "void" or decl_dict["return_type"].ptr != ""):
         arg = decl_dict["return_type"]
         print("""        <return type = "%(type)s"%(constant)s/>""" % {
                 "type" : s_decl_to_zproject_type(arg),
