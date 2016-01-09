@@ -240,6 +240,8 @@ def s_decl_to_zproject_type(arg):
         return arg.xtra["enum_type"]
     if arg.type.endswith("_t") and arg.ptr in ("*", "**"):
         return arg.type[:-2]
+    if arg.name == "format" and arg.type == "char" and arg.ptr == "*":
+        return "format"
     return dct.get((arg.type, arg.ptr), arg.type)
 
 def s_is_arg_constant(arg):
@@ -256,12 +258,13 @@ def s_show_zproto_model_arguments(fp, decl_dict, typ):
             continue
         if was_format and arg.type == "...":
             continue
-        if arg.name == "format" and arg.type == "char" and arg.ptr == "*":
-            was_format = True
+
+        typ = s_decl_to_zproject_type(arg)
+        was_format = (typ == "format")
 
         print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(constant)s%(callback)s/>""" %
                 {   "name" : arg.name,
-                    "type" : s_decl_to_zproject_type(arg),
+                    "type" : typ,
                     "byref" : """ by_reference="1" """ if arg.ptr == "**" else "",
                     "constant" : ' constant="1"' if s_is_arg_constant(arg) else "",
                     "callback" : ' callback="1"' if "callback" in arg.xtra else "",
