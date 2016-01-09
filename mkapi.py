@@ -8,7 +8,6 @@ import argparse
 import re
 import os
 import sys
-import textwrap
 
 from collections import namedtuple
 from xml.sax.saxutils import quoteattr as s_xml_quoteattr
@@ -24,17 +23,8 @@ MacroDecl = namedtuple("MacroDecl", "name, value, comment")
 TypeDecl  = namedtuple("TypeDecl", "type, ptr, quals")
 ArgDecl   = namedtuple("ArgDecl", "name, type, ptr, quals, xtra")
 
-COMMENTWRAPPER = textwrap.TextWrapper(
-        width=80,
-        initial_indent=8*' ',
-        replace_whitespace=True,
-        drop_whitespace=True,
-        subsequent_indent=8*' ')
-
 def s_comment_fill(comment):
-    global COMMENTWRAPPER
-    return COMMENTWRAPPER.fill(
-            s_xml_escape(comment))
+    return s_xml_escape(comment)
 
 def s_parse_comments_and_macros(fp):
 
@@ -70,7 +60,7 @@ def s_parse_comments_and_macros(fp):
             continue
 
         if line.startswith("//"):
-            last_comment += line[2:].lstrip()
+            last_comment += line[2:]
             continue
 
         if last_comment:
