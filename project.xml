@@ -145,4 +145,7 @@
     <bin name = "zproject_vs2008.gsl" />
     <bin name = "zproject_vs20xx.gsl" />
     <bin name = "zproject_vs20xx_props.gsl" />
+
+    <bin name = "mkapi.py" />
+    <bin name = "fake_cpp" />
 </project>

@@ -240,6 +240,29 @@ You can save a snapshot of the entire resolved project model using this syntax:
 gsl -save:1 project.xml
 ```
 
+### Generate API model from C header files
+
+Writing API model for bigger project with a lot of classes can be tedious job. There mkapi.py, which automates most of the task.
+
+In order to use it, you must install zproject itself and then pycparser. For most of real world code, you must have fake_libc_includes available too.
+```sh
+virtualenv/venv mkapi
+source mkapi/bin/activate
+pip install pycparser
+git clone https://github.com/eliben/pycparser.git
+```
+
+Then from root directory of your project (for example czmq), type following
+```sh
+python mkapi.py -I /path/to/your/pycparser/utils/fake_libc_include include/czmq.h
+```
+
+Note you must use top-level include as pycparser fails if it does not know any definition.
+
+#### Known caveats
+
+The tool can't distinguish methods which allocates new object. It does print a comment about adding fresh = "1" attribute to each method, which return non const pointer. However the final assigment must be done manually.
+
 ## Language Binding Notes
 
 ### JNI Language Binding
