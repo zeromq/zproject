@@ -234,8 +234,17 @@ def s_decl_to_zproject_type(arg):
         return "format"
     return dct.get((arg.type, arg.ptr), arg.type)
 
-def s_is_arg_constant(arg):
-    return "const" in arg.quals and s_decl_to_zproject_type(arg) not in ("string", "buffer", "format")
+def s_arg_mutable(arg):
+    """Return if attribute mutable should appear in API model
+        -1 means no
+        0  means mutable = "0"
+        1  means mutable = "1"
+    """
+    if s_decl_to_zproject_type(arg) in ("string", "format") or arg.ptr == "":
+        return -1
+    if "const" in arg.quals:
+        return 0
+    return 1
 
 def s_show_zproto_model_arguments(fp, decl_dict, typ):
     was_format = False
@@ -251,12 +260,13 @@ def s_show_zproto_model_arguments(fp, decl_dict, typ):
 
         typ = s_decl_to_zproject_type(arg)
         was_format = (typ == "format")
+        mut = s_arg_mutable(arg)
 
-        print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(constant)s%(callback)s />""" %
+        print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(mutable)s%(callback)s />""" %
                 {   "name" : arg.name,
                     "type" : typ,
                     "byref" : ' by_reference = "1"' if arg.ptr == "**" else "",
-                    "constant" : ' constant = "1"' if s_is_arg_constant(arg) else "",
+                    "mutable" : ' mutable = "%s"' % mut if mut in (0, 1) else "",
                     "callback" : ' callback = "1"' if "callback" in arg.xtra else "",
                 }, file=fp)
 
@@ -298,9 +308,11 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
     if typ not in ("constructor", "destructor") and \
         (decl_dict["return_type"].type != "void" or decl_dict["return_type"].ptr != ""):
         arg = decl_dict["return_type"]
-        print("""        <return type = "%(type)s"%(constant)s />""" % {
+        mut = s_arg_mutable(arg)
+
+        print("""        <return type = "%(type)s"%(mutable)s />""" % {
                 "type" : s_decl_to_zproject_type(arg),
-                "constant" : ' constant= "1"' if s_is_arg_constant(arg) else "",
+                "mutable" : ' mutable = "%s"' % mut if mut in (0, 1) else "",
                 }
              , file=fp)
     print("""    </%s>\n""" % (typ, ), file=fp)
