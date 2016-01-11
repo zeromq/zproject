@@ -249,7 +249,7 @@ def s_arg_mutable(arg):
 def s_show_zproto_model_arguments(fp, decl_dict, typ):
     was_format = False
     for arg in decl_dict["args"]:
-        if (arg.name, arg.type) == ("", "void"):
+        if arg.name in (None, "") and arg.type == "void":
             continue
         if arg.name == "self" and arg.type != "void":
             continue
