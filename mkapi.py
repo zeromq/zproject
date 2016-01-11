@@ -60,11 +60,11 @@ def s_parse_comments_and_macros(fp):
             continue
 
         if line.startswith("//"):
-            last_comment += line[2:]
+            last_comment += 6*' ' + line[2:]
             continue
 
         if last_comment:
-            comments[i] = last_comment
+            comments[i] = last_comment.rstrip()
         last_comment = ""
 
     return comments, macros
