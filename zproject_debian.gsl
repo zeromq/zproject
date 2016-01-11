@@ -182,9 +182,9 @@ debian/tmp/$(main->extra.path)/$(main->extra.name)
 
 .if project.exports_classes
 .   output ("builds/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
-debian/tmp/usr/lib/$(project.libname).so.*
-.   output ("builds/debian/$(string.replace (project.name, "_|-"))-dev")
+debian/tmp/usr/lib/*/$(project.libname).so.*
+.   output ("builds/debian/$(string.replace (project.name, "_|-"))-dev.install")
 debian/tmp/usr/include/*
-debian/tmp/usr/lib/$(project.libname).so
-debian/tmp/usr/lib/pkgconfig/$(project.libname).pc
+debian/tmp/usr/lib/*/$(project.libname).so
+debian/tmp/usr/lib/*/pkgconfig/$(project.libname).pc
 .endif
