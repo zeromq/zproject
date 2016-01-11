@@ -430,10 +430,11 @@ def s_expand_dirs(args):
 def main(argv=sys.argv[1:]):
 
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("header", help="main header file of the project")
     p.add_argument("-D", "--define", help="extra defines, which will be passed to c preprocessor", dest="DEFINE", action='append')
     p.add_argument("-I", "--include", help="extra includes, which will be passed to c preprocessor", dest="INCLUDE", action='append')
     p.add_argument("--cpp", help="Define c preprocessor to use (gcc -E, clang -E, auto for autodetect and none for not calling preprocessor at all", default="auto")
+    p.add_argument("header", help="main header file of the project")
+    p.add_argument("klass", help="classes to process, default all", metavar="class", nargs='+')
     args = p.parse_args(argv)
 
     args.INCLUDE = s_expand_dirs(args)
@@ -455,7 +456,13 @@ def main(argv=sys.argv[1:]):
 
     decls = get_func_decls(args.header, args)
     s_update_enum_type (decls)
-    for klass in get_classes_from_decls(decls):
+
+    if len(args.klass) == 0:
+        klasses = get_classes_from_decls(decls)
+    else:
+        klasses = (k for k in frozenset(get_classes_from_decls(decls)).intersection(frozenset(args.klass)))
+
+    for klass in klasses:
         include = os.path.join("include", klass + ".h")
         comments, macros = parse_comments_and_macros(include)
 
