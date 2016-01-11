@@ -193,32 +193,55 @@ function qt_method_signature (method, in_header)
             method.QtName = method.name
         endif
     endfor
+    for class.constructor as method
+        if method.name = "streq" \
+         | method.name = "strneq" \
+         | method.name = "export" \
+         | method.name = "delete" \
+         | method.name = "foreach"
+            method.QtName = method.name + " no conflict"
+        else
+            method.QtName = method.name
+        endif
+    endfor
     my.problematic = 0
     my.out = ""
-    if !method.is_constructor & !method.is_destructor
-        if my.in_header & my.method.singleton & !qt_method_has_self_pointer (method)
-            my.out += "static "
+    if !my.method.is_destructor & !(my.method.is_constructor & my.method.name = "new")
+        if my.in_header & my.method.singleton & !qt_method_has_self_pointer (my.method)
+                my.out += "static "
         endif
-        my.out += qt_method_return_type (my.method)
+        if !my.method.is_constructor
+            my.out += qt_method_return_type (my.method)
+        elsif my.method.name <> "new"
+            my.out += "$(class.QtName)* "
+        endif
     else
         qt_method_return_type (my.method)
     endif
     if my.in_header
-        if method.is_constructor
-            my.out += "explicit $(class.QtName)"
-        elsif method.is_destructor
+        if my.method.is_constructor
+            if my.method.name = "new"
+                my.out += "explicit $(class.QtName)"
+            else
+                my.out += "$(my.method.QtName:camel)"
+            endif
+        elsif my.method.is_destructor
             my.out += "~$(class.QtName)"
         endif
     else
         my.out += "$(class.QtName:)::"
-        if method.is_constructor
-            my.out += "$(class.QtName)"
-        elsif method.is_destructor
+        if my.method.is_constructor
+            if my.method.name = "new"
+                my.out += "$(class.QtName)"
+            else
+                my.out += "$(my.method.QtName:camel)"
+            endif
+        elsif my.method.is_destructor
             my.out += "~$(class.QtName)"
         endif
     endif
 
-    if !method.is_constructor & !method.is_destructor
+    if !my.method.is_constructor & !my.method.is_destructor
         my.out += "$(my.method.QtName:camel)"
     endif
     my.out += " ("
@@ -230,7 +253,7 @@ function qt_method_signature (method, in_header)
         my.out += my.args
     endif
 
-    if method.is_constructor
+    if my.method.is_constructor
         if !(my.args = "")
             my.out += ", "
         endif
@@ -243,8 +266,8 @@ function qt_method_signature (method, in_header)
 
     my.out += ")"
 
-    if method.is_constructor
-        if !my.in_header
+    if my.method.is_constructor
+        if !my.in_header & my.method.name = "new"
             my.out += " : QObject (qObjParent)"
         endif
     endif
@@ -330,14 +353,22 @@ for class.constructor as method where defined (qt_method_signature (method, 0))
 >//  $(method.description:no,block)
 >$(qt_method_signature (method, 0))
 >{
+   if index () = 1
 >    this->self = $(class.c_name:)_$(method.c_name) (\
+   else
+>    return new $(class.QtName) ($(class.c_name:)_$(method.c_name) (\
+   endif
    for method.argument where !argument.variadic
 >$(argument.qtArgPass)\
        if !last ()
 >, \
        endif
    endfor
+if index () = 1
 >);
+else
+>), qObjParent);
+endif
 >}
 endfor
 for class.destructor as method where defined (qt_method_signature (method, 0))
