@@ -32,7 +32,7 @@
         repository = "https://github.com/zeromq/libzmq"
         test = "zmq_init"
         cmake_name = "ZeroMQ">
-        <use project = "libsodium" />
+        <use project = "libsodium" optional = "1" implied = "1" />
     </use>
 
     <use project = "czmq" libname = "libczmq"
