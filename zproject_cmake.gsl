@@ -99,6 +99,7 @@ if (CYGWIN)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${SOURCE_DIR}")
+set(OPTIONAL_LIBRARIES)
 .for use
 
 ########################################################################
@@ -114,6 +115,7 @@ IF ($(USE.CMAKE_NAME)_FOUND)
     list(APPEND MORE_LIBRARIES ${$(USE.CMAKE_NAME)_LIBRARIES})
 .if use.optional = 1
     add_definitions(-DHAVE_$(USE.CMAKE_NAME))
+    list(APPEND OPTIONAL_LIBRARIES ${$(USE.CMAKE_NAME)_LIBRARIES})
 .endif
 .if use.optional = 0
 ELSE ($(USE.CMAKE_NAME)_FOUND)
@@ -219,8 +221,11 @@ target_link_libraries(
     $(project.linkname)
 .endif
 .for project.use
+.if use.optional = 0
     ${$(USE.CMAKE_NAME)_LIBRARIES}
+.endif
 .endfor
+    ${OPTIONAL_LIBRARIES}
 )
 set_target_properties(
     $(main.name)
