@@ -218,6 +218,7 @@ def s_decl_to_zproject_type(arg):
             ("void", "*") : "anything",
             ("size_t", "") : "size",
             ("time_t", "") : "time",
+            ("int64_t", "") : "clock",
             ("bool", "")  : "boolean",
             ("_Bool", "")  : "boolean",
             ("int", "")   : "integer",
