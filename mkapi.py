@@ -60,11 +60,11 @@ def s_parse_comments_and_macros(fp):
             continue
 
         if line.startswith("//"):
-            last_comment += line[2:]
+            last_comment += 6*' ' + line[2:]
             continue
 
         if last_comment:
-            comments[i] = last_comment
+            comments[i] = last_comment.rstrip()
         last_comment = ""
 
     return comments, macros
@@ -218,6 +218,7 @@ def s_decl_to_zproject_type(arg):
             ("void", "*") : "anything",
             ("size_t", "") : "size",
             ("time_t", "") : "time",
+            ("int64_t", "") : "clock",
             ("bool", "")  : "boolean",
             ("_Bool", "")  : "boolean",
             ("int", "")   : "integer",
@@ -249,7 +250,7 @@ def s_arg_mutable(arg):
 def s_show_zproto_model_arguments(fp, decl_dict, typ):
     was_format = False
     for arg in decl_dict["args"]:
-        if (arg.name, arg.type) == ("", "void"):
+        if arg.name in (None, "") and arg.type == "void":
             continue
         if arg.name == "self" and arg.type != "void":
             continue
