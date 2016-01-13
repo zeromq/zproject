@@ -100,7 +100,7 @@ function resolve_c_container (container)
         my.c_type = "off_t"
     elsif my.type = "time"
         my.c_type = "time_t"
-    elsif my.type = "clock"
+    elsif my.type = "msecs"
         my.c_type = "int64_t"
     elsif my.type = "FILE"
         my.c_type = "FILE"
