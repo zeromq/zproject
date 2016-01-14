@@ -11,8 +11,7 @@ function resolve_project_dependency (use)
     for my.known_projects.use as known where known.project = my.use.project
         my.use.repository  ?= known.repository?
         my.use.test        ?= known.test?
-        my.use.cmake_name  ?= known.cmake_name?
-        my.use.includename ?= known.includename?
+        my.use.header      ?= known.header?
         my.use.prefix      ?= known.prefix?
         my.use.linkname    ?= known.linkname?
         my.use.libname     ?= known.libname?
@@ -28,9 +27,8 @@ function resolve_project_dependency (use)
     # Use reasonable fallback values to fill in any remaining gaps
     my.use.prefix ?= my.use.project
     my.use.linkname ?= my.use.prefix
-    my.use.includename ?= my.use.prefix
+    my.use.header ?= my.use.prefix + ".h"
     my.use.libname ?= my.use.project
-    my.use.cmake_name ?= "$(my.use.project:Pascal)"
     my.use.optional ?= 0
     my.use.min_major ?= 0
     my.use.min_minor ?= 0

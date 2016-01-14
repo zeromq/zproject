@@ -106,22 +106,22 @@ set(OPTIONAL_LIBRARIES)
 # $(USE.PROJECT) dependency
 ########################################################################
 .if use.optional = 0
-find_package($(use.cmake_name:) REQUIRED)
+find_package($(use.project) REQUIRED)
 .else
-find_package($(use.cmake_name:))
+find_package($(use.project))
 .endif
-IF ($(USE.CMAKE_NAME)_FOUND)
-    include_directories(${$(USE.CMAKE_NAME)_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${$(USE.CMAKE_NAME)_LIBRARIES})
+IF ($(USE.PROJECT)_FOUND)
+    include_directories(${$(USE.PROJECT)_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
 .if use.optional = 1
-    add_definitions(-DHAVE_$(USE.CMAKE_NAME))
-    list(APPEND OPTIONAL_LIBRARIES ${$(USE.CMAKE_NAME)_LIBRARIES})
+    add_definitions(-DHAVE_$(USE.PROJECT))
+    list(APPEND OPTIONAL_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
 .endif
 .if use.optional = 0
-ELSE ($(USE.CMAKE_NAME)_FOUND)
-    message( FATAL_ERROR "$(use.cmake_name:) not found." )
+ELSE ($(USE.PROJECT)_FOUND)
+    message( FATAL_ERROR "$(use.project) not found." )
 .endif
-ENDIF ($(USE.CMAKE_NAME)_FOUND)
+ENDIF ($(USE.PROJECT)_FOUND)
 .endfor
 
 ########################################################################
@@ -222,7 +222,7 @@ target_link_libraries(
 .endif
 .for project.use
 .if use.optional = 0
-    ${$(USE.CMAKE_NAME)_LIBRARIES}
+    ${$(USE.PROJECT)_LIBRARIES}
 .endif
 .endfor
     ${OPTIONAL_LIBRARIES}
@@ -266,45 +266,45 @@ message(STATUS "install: ${CMAKE_INSTALL_PREFIX}")
 $(project.GENERATED_WARNING_HEADER:)
 .
 .for use
-.output "Find$(use.cmake_name:).cmake"
+.output "Find$(use.project).cmake"
 $(project.GENERATED_WARNING_HEADER:)
 
 if (NOT MSVC)
     include(FindPkgConfig)
-    pkg_check_modules(PC_$(USE.CMAKE_NAME) "$(use.libname)")
-    if (NOT PC_$(USE.CMAKE_NAME)_FOUND)
-        pkg_check_modules(PC_$(USE.CMAKE_NAME) "$(use.prefix)")
-    endif (NOT PC_$(USE.CMAKE_NAME)_FOUND)
-    if (PC_$(USE.CMAKE_NAME)_FOUND)
+    pkg_check_modules(PC_$(USE.PROJECT) "$(use.libname)")
+    if (NOT PC_$(USE.PROJECT)_FOUND)
+        pkg_check_modules(PC_$(USE.PROJECT) "$(use.prefix)")
+    endif (NOT PC_$(USE.PROJECT)_FOUND)
+    if (PC_$(USE.PROJECT)_FOUND)
         # some libraries install the headers is a subdirectory of the include dir
         # returned by pkg-config, so use a wildcard match to improve chances of finding
         # headers and SOs.
-        set(PC_$(USE.CMAKE_NAME)_INCLUDE_HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS} ${PC_$(USE.CMAKE_NAME)_INCLUDE_DIRS}/*)
-        set(PC_$(USE.CMAKE_NAME)_LIBRARY_HINTS ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS} ${PC_$(USE.CMAKE_NAME)_LIBRARY_DIRS}/*)
-    endif(PC_$(USE.CMAKE_NAME)_FOUND)
+        set(PC_$(USE.PROJECT)_INCLUDE_HINTS ${PC_$(USE.PROJECT)_INCLUDE_DIRS} ${PC_$(USE.PROJECT)_INCLUDE_DIRS}/*)
+        set(PC_$(USE.PROJECT)_LIBRARY_HINTS ${PC_$(USE.PROJECT)_LIBRARY_DIRS} ${PC_$(USE.PROJECT)_LIBRARY_DIRS}/*)
+    endif(PC_$(USE.PROJECT)_FOUND)
 endif (NOT MSVC)
 
-find_path(
-    $(USE.CMAKE_NAME)_INCLUDE_DIRS
-    NAMES $(use.prefix:c).h
-    HINTS ${PC_$(USE.CMAKE_NAME)_INCLUDE_HINTS}
+find_path (
+    $(USE.PROJECT)_INCLUDE_DIRS
+    NAMES $(use.header)
+    HINTS ${PC_$(USE.PROJECT)_INCLUDE_HINTS}
 )
 
-find_library(
-    $(USE.CMAKE_NAME)_LIBRARIES
+find_library (
+    $(USE.PROJECT)_LIBRARIES
     NAMES $(use.prefix)
-    HINTS ${PC_$(USE.CMAKE_NAME)_LIBRARY_HINTS}
+    HINTS ${PC_$(USE.PROJECT)_LIBRARY_HINTS}
 )
 
 include(FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(
-    $(USE.CMAKE_NAME)
-    REQUIRED_VARS $(USE.CMAKE_NAME)_LIBRARIES $(USE.CMAKE_NAME)_INCLUDE_DIRS
+    $(USE.PROJECT)
+    REQUIRED_VARS $(USE.PROJECT)_LIBRARIES $(USE.PROJECT)_INCLUDE_DIRS
 )
 mark_as_advanced(
-    $(USE.CMAKE_NAME)_FOUND
-    $(USE.CMAKE_NAME)_LIBRARIES $(USE.CMAKE_NAME)_INCLUDE_DIRS
+    $(USE.PROJECT)_FOUND
+    $(USE.PROJECT)_LIBRARIES $(USE.PROJECT)_INCLUDE_DIRS
 )
 
 $(project.GENERATED_WARNING_HEADER:)
