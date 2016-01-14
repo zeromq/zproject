@@ -15,14 +15,14 @@
 
         <use
             project = "libzmq"          required
-            pretty = "ZeroMQ"           default project
             location = "https://github.com/zeromq"
                                         required
-            libname = "libzmq"          default lib<prefix>
-            prefix = "zmq"              default project
+            libname = "libzmq"          default = lib<prefix>
+            prefix = "zmq"              default = project
             test = "zmq_init"           required
-            release = "<tagname>"       default "master"
-            abi = "version"             default "0:0:0"
+            release = "<tagname>"       default = "master"
+            abi = "version"             default = "0:0:0"
+            header = "<filename>"       default = <prefix>.h
             <use project = "libsodium" />
             <alias name = "zmq" />
         </use>
@@ -30,15 +30,13 @@
 
     <use project = "libzmq" prefix = "zmq"
         repository = "https://github.com/zeromq/libzmq"
-        test = "zmq_init"
-        cmake_name = "ZeroMQ">
+        test = "zmq_init">
         <use project = "libsodium" optional = "1" implied = "1" />
     </use>
 
     <use project = "czmq" libname = "libczmq"
         repository = "https://github.com/zeromq/czmq"
-        test = "zctx_test"
-        cmake_name = "CZMQ">
+        test = "zctx_test">
         <use project = "libzmq" />
     </use>
 
@@ -50,7 +48,7 @@
 
     <use project = "malamute" libname = "libmlm"
         repository = "https://github.com/zeromq/malamute"
-        includename = "malamute"
+        header = "malamute.h"
         prefix = "mlm"
         test = "mlm_server_test">
         <use project = "libzmq" />
@@ -85,7 +83,7 @@
     <use project = "libcurl"
         repository = "https://github.com/bagder/curl"
         test = "curl_easy_init"
-        includename = "curl/curl" />
+        header = "curl/curl.h" />
 
     <use project = "editline"
         repository = "https://github.com/troglobit/editline"
@@ -102,7 +100,7 @@
     <use project = "jemalloc"
         repository = "https://github.com/jemalloc/jemalloc"
         test = "malloc"
-        includename = "jemalloc/jemalloc" />
+        header = "jemalloc/jemalloc.h" />
 
     <use project = "msgpack"
         repository = "https://github.com/msgpack/msgpack-c.git"
@@ -110,14 +108,18 @@
 
     <use project = "uuid"
         test = "uuid_generate"
-        includename = "uuid/uuid" />
+        header = "uuid/uuid.h" />
+
+    <use project = "asound"
+        test = "snd_asoundlib_version"
+        header = "alsa/asoundlib.h" />
 
     <use project = "zdb"
         repository = "https://bitbucket.org/tildeslash/libzdb.git"
         test = "ConnectionPool_start" />
 
     <use project = "json-c"
-        includename = "json-c/json"
+        header = "json-c/json.h"
         test = "json_object_to_json_string" />
 
     <use project = "lognorm"
