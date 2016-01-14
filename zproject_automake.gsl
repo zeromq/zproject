@@ -296,6 +296,22 @@ debug: src/$(project.prefix)_selftest
 animate: src/$(project.prefix)_selftest
 \t$\(LIBTOOL) --mode=execute $\(srcdir)/src/$(project.prefix)_selftest -v
 
+if WITH_GCOV
+coverage: src/$(project.prefix)_selftest
+\t@echo "called configure --with-gcov"
+\tlcov --base-directory . --directory . --zerocounters -q
+\t\$(MAKE) check
+\tlcov --base-directory . --directory . --capture -o coverage.info
+\tlcov --remove coverage.info "/usr*" -o coverage.info
+\tlcov --remove coverage.info "$(project.prefix)_selftest.c" -o coverage.info
+\t\$(RM) -rf coverage/*
+\tgenhtml -o coverage/ -t "$(project.name) test coverage" --num-spaces 4 coverage.info
+else
+coverage: src/$(project.prefix)_selftest
+\t@echo "call make clean && configure --with-gcov to enable code coverage"
+\t@exit 1
+endif
+
 $(project.GENERATED_WARNING_HEADER:)
 .#
 .#  Generate infrastructure for services
