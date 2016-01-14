@@ -112,6 +112,10 @@
         test = "uuid_generate"
         includename = "uuid/uuid" />
 
+    <use project = "asound"
+        test = "snd_asoundlib_version"
+        includename = "alsa/asoundlib" />
+
     <use project = "zdb"
         repository = "https://bitbucket.org/tildeslash/libzdb.git"
         test = "ConnectionPool_start" />
