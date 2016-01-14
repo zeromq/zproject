@@ -155,6 +155,9 @@ if test "x${$(PROJECT.NAME:c)_GCOV}" == "xyes"; then
     if test "x${$(PROJECT.NAME:c)_ORIG_CFLAGS}" != "xnone"; then
         CFLAGS="${CFLAGS} ${$(PROJECT.NAME:c)_ORIG_CFLAGS}"
     fi
+    AM_CONDITIONAL(WITH_GCOV, true)
+else
+    AM_CONDITIONAL(WITH_GCOV, false)
 fi
 
 .# Archive user supplied flags
