@@ -84,20 +84,29 @@ myproject_on_android="no"
 # Host specific checks
 AC_CANONICAL_HOST
 
-# Determine whether or not documentation should be built and installed.
-myproject_build_doc="yes"
-myproject_install_man="yes"
+# Allow user to disable doc build
+AC_ARG_WITH([documentation], [AS_HELP_STRING([--without-documentation],
+    [disable documentation build even if asciidoc and xmlto are present [default=no]])])
 
-# Check for asciidoc and xmlto and don't build the docs if these are not installed.
-AC_CHECK_PROG(myproject_have_asciidoc, asciidoc, yes, no)
-AC_CHECK_PROG(myproject_have_xmlto, xmlto, yes, no)
-if test "x$myproject_have_asciidoc" = "xno" -o "x$myproject_have_xmlto" = "xno"; then
+if test "x$with_documentation" = "xno"; then
     myproject_build_doc="no"
-    # Tarballs built with 'make dist' ship with prebuilt documentation.
-    if ! test -f doc/myproject.7; then
-        myproject_install_man="no"
-        AC_MSG_WARN([You are building an unreleased version of MYPROJECT and asciidoc or xmlto are not installed.])
-        AC_MSG_WARN([Documentation will not be built and manual pages will not be installed.])
+    myproject_install_man="no"
+else
+    # Determine whether or not documentation should be built and installed.
+    myproject_build_doc="yes"
+    myproject_install_man="yes"
+
+    # Check for asciidoc and xmlto and don't build the docs if these are not installed.
+    AC_CHECK_PROG(myproject_have_asciidoc, asciidoc, yes, no)
+    AC_CHECK_PROG(myproject_have_xmlto, xmlto, yes, no)
+    if test "x$myproject_have_asciidoc" = "xno" -o "x$myproject_have_xmlto" = "xno"; then
+        myproject_build_doc="no"
+        # Tarballs built with 'make dist' ship with prebuilt documentation.
+        if ! test -f doc/myproject.7; then
+            myproject_install_man="no"
+            AC_MSG_WARN([You are building an unreleased version of MYPROJECT and asciidoc or xmlto are not installed.])
+            AC_MSG_WARN([Documentation will not be built and manual pages will not be installed.])
+        fi
     fi
 fi
 AC_MSG_CHECKING([whether to build documentation])

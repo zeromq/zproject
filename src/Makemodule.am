@@ -40,11 +40,13 @@ myproject_SCRIPTS = \
     zproject_mingw32.gsl \
     zproject_nuget.gsl \
     zproject_projects.gsl \
-    zproject_spec.gsl \
+    zproject_redhat.gsl \
     zproject_tools.gsl \
     zproject_vs2008.gsl \
     zproject_vs20xx.gsl \
-    zproject_vs20xx_props.gsl
+    zproject_vs20xx_props.gsl \
+    mkapi.py \
+    fake_cpp
 
 
 

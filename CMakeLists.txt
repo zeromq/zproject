@@ -63,6 +63,7 @@ if (CYGWIN)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${SOURCE_DIR}")
+set(OPTIONAL_LIBRARIES)
 
 ########################################################################
 # includes
@@ -88,7 +89,7 @@ set(TEST_CLASSES
 foreach(TEST_CLASS ${TEST_CLASSES})
     add_test(
         NAME ${TEST_CLASS}
-        COMMAND myproject_selftest -e -v --test ${TEST_CLASS}
+        COMMAND myproject_selftest --continue --verbose --test ${TEST_CLASS}
     )
     set_tests_properties(
         ${TEST_CLASS}
@@ -96,11 +97,6 @@ foreach(TEST_CLASS ${TEST_CLASSES})
     )
 endforeach(TEST_CLASS)
 
-add_test(myproject_selftest myproject_selftest)
-set_tests_properties(
-    myproject_selftest
-    PROPERTIES TIMEOUT ${TOTAL_TIMEOUT}
-)
 
 ########################################################################
 # summary
