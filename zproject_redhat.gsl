@@ -6,13 +6,11 @@
 .#  is licensed under MIT/X11.
 .#
 .#  This script will generate the following files:
-.#  builds/spec/$(project.name).spec
+.#  packaging/redhat/$(project.name).spec
 .#  ===========================================================================
 .#
-.if !file.exists ('builds/spec')
-.   directory.create('builds/spec')
-.endif
-.output "builds/spec/$(project.name).spec"
+.directory.create('packaging/redhat')
+.output "packaging/redhat/$(project.name).spec"
 #
 #    $(project.name) - $(project.description?'':)
 #
