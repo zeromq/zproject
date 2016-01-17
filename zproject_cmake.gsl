@@ -11,7 +11,7 @@ $(project.GENERATED_WARNING_HEADER:)
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8)
-project($(project.name))
+project($(project.name:c))
 enable_language(C)
 enable_testing()
 
@@ -25,27 +25,27 @@ foreach(which MAJOR MINOR PATCH)
     file(
         STRINGS
         "${SOURCE_DIR}/include/$(project.prefix)_library.h"
-        $(PROJECT.NAME)_VERSION_STRING REGEX
-        "#define $(PROJECT.NAME)_VERSION_${which}"
+        $(PROJECT.NAME:C)_VERSION_STRING REGEX
+        "#define $(PROJECT.NAME:C)_VERSION_${which}"
     )
     string(
         REGEX MATCH
-        "#define $(PROJECT.NAME)_VERSION_${which} ([0-9_]+)"
-        $(PROJECT.NAME)_REGEX_MATCH
-        "${$(PROJECT.NAME)_VERSION_STRING}"
+        "#define $(PROJECT.NAME:C)_VERSION_${which} ([0-9_]+)"
+        $(PROJECT.NAME:C)_REGEX_MATCH
+        "${$(PROJECT.NAME:C)_VERSION_STRING}"
     )
-    if (NOT $(PROJECT.NAME)_REGEX_MATCH)
+    if (NOT $(PROJECT.NAME:C)_REGEX_MATCH)
         message(
             FATAL_ERROR
-            "failed to parse $(PROJECT.NAME)_VERSION_${which} from $(project.header:)"
+            "failed to parse $(PROJECT.NAME:C)_VERSION_${which} from $(project.header:)"
         )
     endif()
-    set($(PROJECT.NAME)_${which}_VERSION ${CMAKE_MATCH_1})
+    set($(PROJECT.NAME:C)_${which}_VERSION ${CMAKE_MATCH_1})
 endforeach(which)
 
 set(
-    $(PROJECT.NAME)_VERSION
-    ${$(PROJECT.NAME)_MAJOR_VERSION}.${$(PROJECT.NAME)_MINOR_VERSION}.${$(PROJECT.NAME)_PATCH_VERSION}
+    $(PROJECT.NAME:C)_VERSION
+    ${$(PROJECT.NAME:C)_MAJOR_VERSION}.${$(PROJECT.NAME:C)_MINOR_VERSION}.${$(PROJECT.NAME:C)_PATCH_VERSION}
 )
 
 .endif
@@ -127,7 +127,7 @@ ENDIF ($(USE.PROJECT)_FOUND)
 ########################################################################
 # includes
 ########################################################################
-set ($(project.name)_headers
+set ($(project.name:c)_headers
 .if count (project.class)
     include/$(project.prefix)_library.h
 .   if file.exists ("include/$(project.prelude)")
@@ -150,8 +150,8 @@ set ($(project.name)_headers
     src/$(name)
 .endfor
 )
-source_group ("Header Files" FILES ${$(project.name)_headers})
-install(FILES ${$(project.name)_headers} DESTINATION include)
+source_group ("Header Files" FILES ${$(project.name:c)_headers})
+install(FILES ${$(project.name:c)_headers} DESTINATION include)
 
 .if count (project.class)
 ########################################################################
@@ -191,7 +191,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists-local.txt) # Optional project
 ########################################################################
 # pkgconfig
 ########################################################################
-set(VERSION "${$(PROJECT.NAME)_VERSION}")
+set(VERSION "${$(PROJECT.NAME:C)_VERSION}")
 set(prefix "${CMAKE_INSTALL_PREFIX}")
 set(exec_prefix "\\${prefix}")
 set(libdir "\\${prefix}/lib${LIB_SUFFIX}")
@@ -260,7 +260,7 @@ endforeach(TEST_CLASS)
 ########################################################################
 # summary
 ########################################################################
-message(STATUS "version: ${$(PROJECT.NAME)_VERSION}")
+message(STATUS "version: ${$(PROJECT.NAME:C)_VERSION}")
 message(STATUS "install: ${CMAKE_INSTALL_PREFIX}")
 
 $(project.GENERATED_WARNING_HEADER:)
@@ -271,7 +271,7 @@ $(project.GENERATED_WARNING_HEADER:)
 
 if (NOT MSVC)
     include(FindPkgConfig)
-    pkg_check_modules(PC_$(USE.PROJECT) "$(use.libname)")
+    pkg_check_modules(PC_$(USE.PROJECT) "$(use.prefix)")
     if (NOT PC_$(USE.PROJECT)_FOUND)
         pkg_check_modules(PC_$(USE.PROJECT) "$(use.prefix)")
     endif (NOT PC_$(USE.PROJECT)_FOUND)

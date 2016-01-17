@@ -419,18 +419,18 @@ BUILDDIR  = $$PWD/build/native
 
 android {
   # Use a default value assuming the $(project.name) project sits outside this one
-  isEmpty($(PROJECT.NAME)_ROOT) {
-    $(PROJECT.NAME)_ROOT = $$clean_path($$PWD/../..)
+  isEmpty($(PROJECT.NAME:C)_ROOT) {
+    $(PROJECT.NAME:C)_ROOT = $$clean_path($$PWD/../..)
   }
-  !exists($$$(PROJECT.NAME)_ROOT) {
-    error(The $(PROJECT.NAME)_ROOT directory does not exist: $$$(PROJECT.NAME)_ROOT)
+  !exists($$$(PROJECT.NAME:C)_ROOT) {
+    error(The $(PROJECT.NAME:C)_ROOT directory does not exist: $$$(PROJECT.NAME:C)_ROOT)
   }
-  # Build the $(project.name) library for android unless it is already built
-  !system(bash $$$(PROJECT.NAME)_ROOT/builds/android/build.sh) {
-    error(Failed to build the $(project.name) C library with $$$(PROJECT.NAME)_ROOT/builds/android/build.sh)
+  # Build the $(project.prefix) library for android unless it is already built
+  !system(bash $$$(PROJECT.NAME:C)_ROOT/builds/android/build.sh) {
+    error(Failed to build the $(project.prefix) library with $$$(PROJECT.NAME:C)_ROOT/builds/android/build.sh)
   }
   
-  VENDOR_PREFIX = $$$(PROJECT.NAME)_ROOT/builds/android/prefix/$\(TOOLCHAIN_NAME)
+  VENDOR_PREFIX = $$$(PROJECT.NAME:C)_ROOT/builds/android/prefix/$\(TOOLCHAIN_NAME)
   BUILDDIR  = $$PWD/build/$\(TOOLCHAIN_NAME)
   QMAKE_LIBDIR += $$VENDOR_PREFIX/lib
   QMAKE_INCDIR += $$VENDOR_PREFIX/include
@@ -528,7 +528,7 @@ $(project.GENERATED_WARNING_HEADER:)
 ```
 # $(project.qml_soname:)
 
-QML bindings for creating UI applications using the "$(project.name)" C library.
+QML bindings for creating UI applications using the "$(project.prefix)" C library.
 
 ## Setting up a Build Environment
 
@@ -547,7 +547,7 @@ please file an issue or pull request so that others might be saved some complexi
 If you are building for Android, you can skip this step, as the necessary 
 dependencies are automatically pulled down and built by the `vendor/build` 
 scripts. If you are developing and testing on your desktop, you will need 
-a local installation of the $(project.name) library to link against and include.
+a local installation of the $(project.prefix) library to link against and include.
 
 ### Ruby
 
@@ -632,10 +632,11 @@ rake test
 ```
 
 Use this command when developing and testing the library. A copy of the 
-$(project.name:) library is installed locally where Qt can find it for 
+$(project.prefix) library is installed locally where Qt can find it for
 running desktop applications that use the library, and tests are run.
 
-You will need to have the $(project.name:) C library built and installed on your machine.
+You will need to have the $(project.prefix) C library built and installed
+on your machine.
 
 ### Install Locally for Android
 ```
@@ -648,15 +649,15 @@ The build will repeat for each android kit you have configured in the Qt
 Creator IDE so that the installed library is available for all kits.
 
 In order to build for android, the $(project.qml_soname:) needs access to 
-an Android build of the $(project.name:) library and all its dependencies. 
+an Android build of the $(project.prefix) library and all its dependencies.
 This can be done one of two ways:
 
-1. Clone the $(project.name:) library and all its dependencies from source 
+1. Clone the $(project.prefix) library and all its dependencies from source
 into the same folder. If all project repos are side-by-side in the same 
 "workspace" folder (as is typical for many users' workflows), they can 
 detect eachother automatically and build in a chain when you run 
 `rake android` in the $(project.qml_soname:) folder.
-2. Manually export the `$(PROJECT.NAME)_ROOT` environment variable as the path 
+2. Manually export the `$(PROJECT.NAME:C)_ROOT` environment variable as the path
 to the $(project.name:) source code root. Do the same for any other projects 
 that you are prompted for when you run `rake android`. When all environment 
 variables are resolved, they will build in a chain.
