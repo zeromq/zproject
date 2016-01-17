@@ -306,6 +306,9 @@ $(project.GENERATED_WARNING_HEADER:)
 .   else
 .       header_file = "include/$(class.c_name).h"
 .   endif
+.if !defined (class.api)
+.   resolve_c_class(class)
+.endif
 .if !file.exists (header_file)
 .   output header_file
 /*  =========================================================================
@@ -368,9 +371,6 @@ $(PROJECT.PREFIX:c)_EXPORT void
 .endif
 .if !file.exists (source_file)
 .   output source_file
-.if !defined (class.api)
-.   resolve_c_class(class)
-.endif
 /*  =========================================================================
     $(class.c_name) - $(string.trim (class.?''):no,left)
 
