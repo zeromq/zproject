@@ -395,7 +395,7 @@ This does the following:
 * It takes $(use.project)-jni-*.jar, which must already be built in ../$(use.project)/bindings/jni/build/libs/
 .   endif
 .endfor
-* It combines all these into $(project.name)-android.jar, which you can use in your Android projects.
+* It combines all these into $(project.prefix)-android.jar, which you can use in your Android projects.
 
 ## Building the JNI Layer for Windows
 
@@ -500,7 +500,7 @@ cp ../../../../builds/android/prefix/*/lib/*.so lib/armeabi
 
 cp $ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/$TOOLCHAIN_VERSION/libs/armeabi/libgnustl_shared.so lib/armeabi
 
-zip -r -m ../$(project.name)-android.jar lib/ org/ META-INF/
+zip -r -m ../$(project.prefix)-android.jar lib/ org/ META-INF/
 cd ..
 rm -rf build
 

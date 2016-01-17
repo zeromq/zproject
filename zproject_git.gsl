@@ -48,6 +48,7 @@ doc/*.7
 *.trs
 Makefile
 Makefile.in
+!builds/openwrt/Makefile
 aclocal.m4
 autom4te.cache/
 config.log
