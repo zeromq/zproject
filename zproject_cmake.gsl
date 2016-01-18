@@ -50,6 +50,14 @@ set(
 
 .endif
 ########################################################################
+# options
+########################################################################
+OPTION(ENABLE_UNSTABLE_API "Enable unstable APIs" ON)
+IF (ENABLE_UNSTABLE_API)
+    ADD_DEFINITIONS(-DENABLE_UNSTABLE_API)
+ENDIF(ENABLE_UNSTABLE_API)
+
+########################################################################
 # platform.h
 ########################################################################
 include(CheckIncludeFile)
