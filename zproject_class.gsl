@@ -1,15 +1,14 @@
-#  Generate project API
+#   Generate project API
 #
-#  This script will generate the following files:
-#      * include/$(project.header:) - public project header (once)
-#      * src/$(project.prefix)_selftest.c - selftest class
-#      * src/$(project.prefix)_classes.h - private project header
-#      * (include|src)$(class.c_name).h - public/private header file for classes
-#      * src/$(class.c_name).c - source code file for classes
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
 #
-#  This is a code generator built using the iMatix GSL code generation
-#  language. See https://github.com/imatix/gsl for details. This script
-#  is licensed under MIT/X11.
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 .macro generate_project_api
 .#

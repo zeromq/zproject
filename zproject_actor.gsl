@@ -1,8 +1,18 @@
-#  Generate CZMQ actor header/source skeletons
+#   Generate CZMQ actor header/source skeletons
 #
-#  Generates a skeleton for a new CZMQ actor. Will not overwrite
-#  existing files. See project.xml for instructions on how to specify
-#  an actor.
+#   Generates a skeleton for a new CZMQ actor. Will not overwrite
+#   existing files. See project.xml for instructions on how to specify
+#   an actor.
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 function resolve_actor (actor)
     my.actor.c_name ?= "$(actor.name:c)"
