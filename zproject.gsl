@@ -73,9 +73,9 @@ function chmod_x (filename)
 endfunction
 
 function target_register (target, detail)
-    new target_handler to project
-        target_handler.target = my.target
-        target_handler.detail = my.detail
+    new handler to project
+        handler.target = my.target
+        handler.detail = my.detail
     endnew
 endfunction
 
@@ -94,7 +94,7 @@ gsl from "zproject_class.gsl"
 gsl from "zproject_git.gsl"
 gsl from "zproject_valgrind.gsl"
 
-#   Optional targets
+#   Load all optional targets
 gsl from "zproject_android.gsl"
 gsl from "zproject_autotools.gsl"
 gsl from "zproject_cmake.gsl"
@@ -116,43 +116,22 @@ gsl from "zproject_debian.gsl"
 gsl from "zproject_redhat.gsl"
 gsl from "zproject_docker.gsl"
 
-target_android ()
-target_autotools ()
-target_cmake ()
-target_docs ()
+#   Now build targets requested by project
+if defined (switches.target)
+    for project.handler where target = switches.target | switches.target = "*"
+        echo "Building $(detail:) ($(target))"
+        scope project
+            target_$(handler.target:c) ()
+        endscope
+    else
+        echo "$(switches.target) is not a valid target; valid targets are:"
+        for project.handler by target
+            echo "    $(target)\
+                $(detail:)"
+        endfor
+    endfor
+else
 
-echo "Generating Windows support..."
-target_mingw32 ()
-target_cygwin ()
-target_vs2008 ()
-target_vs2010 ()
-target_vs2012 ()
-target_vs2013 ()
-target_vs2015 ()
-target_nuget ()
+endif
 
-echo "Generating language bindings..."
-echo " - Python..."
-target_python ()
-
-echo " - QML..."
-target_qml ()
-
-echo " - Qt..."
-target_qt ()
-
-echo " - Ruby FFI..."
-target_ruby ()
-
-echo " - Java JNI..."
-target_java ()
-target_java_msvc ()
-
-echo "Generating miscellaneous support..."
-target_travis ()
-
-echo "Generating distro packaging recipes"
-target_debian ()
-target_redhat ()
-target_docker ()
 .endtemplate
