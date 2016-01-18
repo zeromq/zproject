@@ -1,5 +1,12 @@
 # Travis CI script
 language: c
 
+sudo: false
+
+addons:
+  apt:
+    packages:
+    - libpcre3-dev
+
 script:
-- ./generate.sh && ./autogen.sh && ./configure && make && sudo make install
+- ./ci_build.sh
