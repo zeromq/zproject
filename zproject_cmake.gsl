@@ -148,7 +148,7 @@ set ($(project.name:c)_headers
 .for header where scope = "public"
     include/$(name:c).h
 .endfor
-.for class where scope = "public"
+.for class where scope = "public" & !is_c_element_unstable (class)
     include/$(name:c).h
 .endfor
 .for class where scope = "private"
@@ -158,6 +158,17 @@ set ($(project.name:c)_headers
     src/$(name)
 .endfor
 )
+.if count (class, scope = "public" & is_c_element_unstable (class))
+
+IF (ENABLE_UNSTABLE_API)
+list(APPEND $(project.name)_headers
+.   for class where scope = "public" & is_c_element_unstable (class)
+    include/$(name:c).h
+.endfor
+)
+ENDIF (ENABLE_UNSTABLE_API)
+
+.   endif
 source_group ("Header Files" FILES ${$(project.name:c)_headers})
 install(FILES ${$(project.name:c)_headers} DESTINATION include)
 
@@ -167,10 +178,21 @@ install(FILES ${$(project.name:c)_headers} DESTINATION include)
 ########################################################################
 include_directories("${SOURCE_DIR}/src" "${SOURCE_DIR}/include")
 set ($(project.linkname)_sources
-.for class
+.for class where !is_c_element_unstable (class)
     src/$(name:c).c
 .endfor
 )
+.if count (class, is_c_element_unstable (class))
+
+IF (ENABLE_UNSTABLE_API)
+list(APPEND $(project.linkname)_sources
+.   for class where is_c_element_unstable (class)
+    src/$(name:c).c
+.   endfor
+)
+ENDIF (ENABLE_UNSTABLE_API)
+
+.endif
 source_group("Source Files" FILES ${$(project.linkname)_sources})
 if (NOT DEFINED BUILD_SHARED_LIBS)
     SET(BUILD_SHARED_LIBS ON)
@@ -248,11 +270,21 @@ set(CLASSTEST_TIMEOUT 5 CACHE STRING "Timeout of the selftest of a class")
 set(TOTAL_TIMEOUT 20 CACHE STRING "Timout of the total testsuite")
 
 set(TEST_CLASSES
-.for class
+.for class where !is_c_element_unstable (class)
     $(name:c)
 .endfor
 )
 
+.if count (class, is_c_element_unstable (class))
+IF (ENABLE_UNSTABLE_API)
+list(APPEND TEST_CLASSES
+.   for class where is_c_element_unstable (class)
+    $(name:c)
+.   endfor
+)
+ENDIF (ENABLE_UNSTABLE_API)
+
+.endif
 foreach(TEST_CLASS ${TEST_CLASSES})
     add_test(
         NAME ${TEST_CLASS}
