@@ -24,30 +24,29 @@ for project.class where defined (class.api)
         new_class.api = class.api
         new_class.api_dir = directory.resolve ('api/')
         new_class.scope = class.scope
-        if defined (class.status)
-            new_class.status = class.status
-        endif
+        new_class.state = class.state? new_class.state?
         move new_class after class
         delete class
     endif
 endfor
 
 #
-# Parse and set the API status status of an element
+# Parse and set the API state of an element
 #
-function initialise_c_element_status (elem, default)
-    if !defined (my.elem.status)
-        my.elem.status = my.default
-    elsif (my.elem.status <> "draft") & (my.elem.status <> "stable") & (my.elem.status <> "legacy") & (my.elem.status <> "retired")
-        abort "E: invalid status: $(my.elem.status)"
+function initialise_c_element_state (elem, default)
+    if !defined (my.elem.state)
+        my.elem.state = my.default
+    elsif (my.elem.state <> "draft") & (my.elem.state <> "stable") & (my.elem.state <> "legacy")
+        abort "E: invalid state: $(my.elem.state)"
     endif
 endfunction
 
 #
-# Parse and set the API status status of an element
+# Parse and set the API state of an element
+# We don't support state = "retired"
 #
-function is_c_element_unstable (elem)
-    if my.elem.status ?= "stable" | my.elem.status ?= "legacy"
+function is_c_element_draft (elem)
+    if my.elem.state ?= "stable" | my.elem.state ?= "legacy"
         return 0
     else
         return 1
@@ -265,7 +264,7 @@ function resolve_c_class (class)
     my.class.c_name ?= "$(my.class.name:c)"
     my.class.description ?= "$(string.trim (my.class.?""):left)"
 
-    initialise_c_element_status (my.class, "draft")
+    initialise_c_element_state (my.class, "draft")
 
     # Includes of XML files
     for my.class.include
@@ -296,7 +295,7 @@ function resolve_c_class (class)
     # Resolve details of each method
     for my.class.callback_type as method
         resolve_c_method (method, "")
-        initialise_c_element_status (method, my.class.status)
+        initialise_c_element_state (method, my.class.state)
     endfor
 
     # Resolve details of an actor
@@ -307,7 +306,7 @@ function resolve_c_class (class)
 
     for my.class.method
         resolve_c_method (method, "")
-        initialise_c_element_status (method, my.class.status)
+        initialise_c_element_state (method, my.class.state)
         # Test if a variadic function has a sibling that accepts a va_list.
         # By convention these sibling methods prepend a 'v' to the method name.
         # This information might be used by the various language bindings.
@@ -353,13 +352,13 @@ function resolve_c_class (class)
         endif
         constant.description ?= "$(string.trim (constant.?""):left)"
         resolve_c_container (constant)
-        initialise_c_element_status (constant, my.class.status)
+        initialise_c_element_state (constant, my.class.state)
     endfor
 
     # Resolve details of each constant
     for my.class.enum
         enum.description ?= "$(string.trim (enum.?""):left)"
-        initialise_c_element_status (enum, my.class.status)
+        initialise_c_element_state (enum, my.class.state)
     endfor
 endfunction
 

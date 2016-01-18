@@ -52,10 +52,15 @@ set(
 ########################################################################
 # options
 ########################################################################
-OPTION(ENABLE_UNSTABLE_API "Enable unstable APIs" ON)
-IF (ENABLE_UNSTABLE_API)
-    ADD_DEFINITIONS(-DENABLE_UNSTABLE_API)
-ENDIF(ENABLE_UNSTABLE_API)
+if (EXISTS ".git")
+    OPTION (WITH_DRAFTS "Build and install draft classes and methods" ON)
+else ()
+    OPTION (WITH_DRAFTS "Build and install draft classes and methods" OFF)
+endif ()
+
+IF (WITH_DRAFTS)
+    ADD_DEFINITIONS (-DWITH_DRAFTS)
+ENDIF (WITH_DRAFTS)
 
 ########################################################################
 # platform.h
@@ -148,7 +153,7 @@ set ($(project.name:c)_headers
 .for header where scope = "public"
     include/$(name:c).h
 .endfor
-.for class where scope = "public" & !is_c_element_unstable (class)
+.for class where scope = "public" & !is_c_element_draft (class)
     include/$(name:c).h
 .endfor
 .for class where scope = "private"
@@ -158,15 +163,15 @@ set ($(project.name:c)_headers
     src/$(name)
 .endfor
 )
-.if count (class, scope = "public" & is_c_element_unstable (class))
+.if count (class, scope = "public" & is_c_element_draft (class))
 
-IF (ENABLE_UNSTABLE_API)
+IF (WITH_DRAFTS)
 list(APPEND $(project.name)_headers
-.   for class where scope = "public" & is_c_element_unstable (class)
+.   for class where scope = "public" & is_c_element_draft (class)
     include/$(name:c).h
 .endfor
 )
-ENDIF (ENABLE_UNSTABLE_API)
+ENDIF (WITH_DRAFTS)
 
 .   endif
 source_group ("Header Files" FILES ${$(project.name:c)_headers})
@@ -178,19 +183,19 @@ install(FILES ${$(project.name:c)_headers} DESTINATION include)
 ########################################################################
 include_directories("${SOURCE_DIR}/src" "${SOURCE_DIR}/include")
 set ($(project.linkname)_sources
-.for class where !is_c_element_unstable (class)
+.for class where !is_c_element_draft (class)
     src/$(name:c).c
 .endfor
 )
-.if count (class, is_c_element_unstable (class))
+.if count (class, is_c_element_draft (class))
 
-IF (ENABLE_UNSTABLE_API)
+IF (WITH_DRAFTS)
 list(APPEND $(project.linkname)_sources
-.   for class where is_c_element_unstable (class)
+.   for class where is_c_element_draft (class)
     src/$(name:c).c
 .   endfor
 )
-ENDIF (ENABLE_UNSTABLE_API)
+ENDIF (WITH_DRAFTS)
 
 .endif
 source_group("Source Files" FILES ${$(project.linkname)_sources})
@@ -270,19 +275,19 @@ set(CLASSTEST_TIMEOUT 5 CACHE STRING "Timeout of the selftest of a class")
 set(TOTAL_TIMEOUT 20 CACHE STRING "Timout of the total testsuite")
 
 set(TEST_CLASSES
-.for class where !is_c_element_unstable (class)
+.for class where !is_c_element_draft (class)
     $(name:c)
 .endfor
 )
 
-.if count (class, is_c_element_unstable (class))
-IF (ENABLE_UNSTABLE_API)
+.if count (class, is_c_element_draft (class))
+IF (WITH_DRAFTS)
 list(APPEND TEST_CLASSES
-.   for class where is_c_element_unstable (class)
+.   for class where is_c_element_draft (class)
     $(name:c)
 .   endfor
 )
-ENDIF (ENABLE_UNSTABLE_API)
+ENDIF (WITH_DRAFTS)
 
 .endif
 foreach(TEST_CLASS ${TEST_CLASSES})
@@ -306,7 +311,7 @@ message(STATUS "install: ${CMAKE_INSTALL_PREFIX}")
 $(project.GENERATED_WARNING_HEADER:)
 .
 .for use
-.output "Find$(use.project).cmake"
+.output "Find$(use.project:c).cmake"
 $(project.GENERATED_WARNING_HEADER:)
 
 if (NOT MSVC)
