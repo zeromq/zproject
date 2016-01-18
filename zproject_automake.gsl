@@ -107,15 +107,15 @@ include_HEADERS = \\
 .for header where scope = "public"
     include/$(name:c).h \\
 .endfor
-.for class where scope = "public" & !is_c_element_unstable (class)
+.for class where scope = "public" & !is_c_element_draft (class)
     include/$(name:c).h \\
 .endfor
     include/$(project.prefix)_library.h
 
-.if count (class, scope = "public" & is_c_element_unstable (class))
-if ENABLE_UNSTABLE_API
+.if count (class, scope = "public" & is_c_element_draft (class))
+if WITH_DRAFTS
 include_HEADERS += \\
-.   for class where scope = "public" & is_c_element_unstable (class)
+.   for class where scope = "public" & is_c_element_draft (class)
 .      if !last()
     include/$(name:c).h \\
 .      else
@@ -126,7 +126,7 @@ endif
 
 .endif
 src_$(project.libname:c)_la_SOURCES = \\
-.for class where !is_c_element_unstable (class)
+.for class where !is_c_element_draft (class)
 .   if file.exists ("src/$(name:c).cc")
     src/$(name:c).cc \\
 .   else
@@ -138,10 +138,10 @@ src_$(project.libname:c)_la_SOURCES = \\
 .endfor
     src/platform.h
 
-.if count (class, is_c_element_unstable (class))
-if ENABLE_UNSTABLE_API
+.if count (class, is_c_element_draft (class))
+if WITH_DRAFTS
 src_$(project.libname:c)_la_SOURCES += \\
-.   for class where is_c_element_unstable (class)
+.   for class where is_c_element_draft (class)
 .      if !last()
 .         if file.exists ("src/$(name:c).cc")
     src/$(name:c).cc \\

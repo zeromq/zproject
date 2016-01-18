@@ -272,6 +272,37 @@ The tool can't distinguish methods which allocates new object. It does print a c
 * To build, you need gradle (or equivalent). Run 'gradle build jar' in the bindings/jni directory.
 * To install, run 'gradle install'. This puts the files into $HOME/.m2/repository.
 
+## Draft API Support
+
+zproject lets you mark classes and methods as 'draft' so that they are not installed by default in stable builds. This lets you deliver draft APIs to your users, and change them later.
+
+By default all classes and methods are draft, unless you specify otherwise. To mark the state of a class or method, specify in the project.xml:
+
+```
+<class name = "classname" state = "stable" />
+```
+
+Or in the class API XML file:
+
+```
+<class name = "classname" state = "stable">
+    ...
+    <method name = "methodname" state = "stable">
+        ...
+    </method>
+</class>
+```
+
+The method will inherit the class state unless it has its own 'state' attribute.
+
+The allowed states are:
+
+* draft - the class or method is not built/installed in stable releases.
+* stable - the class or method is always built and installed. A method may not be changed once marked as stable.
+* legacy - the class or method is always built and installed. It may carry a warning that support can be withdrawn at any time.
+
+Using autotools or CMake, you can specify --with-drafts to enable draft APIs, and --without-drafts to disable them. By default, drafts are built and installed when you work in a git repository (if the directory ".git" is present), and otherwise they are not. That means, if you build from a tarball, drafts are disabled by default.
+
 ## Removal
 
 ### autotools
