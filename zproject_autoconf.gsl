@@ -452,6 +452,20 @@ AM_COND_IF([WITH_SYSTEMD],
         [AC_MSG_ERROR([Cannot find required package for systemd. Note, pkg-config is required due to specified version >= 200])])],
     [])
 
+# Enable/disable unstable API
+AC_ARG_ENABLE([unstable_api],
+    AS_HELP_STRING([--disable-unstable-api],
+    [Disable unstable APIs [default=enabled.]]))
+
+AM_CONDITIONAL([ENABLE_UNSTABLE_API], [test x$enable_unstable_api != xno])
+
+dnl FIXME: AC_DEFINE does not seem to work, macro is not passed to the compiler
+dnl use CPPFLAGS instead as a workaround
+AS_IF([test "x$enable_unstable_api" != "xno"], [
+    CPPFLAGS="-DENABLE_UNSTABLE_API=1 ${CPPFLAGS}"
+    AC_DEFINE(ENABLE_UNSTABLE_API, 1, [Unstable APIs enabled.])
+])
+
 # Specify output files
 .if count (class) + count (ac_config)  > 0
 AC_CONFIG_FILES([Makefile

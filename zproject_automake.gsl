@@ -107,13 +107,26 @@ include_HEADERS = \\
 .for header where scope = "public"
     include/$(name:c).h \\
 .endfor
-.for class where scope = "public"
+.for class where scope = "public" & !is_c_element_unstable (class)
     include/$(name:c).h \\
 .endfor
     include/$(project.prefix)_library.h
 
+.if count (class, scope = "public" & is_c_element_unstable (class))
+if ENABLE_UNSTABLE_API
+include_HEADERS += \\
+.   for class where scope = "public" & is_c_element_unstable (class)
+.      if !last()
+    include/$(name:c).h \\
+.      else
+    include/$(name:c).h
+.      endif
+.   endfor
+endif
+
+.endif
 src_$(project.libname:c)_la_SOURCES = \\
-.for class
+.for class where !is_c_element_unstable (class)
 .   if file.exists ("src/$(name:c).cc")
     src/$(name:c).cc \\
 .   else
@@ -125,6 +138,27 @@ src_$(project.libname:c)_la_SOURCES = \\
 .endfor
     src/platform.h
 
+.if count (class, is_c_element_unstable (class))
+if ENABLE_UNSTABLE_API
+src_$(project.libname:c)_la_SOURCES += \\
+.   for class where is_c_element_unstable (class)
+.      if !last()
+.         if file.exists ("src/$(name:c).cc")
+    src/$(name:c).cc \\
+.         else
+    src/$(name:c).c \\
+.         endif
+.      else
+.         if file.exists ("src/$(name:c).cc")
+    src/$(name:c).cc
+.         else
+    src/$(name:c).c
+.         endif
+.      endif
+.   endfor
+endif
+
+.endif
 src_$(project.libname:c)_la_CPPFLAGS = ${AM_CPPFLAGS}
 .if project.use_cxx
 src_$(project.libname:c)_la_CXXFLAGS = ${AM_CXXFLAGS}

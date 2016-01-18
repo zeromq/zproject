@@ -96,25 +96,59 @@ $(project.GENERATED_WARNING_HEADER:)
 #endif
 
 //  Opaque class structures to allow forward references
-.for project.class where scope = "public"
+.for project.class where scope = "public" & !is_c_element_unstable (class)
+.  if !defined (class.api)
+.    resolve_c_class(class)
+.  endif
 typedef struct _$(class.c_name)_t $(class.c_name)_t;
 #define $(CLASS.C_NAME)_T_DEFINED
 .endfor
+.if count (project.class, scope = "public" & is_c_element_unstable (class))
 
-.for constant where scope = "public"
-.   if first ()
+//  WARNING! UNSTABLE APIs!
+#ifdef ENABLE_UNSTABLE_API
+.  for project.class where scope = "public" & is_c_element_unstable (class)
+.    if !defined (class.api)
+.      resolve_c_class(class)
+.    endif
+typedef struct _$(class.c_name)_t $(class.c_name)_t;
+#define $(CLASS.C_NAME)_T_DEFINED
+.  endfor
+#endif
+.endif
+
+.if count (constant, scope = "public")
 //  Public constants
-.   endif
+.endif
+.for constant where scope = "public" & !is_c_element_unstable (constant)
 #define $(CONSTANT.NAME)\t$(constant.value) //  $(constant.?'')
 .endfor
+.if count (constant, scope = "public" & is_c_element_unstable (constant))
+
+//  WARNING! UNSTABLE APIs!
+#ifdef ENABLE_UNSTABLE_API
+.  for constant where scope = "public" & is_c_element_unstable (constant)
+#define $(CONSTANT.NAME)\t$(constant.value) //  $(constant.?'')
+.  endfor
+#endif
+.endif
 
 //  Public API classes
 .for header where scope = "public"
 #include "$(header.name).h"
 .endfor
-.for class where scope = "public" & class.c_name <> "$(project.name)"
+.for class where scope = "public" & class.c_name <> "$(project.name)" & !is_c_element_unstable (class)
 #include "$(class.c_name).h"
 .endfor
+.if count (project.class, scope = "public" & is_c_element_unstable (class))
+
+//  WARNING! UNSTABLE APIs!
+#ifdef ENABLE_UNSTABLE_API
+.  for class where scope = "public" & class.c_name <> "$(project.name)" & is_c_element_unstable (class)
+#include "$(class.c_name).h"
+.  endfor
+#endif
+.endif
 
 #endif
 /*
@@ -151,9 +185,16 @@ typedef struct {
 
 static test_item_t
 all_tests [] = {
-.for class
+.for class where !is_c_element_unstable (class)
     { "$(class.c_name)", $(class.c_name)_test },
 .endfor
+.if count (class, is_c_element_unstable (class))
+#ifdef ENABLE_UNSTABLE_API
+.   for class where is_c_element_unstable (class)
+    { "$(class.c_name)", $(class.c_name)_test },
+.   endfor
+#endif
+.endif
     {0, 0}          //  Sentinel
 };
 
@@ -306,10 +347,22 @@ $(project.GENERATED_WARNING_HEADER:)
 .   else
 .       header_file = "include/$(class.c_name).h"
 .   endif
+.if !defined (class.api)
+.   resolve_c_class(class)
+.endif
 .if !file.exists (header_file)
 .   output header_file
 /*  =========================================================================
     $(class.c_name) - $(string.trim (class.?''):no,left)
+.   if (class.status = "draft")
+    API status: DRAFT - DISABLED in stable build. Not ready for production.
+.   elsif (class.status = "retired")
+    API status: RETIRED - DISABLED in stable build. No longer used in production.
+.   elsif (class.status = "legacy")
+    API status: LEGACY - ENABLED in stable build. Please switch to the newer API.
+.   elsif (class.status = "stable")
+    API status: STABLE - ENABLED in stable build. Ready for production.
+.   endif
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -317,7 +370,11 @@ $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
+.   if (is_c_element_unstable (class))
+#if !defined($(CLASS.C_NAME)_H_INCLUDED) && defined(ENABLE_UNSTABLE_API)
+.   else
 #ifndef $(CLASS.C_NAME)_H_INCLUDED
+.   endif
 #define $(CLASS.C_NAME)_H_INCLUDED
 
 #ifdef __cplusplus
@@ -368,9 +425,6 @@ $(PROJECT.PREFIX:c)_EXPORT void
 .endif
 .if !file.exists (source_file)
 .   output source_file
-.if !defined (class.api)
-.   resolve_c_class(class)
-.endif
 /*  =========================================================================
     $(class.c_name) - $(string.trim (class.?''):no,left)
 
@@ -520,11 +574,22 @@ $(HEADER_FILE_PREFIX:)\
 .   if first ()
 
 .   endif
+.  if (is_c_element_unstable (constant))
+$(project.generated_warning_draft_api:)
+#ifdef ENABLE_UNSTABLE_API
+.  endif
 #define $(CLASS.NAME:c)_$(NAME:c) $(value)  // $(constant.description:no,block)
+.  if (is_c_element_unstable (constant))
+#endif // ENABLE_UNSTABLE_API
+.  endif
 .endfor
 .-
 .for class.enum
 
+.  if (is_c_element_unstable (enum))
+$(project.generated_warning_draft_api:)
+#ifdef ENABLE_UNSTABLE_API
+.  endif
 // $(enum.description:no,block)
 typedef enum {
 .  for enum.constant
@@ -536,12 +601,22 @@ typedef enum {
     $(CLASS.NAME:c)_$(CONSTANT.NAME:c) = $(value)$(post)    //  $(string.trim (constant.?''):left)
 .  endfor
 } $(class.name:c)_$(enum.name:c)_t;
+.  if (is_c_element_unstable (enum))
+#endif // ENABLE_UNSTABLE_API
+.  endif
 .endfor
 .-
 .for class.callback_type
 
+.  if (is_c_element_unstable (callback_type))
+$(project.generated_warning_draft_api:)
+#ifdef ENABLE_UNSTABLE_API
+.  endif
 // $(callback_type.description:no,block)
 $(c_callback_typedef (callback_type))
+.  if (is_c_element_unstable (callback_type))
+#endif // ENABLE_UNSTABLE_API
+.  endif
 .endfor
 .-
 .for class.constructor as method
@@ -564,11 +639,18 @@ $(c_actor_declaration (actor):)
 .-
 .for class.method
 
+.  if (is_c_element_unstable (method))
+$(project.generated_warning_draft_api:)
+#ifdef ENABLE_UNSTABLE_API
+.  endif
 //  $(method.description:no,block)
 .if method->return.fresh
 //  The caller is responsible for destroying the return value when finished with it.
 .endif
 $(c_method_declaration (method):)
+.  if (is_c_element_unstable (method))
+#endif // ENABLE_UNSTABLE_API
+.  endif
 .endfor
 //  @end
 $(HEADER_FILE_SUFFIX:)\
