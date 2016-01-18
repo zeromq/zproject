@@ -80,18 +80,29 @@ function register_target (target, detail)
 endfunction
 
 function build_target (target)
-    for project.handler where handler.target = my.target | my.target = "*"
-        echo "Building $(detail:) ($(my.target))"
-        scope project
-            target_$(handler.target:c) ()
-        endscope
-    else
-        echo "$(my.target) is not a valid target; valid targets are:"
+    if my.target = "*"
         for project.handler by target
-            echo "    $(target)\
-                $(detail:)"
+            if handler.target <> "autotools" & handler.target <> "cmake"
+                echo "Building $(detail:) ($(handler.target))"
+                scope project
+                    target_$(handler.target:c) ()
+                endscope
+            endif
         endfor
-    endfor
+    else
+        for project.handler where handler.target = my.target
+            echo "Building $(detail:) ($(handler.target))"
+            scope project
+                target_$(handler.target:c) ()
+            endscope
+        else
+            echo "$(my.target) is not a valid target; valid targets are:"
+            for project.handler by target
+                echo "    $(target)\
+                    $(detail:)"
+            endfor
+        endfor
+    endif
 endfunction
 
 #  These scripts must be run first to resolve missing or
