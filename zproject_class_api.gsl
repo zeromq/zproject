@@ -29,6 +29,28 @@ for project.class where defined (class.api)
     endif
 endfor
 
+#
+# Parse and set the API status status of an element
+#
+function initialise_c_element_status (elem, default)
+    if !defined (my.elem.status)
+        my.elem.status = my.default
+    elsif (my.elem.status <> "draft") & (my.elem.status <> "stable") & (my.elem.status <> "legacy") & (my.elem.status <> "retired")
+        abort "E: invalid status: $(my.elem.status)"
+    endif
+endfunction
+
+#
+# Parse and set the API status status of an element
+#
+function is_c_element_unstable (elem)
+    if my.elem.status ?= "stable" | my.elem.status ?= "legacy"
+        return 0
+    else
+        return 1
+    endif
+endfunction
+
 # Resolve missing or implicit details in the given container.
 #
 # Here, "container" refers to an <argument/> or <return/> in the model XML.
