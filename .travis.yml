@@ -3,5 +3,10 @@ language: c
 
 sudo: false
 
+addons:
+  apt:
+    packages:
+    - libpcre3-dev
+
 script:
 - ./ci_build.sh
