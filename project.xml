@@ -102,7 +102,8 @@
     <!-- Other source files that we need to package
     <extra name = "some_resource" />
     -->
-    <!-- Specify targets to build
+    <!-- Specify targets to build; autotools and cmake are
+         built in all cases.
     <target name = "cmake" />
     <target name = "autotools" />
     -->
