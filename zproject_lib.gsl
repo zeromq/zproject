@@ -1,9 +1,12 @@
-.#  Generate libtool library file
-.#
-.#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
-.#  is licensed under MIT/X11.
-.#
+#  Generate libtool library file
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+#
+target_register ("lib", "libtools library file")
+
+.macro target_lib
 .if (count (class) > 0)
 .output "src/$(project.libname).pc.in"
 $(project.GENERATED_WARNING_HEADER:)
@@ -36,3 +39,4 @@ Cflags: -I${includedir}
 
 $(project.GENERATED_WARNING_HEADER:)
 .endif
+.endmacro

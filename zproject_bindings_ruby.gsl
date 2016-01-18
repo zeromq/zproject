@@ -1,28 +1,13 @@
-.#  Only build bindings if there is at least one API model
-.if count (class, defined (class.api))
-.template 0
 #  Generate minimal Ruby language bindings.
+#
 #  These are not meant to be idiomatic, but to provide a minimal platform
 #  of FFI function bindings on which to base idiomatic Ruby classes.
 #
 #  This is a code generator built using the iMatix GSL code generation
 #  language. See https://github.com/imatix/gsl for details. This script
 #  is licensed under MIT/X11.
-#
-if !file.exists ("bindings/ruby/lib/$(project.name:c)/ffi")
-   directory.create("bindings/ruby/lib/$(project.name:c)/ffi")
-endif
 
-if !file.exists ("bindings/ruby/spec")
-   directory.create("bindings/ruby/spec")
-endif
-
-project.RubyName = "$(project.name:Pascal)"
-
-for class where defined (class.api)
-    class.ruby_require = string.replace (class.c_name, "$(project.name)_|")
-    class.RubyName = "$(class.ruby_require:Pascal)"
-endfor
+target_register ("ruby", "Ruby binding")
 
 function resolve_ruby_enums (class)
     for my.class.enum
@@ -263,12 +248,8 @@ function resolve_ruby_class (class)
     endfor
 endfunction
 
-for class where defined (class.api)
-    resolve_ruby_class (class)
-endfor
-
-.endtemplate
-.#
+.macro generate_ruby_binding
+.directory.create ("bindings/ruby/lib/$(project.name:c)/ffi")
 .output "bindings/ruby/lib/$(project.name:c)/ffi/version.rb"
 $(project.GENERATED_WARNING_HEADER:)
 
@@ -584,6 +565,7 @@ RSpec::Core::RakeTask.new :test do |c|
 end
 .endif
 .#
+.directory.create ("bindings/ruby/spec")
 .if !file.exists ("bindings/ruby/spec/spec_helper.rb")
 .output "bindings/ruby/spec/spec_helper.rb"
 
@@ -606,6 +588,16 @@ describe ::$(project.RubyName:)::FFI do
 end
 
 $(project.GENERATED_WARNING_HEADER:)
-.#
-.endif
-.#
+.endmacro
+
+function target_ruby
+    project.RubyName = "$(project.name:Pascal)"
+    for class where defined (class.api)
+        class.ruby_require = string.replace (class.c_name, "$(project.name)_|")
+        class.RubyName = "$(class.ruby_require:Pascal)"
+    endfor
+    for class where defined (class.api)
+        resolve_ruby_class (class)
+    endfor
+    generate_ruby_binding ()
+endfunction

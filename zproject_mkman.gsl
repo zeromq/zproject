@@ -1,11 +1,12 @@
+.macro generate_mkman
 .output "doc/mkman"
 #! /usr/bin/perl
 #   
-#   zproject_mkman - Generates man pages from C source and header files.
+#   mkman - Generates man pages from C source and header files.
 #
-#   Syntax: 'mkman classname', in doc subdirectory.
+#   Syntax: './mkman classname', in doc subdirectory.
 #
-#   Copyright (c) 1996-2014 iMatix Corporation
+#   Copyright (c) 1996-2016 iMatix Corporation
 #
 #   This is free software; you can redistribute it and/or modify it under the
 #   terms of the GNU General Public License as published by the Free Software
@@ -155,3 +156,6 @@ while ($name) {
 }
 .close
 .chmod_x ("doc/mkman")
+.endmacro
+
+generate_mkman ()

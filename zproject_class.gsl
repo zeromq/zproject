@@ -1,20 +1,17 @@
-.#  ===========================================================================
-.#  Generate class header/source skeletons
-.#
-.#   Generates a skeleton for a new class. Will not overwrite existing files.
-.#   See project.xml for instructions on how to specify a class.
-.#
-.#  This script will generate the following files:
-.#      * include/$(project.header:) - public project header (once)
-.#      * src/$(project.prefix)_selftest.c - selftest class
-.#      * src/$(project.prefix)_classes.h - private project header
-.#      * (include|src)$(class.c_name).h - public/private header file for classes
-.#      * src/$(class.c_name).c - source code file for classes
-.#  ===========================================================================
-.#
-.#   Resolve XML includes
-.#
-.if (count (class) > 0)
+#  Generate project API
+#
+#  This script will generate the following files:
+#      * include/$(project.header:) - public project header (once)
+#      * src/$(project.prefix)_selftest.c - selftest class
+#      * src/$(project.prefix)_classes.h - private project header
+#      * (include|src)$(class.c_name).h - public/private header file for classes
+#      * src/$(class.c_name).c - source code file for classes
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+
+.macro generate_project_api
 .#
 .#  Build the project header file
 .#
@@ -665,4 +662,8 @@ $(HEADER_FILE_SUFFIX:)\
 .endif
 .close
 .endfor
-.endif
+.endmacro
+
+if count (class)
+    generate_project_api ()
+endif

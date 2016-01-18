@@ -1,4 +1,3 @@
-.template 0
 #   Generate minimal JNI language bindings.
 #   These are not meant to be idiomatic, but to provide a minimal platform
 #   of JNI function bindings on which to base idiomatic Java classes.
@@ -6,18 +5,8 @@
 #   This is a code generator built using the iMatix GSL code generation
 #   language. See https://github.com/imatix/gsl for details. This script
 #   is licensed under MIT/X11.
-#
-#   Workflow, in bindings/jni directory:
-#   > gradle build
-#
-#   - Compile java files into classes, with gradle (or IDE, maven, etc.)
-#   - Run javah on those compiled classes to generate the header files
-#   - Build the shared library from those header files
 
-global.namespace ?= switches.namespace? "org.zeromq.$(project.prefix)"
-global.name_path ?= switches.name_path? "org/zeromq/$(project.prefix)"
-global.topdir ?= switches.topdir? "bindings/jni"
-directory.create("$(global.topdir)")
+target_register ("java", "Java JNI binding")
 
 .macro generate_jni_main
 .output "$(topdir)/CMakeLists.txt"
@@ -1026,33 +1015,39 @@ public class $(my.class.name:pascal)Test {
 }
 .endmacro
 
-for project.class
-    if defined (class.api)
-        class.jni_okay = 1
-        for constructor
-            resolve_jni_method (constructor)
-            if index () = 1 & constructor.jni_okay = 0
-                class.jni_okay = 0
-            endif
-        endfor
-        for destructor
-            resolve_jni_method (destructor)
-        endfor
-        for method
-            resolve_jni_method (method)
-        endfor
-    else
-        class.jni_okay = 0
-    endif
+function target_java
+    global.namespace ?= switches.namespace? "org.zeromq.$(project.prefix)"
+    global.name_path ?= switches.name_path? "org/zeromq/$(project.prefix)"
+    global.topdir ?= switches.topdir? "bindings/jni"
+    directory.create("$(global.topdir)")
 
-    if class.jni_okay
-        generate_jni_class_java (class)
-        generate_jni_class_c (class)
-        generate_jni_test (class)
-    endif
-endfor
+    for project.class
+        if defined (class.api)
+            class.jni_okay = 1
+            for constructor
+                resolve_jni_method (constructor)
+                if index () = 1 & constructor.jni_okay = 0
+                    class.jni_okay = 0
+                endif
+            endfor
+            for destructor
+                resolve_jni_method (destructor)
+            endfor
+            for method
+                resolve_jni_method (method)
+            endfor
+        else
+            class.jni_okay = 0
+        endif
 
-if count (project.class, jni_okay = 1)
-    generate_jni_main ()
-endif
-.endtemplate
+        if class.jni_okay
+            generate_jni_class_java (class)
+            generate_jni_class_c (class)
+            generate_jni_test (class)
+        endif
+    endfor
+
+    if count (project.class, jni_okay = 1)
+        generate_jni_main ()
+    endif
+endfunction

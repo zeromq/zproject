@@ -1,4 +1,11 @@
-.template 0
+#  Generate docker packaging for project
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+
+target_register ("docker", "packaging for Docker")
+
 .macro generate_docker_file ()
 .output "Dockerfile"
 FROM ubuntu:trusty
@@ -35,8 +42,8 @@ RUN sudo make install
 RUN sudo ldconfig
 .endmacro
 
-if defined (project.repository)
-    generate_docker_file ()
-endif
-
-.endtemplate
+function target_docker
+    if defined (project.repository)
+        generate_docker_file ()
+    endif
+endfunction

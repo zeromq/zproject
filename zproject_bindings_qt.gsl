@@ -1,48 +1,11 @@
-.#  ===========================================================================
-.#  Generate minimal Qt language bindings.
-.#
-.#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
-.#  is licensed under MIT/X11.
-.#
-.#  This script will generate the following files:
-.#      * src/q$(class.qtname).(h/cpp) - Qt class bindings
-.#      * src/$(project.QtName).h - Master header
-.#      * config.pri - Configuration to switch between static or shared lib
-.#      * common.pri - Common flags and variables for both static and shared
-.#      * src/$(project.QtName).pri -  Adds sources/header or links to library
-.#      * buildlib/buildlib.pro - Helper to build the library
-.#      * $(project.QtName).pro - Master project file
-.#      * selftest/selftest.pro - Selftest project file
-.#      * selftest/main.cpp - Selftest
-.#      * README.md - Readme file with instructions and quirks
-.#  ===========================================================================
-.#
-.#  Only build bindings if there is at least one API model
-.#
-.if count (class, defined (class.api))
-.template 0
+#  Generate minimal Qt language bindings.
 #
-#  Create the necessary folders
-#
-if !file.exists ("bindings/qt/")
-   directory.create("bindings/qt/")
-endif
-if !file.exists ("bindings/qt/src")
-   directory.create("bindings/qt/src")
-endif
-#
-#  Resolve Qt project and class names
-#
-project.QtName = "q$(project.name)"
-for class where defined (class.api)
-    class.QtName = "Q$(class.c_name:Pascal)"
-endfor
-for dependencies.class
-    class.QtName = "Q$(class.c_name:Pascal)"
-endfor
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
 
-#
+target_register ("qml", "QML binding")
+
 #  This function will map c types to Qt types and also define how Qt types are
 #  transformed from and to c types when the c api is called.
 #
@@ -294,174 +257,166 @@ function qt_method_signature (method, in_header)
 endfunction
 
 function print_class_header (class)
->/*
->$(project.GENERATED_WARNING_HEADER:)
->*/
->#ifndef Q_$(CLASS.C_NAME)_H
->#define Q_$(CLASS.C_NAME)_H
->
->#include "$(project.QtName).h"
->
->class QT_$(PROJECT.NAME:c)_EXPORT $(class.QtName:) : public QObject
->{
->    Q_OBJECT
->public:
->
->    //  Copy-construct to return the proper wrapped c types
->    $(class.QtName:camel) ($(class.name:c)_t *self, QObject *qObjParent = 0);
-for class.constructor as method where defined (qt_method_signature (method, 1))
->
->    //  $(method.description:no,block)
->    $(qt_method_signature (method, 1));
-endfor
-for class.destructor as method where defined (qt_method_signature (method, 1))
->
->    //  $(method.description:no,block)
->    $(qt_method_signature (method, 1));
-endfor
-for class.method where defined (qt_method_signature (method, 1))
->
->    //  $(method.description:no,block)
->    $(qt_method_signature (method, 1));
-endfor
->
->    $(class.c_name:)_t *self;
->};
->#endif //  Q_$(CLASS.C_NAME)_H
->/*
->$(project.GENERATED_WARNING_HEADER:)
->*/
+    >/*
+    >$(project.GENERATED_WARNING_HEADER:)
+    >*/
+    >#ifndef Q_$(CLASS.C_NAME)_H
+    >#define Q_$(CLASS.C_NAME)_H
+    >
+    >#include "$(project.QtName).h"
+    >
+    >class QT_$(PROJECT.NAME:c)_EXPORT $(class.QtName:) : public QObject
+    >{
+    >    Q_OBJECT
+    >public:
+    >
+    >    //  Copy-construct to return the proper wrapped c types
+    >    $(class.QtName:camel) ($(class.name:c)_t *self, QObject *qObjParent = 0);
+    for class.constructor as method where defined (qt_method_signature (method, 1))
+        >
+        >    //  $(method.description:no,block)
+        >    $(qt_method_signature (method, 1));
+    endfor
+    for class.destructor as method where defined (qt_method_signature (method, 1))
+        >
+        >    //  $(method.description:no,block)
+        >    $(qt_method_signature (method, 1));
+    endfor
+    for class.method where defined (qt_method_signature (method, 1))
+        >
+        >    //  $(method.description:no,block)
+        >    $(qt_method_signature (method, 1));
+    endfor
+    >
+    >    $(class.c_name:)_t *self;
+    >};
+    >#endif //  Q_$(CLASS.C_NAME)_H
+    >/*
+    >$(project.GENERATED_WARNING_HEADER:)
+    >*/
 endfunction
 
 function print_class_body (class)
->/*
->$(project.GENERATED_WARNING_HEADER:)
->*/
->
->#include "$(project.QtName).h"
->
->///
->//  Copy-construct to return the proper wrapped c types
->$(class.QtName:camel)::$(class.QtName:camel) ($(class.name:c)_t *self, QObject *qObjParent) : QObject (qObjParent)
->{
->    this->self = self;
->}
->
-for class.constructor as method where defined (qt_method_signature (method, 0))
->
->///
->//  $(method.description:no,block)
->$(qt_method_signature (method, 0))
->{
-   if index () = 1
->    this->self = $(class.c_name:)_$(method.c_name) (\
-   else
->    return new $(class.QtName) ($(class.c_name:)_$(method.c_name) (\
-   endif
-   for method.argument where !argument.variadic
->$(argument.qtArgPass)\
-       if !last ()
->, \
-       endif
-   endfor
-if index () = 1
->);
-else
->), qObjParent);
-endif
->}
-endfor
-for class.destructor as method where defined (qt_method_signature (method, 0))
->
->///
->//  $(method.description:no,block)
->$(qt_method_signature (method, 0))
->{
->    $(method->return.qtCallPre)$(class.c_name:)_$(method.c_name) (&self\
-       if count (method.argument) > 1
->, \
-       endif
-   for method.argument where !argument.variadic
-       if !first ()
->$(argument.qtArgPass)\
-       endif
-       if !last ()
->, \
-       endif
-   endfor
->)$(method->return.qtCallPost);
->}
-endfor
-for class.method where defined (qt_method_signature (method, 0))
->
->///
->//  $(method.description:no,block)
->$(qt_method_signature (method, 0))
->{
-    for method.argument where defined (argument.qtArgPassPre)
->    $(argument.qtArgPassPre)
+    >/*
+    >$(project.GENERATED_WARNING_HEADER:)
+    >*/
+    >
+    >#include "$(project.QtName).h"
+    >
+    >///
+    >//  Copy-construct to return the proper wrapped c types
+    >$(class.QtName:camel)::$(class.QtName:camel) ($(class.name:c)_t *self, QObject *qObjParent) : QObject (qObjParent)
+    >{
+    >    this->self = self;
+    >}
+    >
+    for class.constructor as method where defined (qt_method_signature (method, 0))
+        >
+        >///
+        >//  $(method.description:no,block)
+        >$(qt_method_signature (method, 0))
+        >{
+        if index () = 1
+            >    this->self = $(class.c_name:)_$(method.c_name) (\
+        else
+            >    return new $(class.QtName) ($(class.c_name:)_$(method.c_name) (\
+        endif
+        for method.argument where !argument.variadic
+            >$(argument.qtArgPass)\
+            if !last ()
+                >, \
+            endif
+        endfor
+        if index () = 1
+            >);
+        else
+            >), qObjParent);
+        endif
+        >}
     endfor
-    if (method.has_va_list_sibling)
->    $(method->return.qtCallPre)$(class.c_name:)_v$(method.c_name) (\
-    else
->    $(method->return.qtCallPre)$(class.c_name:)_$(method.c_name) (\
-    endif
-    if qt_method_has_self_pointer (method)
->&self\
+    for class.destructor as method where defined (qt_method_signature (method, 0))
+        >
+        >///
+        >//  $(method.description:no,block)
+        >$(qt_method_signature (method, 0))
+        >{
+        >    $(method->return.qtCallPre)$(class.c_name:)_$(method.c_name) (&self\
         if count (method.argument) > 1
->, \
+            >, \
         endif
-    elsif !method.singleton
->self\
-        if count (method.argument)
->, \
-        endif
-    endif
-    for method.argument where !(!method.has_va_list_sibling & argument.variadic) \
-                            & !qt_argument_is_self_pointer (argument)
->$(argument.qtArgPass)\
-        if !last ()
->, \
-        endif
+        for method.argument where !argument.variadic
+            if !first ()
+                >$(argument.qtArgPass)\
+            endif
+            if !last ()
+                >, \
+            endif
+        endfor
+        >)$(method->return.qtCallPost);
+        >}
     endfor
->)$(method->return.qtCallPost);
-    for method.argument where defined (argument.qtArgPassPost)
->    $(argument.qtArgPassPost)
+    for class.method where defined (qt_method_signature (method, 0))
+        >
+        >///
+        >//  $(method.description:no,block)
+        >$(qt_method_signature (method, 0))
+        >{
+        for method.argument where defined (argument.qtArgPassPre)
+            >    $(argument.qtArgPassPre)
+        endfor
+        if (method.has_va_list_sibling)
+            >    $(method->return.qtCallPre)$(class.c_name:)_v$(method.c_name) (\
+        else
+            >    $(method->return.qtCallPre)$(class.c_name:)_$(method.c_name) (\
+        endif
+        if qt_method_has_self_pointer (method)
+            >&self\
+            if count (method.argument) > 1
+                >, \
+            endif
+        elsif !method.singleton
+            >self\
+            if count (method.argument)
+                >, \
+            endif
+        endif
+        for method.argument where !(!method.has_va_list_sibling & argument.variadic) \
+                                & !qt_argument_is_self_pointer (argument)
+            >$(argument.qtArgPass)\
+            if !last ()
+                >, \
+            endif
+        endfor
+        >)$(method->return.qtCallPost);
+        for method.argument where defined (argument.qtArgPassPost)
+            >    $(argument.qtArgPassPost)
+        endfor
+        >    $(method->return.qtReturn)
+        >}
     endfor
->    $(method->return.qtReturn)
->}
-endfor
->/*
->$(project.GENERATED_WARNING_HEADER:)
->*/
+    >/*
+    >$(project.GENERATED_WARNING_HEADER:)
+    >*/
 endfunction
 
-.endtemplate
-.###############################################################################
-.#                                                                             #
-.#  Generate class headers                                                     #
-.#                                                                             #
-.###############################################################################
+.macro generate_qt_binding ()
+.directory.create ("bindings/qt/src")
 .for class where defined (class.api)
-.  output "bindings/qt/src/$(class.qtname).h"
-.  print_class_header (class)
-.  close
+.   output "bindings/qt/src/$(class.qtname).h"
+.   print_class_header (class)
+.   close
 .endfor
 .#
 .for dependencies.class
-.  output "bindings/qt/src/$(class.qtname).h"
-.  print_class_header (class)
-.  close
+.   output "bindings/qt/src/$(class.qtname).h"
+.   print_class_header (class)
+.   close
 .endfor
-.###############################################################################
-.#                                                                             #
-.#  Generate class implementations                                             #
-.#                                                                             #
-.###############################################################################
+.
 .for class where defined (class.api)
-.  output "bindings/qt/src/$(class.qtname).cpp"
-.  print_class_body (class)
-.  close
+.   output "bindings/qt/src/$(class.qtname).cpp"
+.   print_class_body (class)
+.   close
 .endfor
 .#
 .for dependencies.class
@@ -469,11 +424,7 @@ endfunction
 .  print_class_body (class)
 .  close
 .endfor
-.###############################################################################
-.#                                                                             #
-.# Generate master header $(project.QtName).h                                                 #
-.#                                                                             #
-.###############################################################################
+.
 .output "bindings/qt/src/$(project.QtName).h"
 /*
 $(project.GENERATED_WARNING_HEADER:)
@@ -810,4 +761,17 @@ excluded. Currently methods are excluded if,
 $(project.GENERATED_WARNING_HEADER:)
 ```
 .close
-.endif
+.endmacro
+
+function target_qt
+    if count (class, defined (class.api))
+        project.QtName = "q$(project.name)"
+        for class where defined (class.api)
+            class.QtName = "Q$(class.c_name:Pascal)"
+        endfor
+        for dependencies.class
+            class.QtName = "Q$(class.c_name:Pascal)"
+        endfor
+        generate_qt_binding ()
+    endif
+endfunction

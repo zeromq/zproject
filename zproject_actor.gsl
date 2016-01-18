@@ -1,18 +1,8 @@
-.#  ===========================================================================
-.#  Generate czmq actor header/source skeletons
-.#
-.#   Generates a skeleton for a new czmq actor. Will not overwrite
-.#   existing files.
-.#   See project.xml for instructions on how to specify an actor.
-.#
-.#  This script will generate the following files for each actor:
-.#  * (src/include)/$(actor.c_name).h - private/public header file
-.#  * src/$(actor.c_name).c - source code file
-.#  ===========================================================================
-.-
-.-  Resolve missing or implicit details
-.-
-.template 0
+#  Generate CZMQ actor header/source skeletons
+#
+#  Generates a skeleton for a new CZMQ actor. Will not overwrite
+#  existing files. See project.xml for instructions on how to specify
+#  an actor.
 
 function resolve_actor (actor)
     my.actor.c_name ?= "$(actor.name:c)"
@@ -33,19 +23,9 @@ function resolve_actor (actor)
     endnew
 endfunction
 
-for actor
-    resolve_actor (actor)
-endfor
-
-.endtemplate
-.-
-.-  Build the header file for an actor
-.-
-.for actor
-.directory.create (actor.header)
-.header_file = "$(actor.header)/$(actor.c_name).h"
-.if !file.exists (header_file)
-.   output header_file
+.macro generate_actor_maybe
+.if !file.exists ("$(actor.header)/$(actor.c_name).h")
+.   output "$(actor.header)/$(actor.c_name).h"
 /*  =========================================================================
     $(actor.c_name) - $(string.trim (actor.?''):no,left)
 
@@ -110,15 +90,10 @@ $(PROJECT.PREFIX)_EXPORT void
 #endif
 
 #endif
-.close
 .endif
-.-
-.-  Build the source file for a actor
-.-
-.directory.create ("src")
-.source_file = "src/$(actor.c_name).c"
-.if !file.exists (source_file)
-.   output source_file
+.
+.if !file.exists ("src/$(actor.c_name).c")
+.   output "src/$(actor.c_name).c"
 /*  =========================================================================
     $(actor.c_name) - $(string.trim (actor.?''):no,left)
 
@@ -153,7 +128,7 @@ struct _$(actor.c_name)_t {
 
 
 //  --------------------------------------------------------------------------
-//  Create a new $(actor.c_name).
+//  Create a new $(actor.c_name) instance
 
 static $(actor.c_name)_t *
 $(actor.c_name)_new (zsock_t *pipe, void *args)
@@ -172,7 +147,7 @@ $(actor.c_name)_new (zsock_t *pipe, void *args)
 
 
 //  --------------------------------------------------------------------------
-//  Destroy the $(actor.c_name).
+//  Destroy the $(actor.c_name) instance
 
 static void
 $(actor.c_name)_destroy ($(actor.c_name)_t **self_p)
@@ -270,7 +245,6 @@ $(actor.c_name)_actor (zsock_t *pipe, void *args)
           $(actor.c_name)_recv_api (self);
        //  Add other sockets when you need them.
     }
-
     $(actor.c_name)_destroy (&self);
 }
 
@@ -303,4 +277,9 @@ $(actor.c_name)_test (bool verbose)
 }
 .close
 .endif
-.endfor
+.endmacro
+
+for actor
+    resolve_actor (actor)
+    generate_actor_maybe (actor)
+endfor

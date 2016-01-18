@@ -1,13 +1,14 @@
-.#  Generate Android build system files
-.#
-.#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
-.#  is licensed under MIT/X11.
-.#
-.if !file.exists ("builds/android")
-.   directory.create("builds/android")
-.endif
-.#
+#  Generate Android build system files
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+
+target_register ("android", "Native shared library for Android")
+
+.macro target_android
+.directory.create ("builds/android")
+.
 .output "builds/android/build.sh"
 #!/usr/bin/env bash
 $(project.GENERATED_WARNING_HEADER:)
@@ -431,3 +432,4 @@ function android_build_verify_so {
 $(project.GENERATED_WARNING_HEADER:)
 .close
 .chmod_x ("builds/android/android_build_helper.sh")
+.endmacro

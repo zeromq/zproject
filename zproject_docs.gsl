@@ -1,15 +1,12 @@
-.#  ===========================================================================
-.#  Generate documentation make files for project
-.#
-.#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
-.#  is licensed under MIT/X11.
-.#
-.#  This script will generate the following files:
-.#      * doc/Makefile.am
-.#      * doc/asciidoc.conf
-.#      * doc/$(project.name:c).txt (once)
-.#  ===========================================================================
+#  Generate documentation make files for project
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+
+target_register ("docs", "man pages")
+
+.macro target_docs
 .directory.create ("doc")
 .output "doc/Makefile.am"
 $(project.GENERATED_WARNING_HEADER:)
@@ -162,3 +159,4 @@ Classes
 
 Something.
 .endif
+.endmacro

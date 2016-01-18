@@ -1,15 +1,13 @@
-.#  ===========================================================================
-.#  Generate spec file for project
-.#
-.#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
-.#  is licensed under MIT/X11.
-.#
-.#  This script will generate the following files:
-.#  packaging/redhat/$(project.name).spec
-.#  ===========================================================================
-.#
-.directory.create('packaging/redhat')
+#  Generate spec file for project
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+
+target_register ("redhat", "Packaging for RedHat")
+
+.macro target_redhat
+.directory.create ('packaging/redhat')
 .output "packaging/redhat/$(project.name).spec"
 #
 #    $(project.name) - $(project.description?'':)
@@ -150,3 +148,4 @@ $(main->extra.path)/$(main->extra.name)
 .endif
 
 %changelog
+.endmacro

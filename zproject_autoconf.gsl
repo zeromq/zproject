@@ -1,16 +1,12 @@
-.#  ===========================================================================
-.#  Generate autoconf files for project
-.#
-.#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
-.#  is licensed under MIT/X11.
-.#
-.#  This script will generate the following files:
-.#      * autogen.sh
-.#      * version.sh
-.#      * configure.ac
-.#  ===========================================================================
-.#
+#  Generate autoconf files for project
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+
+target_register ("autoconf", "GNU build system (Autotools)")
+
+.macro target_autoconf
 .output "autogen.sh"
 #!/usr/bin/env sh
 $(project.GENERATED_WARNING_HEADER:)
@@ -502,3 +498,4 @@ AM_COND_IF([WITH_SYSTEMD],
 
 AC_OUTPUT
 $(project.GENERATED_WARNING_HEADER:)
+.endmacro

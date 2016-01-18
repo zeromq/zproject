@@ -1,10 +1,11 @@
-.template 0
-.#  Generate NuGet nuspec file (for subsequent packing).
-.#
-.#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
-.#  is licensed under MIT/X11.
-.#
+#  Generate NuGet nuspec file (for subsequent packing).
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+#
+target_register ("nuget", "Packaging for NuGet")
+
 .macro generate_nuget (config)
 .directory.create ("builds/msvc/nuget")
 .output "builds/msvc/nuget/package.bat"
@@ -256,7 +257,9 @@ $(project.GENERATED_WARNING_HEADER:)
 </ProjectSchemaDefinitions>
 .endmacro
 
-for project.packaging where target = "nuget"
-    generate_nuget (packaging)
-endfor
-.endtemplate
+function target_nuget
+    for project.packaging where target = "nuget"
+        generate_nuget (packaging)
+    endfor
+endfunction
+

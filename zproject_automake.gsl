@@ -1,14 +1,12 @@
-.#  ===========================================================================
-.#  Generate automake files for project
-.#
-.#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
-.#  is licensed under MIT/X11.
-.#
-.#  This script will generate the following files:
-.#      * Makefile.am
-.#      * src/Makemodule.am
-.#  ===========================================================================
+#  Generate automake files for project
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+
+target_register ("automake", "automake packaging")
+
+.macro target_automake
 .output "Makefile.am"
 $(project.GENERATED_WARNING_HEADER:)
 
@@ -408,3 +406,4 @@ WantedBy=multi-user.target
 .endif
 .endfor
 .close
+.endmacro

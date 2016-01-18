@@ -1,21 +1,13 @@
-.#  ===========================================================================
-.#  Generate debian recipes for project
-.#
-.#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
-.#  is licensed under MIT/X11.
-.#
-.#  This script will generate the following files:
-.#   * builds/debian/compat
-.#   * builds/debian/control
-.#   * builds/debian/$(project.name).dsc
-.#   * builds/debian/rules
-.#   * builds/debian/*.install
-.#  ===========================================================================
-.#
-.if !file.exists ('builds/debian')
-.   directory.create('builds/debian')
-.endif
+#  Generate debian recipes for project
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+
+target_register ("debian", "packaging for Debian")
+
+.macro target_debian
+.directory.create ('builds/debian')
 .output "builds/debian/compat"
 9
 .output "builds/debian/control"
@@ -188,3 +180,4 @@ debian/tmp/usr/include/*
 debian/tmp/usr/lib/*/$(project.libname).so
 debian/tmp/usr/lib/*/pkgconfig/$(project.libname).pc
 .endif
+.endmacro

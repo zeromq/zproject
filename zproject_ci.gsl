@@ -1,9 +1,12 @@
-.#  Generate continuous integration test files
-.#
-.#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
-.#  is licensed under MIT/X11.
-.#
+#  Generate continuous integration test files
+#
+#  This is a code generator built using the iMatix GSL code generation
+#  language. See https://github.com/imatix/gsl for details. This script
+#  is licensed under MIT/X11.
+
+target_register ("travis", "Travis CI scripts")
+
+.macro target_travis
 .if !file.exists (".travis.yml")
 .output ".travis.yml"
 # Travis CI script
@@ -63,3 +66,4 @@ else
 fi
 .close
 .chmod_x ("ci_build.sh")
+.endmacro

@@ -72,51 +72,93 @@ function chmod_x (filename)
     my.shell.run ()
 endfunction
 
+function target_register (target, detail)
+    new target_handler to project
+        target_handler.target = my.target
+        target_handler.detail = my.detail
+        echo my.target + ": " + my.detail
+    endnew
+endfunction
+
+#  These scripts must be run first to resolve missing or
+#  implicit details in the model before code generation.
+gsl from "zproject_projects.gsl"
+gsl from "zproject_class_api.gsl"
+if switches.save ?= 1
+    project.save ("save.xml")
+endif
+
+#   Always run these, in any order
+gsl from "zproject_actor.gsl"
+gsl from "zproject_bench.gsl"
+gsl from "zproject_class.gsl"
+gsl from "zproject_git.gsl"
+gsl from "zproject_tools.gsl"
+gsl from "zproject_mkman.gsl"
+
+#   Optional targets
+gsl from "zproject_android.gsl"
+gsl from "zproject_autoconf.gsl"
+gsl from "zproject_automake.gsl"
+gsl from "zproject_cmake.gsl"
+gsl from "zproject_docs.gsl"
+gsl from "zproject_lib.gsl"
+gsl from "zproject_mingw32.gsl"
+gsl from "zproject_cygwin.gsl"
+gsl from "zproject_vs2008.gsl"
+gsl from "zproject_vs20xx.gsl"
+gsl from "zproject_vs20xx_props.gsl"
+gsl from "zproject_nuget.gsl"
+gsl from "zproject_bindings_python.gsl"
+gsl from "zproject_bindings_qml.gsl"
+gsl from "zproject_bindings_qt.gsl"
+gsl from "zproject_bindings_ruby.gsl"
+gsl from "zproject_bindings_jni.gsl"
+gsl from "zproject_bindings_jni_vs20xx.gsl"
+gsl from "zproject_ci.gsl"
+gsl from "zproject_debian.gsl"
+gsl from "zproject_redhat.gsl"
+gsl from "zproject_docker.gsl"
+
+target_android ()
+target_autoconf ()
+target_automake ()
+target_cmake ()
+target_docs ()
+target_lib ()
+
+echo "Generating Windows support..."
+target_mingw32 ()
+target_cygwin ()
+target_vs2008 ()
+target_vs2010 ()
+target_vs2012 ()
+target_vs2013 ()
+target_vs2015 ()
+target_nuget ()
+
+echo "Generating language bindings..."
+echo " - Python..."
+target_python ()
+
+echo " - QML..."
+target_qml ()
+
+echo " - Qt..."
+target_qt ()
+
+echo " - Ruby FFI..."
+target_ruby ()
+
+echo " - Java JNI..."
+target_java ()
+target_java_msvc ()
+
+echo "Generating miscellaneous support..."
+target_travis ()
+
+echo "Generating distro packaging recipes"
+target_debian ()
+target_redhat ()
+target_docker ()
 .endtemplate
-.#  These scripts must be run first to resolve missing or
-.#  implicit details in the model before code generation.
-.gsl from "zproject_projects.gsl"
-.gsl from "zproject_class_api.gsl"
-.if switches.save ?= 1
-.   project.save ("save.xml")
-.endif
-.#
-.#  These scripts generate code independently from one another
-.#  so are not run in any particular order other than alphabetically.
-.echo "Generating build scripts..."
-.gsl from "zproject_actor.gsl"
-.gsl from "zproject_android.gsl"
-.gsl from "zproject_autoconf.gsl"
-.gsl from "zproject_automake.gsl"
-.gsl from "zproject_class.gsl"
-.gsl from "zproject_cmake.gsl"
-.gsl from "zproject_docs.gsl"
-.gsl from "zproject_mkman.gsl"
-.gsl from "zproject_lib.gsl"
-.gsl from "zproject_mingw32.gsl"
-.gsl from "zproject_cygwin.gsl"
-.gsl from "zproject_vs2008.gsl"
-.gsl from "zproject_vs20xx.gsl"
-.gsl from "zproject_vs20xx_props.gsl"
-.gsl from "zproject_nuget.gsl"
-.echo "Generating language bindings..."
-.echo " - Python..."
-.gsl from "zproject_bindings_python.gsl"
-.echo " - QML..."
-.gsl from "zproject_bindings_qml.gsl"
-.echo " - Qt..."
-.gsl from "zproject_bindings_qt.gsl"
-.echo " - Ruby FFI..."
-.gsl from "zproject_bindings_ruby.gsl"
-.echo " - Java JNI..."
-.gsl from "zproject_bindings_jni.gsl"
-.gsl from "zproject_bindings_jni_vs20xx.gsl"
-.echo "Generating miscellaneous support..."
-.gsl from "zproject_ci.gsl"
-.gsl from "zproject_bench.gsl"
-.gsl from "zproject_tools.gsl"
-.gsl from "zproject_git.gsl"
-.echo "Generating distro packaging recipes"
-.gsl from "zproject_debian.gsl"
-.gsl from "zproject_redhat.gsl"
-.gsl from "zproject_docker.gsl"
