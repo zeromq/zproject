@@ -6,10 +6,6 @@ config.log
 config.status
 config/
 src/
-packaging/
-builds/
-bindings/
-doc/
 configure
 libtool
 *.log
