@@ -46,7 +46,9 @@ endfunction
 # We don't support state = "retired"
 #
 function is_c_element_draft (elem)
-    if my.elem.state ?= "stable" | my.elem.state ?= "legacy"
+    if my.elem.private ?= 1 \
+    |  my.elem.state ?= "stable" \
+    |  my.elem.state ?= "legacy"
         return 0
     else
         return 1
