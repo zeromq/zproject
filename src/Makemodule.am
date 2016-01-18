@@ -20,7 +20,7 @@ myproject_SCRIPTS = \
     zproject_bench.gsl \
     zproject_class.gsl \
     zproject_git.gsl \
-    zproject_valgring.gsl \
+    zproject_valgrind.gsl \
     zproject_android.gsl \
     zproject_autotools.gsl \
     zproject_debian.gsl \
@@ -35,7 +35,6 @@ myproject_SCRIPTS = \
     zproject_cygwin.gsl \
     zproject_docker.gsl \
     zproject_docs.gsl \
-    zproject_mkman.gsl \
     zproject_mingw32.gsl \
     zproject_nuget.gsl \
     zproject_redhat.gsl \

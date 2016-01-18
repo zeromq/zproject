@@ -117,7 +117,7 @@
     <bin name = "zproject_bench.gsl" />
     <bin name = "zproject_class.gsl" />
     <bin name = "zproject_git.gsl" />
-    <bin name = "zproject_valgring.gsl" />
+    <bin name = "zproject_valgrind.gsl" />
 
     <bin name = "zproject_android.gsl" />
     <bin name = "zproject_autotools.gsl" />
@@ -133,7 +133,6 @@
     <bin name = "zproject_cygwin.gsl" />
     <bin name = "zproject_docker.gsl" />
     <bin name = "zproject_docs.gsl" />
-    <bin name = "zproject_mkman.gsl" />
     <bin name = "zproject_mingw32.gsl" />
     <bin name = "zproject_nuget.gsl" />
     <bin name = "zproject_redhat.gsl" />
