@@ -97,11 +97,9 @@ gsl from "zproject_mkman.gsl"
 
 #   Optional targets
 gsl from "zproject_android.gsl"
-gsl from "zproject_autoconf.gsl"
-gsl from "zproject_automake.gsl"
+gsl from "zproject_autotools.gsl"
 gsl from "zproject_cmake.gsl"
 gsl from "zproject_docs.gsl"
-gsl from "zproject_lib.gsl"
 gsl from "zproject_mingw32.gsl"
 gsl from "zproject_cygwin.gsl"
 gsl from "zproject_vs2008.gsl"
@@ -120,11 +118,9 @@ gsl from "zproject_redhat.gsl"
 gsl from "zproject_docker.gsl"
 
 target_android ()
-target_autoconf ()
-target_automake ()
+target_autotools ()
 target_cmake ()
 target_docs ()
-target_lib ()
 
 echo "Generating Windows support..."
 target_mingw32 ()
