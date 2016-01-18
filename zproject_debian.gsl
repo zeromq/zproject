@@ -7,10 +7,10 @@
 target_register ("debian", "packaging for Debian")
 
 .macro target_debian
-.directory.create ('builds/debian')
-.output "builds/debian/compat"
+.directory.create ('packaging/debian')
+.output "packaging/debian/compat"
 9
-.output "builds/debian/control"
+.output "packaging/debian/control"
 #
 #    $(project.name) - $(project.description?'':)
 #
@@ -92,7 +92,7 @@ Depends:
 Description: debugging symbols for $(project.name)
  This package contains the debugging symbols for $(project.name) : $(project.description).
 
-.output "builds/debian/$(project.name).dsc"
+.output "packaging/debian/$(project.name).dsc"
 Format:         1.0
 Source:         $(string.replace (project.name, "_|-"))
 Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)-1
@@ -126,7 +126,7 @@ Package-List:
  $(string.replace (project.name, "_|-"))-dev deb libdevel optional arch=any
 .endif
 
-.output "builds/debian/rules"
+.output "packaging/debian/rules"
 #!/usr/bin/make -f
 # -*- makefile -*-
 
@@ -145,7 +145,7 @@ override_dh_auto_configure:
 \.PHONY: override_dh_strip override_dh_auto_test override_dh_auto_configure
 
 .if project.has_main
-.   output ("builds/debian/$(string.replace (project.name, "_|-")).install")
+.   output ("packaging/debian/$(string.replace (project.name, "_|-")).install")
 .# generate binary names
 .   for project.main where scope = "public"
 debian/tmp/usr/bin/$(main.name)
@@ -173,9 +173,9 @@ debian/tmp/$(main->extra.path)/$(main->extra.name)
 .endif
 
 .if project.exports_classes
-.   output ("builds/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
+.   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
 debian/tmp/usr/lib/*/$(project.libname).so.*
-.   output ("builds/debian/$(string.replace (project.name, "_|-"))-dev.install")
+.   output ("packaging/debian/$(string.replace (project.name, "_|-"))-dev.install")
 debian/tmp/usr/include/*
 debian/tmp/usr/lib/*/$(project.libname).so
 debian/tmp/usr/lib/*/pkgconfig/$(project.libname).pc
