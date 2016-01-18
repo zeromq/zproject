@@ -1,12 +1,19 @@
-.template 0
-#  Generate VC++ project file for project
-#
-#  This is a code generator built using the iMatix GSL code generation
-#  language. See https://github.com/imatix/gsl for details. This script
-#  is licensed under MIT/X11.
+#   Generate VC++ project files for Java binding
 #
 #   All Visual Studio versions from 2010 onwards use the same solution
 #   format with a different platform toolset
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+register_target ("java-msvc", "MSVC builds for Java JNI binding")
 
 .macro generate_vs20xx_build_jni (path, level)
 .directory.create ("$(my.path)/$(project.libname)jni")
@@ -288,13 +295,13 @@ $(project.GENERATED_WARNING_HEADER:)
 </Project>
 .endmacro
 
-if count (project.class, jni_okay = 1)
-    generate_vs20xx_main      ("bindings/jni/msvc")
-    generate_vs20xx_props     ("bindings/jni/msvc/properties")
-    generate_vs20xx_build_jni ("bindings/jni/msvc/vs2010", "10")
-    generate_vs20xx_build_jni ("bindings/jni/msvc/vs2012", "11")
-    generate_vs20xx_build_jni ("bindings/jni/msvc/vs2013", "12")
-    generate_vs20xx_build_jni ("bindings/jni/msvc/vs2015", "14")
-endif
-
-.endtemplate
+function target_java_msvc
+    if count (project.class, jni_okay = 1)
+        generate_vs20xx_main      ("bindings/jni/msvc")
+        generate_vs20xx_props     ("bindings/jni/msvc/properties")
+        generate_vs20xx_build_jni ("bindings/jni/msvc/vs2010", "10")
+        generate_vs20xx_build_jni ("bindings/jni/msvc/vs2012", "11")
+        generate_vs20xx_build_jni ("bindings/jni/msvc/vs2013", "12")
+        generate_vs20xx_build_jni ("bindings/jni/msvc/vs2015", "14")
+    endif
+endfunction

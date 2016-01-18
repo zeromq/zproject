@@ -1,89 +1,95 @@
-.#  ===========================================================================
-.#  Generate .gitignore for project (one time only)
-.#
-.#  This script will generate the following files:
-.#      * .gitignore - git ignore file (one time only)
-.#  ===========================================================================
-.#
-.if !file.exists (".gitignore")
-.output ".gitignore"
-# Object files
-*.o
-*.so
-*.ko
-*.pyc
+#   Generate .gitignore for project (one time only)
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Libraries
-*.lib
-*.a
-*.la
-*.pc
-*.dll.a
+if !file.exists (".gitignore")
+    output ".gitignore"
+    ># Object files
+    >*.o
+    >*.so
+    >*.ko
+    >*.pyc
+    >
+    ># Libraries
+    >*.lib
+    >*.a
+    >*.la
+    >*.pc
+    >*.dll.a
+    >
+    ># Shared objects (inc. Windows DLLs)
+    >*.dll
+    >*.so.*
+    >*.dylib
+    >*.lo
+    >
+    ># Executables
+    >src/$(project.name)_selftest
+    for project.main
+        >src/$(main.name)
+    endfor
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so.*
-*.dylib
-*.lo
-
-# Executables
-src/$(project.name)_selftest
-.for project.main
-src/$(main.name)
-.endfor
-*.exe
-*.out
-*.app
-core
-
-# Man pages
-doc/*.1
-doc/*.3
-doc/*.7
-
-# autoconf files
-\.deps
-\.libs
-*.log
-*.trs
-Makefile
-Makefile.in
-!builds/openwrt/Makefile
-aclocal.m4
-autom4te.cache/
-config.log
-config.status
-config/
-configure
-libtool
-src/platform.h
-src/platform.h.in
-src/platform.h.in~
-src/stamp-h1
-src/test-suite.log
-src/.dirstamp
-
-# CMake cache
-CMakeCache.txt
-CMakeFiles/
-CTestTestfile.cmake
-cmake_install.cmake
-install_manifest.txt
-Testing/
-
-# Android build results
-builds/android/prefix
-
-# Android - generated directories
-src/app/bin/
-src/app/gen/
-src/app/obj/
-src/app/local.properties
-
-# Android -dependencies
-src/app/jni/output
-
-# Temporary files
-*.swp
-*~
-.endif
+    >*.exe
+    >*.out
+    >*.app
+    >core
+    >
+    ># Man pages
+    >doc/*.1
+    >doc/*.3
+    >doc/*.7
+    >
+    ># autoconf files
+    >.deps
+    >.libs
+    >*.log
+    >*.trs
+    >Makefile
+    >Makefile.in
+    >!builds/openwrt/Makefile
+    >aclocal.m4
+    >autom4te.cache/
+    >config.log
+    >config.status
+    >config/
+    >configure
+    >libtool
+    >src/platform.h
+    >src/platform.h.in
+    >src/platform.h.in~
+    >src/stamp-h1
+    >src/test-suite.log
+    >src/.dirstamp
+    >
+    ># CMake cache
+    >CMakeCache.txt
+    >CMakeFiles/
+    >CTestTestfile.cmake
+    >cmake_install.cmake
+    >install_manifest.txt
+    >Testing/
+    >
+    ># Android build results
+    >builds/android/prefix
+    >
+    ># Android - generated directories
+    >src/app/bin/
+    >src/app/gen/
+    >src/app/obj/
+    >src/app/local.properties
+    >
+    ># Android -dependencies
+    >src/app/jni/output
+    >
+    ># Temporary files
+    >*.swp
+    >*~
+endif

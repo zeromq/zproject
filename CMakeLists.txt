@@ -14,6 +14,19 @@ enable_testing()
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 ########################################################################
+# options
+########################################################################
+if (EXISTS ".git")
+    OPTION (WITH_DRAFTS "Build and install draft classes and methods" ON)
+else ()
+    OPTION (WITH_DRAFTS "Build and install draft classes and methods" OFF)
+endif ()
+
+IF (WITH_DRAFTS)
+    ADD_DEFINITIONS (-DWITH_DRAFTS)
+ENDIF (WITH_DRAFTS)
+
+########################################################################
 # platform.h
 ########################################################################
 include(CheckIncludeFile)

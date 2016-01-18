@@ -265,7 +265,7 @@ The tool can't distinguish methods which allocates new object. It does print a c
 
 ## Language Binding Notes
 
-### JNI Language Binding
+### Java Language Binding
 
 * Skips methods that it cannot handle properly.
 

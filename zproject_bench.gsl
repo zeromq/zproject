@@ -1,21 +1,23 @@
-.template 0
-#  ===========================================================================
-#  Generate benchmarks framework
+#   Generate benchmarks framework
 #
 #   Generates a skeleton for a new benchmark.
 #   See project.xml for instructions on how to specify a benchmark.
 #
-#  This script will generate the following files:
-#      * bench/bench.h - Header file for all benchmarks with common functionality
-#      * bench/$(bench.name) - Skeleton for new benchmark.
-#      * bench/Makemodule.am
-#  ===========================================================================
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 .macro generate_bench_header ()
 .output "bench/bench.h"
 /*  =========================================================================
     bench.h -  Benchmarking header file, contains common functionality to
-               measure time, run the benchmark and caluculate results.
+               measure time, run the benchmark and calculate results.
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -208,5 +210,3 @@ if count (bench) > 0
     endfor
     generate_bench_makefile ()
 endif
-
-.endtemplate

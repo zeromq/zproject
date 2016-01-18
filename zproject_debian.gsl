@@ -1,24 +1,22 @@
-.#  ===========================================================================
-.#  Generate debian recipes for project
-.#
-.#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
-.#  is licensed under MIT/X11.
-.#
-.#  This script will generate the following files:
-.#   * builds/debian/compat
-.#   * builds/debian/control
-.#   * builds/debian/$(project.name).dsc
-.#   * builds/debian/rules
-.#   * builds/debian/*.install
-.#  ===========================================================================
-.#
-.if !file.exists ('builds/debian')
-.   directory.create('builds/debian')
-.endif
-.output "builds/debian/compat"
+#   Generate debian recipes for project
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+register_target ("debian", "packaging for Debian")
+
+.macro target_debian
+.directory.create ('packaging/debian')
+.output "packaging/debian/compat"
 9
-.output "builds/debian/control"
+.output "packaging/debian/control"
 #
 #    $(project.name) - $(project.description?'':)
 #
@@ -100,7 +98,7 @@ Depends:
 Description: debugging symbols for $(project.name)
  This package contains the debugging symbols for $(project.name) : $(project.description).
 
-.output "builds/debian/$(project.name).dsc"
+.output "packaging/debian/$(project.name).dsc"
 Format:         1.0
 Source:         $(string.replace (project.name, "_|-"))
 Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)-1
@@ -134,7 +132,7 @@ Package-List:
  $(string.replace (project.name, "_|-"))-dev deb libdevel optional arch=any
 .endif
 
-.output "builds/debian/rules"
+.output "packaging/debian/rules"
 #!/usr/bin/make -f
 # -*- makefile -*-
 
@@ -153,7 +151,7 @@ override_dh_auto_configure:
 \.PHONY: override_dh_strip override_dh_auto_test override_dh_auto_configure
 
 .if project.has_main
-.   output ("builds/debian/$(string.replace (project.name, "_|-")).install")
+.   output ("packaging/debian/$(string.replace (project.name, "_|-")).install")
 .# generate binary names
 .   for project.main where scope = "public"
 debian/tmp/usr/bin/$(main.name)
@@ -181,10 +179,11 @@ debian/tmp/$(main->extra.path)/$(main->extra.name)
 .endif
 
 .if project.exports_classes
-.   output ("builds/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
+.   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
 debian/tmp/usr/lib/*/$(project.libname).so.*
-.   output ("builds/debian/$(string.replace (project.name, "_|-"))-dev.install")
+.   output ("packaging/debian/$(string.replace (project.name, "_|-"))-dev.install")
 debian/tmp/usr/include/*
 debian/tmp/usr/lib/*/$(project.libname).so
 debian/tmp/usr/lib/*/pkgconfig/$(project.libname).pc
 .endif
+.endmacro

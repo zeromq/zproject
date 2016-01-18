@@ -1,9 +1,18 @@
-.#  Generate VC++ project file for project
-.#
-.#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
-.#  is licensed under MIT/X11.
-.#
+#   Generate VC++ project file for project
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+register_target ("vs2008", "Microsoft Visual Studio 2008")
+
+.macro target_vs2008
 .directory.create ('builds/msvc/vs2008/$(project.name:c)')
 .output "builds/msvc/vs2008/$(project.name:c)/$(project.name:c).sln"
 Microsoft Visual Studio Solution File, Format Version 10.00
@@ -333,3 +342,4 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 -->
 </VisualStudioProject>
+.endmacro

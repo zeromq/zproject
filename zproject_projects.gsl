@@ -1,8 +1,14 @@
-.template 0
-#  ===========================================================================
-#  Resolve standard CLASS projects
+#   Resolve standard CLASS projects
 #
-#  ===========================================================================
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 function resolve_project_dependency (use)
     my.known_projects = XML.load_file ("zproject_known_projects.xml")
@@ -94,5 +100,3 @@ if count (project.class)
         main.scope = "private"
     endnew
 endif
-
-.endtemplate

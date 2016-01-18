@@ -1,14 +1,19 @@
-.template 0
-#  Generate VC++ project file for project
+#   Generate VC++ project file for project
 #
-#  This is a code generator built using the iMatix GSL code generation
-#  language. See https://github.com/imatix/gsl for details. This script
-#  is licensed under MIT/X11.
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
 #
-#   All Visual Studio versions from 2010 onwards use the same solution
-#   format with a different platform toolset
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-##########################################################################
+register_target ("vs2010", "Microsoft Visual Studio 2010")
+register_target ("vs2012", "Microsoft Visual Studio 2012")
+register_target ("vs2013", "Microsoft Visual Studio 2013")
+register_target ("vs2015", "Microsoft Visual Studio 2015")
 
 .macro generate_vs20xx_main (path)
 .directory.create (my.path)
@@ -871,12 +876,26 @@ $(project.GENERATED_WARNING_HEADER:)
 .endfor
 .endmacro
 
-.##########################################################################
+function target_vs2010
+    generate_vs20xx_main ("builds/msvc")
+    generate_vs20xx_props ("builds/msvc/properties")
+    generate_vs20xx_build ("builds/msvc/vs2010", "10")
+endfunction
 
-generate_vs20xx_main ("builds/msvc")
-generate_vs20xx_build ("builds/msvc/vs2010", "10")
-generate_vs20xx_build ("builds/msvc/vs2012", "11")
-generate_vs20xx_build ("builds/msvc/vs2013", "12")
-generate_vs20xx_build ("builds/msvc/vs2015", "14")
+function target_vs2012
+    generate_vs20xx_main ("builds/msvc")
+    generate_vs20xx_props ("builds/msvc/properties")
+    generate_vs20xx_build ("builds/msvc/vs2012", "11")
+endfunction
 
-.endtemplate
+function target_vs2013
+    generate_vs20xx_main ("builds/msvc")
+    generate_vs20xx_props ("builds/msvc/properties")
+    generate_vs20xx_build ("builds/msvc/vs2013", "12")
+endfunction
+
+function target_vs2015
+    generate_vs20xx_main ("builds/msvc")
+    generate_vs20xx_props ("builds/msvc/properties")
+    generate_vs20xx_build ("builds/msvc/vs2015", "14")
+endfunction

@@ -1,35 +1,21 @@
-.#  Only build bindings if there is at least one API model
-.if count (class, defined (class.api))
-.template 0
-#  Generate minimal QML language bindings.
-#  These are not meant to be idiomatic, but to provide a minimal platform
-#  on which to base declarative, idiomatic types that are written in pure QML.
-#  The C++ end of these basic bindings is auto-generated to stay in sync with
-#  the model, but the idiomatic bindings in QML are to be maintained by hand.
+#   Generate minimal QML language bindings.
 #
-#  This is a code generator built using the iMatix GSL code generation
-#  language. See https://github.com/imatix/gsl for details. This script
-#  is licensed under MIT/X11.
+#   These are not meant to be idiomatic, but to provide a minimal platform
+#   on which to base declarative, idiomatic types that are written in pure QML.
+#   The C++ end of these basic bindings is auto-generated to stay in sync with
+#   the model, but the idiomatic bindings in QML are to be maintained by hand.
 #
-if !file.exists ("bindings/qml/src")
-   directory.create("bindings/qml/src")
-endif
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-if !file.exists ("bindings/qml/src/qml")
-   directory.create("bindings/qml/src/qml")
-endif
-
-if !file.exists ("bindings/qml/test")
-   directory.create("bindings/qml/test")
-endif
-
-project.QmlName = "Qml$(project.name:Pascal)"
-project.qml_soname = "qml_$(project.name:c)"
-   directory.create("bindings/qml/src")
-
-for class where defined (class.api)
-    class.QmlName = "Qml$(class.c_name:Pascal)"
-endfor
+register_target ("qml", "QML binding")
 
 function resolve_qml_container (container)
     my.container.qmlName = "$(my.container.name:camel)"
@@ -167,8 +153,9 @@ function qml_method_signature (method, in_header)
     return my.out
 endfunction
 
-.endtemplate
+.macro generate_qml_binding
 .#
+.directory.create ("bindings/qml/src/qml")
 .output "bindings/qml/src/$(project.qml_soname:)_plugin.h"
 /*
 $(project.GENERATED_WARNING_HEADER:)
@@ -372,6 +359,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .endfor
 .#
 .if !file.exists ("bindings/qml/test/tst_$(project.QmlName).qml")
+.directory.create ("bindings/qml/test")
 .output "bindings/qml/test/tst_$(project.QmlName).qml"
 
 import QtTest 1.0
@@ -674,5 +662,16 @@ may need to delete that directory to trigger a clean build.
 ```
 $(project.GENERATED_WARNING_HEADER:)
 ```
-.endif
-.#
+.endmacro
+
+function target_qml
+    if count (class, defined (class.api))
+        project.QmlName = "Qml$(project.name:Pascal)"
+        project.qml_soname = "qml_$(project.name:c)"
+
+        for class where defined (class.api)
+            class.QmlName = "Qml$(class.c_name:Pascal)"
+        endfor
+        generate_qml_binding ()
+    endif
+endfunction
