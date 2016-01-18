@@ -1,4 +1,4 @@
-#  Generate VC++ project file for project
+#  Generate VC++ project files for Java binding
 #
 #  This is a code generator built using the iMatix GSL code generation
 #  language. See https://github.com/imatix/gsl for details. This script

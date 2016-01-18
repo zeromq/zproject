@@ -76,7 +76,6 @@ function target_register (target, detail)
     new target_handler to project
         target_handler.target = my.target
         target_handler.detail = my.detail
-        echo my.target + ": " + my.detail
     endnew
 endfunction
 
@@ -93,7 +92,7 @@ gsl from "zproject_actor.gsl"
 gsl from "zproject_bench.gsl"
 gsl from "zproject_class.gsl"
 gsl from "zproject_git.gsl"
-gsl from "zproject_tools.gsl"
+gsl from "zproject_valgrind.gsl"
 gsl from "zproject_mkman.gsl"
 
 #   Optional targets
@@ -109,13 +108,13 @@ gsl from "zproject_vs2008.gsl"
 gsl from "zproject_vs20xx.gsl"
 gsl from "zproject_vs20xx_props.gsl"
 gsl from "zproject_nuget.gsl"
-gsl from "zproject_bindings_python.gsl"
-gsl from "zproject_bindings_qml.gsl"
-gsl from "zproject_bindings_qt.gsl"
-gsl from "zproject_bindings_ruby.gsl"
-gsl from "zproject_bindings_jni.gsl"
-gsl from "zproject_bindings_jni_vs20xx.gsl"
-gsl from "zproject_ci.gsl"
+gsl from "zproject_python.gsl"
+gsl from "zproject_qml.gsl"
+gsl from "zproject_qt.gsl"
+gsl from "zproject_ruby.gsl"
+gsl from "zproject_java.gsl"
+gsl from "zproject_java_msvc.gsl"
+gsl from "zproject_travis.gsl"
 gsl from "zproject_debian.gsl"
 gsl from "zproject_redhat.gsl"
 gsl from "zproject_docker.gsl"
