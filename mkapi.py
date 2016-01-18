@@ -336,7 +336,6 @@ def show_zproto_model(fp, klass, decls, comments, macros):
 -->
 <class name = "%s" >
 
-    <include filename = "../license.xml" />
 """ % (klass, ), file=fp)
 
     klass_l = len(klass) + 1
