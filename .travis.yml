@@ -1,5 +1,7 @@
 # Travis CI script
 language: c
 
+sudo: false
+
 script:
-- ./generate.sh && ./autogen.sh && ./configure && make && sudo make install
+- mkdir tmp && ./generate.sh && ./autogen.sh && ./configure --prefix=$PWD/tmp && make && make install
