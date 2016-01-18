@@ -4,7 +4,7 @@
 #  language. See https://github.com/imatix/gsl for details. This script
 #  is licensed under MIT/X11.
 
-target_register ("qt", "Qt binding")
+register_target ("qt", "Qt binding")
 
 #  This function will map c types to Qt types and also define how Qt types are
 #  transformed from and to c types when the c api is called.

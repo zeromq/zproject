@@ -4,7 +4,7 @@
 #  language. See https://github.com/imatix/gsl for details. This script
 #  is licensed under MIT/X11.
 
-target_register ("cmake", "CMake build system")
+register_target ("cmake", "CMake build system")
 
 .macro target_cmake
 .output "CMakeLists.txt"

@@ -72,11 +72,26 @@ function chmod_x (filename)
     my.shell.run ()
 endfunction
 
-function target_register (target, detail)
+function register_target (target, detail)
     new handler to project
         handler.target = my.target
         handler.detail = my.detail
     endnew
+endfunction
+
+function build_target (target)
+    for project.handler where handler.target = my.target | my.target = "*"
+        echo "Building $(detail:) ($(my.target))"
+        scope project
+            target_$(handler.target:c) ()
+        endscope
+    else
+        echo "$(my.target) is not a valid target; valid targets are:"
+        for project.handler by target
+            echo "    $(target)\
+                $(detail:)"
+        endfor
+    endfor
 endfunction
 
 #  These scripts must be run first to resolve missing or
@@ -118,20 +133,11 @@ gsl from "zproject_docker.gsl"
 
 #   Now build targets requested by project
 if defined (switches.target)
-    for project.handler where target = switches.target | switches.target = "*"
-        echo "Building $(detail:) ($(target))"
-        scope project
-            target_$(handler.target:c) ()
-        endscope
-    else
-        echo "$(switches.target) is not a valid target; valid targets are:"
-        for project.handler by target
-            echo "    $(target)\
-                $(detail:)"
-        endfor
-    endfor
+    build_target (switches.target)
 else
-
+    for project.target
+        build_target (target.name)
+    endfor
 endif
 
 .endtemplate

@@ -7,10 +7,10 @@
 #  All Visual Studio versions from 2010 onwards use the same solution
 #  format with a different platform toolset
 
-target_register ("vs2010", "Microsoft Visual Studio 2010")
-target_register ("vs2012", "Microsoft Visual Studio 2012")
-target_register ("vs2013", "Microsoft Visual Studio 2013")
-target_register ("vs2015", "Microsoft Visual Studio 2015")
+register_target ("vs2010", "Microsoft Visual Studio 2010")
+register_target ("vs2012", "Microsoft Visual Studio 2012")
+register_target ("vs2013", "Microsoft Visual Studio 2013")
+register_target ("vs2015", "Microsoft Visual Studio 2015")
 
 .macro generate_vs20xx_main (path)
 .directory.create (my.path)

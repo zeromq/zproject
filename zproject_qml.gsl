@@ -9,7 +9,7 @@
 #  language. See https://github.com/imatix/gsl for details. This script
 #  is licensed under MIT/X11.
 
-target_register ("qml", "QML binding")
+register_target ("qml", "QML binding")
 
 function resolve_qml_container (container)
     my.container.qmlName = "$(my.container.name:camel)"

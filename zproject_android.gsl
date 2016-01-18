@@ -4,7 +4,7 @@
 #  language. See https://github.com/imatix/gsl for details. This script
 #  is licensed under MIT/X11.
 
-target_register ("android", "Native shared library for Android")
+register_target ("android", "Native shared library for Android")
 
 .macro target_android
 .directory.create ("builds/android")

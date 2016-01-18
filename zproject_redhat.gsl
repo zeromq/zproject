@@ -4,7 +4,7 @@
 #  language. See https://github.com/imatix/gsl for details. This script
 #  is licensed under MIT/X11.
 
-target_register ("redhat", "Packaging for RedHat")
+register_target ("redhat", "Packaging for RedHat")
 
 .macro target_redhat
 .directory.create ('packaging/redhat')

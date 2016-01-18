@@ -4,7 +4,7 @@
 #  language. See https://github.com/imatix/gsl for details. This script
 #  is licensed under MIT/X11.
 
-target_register ("docs", "man pages")
+register_target ("docs", "man pages")
 
 .macro generate_mkman
 .output "doc/mkman"

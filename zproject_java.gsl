@@ -6,7 +6,7 @@
 #   language. See https://github.com/imatix/gsl for details. This script
 #   is licensed under MIT/X11.
 
-target_register ("java", "Java JNI binding")
+register_target ("java", "Java JNI binding")
 
 .macro generate_jni_main
 .output "$(topdir)/CMakeLists.txt"

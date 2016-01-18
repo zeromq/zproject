@@ -4,7 +4,7 @@
 #  language. See https://github.com/imatix/gsl for details. This script
 #  is licensed under MIT/X11.
 
-target_register ("mingw32", "Mingw32 build system")
+register_target ("mingw32", "Mingw32 build system")
 
 .macro target_mingw32
 .directory.create('builds/mingw32')

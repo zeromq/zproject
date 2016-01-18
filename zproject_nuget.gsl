@@ -3,8 +3,8 @@
 #  This is a code generator built using the iMatix GSL code generation
 #  language. See https://github.com/imatix/gsl for details. This script
 #  is licensed under MIT/X11.
-#
-target_register ("nuget", "Packaging for NuGet")
+
+register_target ("nuget", "Packaging for NuGet")
 
 .macro generate_nuget (config)
 .directory.create ("builds/msvc/nuget")

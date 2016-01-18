@@ -14,37 +14,35 @@ endif
 myprojectdir = @bindir@
 myproject_SCRIPTS = \
     zproject.gsl \
-    zproject_known_projects.xml \
-    zproject_actor.gsl \
-    zproject_android.gsl \
-    zproject_autoconf.gsl \
-    zproject_automake.gsl \
-    zproject_bench.gsl \
-    zproject_debian.gsl \
-    zproject_bindings_python.gsl \
-    zproject_bindings_qml.gsl \
-    zproject_bindings_qt.gsl \
-    zproject_bindings_ruby.gsl \
-    zproject_bindings_jni.gsl \
-    zproject_bindings_jni_vs20xx.gsl \
-    zproject_ci.gsl \
-    zproject_class.gsl \
+    zproject_projects.gsl \
     zproject_class_api.gsl \
+    zproject_actor.gsl \
+    zproject_bench.gsl \
+    zproject_class.gsl \
+    zproject_git.gsl \
+    zproject_valgring.gsl \
+    zproject_android.gsl \
+    zproject_autotools.gsl \
+    zproject_debian.gsl \
+    zproject_python.gsl \
+    zproject_qml.gsl \
+    zproject_qt.gsl \
+    zproject_ruby.gsl \
+    zproject_java.gsl \
+    zproject_java_msvc.gsl \
+    zproject_travis.gsl \
     zproject_cmake.gsl \
     zproject_cygwin.gsl \
     zproject_docker.gsl \
     zproject_docs.gsl \
-    zproject_git.gsl \
-    zproject_lib.gsl \
     zproject_mkman.gsl \
     zproject_mingw32.gsl \
     zproject_nuget.gsl \
-    zproject_projects.gsl \
     zproject_redhat.gsl \
-    zproject_tools.gsl \
     zproject_vs2008.gsl \
     zproject_vs20xx.gsl \
     zproject_vs20xx_props.gsl \
+    zproject_known_projects.xml \
     mkapi.py \
     fake_cpp
 

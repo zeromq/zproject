@@ -6,7 +6,7 @@
 #  language. See https://github.com/imatix/gsl for details. This script
 #  is licensed under MIT/X11.
 
-target_register ("python", "Python binding")
+register_target ("python", "Python binding")
 
 function python_register_import (lib, class)
     if count (project->python_types.import, import.lib = my.lib) = 0

@@ -7,7 +7,7 @@
 #  All Visual Studio versions from 2010 onwards use the same solution
 #  format with a different platform toolset
 
-target_register ("java-msvc", "MSVC builds for Java JNI binding")
+register_target ("java-msvc", "MSVC builds for Java JNI binding")
 
 .macro generate_vs20xx_build_jni (path, level)
 .directory.create ("$(my.path)/$(project.libname)jni")

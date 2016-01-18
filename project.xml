@@ -102,50 +102,45 @@
     <!-- Other source files that we need to package
     <extra name = "some_resource" />
     -->
-
-    <!--
-        Stuff that needs to be installed:
-
-        NOTICE: If you copied this file to get started you want to delete or
-                at least comment out those bin tag as they distribute the
-                zproject files.
-
-        * Linux -> /usr/local/bin
+    <!-- Specify targets to build
+    <target name = "cmake" />
+    <target name = "autotools" />
     -->
+
+    <!-- In order loaded by zproject.gsl -->
     <bin name = "zproject.gsl" />
-    <bin name = "zproject_known_projects.xml" />
+    <bin name = "zproject_projects.gsl" />
+    <bin name = "zproject_class_api.gsl" />
 
     <bin name = "zproject_actor.gsl" />
-    <bin name = "zproject_android.gsl" />
-    <bin name = "zproject_autoconf.gsl" />
-    <bin name = "zproject_automake.gsl" />
     <bin name = "zproject_bench.gsl" />
-    <bin name = "zproject_debian.gsl" />
-    <bin name = "zproject_bindings_python.gsl" />
-    <bin name = "zproject_bindings_qml.gsl" />
-    <bin name = "zproject_bindings_qt.gsl" />
-    <bin name = "zproject_bindings_ruby.gsl" />
-    <bin name = "zproject_bindings_jni.gsl" />
-    <bin name = "zproject_bindings_jni_vs20xx.gsl" />
-    <bin name = "zproject_ci.gsl" />
     <bin name = "zproject_class.gsl" />
-    <bin name = "zproject_class_api.gsl" />
+    <bin name = "zproject_git.gsl" />
+    <bin name = "zproject_valgring.gsl" />
+
+    <bin name = "zproject_android.gsl" />
+    <bin name = "zproject_autotools.gsl" />
+    <bin name = "zproject_debian.gsl" />
+    <bin name = "zproject_python.gsl" />
+    <bin name = "zproject_qml.gsl" />
+    <bin name = "zproject_qt.gsl" />
+    <bin name = "zproject_ruby.gsl" />
+    <bin name = "zproject_java.gsl" />
+    <bin name = "zproject_java_msvc.gsl" />
+    <bin name = "zproject_travis.gsl" />
     <bin name = "zproject_cmake.gsl" />
     <bin name = "zproject_cygwin.gsl" />
     <bin name = "zproject_docker.gsl" />
     <bin name = "zproject_docs.gsl" />
-    <bin name = "zproject_git.gsl" />
-    <bin name = "zproject_lib.gsl" />
     <bin name = "zproject_mkman.gsl" />
     <bin name = "zproject_mingw32.gsl" />
     <bin name = "zproject_nuget.gsl" />
-    <bin name = "zproject_projects.gsl" />
     <bin name = "zproject_redhat.gsl" />
-    <bin name = "zproject_tools.gsl" />
     <bin name = "zproject_vs2008.gsl" />
     <bin name = "zproject_vs20xx.gsl" />
     <bin name = "zproject_vs20xx_props.gsl" />
 
+    <bin name = "zproject_known_projects.xml" />
     <bin name = "mkapi.py" />
     <bin name = "fake_cpp" />
 </project>

@@ -7,7 +7,7 @@
 #  language. See https://github.com/imatix/gsl for details. This script
 #  is licensed under MIT/X11.
 
-target_register ("ruby", "Ruby binding")
+register_target ("ruby", "Ruby binding")
 
 function resolve_ruby_enums (class)
     for my.class.enum

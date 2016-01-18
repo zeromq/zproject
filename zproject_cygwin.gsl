@@ -4,7 +4,7 @@
 #  language. See https://github.com/imatix/gsl for details. This script
 #  is licensed under MIT/X11.
 
-target_register ("cygwin", "Cygwin build system")
+register_target ("cygwin", "Cygwin build system")
 
 .macro target_cygwin
 .directory.create ('builds/cygwin')
