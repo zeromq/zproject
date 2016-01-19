@@ -13,6 +13,7 @@
 register_target ("docs", "man pages")
 
 .macro generate_mkman
+.directory.create ("doc")
 .output "doc/mkman"
 #! /usr/bin/perl
 #
@@ -173,7 +174,6 @@ while ($name) {
 .endmacro
 
 .macro generate_man_pages
-.directory.create ("doc")
 .output "doc/Makefile.am"
 $(project.GENERATED_WARNING_HEADER:)
 .project.manpage = "$(project.name:c).7"

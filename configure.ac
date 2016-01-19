@@ -87,11 +87,14 @@ myproject_on_android="no"
 # Host specific checks
 AC_CANONICAL_HOST
 
-# Allow user to disable doc build
-AC_ARG_WITH([documentation], [AS_HELP_STRING([--without-documentation],
-    [disable documentation build even if asciidoc and xmlto are present [default=no]])])
+# Man pages are built/installed if asciidoc and xmlto are present
+#   --with-docs=no overrides this
+AC_ARG_WITH([docs],
+    AS_HELP_STRING([--with-docs],
+        [Build and install man pages [default=yes]]),
+    [with_docs=$withval])
 
-if test "x$with_documentation" = "xno"; then
+if test "x$with_docs" = "xno"; then
     myproject_build_doc="no"
     myproject_install_man="no"
 else
