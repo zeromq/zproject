@@ -385,10 +385,6 @@ $(PROJECT.PREFIX:c)_EXPORT $(class.c_name)_t *
 $(PROJECT.PREFIX:c)_EXPORT void
     $(class.c_name)_destroy ($(class.c_name)_t **self_p);
 
-//  Print properties of object
-$(PROJECT.PREFIX:c)_EXPORT void
-    $(class.c_name)_print ($(class.c_name)_t *self);
-
 //  Self test of this class
 $(PROJECT.PREFIX:c)_EXPORT void
     $(class.c_name)_test (bool verbose);
@@ -465,16 +461,6 @@ $(class.c_name)_destroy ($(class.c_name)_t **self_p)
         free (self);
         *self_p = NULL;
     }
-}
-
-
-//  --------------------------------------------------------------------------
-//  Print properties of object
-
-void
-$(class.c_name)_print ($(class.c_name)_t *self)
-{
-    assert (self);
 }
 
 
