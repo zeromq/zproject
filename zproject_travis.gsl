@@ -62,7 +62,7 @@ if [ $BUILD_TYPE == "default" ]; then
     # Clone and build dependencies
 .for use where defined (use.repository)
     git clone --depth 1 $(use.repository) $(use.project)
-    ( cd $(use.project) && ./autogen.sh && ./configure "${CONFIG_OPTS[@]}" && make -j4 && make check && make install ) || exit 1
+    ( cd $(use.project) && ./autogen.sh && ./configure "${CONFIG_OPTS[@]}" && make -j4 && make install ) || exit 1
 
 .endfor
     # Build and check this project
