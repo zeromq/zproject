@@ -400,8 +400,8 @@ $(PROJECT.PREFIX:c)_EXPORT void
 
 #endif
 .close
-# If there is an API defined, then the file must be written so we can
-# find and rewrite the @interface section
+.# If there is an API defined, then the file must be written so we can
+.# find and rewrite the @interface section
 .endif
 .-
 .-  Build the source file for a class
