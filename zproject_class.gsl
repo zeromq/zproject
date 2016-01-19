@@ -92,28 +92,59 @@ $(project.GENERATED_WARNING_HEADER:)
 #endif
 
 //  Opaque class structures to allow forward references
-.for project.class where scope = "public"
+.for project.class where scope = "public" & !is_c_element_draft (class)
 .   if !defined (class.api)
 .       resolve_c_class(class)
 .   endif
 typedef struct _$(class.c_name)_t $(class.c_name)_t;
 #define $(CLASS.C_NAME)_T_DEFINED
 .endfor
+.if count (project.class, scope = "public" & is_c_element_draft (class))
+
+//  Draft APIs, excluded by default in stable releases
+#ifdef WITH_DRAFTS
+.   for project.class where scope = "public" & is_c_element_draft (class)
+.       if !defined (class.api)
+.           resolve_c_class(class)
+.       endif
+typedef struct _$(class.c_name)_t $(class.c_name)_t;
+#define $(CLASS.C_NAME)_T_DEFINED
+.   endfor
+#endif // WITH_DRAFTS
+.endif
 .if count (constant, scope = "public")
 
 //  Public constants
 .endif
-.for constant where scope = "public"
+.for constant where scope = "public" & !is_c_element_draft (constant)
 #define $(CONSTANT.NAME)\t$(constant.value) //  $(constant.?'')
 .endfor
+.if count (constant, scope = "public" & is_c_element_draft (constant))
+
+//  Draft APIs, excluded by default in stable releases
+#ifdef WITH_DRAFTS
+.   for constant where scope = "public" & is_c_element_draft (constant)
+#define $(CONSTANT.NAME)\t$(constant.value) //  $(constant.?'')
+.   endfor
+#endif // WITH_DRAFTS
+.endif
 
 //  Public API classes
 .for header where scope = "public"
 #include "$(header.name).h"
 .endfor
-.for class where scope = "public" & class.c_name <> "$(project.name)"
+.for class where scope = "public" & class.c_name <> "$(project.name)" & !is_c_element_draft (class)
 #include "$(class.c_name).h"
 .endfor
+.if count (project.class, scope = "public" & is_c_element_draft (class))
+
+//  Draft APIs, excluded by default in stable releases
+#ifdef WITH_DRAFTS
+.  for class where scope = "public" & class.c_name <> "$(project.name)" & is_c_element_draft (class)
+#include "$(class.c_name).h"
+.  endfor
+#endif // WITH_DRAFTS
+.endif
 
 #endif
 /*
