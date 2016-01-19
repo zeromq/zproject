@@ -153,6 +153,7 @@ gsl from "zproject_docker.gsl"
 #   Build mandatory targets
 build_target ("autotools")
 build_target ("cmake")
+build_target ("docs")
 
 #   Now build targets requested by project
 if defined (switches.target)

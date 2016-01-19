@@ -1,16 +1,29 @@
 <!--
     The project.xml generates build environments for:
 
-        * android
-        * autotool
-        * cmake
-        * mingw32
-        * cygwin
-        * vs2008
-        * vs2010
-        * vs2012
-        * vs2013
-        * vs2015
+        autotools           GNU build system (default)
+        cmake               CMake build system (default)
+
+        android             Native shared library for Android
+        cygwin              Cygwin build system
+        debian              packaging for Debian
+        docker              packaging for Docker
+        docs                man pages
+        java                Java JNI binding
+        java-msvc           MSVC builds for Java JNI binding
+        mingw32             Mingw32 build system
+        nuget               Packaging for NuGet
+        python              Python binding
+        qml                 QML binding
+        qt                  Qt binding
+        redhat              Packaging for RedHat
+        ruby                Ruby binding
+        travis              Travis CI scripts
+        vs2008              Microsoft Visual Studio 2008
+        vs2010              Microsoft Visual Studio 2010
+        vs2012              Microsoft Visual Studio 2012
+        vs2013              Microsoft Visual Studio 2013
+        vs2015              Microsoft Visual Studio 2015
 
     Classes are automatically added to all build environments. Further as you
     add new classes to your project you can generate skeleton header and source
