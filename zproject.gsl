@@ -132,7 +132,6 @@ gsl from "zproject_valgrind.gsl"
 gsl from "zproject_android.gsl"
 gsl from "zproject_autotools.gsl"
 gsl from "zproject_cmake.gsl"
-gsl from "zproject_docs.gsl"
 gsl from "zproject_mingw32.gsl"
 gsl from "zproject_cygwin.gsl"
 gsl from "zproject_vs2008.gsl"
@@ -153,7 +152,6 @@ gsl from "zproject_docker.gsl"
 #   Build mandatory targets
 build_target ("autotools")
 build_target ("cmake")
-build_target ("docs")
 
 #   Now build targets requested by project
 if defined (switches.target)
