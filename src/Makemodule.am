@@ -34,7 +34,6 @@ myproject_SCRIPTS = \
     zproject_cmake.gsl \
     zproject_cygwin.gsl \
     zproject_docker.gsl \
-    zproject_docs.gsl \
     zproject_mingw32.gsl \
     zproject_nuget.gsl \
     zproject_redhat.gsl \

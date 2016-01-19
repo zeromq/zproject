@@ -352,7 +352,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .if !file.exists (header_file)
 .   output header_file
 /*  =========================================================================
-    $(class.c_name) - $(string.trim (class.?''):no,left)
+    $(class.c_name) - $(string.trim (class.?'class description'):no,left)
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -410,7 +410,7 @@ $(PROJECT.PREFIX:c)_EXPORT void
 .if !file.exists (source_file)
 .   output source_file
 /*  =========================================================================
-    $(class.c_name) - $(string.trim (class.?''):no,left)
+    $(class.c_name) - $(string.trim (class.?'class description'):no,left)
 
 .   for project.license
     $(string.trim (license.):block                                         )
