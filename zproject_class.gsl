@@ -374,8 +374,8 @@ extern "C" {
 .   endif
 .   if class.scope = "private"
 typedef struct _$(class.c_name)_t $(class.c_name)_t;
-.   endif
 
+.   endif
 //  @interface
 //  Create a new $(class.c_name)
 $(PROJECT.PREFIX:c)_EXPORT $(class.c_name)_t *
@@ -430,90 +430,70 @@ $(PROJECT.PREFIX:c)_EXPORT void
 */
 
 #include "$(project.prefix)_classes.h"
-.if count (project.constructor)
 
 //  Structure of our class
 
 struct _$(class.c_name)_t {
-    int filler;     //  TODO: Declare properties
+    int filler;     //  Declare class properties here
 };
-.endif
-.for class.constructor as method
+
 
 //  --------------------------------------------------------------------------
-//  $(method.description:no,block)
+//  Create a new $(class.c_name)
 
-$(c_method_declaration (method, 1):)
+$(class.c_name)_t *
+$(class.c_name)_new (void)
 {
     $(class.c_name)_t *self = ($(class.c_name)_t *) zmalloc (sizeof ($(class.c_name)_t));
     assert (self);
-    //  TODO: Initialize properties
+    //  Initialize class properties here
     return self;
 }
-.endfor
-.for class.destructor as method
+
 
 //  --------------------------------------------------------------------------
-//  $(method.description:no,block)
+//  Destroy the $(class.c_name)
 
-$(c_method_declaration (method, 1):)
+void
+$(class.c_name)_destroy ($(class.c_name)_t **self_p)
 {
     assert (self_p);
     if (*self_p) {
         $(class.c_name)_t *self = *self_p;
-        //  TODO: Free class properties
+        //  Free class properties here
         //  Free object itself
         free (self);
         *self_p = NULL;
     }
 }
-.endfor
 
-.for class.method where !(method.name = "test")
 
 //  --------------------------------------------------------------------------
-//  $(method.description:no,block)
+//  Print properties of object
 
-$(c_method_declaration (method, 1):)
+void
+$(class.c_name)_print ($(class.c_name)_t *self)
 {
-.   if singleton = 0
     assert (self);
-.   endif
-.   if ->return.type = "boolean"
-    return false;
-.   elsif ->return.type = "byte" \
-    |     ->return.type = "char" \
-    |     ->return.type = "number" \
-    |     ->return.type = "integer" \
-    |     ->return.type = "real"
-    return 0;
-.   elsif ->return.type = "nothing"
-.   else
-    return NULL;
-.   endif
 }
 
-.endfor
-.for class.method where method.name = "test"
-//  --------------------------------------------------------------------------
-//  $(method.description:no,block)
 
-$(c_method_declaration (method, 1):)
+//  --------------------------------------------------------------------------
+//  Self test of this class
+
+void
+$(class.c_name)_test (bool verbose)
 {
     printf (" * $(class.c_name): ");
 
     //  @selftest
-.   if count (project.constructor)
     //  Simple create/destroy test
     $(class.c_name)_t *self = $(class.c_name)_new ();
     assert (self);
     $(class.c_name)_destroy (&self);
-.   endif
     //  @end
-
     printf ("OK\\n");
 }
-.endfor
 .endif
 .-
 .-  Regenerate the @interface for the class if it has an api model
