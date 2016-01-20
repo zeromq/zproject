@@ -121,10 +121,12 @@ if switches.save ?= 1
     project.save ("save.xml")
 endif
 
-#   Always run these, in any order
-gsl from "zproject_actor.gsl"
-gsl from "zproject_bench.gsl"
+#   Generate main class support
 gsl from "zproject_class.gsl"
+
+#   Always run these, in any order
+gsl from "zproject_skeletons.gsl"
+gsl from "zproject_bench.gsl"
 gsl from "zproject_git.gsl"
 gsl from "zproject_valgrind.gsl"
 
@@ -132,7 +134,6 @@ gsl from "zproject_valgrind.gsl"
 gsl from "zproject_android.gsl"
 gsl from "zproject_autotools.gsl"
 gsl from "zproject_cmake.gsl"
-gsl from "zproject_docs.gsl"
 gsl from "zproject_mingw32.gsl"
 gsl from "zproject_cygwin.gsl"
 gsl from "zproject_vs2008.gsl"
@@ -153,7 +154,6 @@ gsl from "zproject_docker.gsl"
 #   Build mandatory targets
 build_target ("autotools")
 build_target ("cmake")
-build_target ("docs")
 
 #   Now build targets requested by project
 if defined (switches.target)

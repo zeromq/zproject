@@ -10,8 +10,6 @@
 #   License, v. 2.0. If a copy of the MPL was not distributed with this
 #   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-.template 0
-
 # Resolve filename for each class API (undefined if the file is not found)
 for project.class
     if defined (class.api)
@@ -424,46 +422,6 @@ function resolve_class_dependencies (class)
     endfor
 endfunction
 
-# Resolve each class using the functions written above.
-#
-# This includes creating implicit XML entities as well as resolving both
-# the semantic and the C-specific attributes of all entities
-#
-# Other code generation scripts can depend on these being fully resolved here,
-# though they should NOT depend on attributes resolved by other generators.
-#
-for project.class
-    if defined (class.api)
-        resolve_c_class (class)
-    else
-        # If there is no API model for this class,
-        # all we can do is resolve the name.
-        class.c_name = "$(class.name:c)"
-    endif
-endfor
-
-# Resolve the dependencies of the classes from this project and load their APIs
-#
-for project.class
-    if defined (class.api)
-        resolve_class_dependencies (class)
-    endif
-endfor
-
-# Resolve C-related properties of the dependencies API models, find further
-# dependencies, load their APIs and repeat if further dependencies have been
-# found.
-#
-if defined (project->dependencies) & count (project->dependencies.class)
-    while count (project->dependencies.class, !class.resolved)
-        for project->dependencies.class where !class.resolved
-            resolve_class_dependencies (class)
-            class.resolved = 1
-        endfor
-    endwhile
-endif
-
-
 ##
 # The following functions are entirely C-specific code generation helpers.
 # They contain no useful information for higher-level language bindings.
@@ -556,4 +514,74 @@ function c_callback_typedef (method)
     return out
 endfunction
 
-.endtemplate
+
+# Resolve each class using the functions written above.
+#
+# This includes creating implicit XML entities as well as resolving both
+# the semantic and the C-specific attributes of all entities
+#
+# Other code generation scripts can depend on these being fully resolved here,
+# though they should NOT depend on attributes resolved by other generators.
+#
+for project.main
+    if project.use_cxx
+        main.source = "src/$(main.name:c).cc"
+    else
+        main.source = "src/$(main.name:c).c"
+    endif
+endfor
+
+for project.actor
+    if scope = "private"
+        actor.header = "src/$(actor.name:c).h"
+    else
+        actor.header = "include/$(actor.name:c).h"
+    endif
+    if project.use_cxx
+        actor.source = "src/$(actor.name:c).cc"
+    else
+        actor.source = "src/$(actor.name:c).c"
+    endif
+endfor
+
+for project.class
+    if scope = "private"
+        class.header = "src/$(class.name:c).h"
+    else
+        class.header = "include/$(class.name:c).h"
+    endif
+    if project.use_cxx
+        class.source = "src/$(class.name:c).cc"
+    else
+        class.source = "src/$(class.name:c).c"
+    endif
+
+    if defined (class.api)
+        resolve_c_class (class)
+    else
+        # If there is no API model for this class,
+        # all we can do is resolve the name.
+        class.c_name = "$(class.name:c)"
+    endif
+endfor
+
+# Resolve the dependencies of the classes from this project and load their APIs
+#
+for project.class
+    if defined (class.api)
+        resolve_class_dependencies (class)
+    endif
+endfor
+
+# Resolve C-related properties of the dependencies API models, find further
+# dependencies, load their APIs and repeat if further dependencies have been
+# found.
+#
+if defined (project->dependencies) & count (project->dependencies.class)
+    while count (project->dependencies.class, !class.resolved)
+        for project->dependencies.class where !class.resolved
+            resolve_class_dependencies (class)
+            class.resolved = 1
+        endfor
+    endwhile
+endif

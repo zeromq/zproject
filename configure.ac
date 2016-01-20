@@ -83,6 +83,8 @@ LIBS="${PREVIOUS_LIBS}"
 myproject_on_mingw32="no"
 myproject_on_cygwin="no"
 myproject_on_android="no"
+myproject_on_linux="no"
+myproject_on_gnu="no"
 
 # Host specific checks
 AC_CANONICAL_HOST
@@ -129,6 +131,7 @@ case "${host_os}" in
         # Define on Linux to enable all library features
         CPPFLAGS="-D_GNU_SOURCE -DLINUX $CPPFLAGS"
         AC_DEFINE(MYPROJECT_HAVE_LINUX, 1, [Have Linux OS])
+        myproject_on_linux="yes"
 
         case "${host_os}" in
             *android*)
@@ -187,6 +190,14 @@ case "${host_os}" in
         AC_DEFINE(MYPROJECT_HAVE_CYGWIN, 1, [Have Cygwin])
         myproject_on_cygwin="yes"
         ;;
+    gnu*)
+        # Define on GNU/Hurd to enable all library features
+        if test "x$GXX" = "xyes"; then
+            CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
+        fi
+        AC_DEFINE(MYPROJECT_HAVE_GNU, 1, [Have GNU/Hurd OS])
+        myproject_on_gnu="yes"
+        ;;
     *)
         AC_MSG_ERROR([unsupported system: ${host_os}.])
         ;;
@@ -225,6 +236,8 @@ AM_CONDITIONAL(ENABLE_SHARED, test "x$enable_shared" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$myproject_on_mingw32" = "xyes")
 AM_CONDITIONAL(ON_CYGWIN, test "x$myproject_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$myproject_on_android" = "xyes")
+AM_CONDITIONAL(ON_LINUX, test "x$myproject_on_linux" = "xyes")
+AM_CONDITIONAL(ON_GNU, test "x$myproject_on_gnu" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$myproject_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$myproject_build_doc" = "xyes")
 
@@ -268,8 +281,10 @@ AM_CONDITIONAL([WITH_DRAFTS], [test x$with_drafts != xno])
 if test "x$with_drafts" = "xyes"; then
     AC_MSG_NOTICE([building draft, stable, and legacy API])
     AC_DEFINE(WITH_DRAFTS, 1, [Build and install draft classes and methods.])
+    AC_SUBST(pkg_config_defines, "-DWITH_DRAFTS=1")
 else
     AC_MSG_NOTICE([building stable and legacy API (no drafts)])
+    AC_SUBST(pkg_config_defines, "")
 fi
 
 # Specify output files

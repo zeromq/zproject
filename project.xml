@@ -8,7 +8,6 @@
         cygwin              Cygwin build system
         debian              packaging for Debian
         docker              packaging for Docker
-        docs                man pages
         java                Java JNI binding
         java-msvc           MSVC builds for Java JNI binding
         mingw32             Mingw32 build system
@@ -75,7 +74,7 @@
         Actors, are built using the simple actor framework from czmq. If the
         actors class header or source file doesn't exist, this will generate a
         skeleton for them. The generated test method of the actor will teach
-        you how to use them. Also have a look at the czmq docs to learn more
+        you how to use them. Also have a look at the CZMQ docs to learn more
         about actors.
     <actor name = "myactor">Public actor description</actor>
     <actor name = "someactor" private = "1">Private actor description</actor>
@@ -126,7 +125,7 @@
     <bin name = "zproject_projects.gsl" />
     <bin name = "zproject_class_api.gsl" />
 
-    <bin name = "zproject_actor.gsl" />
+    <bin name = "zproject_skeletons.gsl" />
     <bin name = "zproject_bench.gsl" />
     <bin name = "zproject_class.gsl" />
     <bin name = "zproject_git.gsl" />
@@ -145,7 +144,6 @@
     <bin name = "zproject_cmake.gsl" />
     <bin name = "zproject_cygwin.gsl" />
     <bin name = "zproject_docker.gsl" />
-    <bin name = "zproject_docs.gsl" />
     <bin name = "zproject_mingw32.gsl" />
     <bin name = "zproject_nuget.gsl" />
     <bin name = "zproject_redhat.gsl" />
