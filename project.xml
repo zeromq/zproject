@@ -125,7 +125,7 @@
     <bin name = "zproject_projects.gsl" />
     <bin name = "zproject_class_api.gsl" />
 
-    <bin name = "zproject_actor.gsl" />
+    <bin name = "zproject_skeletons.gsl" />
     <bin name = "zproject_bench.gsl" />
     <bin name = "zproject_class.gsl" />
     <bin name = "zproject_git.gsl" />

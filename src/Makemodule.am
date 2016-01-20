@@ -16,7 +16,7 @@ myproject_SCRIPTS = \
     zproject.gsl \
     zproject_projects.gsl \
     zproject_class_api.gsl \
-    zproject_actor.gsl \
+    zproject_skeletons.gsl \
     zproject_bench.gsl \
     zproject_class.gsl \
     zproject_git.gsl \

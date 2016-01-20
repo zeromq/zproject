@@ -75,20 +75,34 @@ function resolve_scope (item)
     endif
 endfunction
 
-for project.use
+
+for use
     resolve_project_dependency (use)
 endfor
-for project.main
+
+for main
     resolve_scope (main)
     resolve_extra (main)
 endfor
-for project.class
+
+for actor
+    new class to project
+        class.name = actor.name
+        class.private = actor.private?
+        class.description = actor.description?
+    endnew
+    resolve_scope (actor)
+endfor
+
+for class
     resolve_scope (class)
 endfor
-for project.constant
+
+for constant
     resolve_scope (constant)
 endfor
-for project.header
+
+for header
     resolve_scope (header)
 endfor
 

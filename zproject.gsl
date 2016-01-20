@@ -121,10 +121,12 @@ if switches.save ?= 1
     project.save ("save.xml")
 endif
 
-#   Always run these, in any order
-gsl from "zproject_actor.gsl"
-gsl from "zproject_bench.gsl"
+#   Generate main class support
 gsl from "zproject_class.gsl"
+
+#   Always run these, in any order
+gsl from "zproject_skeletons.gsl"
+gsl from "zproject_bench.gsl"
 gsl from "zproject_git.gsl"
 gsl from "zproject_valgrind.gsl"
 
