@@ -11,6 +11,7 @@
 #   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 if !file.exists (".gitignore")
+    echo "Generating initial .gitignore file"
     output ".gitignore"
     ># Object files
     >*.o
