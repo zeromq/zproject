@@ -7,6 +7,7 @@ from __future__ import print_function
 import argparse
 import re
 import os
+import os.path
 import sys
 
 from collections import namedtuple
@@ -348,7 +349,7 @@ def show_zproto_model(fp, klass, decls, comments, macros):
             macro_decl.comment),
             file=fp)
 
-    for decl_dict in (d for d in decls if d["coord"].file == include):
+    for decl_dict in (d for d in decls if os.path.normpath(d["coord"].file) == include):
 
         if decl_dict["type"] == "enum":
             s_show_zproto_enum(fp, klass_l, decl_dict)
