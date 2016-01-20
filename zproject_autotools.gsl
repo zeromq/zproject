@@ -235,6 +235,8 @@ LIBS="${PREVIOUS_LIBS}"
 $(project.name:c)_on_mingw32="no"
 $(project.name:c)_on_cygwin="no"
 $(project.name:c)_on_android="no"
+$(project.name:c)_on_linux="no"
+$(project.name:c)_on_gnu="no"
 
 # Host specific checks
 AC_CANONICAL_HOST
@@ -281,6 +283,7 @@ case "${host_os}" in
         # Define on Linux to enable all library features
         CPPFLAGS="-D_GNU_SOURCE -DLINUX $CPPFLAGS"
         AC_DEFINE($(PROJECT.NAME:c)_HAVE_LINUX, 1, [Have Linux OS])
+        $(project.name:c)_on_linux="yes"
 
         case "${host_os}" in
             *android*)
@@ -339,6 +342,14 @@ case "${host_os}" in
         AC_DEFINE($(PROJECT.NAME:c)_HAVE_CYGWIN, 1, [Have Cygwin])
         $(project.name:c)_on_cygwin="yes"
         ;;
+    gnu*)
+        # Define on GNU/Hurd to enable all library features
+        if test "x$GXX" = "xyes"; then
+            CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
+        fi
+        AC_DEFINE($(PROJECT.NAME:c)_HAVE_GNU, 1, [Have GNU/Hurd OS])
+        $(project.name:c)_on_gnu="yes"
+        ;;
     *)
         AC_MSG_ERROR([unsupported system: ${host_os}.])
         ;;
@@ -381,6 +392,8 @@ AM_CONDITIONAL(ENABLE_SHARED, test "x$enable_shared" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$$(project.name:c)_on_mingw32" = "xyes")
 AM_CONDITIONAL(ON_CYGWIN, test "x$$(project.name:c)_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$$(project.name:c)_on_android" = "xyes")
+AM_CONDITIONAL(ON_LINUX, test "x$$(project.name:c)_on_linux" = "xyes")
+AM_CONDITIONAL(ON_GNU, test "x$$(project.name:c)_on_gnu" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$$(project.name:c)_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$$(project.name:c)_build_doc" = "xyes")
 
