@@ -14,7 +14,8 @@ register_target ("travis", "Travis CI scripts")
 
 .macro target_travis
 .if !file.exists (".travis.yml")
-.output ".travis.yml"
+.   echo "Generating skeleton .travis.yml script"
+.   output ".travis.yml"
 # Travis CI script
 language: c
 
@@ -26,7 +27,7 @@ sudo: false
 
 env:
 - BUILD_TYPE=default
-- BUILD_TYPE=android
+#- BUILD_TYPE=android
 #- BUILD_TYPE=check-py
 #- BUILD_TYPE=cmake
 
@@ -62,11 +63,11 @@ if [ $BUILD_TYPE == "default" ]; then
     CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
 
     # Clone and build dependencies
-.for use where defined (use.repository)
+.   for use where defined (use.repository)
     git clone --depth 1 $(use.repository) $(use.project)
     ( cd $(use.project) && ./autogen.sh && ./configure "${CONFIG_OPTS[@]}" && make -j4 && make install ) || exit 1
 
-.endfor
+.   endfor
     # Build and check this project
     ( ./autogen.sh && ./configure "${CONFIG_OPTS[@]}" && make -j4 && make check && make memcheck && make install ) || exit 1
 else
