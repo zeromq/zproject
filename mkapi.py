@@ -213,28 +213,42 @@ def get_func_decls(filename, args):
         v.visit(node)
     return v._ret
 
+
+
 def s_decl_to_zproject_type(arg):
+    class ZT(object):
+        def __init__(self, name, size=None):
+            self.name = name
+            self.size = size
     dct = {
-            ("void", "")  : "nothing",
-            ("void", "*") : "anything",
-            ("size_t", "") : "size",
-            ("time_t", "") : "time",
-            ("int64_t", "") : "clock",
-            ("bool", "")  : "boolean",
-            ("_Bool", "")  : "boolean",
-            ("int", "")   : "integer",
-            ("float", "") : "real",
-            ("char", "*") : "string",
-            ("byte", "*") : "buffer",
-            ("off_t", "") : "file_size",
+            ("void", "")  : ZT("nothing"),
+            ("void", "*") : ZT("anything"),
+            ("size_t", "") : ZT("size"),
+            ("time_t", "") : ZT("time"),
+            ("int64_t", "") : ZT("clock"),
+            ("bool", "")  : ZT("boolean"),
+            ("_Bool", "")  : ZT("boolean"),
+            ("int", "")   : ZT("integer"),
+            ("uint8_t", "") : ZT("number", 1),
+            ("uint16_t", "") : ZT("number", 2),
+            ("uint32_t", "") : ZT("number", 4),
+            ("uint64_t", "") : ZT("number", 8),
+            ("float", "") : ZT("real"),
+            ("char", "*") : ZT("string"),
+            ("byte", "*") : ZT("buffer"),
+            ("off_t", "") : ZT("file_size"),
           }
     if hasattr(arg, "xtra") and "enum" in arg.xtra:
-        return arg.xtra["enum_type"]
+        return ZT(arg.xtra["enum_type"])
     if arg.type.endswith("_t") and arg.ptr in ("*", "**"):
-        return arg.type[:-2]
+        return ZT(arg.type[:-2])
     if arg.name == "format" and arg.type == "char" and arg.ptr == "*":
-        return "format"
-    return dct.get((arg.type, arg.ptr), arg.type)
+        return ZT("format")
+    try:
+        typ = dct[(arg.type, arg.ptr)]
+    except KeyError:
+        return ZT(arg.type)
+    return typ
 
 def s_arg_mutable(arg):
     """Return if attribute mutable should appear in API model
@@ -242,7 +256,7 @@ def s_arg_mutable(arg):
         0  means mutable = "0"
         1  means mutable = "1"
     """
-    if s_decl_to_zproject_type(arg) in ("string", "format") or arg.ptr == "":
+    if s_decl_to_zproject_type(arg).name in ("string", "format") or arg.ptr == "":
         return -1
     if "const" in arg.quals:
         return 0
@@ -261,12 +275,13 @@ def s_show_zproto_model_arguments(fp, decl_dict, typ):
             continue
 
         typ = s_decl_to_zproject_type(arg)
-        was_format = (typ == "format")
+        was_format = (typ.name == "format")
         mut = s_arg_mutable(arg)
 
-        print("""        <argument name = "%(name)s" type = "%(type)s"%(byref)s%(mutable)s%(callback)s />""" %
+        print("""        <argument name = "%(name)s" type = "%(type)s"%(size)s%(byref)s%(mutable)s%(callback)s />""" %
                 {   "name" : arg.name,
-                    "type" : typ,
+                    "type" : typ.name,
+                    "size" : ' size = "%s"' % typ.size if typ.size is not None else "",
                     "byref" : ' by_reference = "1"' if arg.ptr == "**" else "",
                     "mutable" : ' mutable = "%s"' % mut if mut in (0, 1) else "",
                     "callback" : ' callback = "1"' if "callback" in arg.xtra else "",
@@ -311,9 +326,11 @@ def s_show_zproto_mc(fp, klass, decl_dict, comments):
         (decl_dict["return_type"].type != "void" or decl_dict["return_type"].ptr != ""):
         arg = decl_dict["return_type"]
         mut = s_arg_mutable(arg)
+        ret_type = s_decl_to_zproject_type(arg)
 
-        print("""        <return type = "%(type)s"%(mutable)s />""" % {
-                "type" : s_decl_to_zproject_type(arg),
+        print("""        <return type = "%(type)s"%(size)s%(mutable)s />""" % {
+                "size" : ' size = "%s"' % ret_type.size if ret_type.size is not None else "",
+                "type" : ret_type.name,
                 "mutable" : ' mutable = "%s"' % mut if mut in (0, 1) else "",
                 }
              , file=fp)
