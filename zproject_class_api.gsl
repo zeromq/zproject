@@ -339,6 +339,7 @@ function resolve_c_class (class)
             move ret before method->return # Move to first slot
         endnew
         resolve_c_method (method, "Create a new $(my.class.c_name).")
+        initialise_c_element_state (method, my.class.state)
     endfor
 
     for my.class.destructor as method
@@ -355,6 +356,7 @@ function resolve_c_class (class)
             move arg before method->argument # Move to first slot
         endnew
         resolve_c_method (method, "Destroy the $(my.class.c_name).")
+        initialise_c_element_state (method, my.class.state)
     endfor
 
     # Resolve details of each constant
