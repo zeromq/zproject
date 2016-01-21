@@ -316,13 +316,46 @@ module $(project.RubyName:)
 
 .endfor
 .for constructor as method
+.  if method.state = 'draft'
+      begin # DRAFT method
+        $(ruby_ffi_attach_definition (method))
+      rescue ::FFI::NotFoundError
+        if $VERBOSE || $DEBUG
+          warn "The function $(method.name:c)() can't be used through " +
+               "this Ruby binding because it's not available."
+        end
+      end
+.  else
       $(ruby_ffi_attach_definition (method))
+.  endif
 .endfor
 .for destructor as method
+.  if method.state = 'draft'
+      begin # DRAFT method
+        $(ruby_ffi_attach_definition (method))
+      rescue ::FFI::NotFoundError
+        if $VERBOSE || $DEBUG
+          warn "The function $(method.name:c)() can't be used through " +
+               "this Ruby binding because it's not available."
+        end
+      end
+.  else
       $(ruby_ffi_attach_definition (method))
+.  endif
 .endfor
 .for method
+.  if method.state = 'draft'
+      begin # DRAFT method
+        $(ruby_ffi_attach_definition (method))
+      rescue ::FFI::NotFoundError
+        if $VERBOSE || $DEBUG
+          warn "The function $(method.name:c)() can't be used through " +
+               "this Ruby binding because it's not available."
+        end
+      end
+.  else
       $(ruby_ffi_attach_definition (method))
+.  endif
 .endfor
 
       require_relative 'ffi/$(class.ruby_require:)'
