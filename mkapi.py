@@ -25,6 +25,7 @@ TypeDecl  = namedtuple("TypeDecl", "type, ptr, quals")
 ArgDecl   = namedtuple("ArgDecl", "name, type, ptr, quals, xtra")
 
 def s_comment_fill(comment):
+    comment = re.sub(r' +(?=\n|$)', '', comment)
     return s_xml_escape(comment)
 
 def s_parse_comments_and_macros(fp):
