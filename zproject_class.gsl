@@ -15,9 +15,9 @@
 .#  Build the project header file
 .#
 .directory.create ("include")
-.project_header_file = "include/$(project.header:)"
-.if !file.exists (project_header_file) & count (class, class.name = project.name) = 0
-.   output project_header_file
+.if !file.exists ("include/$(project.header:)") & count (class, class.name = project.name) = 0
+.   echo "Generating skeleton for include/$(project.header)"
+.   output "include/$(project.header)"
 /*  =========================================================================
     $(project.name) - $(project.description?'':)
 
