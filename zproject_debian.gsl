@@ -173,9 +173,12 @@ debian/tmp/usr/lib/systemd/system/$(main.name)*.service
 debian/tmp/lib/systemd/system/$(service.name)*.service
 .   endfor
 
-.   for project.main where defined (main->extra)
-debian/tmp/$(main->extra.path)/$(main->extra.name)
-.   endfor
+.for project.main where defined (main->extra)
+.    for extra
+debian/tmp$(extra.path)/$(extra.name)
+.    endfor
+.endfor
+
 .endif
 
 .if project.exports_classes

@@ -147,9 +147,10 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .endfor
 
 .for project.main where defined (main->extra)
-#file for type $(main->extra.type)
-%dir $(main->extra.path)
-$(main->extra.path)/$(main->extra.name)
+.    for extra
+%dir $(extra.path)
+$(extra.path)/$(extra.name)
+.    endfor
 .endfor
 .endif
 

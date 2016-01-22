@@ -502,6 +502,11 @@ AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  src/$(project.libname).pc
 .   endif
+.   for project.main where defined (main->extra)
+.       for extra where extra.cond ?<> "with_systemd"
+                 src/$(extra.name)
+.       endfor
+.   endfor
                  ])
 .else
 AC_CONFIG_FILES([Makefile])
@@ -518,8 +523,10 @@ AM_COND_IF([WITH_SYSTEMD],
 .   for project.service
                  src/$(service.name).service
 .   endfor
-.   for project.main where (defined (main->extra) & extra.type ?= systemd-tmpfiles)
-                 src/$(main->extra.name)
+.   for project.main where defined (main->extra)
+.       for extra where extra.cond ?= "with_systemd"
+                 src/$(extra.name)
+.       endfor
 .   endfor
     ])],
     [])
@@ -748,11 +755,16 @@ src_$(main.name:c)_service_DATA = src/$(main.name).service
 src_$(main.name:c)_service_DATA = src/$(main.name)@.service
 .   endif
 .   endif
-.for project.main where (defined (main->extra) & extra.type ?= systemd-tmpfiles)
-src_$(main.name:c)_$(main->extra.type:c)dir = $(main->extra.path)
-src_$(main.name:c)_$(main->extra.type:c)_DATA = src/$(main->extra.name)
-.endfor
+.   for extra where extra.cond ?= "with_systemd"
+src_$(main.name:c)_$(extra.type:c)dir = $(extra.path)
+src_$(main.name:c)_$(extra.type:c)_DATA = src/$(extra.name)
+.   endfor
 endif #WITH_SYSTEMD
+
+.   for extra where extra.cond ?<> "with_systemd"
+src_$(main.name:c)_$(extra.path:c)_$(extra.name:c)dir = $(extra.path)
+src_$(main.name:c)_$(extra.path:c)_$(extra.name:c)_DATA = src/$(extra.name)
+.   endfor
 
 endif #WITH_$(NAME:c)
 .endfor
