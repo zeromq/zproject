@@ -21,7 +21,6 @@ language: c
 
 os:
 - linux
-- osx
 
 sudo: false
 
@@ -39,7 +38,7 @@ addons:
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils valgrind ; fi
 
-# Build and check this project according to the BUILD_TYPE
+# Hand off to generated script for each BUILD_TYPE
 script: ./ci_build.sh
 .endif
 .
