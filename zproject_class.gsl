@@ -469,17 +469,26 @@ $(c_method_declaration (method):)
 $(c_actor_declaration (actor):)
 .   endfor
 .-
-.   for class.method
+.   for class.method where !is_c_element_draft (method)
 
-.       if (is_c_element_draft (method))
-#ifdef WITH_DRAFTS
-.       endif
 //  $(method.description:no,block)
 .       if method->return.fresh
 //  The caller owns the return value and must destroy it when done with it.
 .       endif
 $(c_method_declaration (method):)
-.       if (is_c_element_draft (method))
+.   endfor
+.
+.   for class.method where is_c_element_draft (method)
+.       if first ()
+#ifdef WITH_DRAFTS
+.       endif
+
+//  $(method.description:no,block)
+.       if method->return.fresh
+//  The caller owns the return value and must destroy it when done with it.
+.       endif
+$(c_method_declaration (method):)
+.       if last ()
 #endif // WITH_DRAFTS
 .       endif
 .   endfor
