@@ -1,6 +1,18 @@
 #!/usr/bin/python
-# zproto API XML model generator
-# licensed under MIT/X11
+#   zproject API XML model generator
+#
+#   Syntax: mkapi.py project-header class1 class2...
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 from __future__ import print_function
 

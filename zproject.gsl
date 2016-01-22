@@ -88,7 +88,13 @@ function register_target (target, detail)
 endfunction
 
 function build_target (target)
-    if my.target = "*"
+    if my.target = "?"
+        echo "Valid targets are:"
+        for project.handler by target
+            echo "    $(target)\
+                    $(detail:)"
+        endfor
+    elsif my.target = "*"
         for project.handler by target
             if handler.target <> "autotools" & handler.target <> "cmake"
                 echo "Building $(detail:) ($(handler.target))"
@@ -151,14 +157,13 @@ gsl from "zproject_debian.gsl"
 gsl from "zproject_redhat.gsl"
 gsl from "zproject_docker.gsl"
 
-#   Build mandatory targets
-build_target ("autotools")
-build_target ("cmake")
-
-#   Now build targets requested by project
+#   Build targets requested by project
 if defined (switches.target)
     build_target (switches.target)
 else
+    #   Build mandatory targets
+    build_target ("autotools")
+    build_target ("cmake")
     for project.target
         build_target (target.name)
     endfor

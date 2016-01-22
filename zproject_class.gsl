@@ -15,9 +15,9 @@
 .#  Build the project header file
 .#
 .directory.create ("include")
-.project_header_file = "include/$(project.header:)"
-.if !file.exists (project_header_file) & count (class, class.name = project.name) = 0
-.   output project_header_file
+.if !file.exists ("include/$(project.header:)") & count (class, class.name = project.name) = 0
+.   echo "Generating skeleton for include/$(project.header)"
+.   output "include/$(project.header)"
 /*  =========================================================================
     $(project.name) - $(project.description?'':)
 
@@ -27,8 +27,8 @@
     =========================================================================
 */
 
-#ifndef $(PROJECT.NAME:c)_H_INCLUDED
-#define $(PROJECT.NAME:c)_H_INCLUDED
+#ifndef $(PROJECT.HEADER:c)_H_INCLUDED
+#define $(PROJECT.HEADER:c)_H_INCLUDED
 
 //  Include the project library file
 #include "$(project.prefix)_library.h"
@@ -39,7 +39,7 @@
 .endif
 .output "include/$(project.prefix)_library.h"
 /*  =========================================================================
-    $(project.name) - $(PROJECT.NAME) wrapper
+    $(project.name) - generated layer of public API
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -68,16 +68,16 @@ $(project.GENERATED_WARNING_HEADER:)
 .    endif
 .endfor
 
-//  $(PROJECT.NAME) version macros for compile-time API detection
+//  $(PROJECT.PREFIX) version macros for compile-time API detection
 
-#define $(PROJECT.NAME:c)_VERSION_MAJOR $(project->version.major)
-#define $(PROJECT.NAME:c)_VERSION_MINOR $(project->version.minor)
-#define $(PROJECT.NAME:c)_VERSION_PATCH $(project->version.patch)
+#define $(PROJECT.PREFIX:c)_VERSION_MAJOR $(project->version.major)
+#define $(PROJECT.PREFIX:c)_VERSION_MINOR $(project->version.minor)
+#define $(PROJECT.PREFIX:c)_VERSION_PATCH $(project->version.patch)
 
-#define $(PROJECT.NAME:c)_MAKE_VERSION(major, minor, patch) \\
+#define $(PROJECT.PREFIX:c)_MAKE_VERSION(major, minor, patch) \\
     ((major) * 10000 + (minor) * 100 + (patch))
-#define $(PROJECT.NAME:c)_VERSION \\
-    $(PROJECT.NAME:c)_MAKE_VERSION($(PROJECT.NAME:c)_VERSION_MAJOR, $(PROJECT.NAME:c)_VERSION_MINOR, $(PROJECT.NAME:c)_VERSION_PATCH)
+#define $(PROJECT.PREFIX:c)_VERSION \\
+    $(PROJECT.PREFIX:c)_MAKE_VERSION($(PROJECT.PREFIX:c)_VERSION_MAJOR, $(PROJECT.PREFIX:c)_VERSION_MINOR, $(PROJECT.PREFIX:c)_VERSION_PATCH)
 
 #if defined (__WINDOWS__)
 #   if defined $(PROJECT.LIBNAME:c)_STATIC
@@ -469,17 +469,26 @@ $(c_method_declaration (method):)
 $(c_actor_declaration (actor):)
 .   endfor
 .-
-.   for class.method
+.   for class.method where !is_c_element_draft (method)
 
-.       if (is_c_element_draft (method))
-#ifdef WITH_DRAFTS
-.       endif
 //  $(method.description:no,block)
 .       if method->return.fresh
 //  The caller owns the return value and must destroy it when done with it.
 .       endif
 $(c_method_declaration (method):)
-.       if (is_c_element_draft (method))
+.   endfor
+.
+.   for class.method where is_c_element_draft (method)
+.       if first ()
+#ifdef WITH_DRAFTS
+.       endif
+
+//  $(method.description:no,block)
+.       if method->return.fresh
+//  The caller owns the return value and must destroy it when done with it.
+.       endif
+$(c_method_declaration (method):)
+.       if last ()
 #endif // WITH_DRAFTS
 .       endif
 .   endfor
