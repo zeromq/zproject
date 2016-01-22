@@ -455,7 +455,7 @@ def main(argv=sys.argv[1:]):
     p.add_argument("-I", "--include", help="extra includes, which will be passed to c preprocessor", dest="INCLUDE", action='append')
     p.add_argument("--cpp", help="Define c preprocessor to use (gcc -E, clang -E, auto for autodetect and none for not calling preprocessor at all", default="auto")
     p.add_argument("header", help="main header file of the project")
-    p.add_argument("klass", help="classes to process, default all", metavar="class", nargs='+')
+    p.add_argument("klass", help="classes to process, default all", metavar="class", nargs='*')
     args = p.parse_args(argv)
 
     args.INCLUDE = s_expand_dirs(args)
