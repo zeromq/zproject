@@ -481,9 +481,16 @@ def main(argv=sys.argv[1:]):
     if len(args.klass) == 0:
         klasses = get_classes_from_decls(decls)
     else:
-        klasses = (k for k in frozenset(get_classes_from_decls(decls)).intersection(frozenset(args.klass)))
+        decl_klasses = frozenset(get_classes_from_decls(decls))
+        arg_klasses = frozenset(args.klass)
+        klasses = decl_klasses.intersection(arg_klasses)
+        if not arg_klasses.issubset(decl_klasses):
+            print("W: following class declaration not found: %s" % ", ".join(arg_klasses.difference(decl_klasses)))
+            print("I: hint add -DWITH_DRAFTS if class is not yet marked as stable")
+            sys.exit(1)
 
     for klass in klasses:
+        print ("I: processing class %s" % klass)
         include = os.path.join("include", klass + ".h")
         comments, macros = parse_comments_and_macros(include)
 
