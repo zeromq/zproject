@@ -438,6 +438,8 @@ def s_detect_system_preprocessor():
 
 def s_expand_dirs(args):
     ret = list()
+    if args.INCLUDE is None:
+        return ret
     for d in args.INCLUDE:
         path = os.path.expandvars(
                 os.path.expanduser(d))
