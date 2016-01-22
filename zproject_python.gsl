@@ -216,7 +216,9 @@ function python_method_definition(method)
         >    @staticmethod
     endif
     >    def $(my.method.python_name:c)($(argnames)):
-    >        """$(my.method.description:no)"""
+    >        """
+    >        $(my.method.description:no)
+    >        """
     >        return $(call:)
     >
 endfunction
@@ -360,7 +362,9 @@ function generate_python_binding
 
         >
         >class $(class.name:Pascal)(object):
-        >    """$(class.description:no)"""
+        >    """
+        >    $(class.description:no)
+        >    """
         for enum
             >
             >    $(enum.name:Pascal) = {
@@ -405,7 +409,9 @@ function generate_python_binding
             endfor
 
             >    def __init__(self, *args):
-            >        """$(method.description:no)"""
+            >        """
+            >        $(method.description:no)
+            >        """
             >        if len(args) == 2 and type(args[0]) is c_void_p and isinstance(args[1], bool):
             >            self._as_parameter_ = cast(args[0], $(class.name:c)_p) # Conversion from raw type to binding
             >            self.allow_destruct = args[1] # This is a 'fresh' value, owned by us
@@ -425,7 +431,9 @@ function generate_python_binding
 
         for destructor as method
             >    def __del__(self):
-            >        """$(method.description:no)"""
+            >        """
+            >        $(method.description:no)
+            >        """
             >        if self.allow_destruct:
             >            lib.$(class.name:c)_$(method.name)(byref(self._as_parameter_))
         >
