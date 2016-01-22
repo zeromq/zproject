@@ -254,10 +254,12 @@ git clone https://github.com/eliben/pycparser.git
 
 Then from root directory of your project (for example czmq), type following
 ```sh
-python mkapi.py -I /path/to/your/pycparser/utils/fake_libc_include include/czmq.h
+mkapi.py -I /path/to/your/pycparser/utils/fake_libc_include include/czmq.h
 ```
 
-Note you must use top-level include as pycparser fails if it does not know any definition.
+Note you *must* use top-level include as pycparser fails if it does not know any definition.
+
+The tool might expect `-DWITH_DRAFTS` parameter if the class is not marked as a stable.
 
 #### Known caveats
 
