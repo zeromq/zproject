@@ -60,10 +60,12 @@ endfunction
 
 function resolve_extra (main)
     for extra where defined (extra.type)
-        if my.main->extra.type = "systemd-tmpfiles"
-            my.main->extra.name ?= "$(main.name).conf"
-            my.main->extra.path ?= "/usr/lib/tmpfiles.d"
+        if extra.type = "systemd-tmpfiles"
+            extra.name ?= "$(main.name).conf"
+            extra.path ?= "/usr/lib/tmpfiles.d"
+            extra.cond = "with_systemd"
         endif
+        extra.cond ?= ""
     endfor
 endfunction
 
