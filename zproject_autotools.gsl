@@ -397,7 +397,7 @@ AM_CONDITIONAL(ON_GNU, test "x$$(project.name:c)_on_gnu" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$$(project.name:c)_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$$(project.name:c)_build_doc" = "xyes")
 
-.for project.main
+.for project.main where test?0 = 0
 # Check for $(name) intent
 AC_ARG_ENABLE([$(name)],
     AS_HELP_STRING([--enable-$(name)],
@@ -722,14 +722,16 @@ src_$(project.libname)_la_LIBADD = ${project_libs}
 
 .endif
 .for project.main
-if ENABLE_$(NAME:c)
 .   if main.test ?= 1
 check_PROGRAMS += src/$(main.name)
 noinst_PROGRAMS += src/$(main.name)
-.   elsif main.scope = "public"
-bin_PROGRAMS += src/$(main.name)
 .   else
+if ENABLE_$(NAME:c)
+.       if main.scope = "public"
+bin_PROGRAMS += src/$(main.name)
+.       else
 noinst_PROGRAMS += src/$(main.name)
+.       endif
 .   endif
 src_$(main.name:c)_CPPFLAGS = ${AM_CPPFLAGS}
 src_$(main.name:c)_LDADD = ${program_libs}
@@ -766,7 +768,9 @@ src_$(main.name:c)_$(extra.path:c)_$(extra.name:c)dir = $(extra.path)
 src_$(main.name:c)_$(extra.path:c)_$(extra.name:c)_DATA = src/$(extra.name)
 
 .   endfor
+.   if main.test?0 = 0
 endif #ENABLE_$(NAME:c)
+.   endif
 .endfor
 .for bin
 .   if first()
