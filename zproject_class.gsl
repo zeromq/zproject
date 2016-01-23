@@ -92,59 +92,57 @@ $(project.GENERATED_WARNING_HEADER:)
 #endif
 
 //  Opaque class structures to allow forward references
-.for project.class where scope = "public" & !is_c_element_draft (class)
-.   if !defined (class.api)
-.       resolve_c_class (class)
+//  These classes are stable or legacy and built in all releases
+.for project.class where scope = "public" & !draft
+typedef struct _$(class.c_name)_t $(class.c_name)_t;
+#define $(CLASS.C_NAME)_T_DEFINED
+.endfor
+.for project.class where scope = "public" & draft
+.   if first ()
+//  Draft classes are by default not built stable releases
+#ifdef WITH_DRAFTS
 .   endif
 typedef struct _$(class.c_name)_t $(class.c_name)_t;
 #define $(CLASS.C_NAME)_T_DEFINED
-.endfor
-.if count (project.class, scope = "public" & is_c_element_draft (class))
-
-//  Draft APIs, excluded by default in stable releases
-#ifdef WITH_DRAFTS
-.   for project.class where scope = "public" & is_c_element_draft (class)
-.       if !defined (class.api)
-.           resolve_c_class (class)
-.       endif
-typedef struct _$(class.c_name)_t $(class.c_name)_t;
-#define $(CLASS.C_NAME)_T_DEFINED
-.   endfor
+.   if last ()
 #endif // WITH_DRAFTS
-.endif
-.if count (constant, scope = "public")
+.   endif
+.endfor
 
+.if count (constant, scope = "public")
 //  Public constants
 .endif
-.for constant where scope = "public" & !is_c_element_draft (constant)
-#define $(CONSTANT.NAME)\t$(constant.value) //  $(constant.?'')
+.for constant where scope = "public" & !draft
+#define $(CONSTANT.NAME)\
+                            $(constant.value)  //  $(constant.?'')
 .endfor
-.if count (constant, scope = "public" & is_c_element_draft (constant))
-
-//  Draft APIs, excluded by default in stable releases
+.for constant where scope = "public" & draft
+.   if first ()
 #ifdef WITH_DRAFTS
-.   for constant where scope = "public" & is_c_element_draft (constant)
-#define $(CONSTANT.NAME)\t$(constant.value) //  $(constant.?'')
-.   endfor
+.   endif
+#define $(CONSTANT.NAME)\
+                            $(constant.value)  //  $(constant.?'')
+.   if last ()
 #endif // WITH_DRAFTS
-.endif
+.   endif
+.endfor
 
-//  Public API classes
+//  Public classes, each with its own header file
 .for header where scope = "public"
 #include "$(header.name).h"
 .endfor
-.for class where scope = "public" & class.c_name <> "$(project.name)" & !is_c_element_draft (class)
+.for class where scope = "public" & class.c_name <> "$(project.name)" & !draft
 #include "$(class.c_name).h"
 .endfor
-.if count (project.class, scope = "public" & is_c_element_draft (class))
-
-//  Draft APIs, excluded by default in stable releases
+.for class where scope = "public" & class.c_name <> "$(project.name)" & draft
+.   if first ()
 #ifdef WITH_DRAFTS
-.  for class where scope = "public" & class.c_name <> "$(project.name)" & is_c_element_draft (class)
+.   endif
 #include "$(class.c_name).h"
-.  endfor
+.   if last ()
 #endif // WITH_DRAFTS
-.endif
+.   endif
+.endfor
 
 #endif
 /*
@@ -181,16 +179,18 @@ typedef struct {
 
 static test_item_t
 all_tests [] = {
-.for class where !is_c_element_draft (class)
+.for class where !draft
     { "$(class.c_name)", $(class.c_name)_test },
 .endfor
-.if count (class, is_c_element_draft (class))
+.for class where draft
+.   if first ()
 #ifdef WITH_DRAFTS
-.   for class where is_c_element_draft (class)
+.   endif
     { "$(class.c_name)", $(class.c_name)_test },
-.   endfor
+.   if last ()
 #endif // WITH_DRAFTS
-.endif
+.   endif
+.endfor
     {0, 0}          //  Sentinel
 };
 
@@ -338,6 +338,56 @@ $(project.GENERATED_WARNING_HEADER:)
 .endfor
 #endif
 .close
+.#  Generate API interface
+.macro generate_interface (draft)
+.   for class.constant where draft = my.draft
+.   if first ()
+
+.   endif
+#define $(CLASS.NAME:c)_$(NAME:c) $(value)  // $(constant.description:no,block)
+.   endfor
+.   for class.enum where draft = my.draft
+
+// $(enum.description:no,block)
+typedef enum {
+.       for enum.constant
+.           comma = last ()?? ""? ","
+    $(CLASS.NAME:c)_$(CONSTANT.NAME:c) = $(value)$(comma)   //  $(string.trim (constant.?''):left)
+.       endfor
+} $(class.name:c)_$(enum.name:c)_t;
+.   endfor
+.   for class.callback_type where draft = my.draft
+
+// $(callback_type.description:no,block)
+$(c_callback_typedef (callback_type))
+.   endfor
+.   for class.constructor where draft = my.draft
+
+//  $(constructor.description:no,block)
+$(c_method_declaration (constructor):)
+.   endfor
+.-
+.   for class.destructor where draft = my.draft
+
+//  $(destructor.description:no,block)
+$(c_method_declaration (destructor):)
+.   endfor
+.-
+.   for class.actor where draft = my.draft
+
+//  $(actor.description:no,block)
+$(c_actor_declaration (actor):)
+.   endfor
+.-
+.   for class.method where draft = my.draft
+
+//  $(method.description:no,block)
+.       if method->return.fresh
+//  The caller owns the return value and must destroy it when done with it.
+.       endif
+$(c_method_declaration (method):)
+.   endfor
+.endmacro
 .template 0
 #
 #  Regenerate the @interface for the class if it has an API model
@@ -405,93 +455,14 @@ $(HEADER_FILE_PREFIX:)\
 //  provided in stable builds to support old applications. You should
 //  stop using this class, and migrate any code that is still using it.
 .   endif
-.   for class.constant
-.       if first ()
-
-.       endif
-.       if (is_c_element_draft (constant))
-#ifdef WITH_DRAFTS
-.       endif
-#define $(CLASS.NAME:c)_$(NAME:c) $(value)  // $(constant.description:no,block)
-.       if (is_c_element_draft (constant))
+.   generate_interface (0)
+.   if count (class., count.draft ?= 1)
+#ifdef (WITH_DRAFTS)
+.   endif
+.   generate_interface (1)
+.   if count (class., count.draft ?= 1)
 #endif // WITH_DRAFTS
-.       endif
-.   endfor
-.-
-.   for class.enum
-
-.       if (is_c_element_draft (enum))
-#ifdef WITH_DRAFTS
-.       endif
-// $(enum.description:no,block)
-typedef enum {
-.       for enum.constant
-.           if last()
-.               comma = ""
-.           else
-.               comma = ","
-.           endif
-    $(CLASS.NAME:c)_$(CONSTANT.NAME:c) = $(value)$(comma)   //  $(string.trim (constant.?''):left)
-.       endfor
-} $(class.name:c)_$(enum.name:c)_t;
-.       if (is_c_element_draft (enum))
-#endif // WITH_DRAFTS
-.       endif
-.   endfor
-.-
-.   for class.callback_type
-
-.       if (is_c_element_draft (callback_type))
-#ifdef WITH_DRAFTS
-.       endif
-// $(callback_type.description:no,block)
-$(c_callback_typedef (callback_type))
-.       if (is_c_element_draft (callback_type))
-#endif // WITH_DRAFTS
-.       endif
-.   endfor
-.-
-.   for class.constructor as method
-
-//  $(method.description:no,block)
-$(c_method_declaration (method):)
-.   endfor
-.-
-.   for class.destructor as method
-
-//  $(method.description:no,block)
-$(c_method_declaration (method):)
-.   endfor
-.-
-.   for class.actor
-
-//  $(actor.description:no,block)
-$(c_actor_declaration (actor):)
-.   endfor
-.-
-.   for class.method where !is_c_element_draft (method)
-
-//  $(method.description:no,block)
-.       if method->return.fresh
-//  The caller owns the return value and must destroy it when done with it.
-.       endif
-$(c_method_declaration (method):)
-.   endfor
-.
-.   for class.method where is_c_element_draft (method)
-.       if first ()
-#ifdef WITH_DRAFTS
-.       endif
-
-//  $(method.description:no,block)
-.       if method->return.fresh
-//  The caller owns the return value and must destroy it when done with it.
-.       endif
-$(c_method_declaration (method):)
-.       if last ()
-#endif // WITH_DRAFTS
-.       endif
-.   endfor
+.   endif
 //  @end
 $(HEADER_FILE_SUFFIX:)\
 .       endtemplate
@@ -502,5 +473,10 @@ endfor
 .endmacro
 
 if count (class)
+    for project.class
+        if !defined (class.api)
+            resolve_c_class (class)
+        endif
+    endfor
     generate_project_api ()
 endif

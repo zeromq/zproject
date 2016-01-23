@@ -635,15 +635,15 @@ include_HEADERS = \\
 .for header where scope = "public"
     include/$(name:c).h \\
 .endfor
-.for class where scope = "public" & !is_c_element_draft (class)
+.for class where scope = "public" & !draft
     include/$(name:c).h \\
 .endfor
     include/$(project.prefix)_library.h
 
-.if count (class, scope = "public" & is_c_element_draft (class))
+.if count (class, scope = "public" & draft)
 if WITH_DRAFTS
 include_HEADERS += \\
-.   for class where scope = "public" & is_c_element_draft (class)
+.   for class where scope = "public" & draft
 .      if !last()
     include/$(name:c).h \\
 .      else
@@ -654,7 +654,7 @@ endif
 
 .endif
 src_$(project.libname:c)_la_SOURCES = \\
-.for class where !is_c_element_draft (class)
+.for class where !draft
 .   if file.exists ("src/$(name:c).cc")
     src/$(name:c).cc \\
 .   else
@@ -666,10 +666,10 @@ src_$(project.libname:c)_la_SOURCES = \\
 .endfor
     src/platform.h
 
-.if count (class, is_c_element_draft (class))
+.if count (class, draft)
 if WITH_DRAFTS
 src_$(project.libname:c)_la_SOURCES += \\
-.   for class where is_c_element_draft (class)
+.   for class where draft
 .      if !last()
 .         if file.exists ("src/$(name:c).cc")
     src/$(name:c).cc \\
@@ -764,8 +764,8 @@ endif #WITH_SYSTEMD
 .   for extra where extra.cond ?<> "with_systemd"
 src_$(main.name:c)_$(extra.path:c)_$(extra.name:c)dir = $(extra.path)
 src_$(main.name:c)_$(extra.path:c)_$(extra.name:c)_DATA = src/$(extra.name)
-.   endfor
 
+.   endfor
 endif #WITH_$(NAME:c)
 .endfor
 .for bin

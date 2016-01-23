@@ -162,7 +162,7 @@ set ($(project.name:c)_headers
 .for header where scope = "public"
     include/$(name:c).h
 .endfor
-.for class where scope = "public" & !is_c_element_draft (class)
+.for class where scope = "public" & !draft
     include/$(name:c).h
 .endfor
 .for class where scope = "private"
@@ -172,11 +172,11 @@ set ($(project.name:c)_headers
     src/$(name)
 .endfor
 )
-.if count (class, scope = "public" & is_c_element_draft (class))
+.if count (class, scope = "public" & draft)
 
 IF (WITH_DRAFTS)
 list(APPEND $(project.name)_headers
-.   for class where scope = "public" & is_c_element_draft (class)
+.   for class where scope = "public" & draft
     include/$(name:c).h
 .endfor
 )
@@ -192,15 +192,15 @@ install(FILES ${$(project.name:c)_headers} DESTINATION include)
 ########################################################################
 include_directories("${SOURCE_DIR}/src" "${SOURCE_DIR}/include")
 set ($(project.linkname)_sources
-.for class where !is_c_element_draft (class)
+.for class where !draft
     src/$(name:c).c
 .endfor
 )
-.if count (class, is_c_element_draft (class))
+.if count (class, draft)
 
 IF (WITH_DRAFTS)
 list(APPEND $(project.linkname)_sources
-.   for class where is_c_element_draft (class)
+.   for class where draft
     src/$(name:c).c
 .   endfor
 )
@@ -289,15 +289,15 @@ set(CLASSTEST_TIMEOUT 5 CACHE STRING "Timeout of the selftest of a class")
 set(TOTAL_TIMEOUT 20 CACHE STRING "Timout of the total testsuite")
 
 set(TEST_CLASSES
-.for class where !is_c_element_draft (class)
+.for class where !draft
     $(name:c)
 .endfor
 )
 
-.if count (class, is_c_element_draft (class))
+.if count (class, draft)
 IF (WITH_DRAFTS)
 list(APPEND TEST_CLASSES
-.   for class where is_c_element_draft (class)
+.   for class where draft
     $(name:c)
 .   endfor
 )
