@@ -125,28 +125,31 @@
     <bin name = "zproject_projects.gsl" />
     <bin name = "zproject_class_api.gsl" />
 
+    <!-- Mainline generation code -->
     <bin name = "zproject_skeletons.gsl" />
     <bin name = "zproject_bench.gsl" />
     <bin name = "zproject_class.gsl" />
     <bin name = "zproject_git.gsl" />
     <bin name = "zproject_valgrind.gsl" />
 
+    <!-- Targets -->
     <bin name = "zproject_android.gsl" />
     <bin name = "zproject_autotools.gsl" />
+    <bin name = "zproject_cmake.gsl" />
+    <bin name = "zproject_cygwin.gsl" />
     <bin name = "zproject_debian.gsl" />
+    <bin name = "zproject_docker.gsl" />
+    <bin name = "zproject_gyp.gsl" />
+    <bin name = "zproject_java.gsl" />
+    <bin name = "zproject_java_msvc.gsl" />
+    <bin name = "zproject_mingw32.gsl" />
+    <bin name = "zproject_nuget.gsl" />
     <bin name = "zproject_python.gsl" />
     <bin name = "zproject_qml.gsl" />
     <bin name = "zproject_qt.gsl" />
-    <bin name = "zproject_ruby.gsl" />
-    <bin name = "zproject_java.gsl" />
-    <bin name = "zproject_java_msvc.gsl" />
-    <bin name = "zproject_travis.gsl" />
-    <bin name = "zproject_cmake.gsl" />
-    <bin name = "zproject_cygwin.gsl" />
-    <bin name = "zproject_docker.gsl" />
-    <bin name = "zproject_mingw32.gsl" />
-    <bin name = "zproject_nuget.gsl" />
     <bin name = "zproject_redhat.gsl" />
+    <bin name = "zproject_ruby.gsl" />
+    <bin name = "zproject_travis.gsl" />
     <bin name = "zproject_vs2008.gsl" />
     <bin name = "zproject_vs20xx.gsl" />
     <bin name = "zproject_vs20xx_props.gsl" />

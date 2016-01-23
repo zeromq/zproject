@@ -23,20 +23,21 @@ myproject_SCRIPTS = \
     zproject_valgrind.gsl \
     zproject_android.gsl \
     zproject_autotools.gsl \
+    zproject_cmake.gsl \
+    zproject_cygwin.gsl \
     zproject_debian.gsl \
+    zproject_docker.gsl \
+    zproject_gyp.gsl \
+    zproject_java.gsl \
+    zproject_java_msvc.gsl \
+    zproject_mingw32.gsl \
+    zproject_nuget.gsl \
     zproject_python.gsl \
     zproject_qml.gsl \
     zproject_qt.gsl \
-    zproject_ruby.gsl \
-    zproject_java.gsl \
-    zproject_java_msvc.gsl \
-    zproject_travis.gsl \
-    zproject_cmake.gsl \
-    zproject_cygwin.gsl \
-    zproject_docker.gsl \
-    zproject_mingw32.gsl \
-    zproject_nuget.gsl \
     zproject_redhat.gsl \
+    zproject_ruby.gsl \
+    zproject_travis.gsl \
     zproject_vs2008.gsl \
     zproject_vs20xx.gsl \
     zproject_vs20xx_props.gsl \

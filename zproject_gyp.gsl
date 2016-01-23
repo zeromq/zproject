@@ -1,0 +1,82 @@
+#   Generate gyp build file for project
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+register_target ("gyp", "GYP build system (project.gyp)")
+
+.macro target_gyp
+.output "project.gyp"
+$(project.GENERATED_WARNING_HEADER:)
+
+#   gyp --depth=.
+{
+    'target_defaults': {
+        'default_configuration': 'Debug',
+        'configurations': {
+            'Debug': {
+                'defines': [ 'DEBUG', '_DEBUG' ],
+                'msvs_settings': {
+                    'VCCLCompilerTool': {
+                        'RuntimeLibrary': 1, # static debug
+                    },
+                },
+            },
+            'Release': {
+                'defines': [ 'NDEBUG' ],
+                'msvs_settings': {
+                    'VCCLCompilerTool': {
+                        'RuntimeLibrary': 0, # static release
+                    },
+                },
+            }
+        },
+        'msvs_settings': {
+            'VCLinkerTool': {
+                'GenerateDebugInformation': 'true',
+            },
+        },
+    },
+    'include_dirs': [
+        'include'
+    ],
+    'targets': [
+.if count (class)
+      {
+        'target_name': '$(project.libname)',
+        'type': 'static_library',
+        'sources': [
+.   for class by name
+            'src/$(name:c).c'$(last ()?? ""? ",")
+.   endfor
+        ]
+      },
+.endif
+.for main
+      {
+        'target_name': '$(name)',
+        'type': 'executable',
+        'sources': [
+            'src/$(name).c'
+        ],
+        'dependencies': [
+            '$(project.libname)'
+        ],
+        'libraries': [
+.   for project.use
+            '-l$(linkname)',
+.   endfor
+            '-lpthread'
+        ]
+      }$(last ()?? ""? ",")
+.endfor
+    ]
+}
+.endmacro
