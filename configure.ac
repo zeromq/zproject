@@ -271,24 +271,24 @@ if test "x$cross_compiling" = "xyes"; then
     gitmaster=yes
 else
     # enable draft API by default if we're in a git repository
-    # else disable it by default; then allow --with-draft=yes/no override
+    # else disable it by default; then allow --enable-drafts=yes/no override
     AC_CHECK_FILE(.git, [gitmaster=yes], [gitmaster=no])
 fi
 
-AC_ARG_WITH([drafts],
-    AS_HELP_STRING([--with-drafts],
+AC_ARG_ENABLE([drafts],
+    AS_HELP_STRING([--enable-drafts],
         [Build and install draft classes and methods [default=yes.]]),
-    [with_drafts=$withval],
-    [with_drafts=$gitmaster])
+    [enable_drafts=$withval],
+    [enable_drafts=$gitmaster])
 
-AM_CONDITIONAL([WITH_DRAFTS], [test x$with_drafts != xno])
+AM_CONDITIONAL([ENABLE_DRAFTS], [test x$enable_drafts != xno])
 
-if test "x$with_drafts" = "xyes"; then
-    AC_MSG_NOTICE([building draft, stable, and legacy API])
-    AC_DEFINE(WITH_DRAFTS, 1, [Build and install draft classes and methods.])
-    AC_SUBST(pkg_config_defines, "-DWITH_DRAFTS=1")
+if test "x$enable_drafts" = "xyes"; then
+    AC_MSG_NOTICE([Building stable and legacy API + draft API])
+    AC_DEFINE(MYPROJECT_BUILD_DRAFT_API, 1, [Provide draft classes and methods.])
+    AC_SUBST(pkg_config_defines, "-DMYPROJECT_BUILD_DRAFT_API=1")
 else
-    AC_MSG_NOTICE([building stable and legacy API (no drafts)])
+    AC_MSG_NOTICE([Building stable and legacy API (no draft API)])
     AC_SUBST(pkg_config_defines, "")
 fi
 

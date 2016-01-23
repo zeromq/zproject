@@ -13,6 +13,7 @@
 if !file.exists (".gitignore")
     echo "Generating initial .gitignore file"
     output ".gitignore"
+    >save.xml
     ># Object files
     >*.o
     >*.so
@@ -37,7 +38,6 @@ if !file.exists (".gitignore")
     for project.main
         >src/$(main.name)
     endfor
-
     >*.exe
     >*.out
     >*.app
@@ -77,6 +77,11 @@ if !file.exists (".gitignore")
     >cmake_install.cmake
     >install_manifest.txt
     >Testing/
+    >
+    ># GYP files
+    >project.Makefile
+    >*.target.mk
+    >out/
     >
     ># Android build results
     >builds/android/prefix
