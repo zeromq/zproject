@@ -354,15 +354,15 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 .   endif
 //  @interface
 //  Create a new $(class.c_name)
-$(PROJECT.PREFIX:c)_EXPORT $(class.c_name)_t *
+$(PROJECT.PREFIX)_EXPORT $(class.c_name)_t *
     $(class.c_name)_new (void);
 
 //  Destroy the $(class.c_name)
-$(PROJECT.PREFIX:c)_EXPORT void
+$(PROJECT.PREFIX)_EXPORT void
     $(class.c_name)_destroy ($(class.c_name)_t **self_p);
 
 //  Self test of this class
-$(PROJECT.PREFIX:c)_EXPORT void
+$(PROJECT.PREFIX)_EXPORT void
     $(class.c_name)_test (bool verbose);
 //  @end
 

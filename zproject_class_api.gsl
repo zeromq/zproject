@@ -422,7 +422,7 @@ endfunction
 # Construct the string for a actor declaration in a C header
 #
 function c_actor_declaration (method)
-    out =  "$(PROJECT.PREFIX:c)_EXPORT void\n"
+    out =  "$(PROJECT.PREFIX)_EXPORT void\n"
     out += "    $(actor.name:c) (zsock_t *pipe, void *args);"
     return out
 endfunction

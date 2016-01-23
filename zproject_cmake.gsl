@@ -34,27 +34,27 @@ foreach(which MAJOR MINOR PATCH)
     file(
         STRINGS
         "${SOURCE_DIR}/include/$(project.prefix)_library.h"
-        $(PROJECT.PREFIX:C)_VERSION_STRING REGEX
-        "#define $(PROJECT.PREFIX:C)_VERSION_${which}"
+        $(PROJECT.PREFIX)_VERSION_STRING REGEX
+        "#define $(PROJECT.PREFIX)_VERSION_${which}"
     )
     string(
         REGEX MATCH
-        "#define $(PROJECT.PREFIX:C)_VERSION_${which} ([0-9_]+)"
-        $(PROJECT.NAME:C)_REGEX_MATCH
-        "${$(PROJECT.PREFIX:C)_VERSION_STRING}"
+        "#define $(PROJECT.PREFIX)_VERSION_${which} ([0-9_]+)"
+        $(PROJECT.PREFIX)_REGEX_MATCH
+        "${$(PROJECT.PREFIX)_VERSION_STRING}"
     )
-    if (NOT $(PROJECT.NAME:C)_REGEX_MATCH)
+    if (NOT $(PROJECT.PREFIX)_REGEX_MATCH)
         message(
             FATAL_ERROR
-            "failed to parse $(PROJECT.PREFIX:C)_VERSION_${which} from $(project.header:)"
+            "failed to parse $(PROJECT.PREFIX)_VERSION_${which} from $(project.header:)"
         )
     endif()
-    set($(PROJECT.PREFIX:C)_${which}_VERSION ${CMAKE_MATCH_1})
+    set($(PROJECT.PREFIX)_${which}_VERSION ${CMAKE_MATCH_1})
 endforeach(which)
 
 set(
-    $(PROJECT.PREFIX:C)_VERSION
-    ${$(PROJECT.PREFIX:C)_MAJOR_VERSION}.${$(PROJECT.PREFIX:C)_MINOR_VERSION}.${$(PROJECT.PREFIX:C)_PATCH_VERSION}
+    $(PROJECT.PREFIX)_VERSION
+    ${$(PROJECT.PREFIX)_MAJOR_VERSION}.${$(PROJECT.PREFIX)_MINOR_VERSION}.${$(PROJECT.PREFIX)_PATCH_VERSION}
 )
 
 .endif
@@ -149,7 +149,7 @@ ENDIF ($(USE.PROJECT)_FOUND)
 ########################################################################
 # includes
 ########################################################################
-set ($(project.name:c)_headers
+set ($(project.prefix)_headers
 .if count (project.class)
     include/$(project.prefix)_library.h
 .   if file.exists ("include/$(project.prelude)")
@@ -175,7 +175,7 @@ set ($(project.name:c)_headers
 .if count (class, scope = "public" & draft)
 
 IF (ENABLE_DRAFTS)
-list(APPEND $(project.name)_headers
+list(APPEND $(project.prefix)_headers
 .   for class where scope = "public" & draft
     include/$(name:c).h
 .endfor
@@ -183,8 +183,8 @@ list(APPEND $(project.name)_headers
 ENDIF (ENABLE_DRAFTS)
 
 .   endif
-source_group ("Header Files" FILES ${$(project.name:c)_headers})
-install(FILES ${$(project.name:c)_headers} DESTINATION include)
+source_group ("Header Files" FILES ${$(project.prefix)_headers})
+install(FILES ${$(project.prefix)_headers} DESTINATION include)
 
 .if count (project.class)
 ########################################################################
@@ -235,7 +235,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists-local.txt) # Optional project
 ########################################################################
 # pkgconfig
 ########################################################################
-set(VERSION "${$(PROJECT.PREFIX:C)_VERSION}")
+set(VERSION "${$(PROJECT.PREFIX)_VERSION}")
 set(prefix "${CMAKE_INSTALL_PREFIX}")
 set(exec_prefix "\\${prefix}")
 set(libdir "\\${prefix}/lib${LIB_SUFFIX}")
@@ -319,7 +319,7 @@ endforeach(TEST_CLASS)
 ########################################################################
 # summary
 ########################################################################
-message(STATUS "version: ${$(PROJECT.PREFIX:C)_VERSION}")
+message(STATUS "version: ${$(PROJECT.PREFIX)_VERSION}")
 message(STATUS "install: ${CMAKE_INSTALL_PREFIX}")
 
 $(project.GENERATED_WARNING_HEADER:)

@@ -271,7 +271,7 @@ function print_class_header (class)
     >
     >#include "$(project.QtName).h"
     >
-    >class QT_$(PROJECT.PREFIX:c)_EXPORT $(class.QtName:) : public QObject
+    >class QT_$(PROJECT.PREFIX)_EXPORT $(class.QtName:) : public QObject
     >{
     >    Q_OBJECT
     >public:
@@ -435,27 +435,27 @@ endfunction
 /*
 $(project.GENERATED_WARNING_HEADER:)
 */
-#ifndef Q_$(PROJECT.PREFIX:c)_H
-#define Q_$(PROJECT.PREFIX:c)_H
+#ifndef Q_$(PROJECT.PREFIX)_H
+#define Q_$(PROJECT.PREFIX)_H
 
 #include <QObject>
 #include <QString>
 #include <$(project.header:)>
 
 #if defined(Q_OS_WIN)
-#  if !defined(QT_$(PROJECT.PREFIX:c)_EXPORT) && !defined(QT_$(PROJECT.PREFIX:c)_IMPORT)
-#    define QT_$(PROJECT.PREFIX:c)_EXPORT
-#  elif defined(QT_$(PROJECT.PREFIX:c)_IMPORT)
-#    if defined(QT_$(PROJECT.PREFIX:c)_EXPORT)
-#      undef QT_$(PROJECT.PREFIX:c)_EXPORT
+#  if !defined(QT_$(PROJECT.PREFIX)_EXPORT) && !defined(QT_$(PROJECT.PREFIX)_IMPORT)
+#    define QT_$(PROJECT.PREFIX)_EXPORT
+#  elif defined(QT_$(PROJECT.PREFIX)_IMPORT)
+#    if defined(QT_$(PROJECT.PREFIX)_EXPORT)
+#      undef QT_$(PROJECT.PREFIX)_EXPORT
 #    endif
-#    define QT_$(PROJECT.PREFIX:c)_EXPORT __declspec(dllimport)
-#  elif defined(QT_$(PROJECT.PREFIX:c)_EXPORT)
-#    undef QT_$(PROJECT.PREFIX:c)_EXPORT
-#    define QT_$(PROJECT.PREFIX:c)_EXPORT __declspec(dllexport)
+#    define QT_$(PROJECT.PREFIX)_EXPORT __declspec(dllimport)
+#  elif defined(QT_$(PROJECT.PREFIX)_EXPORT)
+#    undef QT_$(PROJECT.PREFIX)_EXPORT
+#    define QT_$(PROJECT.PREFIX)_EXPORT __declspec(dllexport)
 #  endif
 #else
-#  define QT_$(PROJECT.PREFIX:c)_EXPORT
+#  define QT_$(PROJECT.PREFIX)_EXPORT
 #endif
 
 //  Opaque class structures to allow forward references
@@ -474,7 +474,7 @@ class $(class.QtName:);
 #include "$(class.qtname).h"
 .endfor
 
-#endif //  Q_$(PROJECT.PREFIX:c)_H
+#endif //  Q_$(PROJECT.PREFIX)_H
 /*
 $(project.GENERATED_WARNING_HEADER:)
 */
@@ -498,14 +498,14 @@ $(PROJECT.QTNAME)_LIBRARY = yes
 $(project.GENERATED_WARNING_HEADER:)
 exists(config.pri):infile(config.pri, $(PROJECT.QTNAME)_LIBRARY, yes): CONFIG += $(project.QtName)-uselib
 TEMPLATE += fakelib
-Q$(PROJECT.PREFIX:c)_LIBNAME = $(project.QtName)
+Q$(PROJECT.PREFIX)_LIBNAME = $(project.QtName)
 CONFIG(debug, debug|release) {
-    mac:Q$(PROJECT.PREFIX:c)_LIBNAME = $$member(Q$(PROJECT.PREFIX:c)_LIBNAME, 0)_debug
-    else:win32:Q$(PROJECT.PREFIX:c)_LIBNAME = $$member(Q$(PROJECT.PREFIX:c)_LIBNAME, 0)d
+    mac:Q$(PROJECT.PREFIX)_LIBNAME = $$member(Q$(PROJECT.PREFIX)_LIBNAME, 0)_debug
+    else:win32:Q$(PROJECT.PREFIX)_LIBNAME = $$member(Q$(PROJECT.PREFIX)_LIBNAME, 0)d
 }
 TEMPLATE -= fakelib
-Q$(PROJECT.PREFIX:c)_LIBDIR = $$PWD/lib
-unix:$(project.QtName)-uselib:!$(project.QtName)-buildlib:QMAKE_RPATHDIR += $$Q$(PROJECT.PREFIX:c)_LIBDIR
+Q$(PROJECT.PREFIX)_LIBDIR = $$PWD/lib
+unix:$(project.QtName)-uselib:!$(project.QtName)-buildlib:QMAKE_RPATHDIR += $$Q$(PROJECT.PREFIX)_LIBDIR
 $(project.GENERATED_WARNING_HEADER:)
 .close
 .###############################################################################
@@ -520,7 +520,7 @@ INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
 $(project.QtName)-uselib:!$(project.QtName)-buildlib {
-    LIBS += -L$$Q$(PROJECT.PREFIX:c)_LIBDIR -l$$Q$(PROJECT.PREFIX:c)_LIBNAME
+    LIBS += -L$$Q$(PROJECT.PREFIX)_LIBDIR -l$$Q$(PROJECT.PREFIX)_LIBNAME
 } else {
     HEADERS       += \\
                      $$PWD/$(project.QtName).h \\
@@ -557,8 +557,8 @@ $(project.QtName)-uselib:!$(project.QtName)-buildlib {
 }
 
 win32 {
-    $(project.QtName)-buildlib:shared:DEFINES += QT_$(PROJECT.PREFIX:c)_EXPORT
-    else:$(project.QtName)-uselib:DEFINES += QT_$(PROJECT.PREFIX:c)_IMPORT
+    $(project.QtName)-buildlib:shared:DEFINES += QT_$(PROJECT.PREFIX)_EXPORT
+    else:$(project.QtName)-uselib:DEFINES += QT_$(PROJECT.PREFIX)_IMPORT
 }
 $(project.GENERATED_WARNING_HEADER:)
 .close
@@ -580,8 +580,8 @@ win32|mac:!wince*:!win32-msvc:!macx-xcode:CONFIG += debug_and_release build_all
 
 include(../src/$(project.QtName).pri)
 
-TARGET = $$Q$(PROJECT.PREFIX:c)_LIBNAME
-DESTDIR = $$Q$(PROJECT.PREFIX:c)_LIBDIR
+TARGET = $$Q$(PROJECT.PREFIX)_LIBNAME
+DESTDIR = $$Q$(PROJECT.PREFIX)_LIBDIR
 
 .for use where use.optional = "0"
 !packagesExist ($(use.libname)): error ("cannot link with -l$(use.linkname), install $(use.libname).")
@@ -595,7 +595,7 @@ LIBS += \\
 
 win32 {
     DLLDESTDIR = $$[QT_INSTALL_BINS]
-    QMAKE_DISTCLEAN += $$[QT_INSTALL_BINS]\\$${Q$(PROJECT.PREFIX:c)_LIBNAME}.dll
+    QMAKE_DISTCLEAN += $$[QT_INSTALL_BINS]\\$${Q$(PROJECT.PREFIX)_LIBNAME}.dll
 }
 unix {
     isEmpty(PREFIX): PREFIX = /usr/local

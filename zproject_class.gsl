@@ -49,8 +49,8 @@ $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
-#ifndef $(PROJECT.PREFIX:C)_LIBRARY_H_INCLUDED
-#define $(PROJECT.PREFIX:C)_LIBRARY_H_INCLUDED
+#ifndef $(PROJECT.PREFIX)_LIBRARY_H_INCLUDED
+#define $(PROJECT.PREFIX)_LIBRARY_H_INCLUDED
 
 //  Set up environment for the application
 .if file.exists ("include/$(project.prelude)")
@@ -70,25 +70,25 @@ $(project.GENERATED_WARNING_HEADER:)
 
 //  $(PROJECT.PREFIX) version macros for compile-time API detection
 
-#define $(PROJECT.PREFIX:c)_VERSION_MAJOR $(project->version.major)
-#define $(PROJECT.PREFIX:c)_VERSION_MINOR $(project->version.minor)
-#define $(PROJECT.PREFIX:c)_VERSION_PATCH $(project->version.patch)
+#define $(PROJECT.PREFIX)_VERSION_MAJOR $(project->version.major)
+#define $(PROJECT.PREFIX)_VERSION_MINOR $(project->version.minor)
+#define $(PROJECT.PREFIX)_VERSION_PATCH $(project->version.patch)
 
-#define $(PROJECT.PREFIX:c)_MAKE_VERSION(major, minor, patch) \\
+#define $(PROJECT.PREFIX)_MAKE_VERSION(major, minor, patch) \\
     ((major) * 10000 + (minor) * 100 + (patch))
-#define $(PROJECT.PREFIX:c)_VERSION \\
-    $(PROJECT.PREFIX:c)_MAKE_VERSION($(PROJECT.PREFIX:c)_VERSION_MAJOR, $(PROJECT.PREFIX:c)_VERSION_MINOR, $(PROJECT.PREFIX:c)_VERSION_PATCH)
+#define $(PROJECT.PREFIX)_VERSION \\
+    $(PROJECT.PREFIX)_MAKE_VERSION($(PROJECT.PREFIX)_VERSION_MAJOR, $(PROJECT.PREFIX)_VERSION_MINOR, $(PROJECT.PREFIX)_VERSION_PATCH)
 
 #if defined (__WINDOWS__)
-#   if defined $(PROJECT.LIBNAME:c)_STATIC
-#       define $(PROJECT.PREFIX:c)_EXPORT
-#   elif defined $(PROJECT.LIBNAME:c)_EXPORTS
-#       define $(PROJECT.PREFIX:c)_EXPORT __declspec(dllexport)
+#   if defined $(PROJECT.LIBNAME)_STATIC
+#       define $(PROJECT.PREFIX)_EXPORT
+#   elif defined $(PROJECT.LIBNAME)_EXPORTS
+#       define $(PROJECT.PREFIX)_EXPORT __declspec(dllexport)
 #   else
-#       define $(PROJECT.PREFIX:c)_EXPORT __declspec(dllimport)
+#       define $(PROJECT.PREFIX)_EXPORT __declspec(dllimport)
 #   endif
 #else
-#   define $(PROJECT.PREFIX:c)_EXPORT
+#   define $(PROJECT.PREFIX)_EXPORT
 #endif
 
 //  Opaque class structures to allow forward references
@@ -313,8 +313,8 @@ $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
-#ifndef $(PROJECT.PREFIX:c)_CLASSES_H_INCLUDED
-#define $(PROJECT.PREFIX:c)_CLASSES_H_INCLUDED
+#ifndef $(PROJECT.PREFIX)_CLASSES_H_INCLUDED
+#define $(PROJECT.PREFIX)_CLASSES_H_INCLUDED
 
 //  Platform definitions, must come first
 #include "platform.h"
