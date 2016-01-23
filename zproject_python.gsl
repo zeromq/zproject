@@ -80,6 +80,18 @@ function resolve_python_container (container)
         my.container.python_type = "c_ubyte"
     elsif my.container.type = "integer" | my.container.type = "file_size" | my.container.type = "time"
         my.container.python_type = "c_int"
+    elsif my.container.type = "number"
+        if my.container.size = "1"
+            my.container.python_type = "c_ubyte"
+        elsif my.container.size = "2"
+            my.container.python_type = "c_short"
+        elsif my.container.size = "4"
+            my.container.python_type = "c_int"
+        elsif my.container.size = "8"
+            my.container.python_type = "c_long"
+        else
+            abort("ERROR: Number type $(my.container.name) has invalid size $(my.container.size)")
+        endif
     elsif my.container.type = "size"
         my.container.python_type = "c_size_t"
     elsif my.container.type = "real"
