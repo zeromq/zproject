@@ -287,6 +287,8 @@ function resolve_c_class (class)
         new method to my.class
             method.name = "test"
             method.singleton = 1
+            method.state = "stable"
+            method.draft = 0
             method.description = "Self test of this class."
             new argument to method
                 argument.name = "verbose"
