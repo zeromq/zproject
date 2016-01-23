@@ -100,12 +100,12 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 .for project.class where scope = "public" & draft
 .   if first ()
 //  Draft classes are by default not built stable releases
-#ifdef WITH_DRAFTS
+#ifdef ENABLE_DRAFTS
 .   endif
 typedef struct _$(class.c_name)_t $(class.c_name)_t;
 #define $(CLASS.C_NAME)_T_DEFINED
 .   if last ()
-#endif // WITH_DRAFTS
+#endif // ENABLE_DRAFTS
 .   endif
 .endfor
 
@@ -118,12 +118,12 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 .endfor
 .for constant where scope = "public" & draft
 .   if first ()
-#ifdef WITH_DRAFTS
+#ifdef ENABLE_DRAFTS
 .   endif
 #define $(CONSTANT.NAME)\
                             $(constant.value)  //  $(constant.?'')
 .   if last ()
-#endif // WITH_DRAFTS
+#endif // ENABLE_DRAFTS
 .   endif
 .endfor
 
@@ -136,11 +136,11 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 .endfor
 .for class where scope = "public" & class.c_name <> "$(project.name)" & draft
 .   if first ()
-#ifdef WITH_DRAFTS
+#ifdef ENABLE_DRAFTS
 .   endif
 #include "$(class.c_name).h"
 .   if last ()
-#endif // WITH_DRAFTS
+#endif // ENABLE_DRAFTS
 .   endif
 .endfor
 
@@ -184,11 +184,11 @@ all_tests [] = {
 .endfor
 .for class where draft
 .   if first ()
-#ifdef WITH_DRAFTS
+#ifdef ENABLE_DRAFTS
 .   endif
     { "$(class.c_name)", $(class.c_name)_test },
 .   if last ()
-#endif // WITH_DRAFTS
+#endif // ENABLE_DRAFTS
 .   endif
 .endfor
     {0, 0}          //  Sentinel
@@ -457,11 +457,11 @@ $(HEADER_FILE_PREFIX:)\
 .   endif
 .   generate_interface (0)
 .   if count (class., count.draft ?= 1)
-#ifdef (WITH_DRAFTS)
+#ifdef ENABLE_DRAFTS
 .   endif
 .   generate_interface (1)
 .   if count (class., count.draft ?= 1)
-#endif // WITH_DRAFTS
+#endif // ENABLE_DRAFTS
 .   endif
 //  @end
 $(HEADER_FILE_SUFFIX:)\

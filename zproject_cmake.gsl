@@ -62,14 +62,14 @@ set(
 # options
 ########################################################################
 if (EXISTS ".git")
-    OPTION (WITH_DRAFTS "Build and install draft classes and methods" ON)
+    OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" ON)
 else ()
-    OPTION (WITH_DRAFTS "Build and install draft classes and methods" OFF)
+    OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" OFF)
 endif ()
 
-IF (WITH_DRAFTS)
-    ADD_DEFINITIONS (-DWITH_DRAFTS)
-ENDIF (WITH_DRAFTS)
+IF (ENABLE_DRAFTS)
+    ADD_DEFINITIONS (-DENABLE_DRAFTS)
+ENDIF (ENABLE_DRAFTS)
 
 ########################################################################
 # platform.h
@@ -174,13 +174,13 @@ set ($(project.name:c)_headers
 )
 .if count (class, scope = "public" & draft)
 
-IF (WITH_DRAFTS)
+IF (ENABLE_DRAFTS)
 list(APPEND $(project.name)_headers
 .   for class where scope = "public" & draft
     include/$(name:c).h
 .endfor
 )
-ENDIF (WITH_DRAFTS)
+ENDIF (ENABLE_DRAFTS)
 
 .   endif
 source_group ("Header Files" FILES ${$(project.name:c)_headers})
@@ -198,13 +198,13 @@ set ($(project.linkname)_sources
 )
 .if count (class, draft)
 
-IF (WITH_DRAFTS)
+IF (ENABLE_DRAFTS)
 list(APPEND $(project.linkname)_sources
 .   for class where draft
     src/$(name:c).c
 .   endfor
 )
-ENDIF (WITH_DRAFTS)
+ENDIF (ENABLE_DRAFTS)
 
 .endif
 source_group("Source Files" FILES ${$(project.linkname)_sources})
@@ -240,11 +240,11 @@ set(prefix "${CMAKE_INSTALL_PREFIX}")
 set(exec_prefix "\\${prefix}")
 set(libdir "\\${prefix}/lib${LIB_SUFFIX}")
 set(includedir "\\${prefix}/include")
-IF (WITH_DRAFTS)
-set(pkg_config_defines "-DWITH_DRAFTS=1")
-ELSE (WITH_DRAFTS)
+IF (ENABLE_DRAFTS)
+set(pkg_config_defines "-DENABLE_DRAFTS=1")
+ELSE (ENABLE_DRAFTS)
 set(pkg_config_defines "")
-ENDIF (WITH_DRAFTS)
+ENDIF (ENABLE_DRAFTS)
 configure_file(
     "${SOURCE_DIR}/src/$(project.libname).pc.in"
     "${SOURCE_DIR}/src/$(project.libname).pc"
@@ -295,13 +295,13 @@ set(TEST_CLASSES
 )
 
 .if count (class, draft)
-IF (WITH_DRAFTS)
+IF (ENABLE_DRAFTS)
 list(APPEND TEST_CLASSES
 .   for class where draft
     $(name:c)
 .   endfor
 )
-ENDIF (WITH_DRAFTS)
+ENDIF (ENABLE_DRAFTS)
 
 .endif
 foreach(TEST_CLASS ${TEST_CLASSES})
