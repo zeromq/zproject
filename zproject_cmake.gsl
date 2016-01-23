@@ -68,7 +68,7 @@ else ()
 endif ()
 
 IF (ENABLE_DRAFTS)
-    ADD_DEFINITIONS (-D$(PROJECT.PREFIX)_ENABLE_DRAFTS)
+    ADD_DEFINITIONS (-D$(PROJECT.PREFIX)_BUILD_DRAFT_API)
 ENDIF (ENABLE_DRAFTS)
 
 ########################################################################
@@ -241,7 +241,7 @@ set (exec_prefix "\\${prefix}")
 set (libdir "\\${prefix}/lib${LIB_SUFFIX}")
 set (includedir "\\${prefix}/include")
 IF (ENABLE_DRAFTS)
-    set (pkg_config_defines "-D$(PROJECT.PREFIX)_ENABLE_DRAFTS=1")
+    set (pkg_config_defines "-D$(PROJECT.PREFIX)_BUILD_DRAFT_API=1")
 ELSE (ENABLE_DRAFTS)
     set (pkg_config_defines "")
 ENDIF (ENABLE_DRAFTS)
