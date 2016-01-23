@@ -106,11 +106,11 @@ PV_MAJOR=`echo $PACKAGE_VERSION | cut -d . -f 1`
 PV_MINOR=`echo $PACKAGE_VERSION | cut -d . -f 2`
 PV_PATCH=`echo $PACKAGE_VERSION | cut -d . -f 3`
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MAJOR],[$PV_MAJOR],
-    [$(PROJECT.NAME:c) major version])
+    [$(PROJECT.PREFIX:c) major version])
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MINOR],[$PV_MINOR],
-    [$(PROJECT.NAME:c) minor version])
+    [$(PROJECT.PREFIX:c) minor version])
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_PATCH],[$PV_PATCH],
-    [$(PROJECT.NAME:c) patchlevel])
+    [$(PROJECT.PREFIX:c) patchlevel])
 # This lets us use PACKAGE_VERSION in Makefiles
 AC_SUBST(PACKAGE_VERSION)
 
@@ -126,7 +126,7 @@ LTVER="$(project->version.major):$(project->version.minor):0"
 AC_SUBST(LTVER)
 
 # Capture c flags
-$(PROJECT.NAME:c)_ORIG_CFLAGS="${CFLAGS:-none}"
+$(PROJECT.PREFIX:c)_ORIG_CFLAGS="${CFLAGS:-none}"
 
 # Checks for programs
 AC_PROG_CC
@@ -149,13 +149,13 @@ AX_PROJECT_LOCAL_HOOK # Optional project-local hook (acinclude.m4)
 # Code coverage
 AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
                   [With GCC Code Coverage reporting.])],
-                  [$(PROJECT.NAME:c)_GCOV="$withval"])
+                  [$(PROJECT.PREFIX:c)_GCOV="$withval"])
 
-if test "x${$(PROJECT.NAME:c)_GCOV}" == "xyes"; then
+if test "x${$(PROJECT.PREFIX:c)_GCOV}" == "xyes"; then
     CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
 
-    if test "x${$(PROJECT.NAME:c)_ORIG_CFLAGS}" != "xnone"; then
-        CFLAGS="${CFLAGS} ${$(PROJECT.NAME:c)_ORIG_CFLAGS}"
+    if test "x${$(PROJECT.PREFIX:c)_ORIG_CFLAGS}" != "xnone"; then
+        CFLAGS="${CFLAGS} ${$(PROJECT.PREFIX:c)_ORIG_CFLAGS}"
     fi
     AM_CONDITIONAL(WITH_GCOV, true)
 else
@@ -282,12 +282,12 @@ case "${host_os}" in
     *linux*)
         # Define on Linux to enable all library features
         CPPFLAGS="-D_GNU_SOURCE -DLINUX $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_LINUX, 1, [Have Linux OS])
+        AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_LINUX, 1, [Have Linux OS])
         $(project.name:c)_on_linux="yes"
 
         case "${host_os}" in
             *android*)
-                AC_DEFINE($(PROJECT.NAME:c)_HAVE_ANDROID, 1, [Have Android OS])
+                AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_ANDROID, 1, [Have Android OS])
                 $(project.name:c)_on_android="yes"
             ;;
         esac
@@ -295,43 +295,43 @@ case "${host_os}" in
     *solaris*)
         # Define on Solaris to enable all library features
         CPPFLAGS="-D_PTHREADS $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_SOLARIS, 1, [Have Solaris OS])
+        AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_SOLARIS, 1, [Have Solaris OS])
         CFLAGS="${CFLAGS} -lsocket -lssp"
         ;;
     *freebsd*)
         # Define on FreeBSD to enable all library features
         CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_FREEBSD, 1, [Have FreeBSD OS])
+        AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_FREEBSD, 1, [Have FreeBSD OS])
         ;;
     *darwin*)
         # Define on Darwin to enable all library features
         CPPFLAGS="-D_DARWIN_C_SOURCE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_OSX, 1, [Have DarwinOSX OS])
+        AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_OSX, 1, [Have DarwinOSX OS])
         ;;
     *netbsd*)
         # Define on NetBSD to enable all library features
         CPPFLAGS="-D_NETBSD_SOURCE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_NETBSD, 1, [Have NetBSD OS])
+        AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_NETBSD, 1, [Have NetBSD OS])
         ;;
     *openbsd*)
         # Define on OpenBSD to enable all library features
         CPPFLAGS="-D_BSD_SOURCE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_OPENBSD, 1, [Have OpenBSD OS])
+        AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_OPENBSD, 1, [Have OpenBSD OS])
         ;;
     *nto-qnx*)
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
+        AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
         ;;
     *aix*)
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_AIX, 1, [Have AIX OS])
+        AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_AIX, 1, [Have AIX OS])
         ;;
     *hpux*)
         # Define on HP-UX to enable all library features
         CPPFLAGS="-D_POSIX_C_SOURCE=200112L"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_HPUX, 1, [Have HPUX OS])
+        AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_HPUX, 1, [Have HPUX OS])
         ;;
     *mingw32*)
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_WINDOWS, 1, [Have Windows OS])
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_MINGW32, 1, [Have MinGW32])
+        AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_WINDOWS, 1, [Have Windows OS])
+        AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
         $(project.name:c)_on_mingw32="yes"
         $(project.name:c)_install_man="no"
@@ -339,7 +339,7 @@ case "${host_os}" in
     *cygwin*)
         # Define on Cygwin to enable all library features
         CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_CYGWIN, 1, [Have Cygwin])
+        AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_CYGWIN, 1, [Have Cygwin])
         $(project.name:c)_on_cygwin="yes"
         ;;
     gnu*)
@@ -347,7 +347,7 @@ case "${host_os}" in
         if test "x$GXX" = "xyes"; then
             CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         fi
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_GNU, 1, [Have GNU/Hurd OS])
+        AC_DEFINE($(PROJECT.PREFIX:c)_HAVE_GNU, 1, [Have GNU/Hurd OS])
         $(project.name:c)_on_gnu="yes"
         ;;
     *)
