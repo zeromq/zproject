@@ -469,7 +469,7 @@ $(HEADER_FILE_PREFIX:)\
 //  is provided in stable builds.
 .   if count (class.method, method.state = "draft")
 //  This class has draft methods, which may change over time. They are not
-//  in stable releases, by default. Use --enable-draft-api to enable.
+//  in stable releases, by default. Use --enable-drafts to enable.
 .   endif
 .   if count (class.method, method.state = "legacy")
 //  This class has legacy methods, which will be removed over time. You
