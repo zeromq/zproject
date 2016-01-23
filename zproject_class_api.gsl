@@ -41,27 +41,18 @@ for project.class where defined (class.api)
 endfor
 
 #
-# Parse and set the API state of an element
+# Set the API state and draft attribute of an element
 #
-function initialise_c_element_state (elem, default)
-    if !defined (my.elem.state)
-        my.elem.state = my.default
-    elsif (my.elem.state <> "draft") & (my.elem.state <> "stable") & (my.elem.state <> "legacy")
-        abort "E: invalid state: $(my.elem.state)"
-    endif
-endfunction
-
-#
-# Parse and set the API state of an element
-# We don't support state = "retired"
-#
-function is_c_element_draft (elem)
-    if my.elem.private ?= 1 \
-    |  my.elem.state ?= "stable" \
-    |  my.elem.state ?= "legacy"
-        return 0
+function set_state (element, default)
+    my.element.state ?= my.default
+    if my.element.state = "stable" \
+    |  my.element.state = "legacy" \
+    |  my.element.private ?= 1
+        my.element.draft = 0
+    elsif my.element.state = "draft"
+        my.element.draft = 1
     else
-        return 1
+        abort "E: $(name (element)).state must be draft/stable/legacy (is '$(my.element.state)')"
     endif
 endfunction
 
@@ -276,7 +267,7 @@ function resolve_c_class (class)
     my.class.c_name ?= "$(my.class.name:c)"
     my.class.description ?= "$(string.trim (my.class.?""):left)"
 
-    initialise_c_element_state (my.class, "draft")
+    set_state (my.class, "draft")
 
     # Includes of XML files
     for my.class.include
@@ -307,7 +298,7 @@ function resolve_c_class (class)
     # Resolve details of each method
     for my.class.callback_type as method
         resolve_c_method (method, "")
-        initialise_c_element_state (method, my.class.state)
+        set_state (method, my.class.state)
     endfor
 
     # Resolve details of an actor
@@ -318,7 +309,7 @@ function resolve_c_class (class)
 
     for my.class.method
         resolve_c_method (method, "")
-        initialise_c_element_state (method, my.class.state)
+        set_state (method, my.class.state)
         # Test if a variadic function has a sibling that accepts a va_list.
         # By convention these sibling methods prepend a 'v' to the method name.
         # This information might be used by the various language bindings.
@@ -339,7 +330,7 @@ function resolve_c_class (class)
             move ret before method->return # Move to first slot
         endnew
         resolve_c_method (method, "Create a new $(my.class.c_name).")
-        initialise_c_element_state (method, my.class.state)
+        set_state (method, my.class.state)
     endfor
 
     for my.class.destructor as method
@@ -356,7 +347,7 @@ function resolve_c_class (class)
             move arg before method->argument # Move to first slot
         endnew
         resolve_c_method (method, "Destroy the $(my.class.c_name).")
-        initialise_c_element_state (method, my.class.state)
+        set_state (method, my.class.state)
     endfor
 
     # Resolve details of each constant
@@ -366,13 +357,13 @@ function resolve_c_class (class)
         endif
         constant.description ?= "$(string.trim (constant.?""):left)"
         resolve_c_container (constant)
-        initialise_c_element_state (constant, my.class.state)
+        set_state (constant, my.class.state)
     endfor
 
     # Resolve details of each constant
     for my.class.enum
         enum.description ?= "$(string.trim (enum.?""):left)"
-        initialise_c_element_state (enum, my.class.state)
+        set_state (enum, my.class.state)
     endfor
 endfunction
 
@@ -431,7 +422,7 @@ endfunction
 # Construct the string for a actor declaration in a C header
 #
 function c_actor_declaration (method)
-    out =  "$(PROJECT.PREFIX:c)_EXPORT void\n"
+    out =  "$(PROJECT.PREFIX)_EXPORT void\n"
     out += "    $(actor.name:c) (zsock_t *pipe, void *args);"
     return out
 endfunction

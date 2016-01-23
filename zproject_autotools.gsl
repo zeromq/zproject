@@ -106,11 +106,11 @@ PV_MAJOR=`echo $PACKAGE_VERSION | cut -d . -f 1`
 PV_MINOR=`echo $PACKAGE_VERSION | cut -d . -f 2`
 PV_PATCH=`echo $PACKAGE_VERSION | cut -d . -f 3`
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MAJOR],[$PV_MAJOR],
-    [$(PROJECT.NAME:c) major version])
+    [$(PROJECT.PREFIX) major version])
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MINOR],[$PV_MINOR],
-    [$(PROJECT.NAME:c) minor version])
+    [$(PROJECT.PREFIX) minor version])
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_PATCH],[$PV_PATCH],
-    [$(PROJECT.NAME:c) patchlevel])
+    [$(PROJECT.PREFIX) patchlevel])
 # This lets us use PACKAGE_VERSION in Makefiles
 AC_SUBST(PACKAGE_VERSION)
 
@@ -126,7 +126,7 @@ LTVER="$(project->version.major):$(project->version.minor):0"
 AC_SUBST(LTVER)
 
 # Capture c flags
-$(PROJECT.NAME:c)_ORIG_CFLAGS="${CFLAGS:-none}"
+$(PROJECT.PREFIX)_ORIG_CFLAGS="${CFLAGS:-none}"
 
 # Checks for programs
 AC_PROG_CC
@@ -149,13 +149,13 @@ AX_PROJECT_LOCAL_HOOK # Optional project-local hook (acinclude.m4)
 # Code coverage
 AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
                   [With GCC Code Coverage reporting.])],
-                  [$(PROJECT.NAME:c)_GCOV="$withval"])
+                  [$(PROJECT.PREFIX)_GCOV="$withval"])
 
-if test "x${$(PROJECT.NAME:c)_GCOV}" == "xyes"; then
+if test "x${$(PROJECT.PREFIX)_GCOV}" == "xyes"; then
     CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
 
-    if test "x${$(PROJECT.NAME:c)_ORIG_CFLAGS}" != "xnone"; then
-        CFLAGS="${CFLAGS} ${$(PROJECT.NAME:c)_ORIG_CFLAGS}"
+    if test "x${$(PROJECT.PREFIX)_ORIG_CFLAGS}" != "xnone"; then
+        CFLAGS="${CFLAGS} ${$(PROJECT.PREFIX)_ORIG_CFLAGS}"
     fi
     AM_CONDITIONAL(WITH_GCOV, true)
 else
@@ -282,12 +282,12 @@ case "${host_os}" in
     *linux*)
         # Define on Linux to enable all library features
         CPPFLAGS="-D_GNU_SOURCE -DLINUX $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_LINUX, 1, [Have Linux OS])
+        AC_DEFINE($(PROJECT.PREFIX)_HAVE_LINUX, 1, [Have Linux OS])
         $(project.name:c)_on_linux="yes"
 
         case "${host_os}" in
             *android*)
-                AC_DEFINE($(PROJECT.NAME:c)_HAVE_ANDROID, 1, [Have Android OS])
+                AC_DEFINE($(PROJECT.PREFIX)_HAVE_ANDROID, 1, [Have Android OS])
                 $(project.name:c)_on_android="yes"
             ;;
         esac
@@ -295,43 +295,43 @@ case "${host_os}" in
     *solaris*)
         # Define on Solaris to enable all library features
         CPPFLAGS="-D_PTHREADS $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_SOLARIS, 1, [Have Solaris OS])
+        AC_DEFINE($(PROJECT.PREFIX)_HAVE_SOLARIS, 1, [Have Solaris OS])
         CFLAGS="${CFLAGS} -lsocket -lssp"
         ;;
     *freebsd*)
         # Define on FreeBSD to enable all library features
         CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_FREEBSD, 1, [Have FreeBSD OS])
+        AC_DEFINE($(PROJECT.PREFIX)_HAVE_FREEBSD, 1, [Have FreeBSD OS])
         ;;
     *darwin*)
         # Define on Darwin to enable all library features
         CPPFLAGS="-D_DARWIN_C_SOURCE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_OSX, 1, [Have DarwinOSX OS])
+        AC_DEFINE($(PROJECT.PREFIX)_HAVE_OSX, 1, [Have DarwinOSX OS])
         ;;
     *netbsd*)
         # Define on NetBSD to enable all library features
         CPPFLAGS="-D_NETBSD_SOURCE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_NETBSD, 1, [Have NetBSD OS])
+        AC_DEFINE($(PROJECT.PREFIX)_HAVE_NETBSD, 1, [Have NetBSD OS])
         ;;
     *openbsd*)
         # Define on OpenBSD to enable all library features
         CPPFLAGS="-D_BSD_SOURCE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_OPENBSD, 1, [Have OpenBSD OS])
+        AC_DEFINE($(PROJECT.PREFIX)_HAVE_OPENBSD, 1, [Have OpenBSD OS])
         ;;
     *nto-qnx*)
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
+        AC_DEFINE($(PROJECT.PREFIX)_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
         ;;
     *aix*)
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_AIX, 1, [Have AIX OS])
+        AC_DEFINE($(PROJECT.PREFIX)_HAVE_AIX, 1, [Have AIX OS])
         ;;
     *hpux*)
         # Define on HP-UX to enable all library features
         CPPFLAGS="-D_POSIX_C_SOURCE=200112L"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_HPUX, 1, [Have HPUX OS])
+        AC_DEFINE($(PROJECT.PREFIX)_HAVE_HPUX, 1, [Have HPUX OS])
         ;;
     *mingw32*)
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_WINDOWS, 1, [Have Windows OS])
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_MINGW32, 1, [Have MinGW32])
+        AC_DEFINE($(PROJECT.PREFIX)_HAVE_WINDOWS, 1, [Have Windows OS])
+        AC_DEFINE($(PROJECT.PREFIX)_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
         $(project.name:c)_on_mingw32="yes"
         $(project.name:c)_install_man="no"
@@ -339,7 +339,7 @@ case "${host_os}" in
     *cygwin*)
         # Define on Cygwin to enable all library features
         CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_CYGWIN, 1, [Have Cygwin])
+        AC_DEFINE($(PROJECT.PREFIX)_HAVE_CYGWIN, 1, [Have Cygwin])
         $(project.name:c)_on_cygwin="yes"
         ;;
     gnu*)
@@ -347,7 +347,7 @@ case "${host_os}" in
         if test "x$GXX" = "xyes"; then
             CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         fi
-        AC_DEFINE($(PROJECT.NAME:c)_HAVE_GNU, 1, [Have GNU/Hurd OS])
+        AC_DEFINE($(PROJECT.PREFIX)_HAVE_GNU, 1, [Have GNU/Hurd OS])
         $(project.name:c)_on_gnu="yes"
         ;;
     *)
@@ -397,20 +397,20 @@ AM_CONDITIONAL(ON_GNU, test "x$$(project.name:c)_on_gnu" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$$(project.name:c)_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$$(project.name:c)_build_doc" = "xyes")
 
-.for project.main
+.for project.main where test?0 = 0
 # Check for $(name) intent
-AC_ARG_WITH([$(name)],
-    AS_HELP_STRING([--with-$(name)],
+AC_ARG_ENABLE([$(name)],
+    AS_HELP_STRING([--enable-$(name)],
 .   if scope = "public"
-        [Compile and install the $(name) program [default=yes].]),
+        [Compile and install '$(name)' [default=yes].]),
 .   else
-        [Compile the $(name) program [default=yes].]),
+        [Compile '$(name)' in src [default=yes].]),
 .   endif
-    [with_$(name:c)=$withval],
-    [with_$(name:c)=yes])
+    [enable_$(name:c)=$enableval],
+    [enable_$(name:c)=yes])
 
-AM_CONDITIONAL([WITH_$(NAME:c)], [test x$with_$(name:c) != xno])
-AM_COND_IF([WITH_$(NAME:c)], [AC_MSG_NOTICE([WITH_$(NAME:c) defined])])
+AM_CONDITIONAL([ENABLE_$(NAME:c)], [test x$enable_$(name:c) != xno])
+AM_COND_IF([ENABLE_$(NAME:c)], [AC_MSG_NOTICE([ENABLE_$(NAME:c) defined])])
 
 .endfor
 # Checks for library functions.
@@ -474,24 +474,24 @@ if test "x$cross_compiling" = "xyes"; then
     gitmaster=yes
 else
     # enable draft API by default if we're in a git repository
-    # else disable it by default; then allow --with-draft=yes/no override
+    # else disable it by default; then allow --enable-drafts=yes/no override
     AC_CHECK_FILE(.git, [gitmaster=yes], [gitmaster=no])
 fi
 
-AC_ARG_WITH([drafts],
-    AS_HELP_STRING([--with-drafts],
+AC_ARG_ENABLE([drafts],
+    AS_HELP_STRING([--enable-drafts],
         [Build and install draft classes and methods [default=yes.]]),
-    [with_drafts=$withval],
-    [with_drafts=$gitmaster])
+    [enable_drafts=$withval],
+    [enable_drafts=$gitmaster])
 
-AM_CONDITIONAL([WITH_DRAFTS], [test x$with_drafts != xno])
+AM_CONDITIONAL([ENABLE_DRAFTS], [test x$enable_drafts != xno])
 
-if test "x$with_drafts" = "xyes"; then
-    AC_MSG_NOTICE([building draft, stable, and legacy API])
-    AC_DEFINE(WITH_DRAFTS, 1, [Build and install draft classes and methods.])
-    AC_SUBST(pkg_config_defines, "-DWITH_DRAFTS=1")
+if test "x$enable_drafts" = "xyes"; then
+    AC_MSG_NOTICE([Building stable and legacy API + draft API])
+    AC_DEFINE($(PROJECT.PREFIX)_BUILD_DRAFT_API, 1, [Build and install draft classes and methods.])
+    AC_SUBST(pkg_config_defines, "-D$(PROJECT.PREFIX)_BUILD_DRAFT_API=1")
 else
-    AC_MSG_NOTICE([building stable and legacy API (no drafts)])
+    AC_MSG_NOTICE([Building stable and legacy API (no drafts)])
     AC_SUBST(pkg_config_defines, "")
 fi
 
@@ -635,15 +635,15 @@ include_HEADERS = \\
 .for header where scope = "public"
     include/$(name:c).h \\
 .endfor
-.for class where scope = "public" & !is_c_element_draft (class)
+.for class where scope = "public" & !draft
     include/$(name:c).h \\
 .endfor
     include/$(project.prefix)_library.h
 
-.if count (class, scope = "public" & is_c_element_draft (class))
-if WITH_DRAFTS
+.if count (class, scope = "public" & draft)
+if ENABLE_DRAFTS
 include_HEADERS += \\
-.   for class where scope = "public" & is_c_element_draft (class)
+.   for class where scope = "public" & draft
 .      if !last()
     include/$(name:c).h \\
 .      else
@@ -653,8 +653,8 @@ include_HEADERS += \\
 endif
 
 .endif
-src_$(project.libname:c)_la_SOURCES = \\
-.for class where !is_c_element_draft (class)
+src_$(project.libname)_la_SOURCES = \\
+.for class where !draft
 .   if file.exists ("src/$(name:c).cc")
     src/$(name:c).cc \\
 .   else
@@ -666,10 +666,10 @@ src_$(project.libname:c)_la_SOURCES = \\
 .endfor
     src/platform.h
 
-.if count (class, is_c_element_draft (class))
-if WITH_DRAFTS
-src_$(project.libname:c)_la_SOURCES += \\
-.   for class where is_c_element_draft (class)
+.if count (class, draft)
+if ENABLE_DRAFTS
+src_$(project.libname)_la_SOURCES += \\
+.   for class where draft
 .      if !last()
 .         if file.exists ("src/$(name:c).cc")
     src/$(name:c).cc \\
@@ -687,49 +687,51 @@ src_$(project.libname:c)_la_SOURCES += \\
 endif
 
 .endif
-src_$(project.libname:c)_la_CPPFLAGS = ${AM_CPPFLAGS}
+src_$(project.libname)_la_CPPFLAGS = ${AM_CPPFLAGS}
 .if project.use_cxx
-src_$(project.libname:c)_la_CXXFLAGS = ${AM_CXXFLAGS}
+src_$(project.libname)_la_CXXFLAGS = ${AM_CXXFLAGS}
 .endif
 
-src_$(project.libname:c)_la_LDFLAGS = \\
+src_$(project.libname)_la_LDFLAGS = \\
     -version-info @LTVER@ \\
     \$(LIBTOOL_EXTRA_LDFLAGS)
 
 .if file.exists ("src/$(project.libname).sym")
 if HAVE_LD_VERSION_SCRIPT
-src_$(project.libname:c)_la_LDFLAGS += \\
+src_$(project.libname)_la_LDFLAGS += \\
     -Wl,--version-script=\$(top_srcdir)/src/$(project.libname).sym
 else
-src_$(project.libname:c)_la_LDFLAGS += \\
+src_$(project.libname)_la_LDFLAGS += \\
     -export-symbols \$(top_srcdir)/src/$(project.libname).sym
 endif
 
 .endif
 if ON_MINGW
-src_$(project.libname:c)_la_LDFLAGS += \\
+src_$(project.libname)_la_LDFLAGS += \\
     -no-undefined \\
     -avoid-version
 endif
 
 if ON_CYGWIN
-src_$(project.libname:c)_la_LDFLAGS += \\
+src_$(project.libname)_la_LDFLAGS += \\
     -no-undefined \\
     -avoid-version
 endif
 
-src_$(project.libname:c)_la_LIBADD = ${project_libs}
+src_$(project.libname)_la_LIBADD = ${project_libs}
 
 .endif
 .for project.main
-if WITH_$(NAME:c)
 .   if main.test ?= 1
 check_PROGRAMS += src/$(main.name)
 noinst_PROGRAMS += src/$(main.name)
-.   elsif main.scope = "public"
-bin_PROGRAMS += src/$(main.name)
 .   else
+if ENABLE_$(NAME:c)
+.       if main.scope = "public"
+bin_PROGRAMS += src/$(main.name)
+.       else
 noinst_PROGRAMS += src/$(main.name)
+.       endif
 .   endif
 src_$(main.name:c)_CPPFLAGS = ${AM_CPPFLAGS}
 src_$(main.name:c)_LDADD = ${program_libs}
@@ -764,9 +766,11 @@ endif #WITH_SYSTEMD
 .   for extra where extra.cond ?<> "with_systemd"
 src_$(main.name:c)_$(extra.path:c)_$(extra.name:c)dir = $(extra.path)
 src_$(main.name:c)_$(extra.path:c)_$(extra.name:c)_DATA = src/$(extra.name)
-.   endfor
 
-endif #WITH_$(NAME:c)
+.   endfor
+.   if main.test?0 = 0
+endif #ENABLE_$(NAME:c)
+.   endif
 .endfor
 .for bin
 .   if first()
