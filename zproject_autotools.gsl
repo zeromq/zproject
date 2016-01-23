@@ -488,8 +488,8 @@ AM_CONDITIONAL([ENABLE_DRAFTS], [test x$enable_drafts != xno])
 
 if test "x$enable_drafts" = "xyes"; then
     AC_MSG_NOTICE([ENABLE_DRAFTS set: building draft, stable, and legacy API])
-    AC_DEFINE(ENABLE_DRAFTS, 1, [Build and install draft classes and methods.])
-    AC_SUBST(pkg_config_defines, "-DENABLE_DRAFTS=1")
+    AC_DEFINE($(PROJECT.PREFIX)_ENABLE_DRAFTS, 1, [Build and install draft classes and methods.])
+    AC_SUBST(pkg_config_defines, "-D$(PROJECT.PREFIX)_ENABLE_DRAFTS=1")
 else
     AC_MSG_NOTICE([ENABLE_DRAFTS off: building stable and legacy API (no drafts)])
     AC_SUBST(pkg_config_defines, "")

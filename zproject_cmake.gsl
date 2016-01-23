@@ -68,7 +68,7 @@ else ()
 endif ()
 
 IF (ENABLE_DRAFTS)
-    ADD_DEFINITIONS (-DENABLE_DRAFTS)
+    ADD_DEFINITIONS (-D$(PROJECT.PREFIX)_ENABLE_DRAFTS)
 ENDIF (ENABLE_DRAFTS)
 
 ########################################################################
@@ -175,14 +175,14 @@ set ($(project.prefix)_headers
 .if count (class, scope = "public" & draft)
 
 IF (ENABLE_DRAFTS)
-list(APPEND $(project.prefix)_headers
+    list(APPEND $(project.prefix)_headers
 .   for class where scope = "public" & draft
-    include/$(name:c).h
-.endfor
-)
+        include/$(name:c).h
+.   endfor
+    )
 ENDIF (ENABLE_DRAFTS)
-
 .   endif
+
 source_group ("Header Files" FILES ${$(project.prefix)_headers})
 install(FILES ${$(project.prefix)_headers} DESTINATION include)
 
@@ -199,11 +199,11 @@ set ($(project.linkname)_sources
 .if count (class, draft)
 
 IF (ENABLE_DRAFTS)
-list(APPEND $(project.linkname)_sources
+    list (APPEND $(project.linkname)_sources
 .   for class where draft
-    src/$(name:c).c
+        src/$(name:c).c
 .   endfor
-)
+    )
 ENDIF (ENABLE_DRAFTS)
 
 .endif
@@ -235,15 +235,15 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists-local.txt) # Optional project
 ########################################################################
 # pkgconfig
 ########################################################################
-set(VERSION "${$(PROJECT.PREFIX)_VERSION}")
-set(prefix "${CMAKE_INSTALL_PREFIX}")
-set(exec_prefix "\\${prefix}")
-set(libdir "\\${prefix}/lib${LIB_SUFFIX}")
-set(includedir "\\${prefix}/include")
+set (VERSION "${$(PROJECT.PREFIX)_VERSION}")
+set (prefix "${CMAKE_INSTALL_PREFIX}")
+set (exec_prefix "\\${prefix}")
+set (libdir "\\${prefix}/lib${LIB_SUFFIX}")
+set (includedir "\\${prefix}/include")
 IF (ENABLE_DRAFTS)
-set(pkg_config_defines "-DENABLE_DRAFTS=1")
+    set (pkg_config_defines "-D$(PROJECT.PREFIX)_ENABLE_DRAFTS=1")
 ELSE (ENABLE_DRAFTS)
-set(pkg_config_defines "")
+    set (pkg_config_defines "")
 ENDIF (ENABLE_DRAFTS)
 configure_file(
     "${SOURCE_DIR}/src/$(project.libname).pc.in"
@@ -296,11 +296,11 @@ set(TEST_CLASSES
 
 .if count (class, draft)
 IF (ENABLE_DRAFTS)
-list(APPEND TEST_CLASSES
+    list (APPEND TEST_CLASSES
 .   for class where draft
     $(name:c)
 .   endfor
-)
+    )
 ENDIF (ENABLE_DRAFTS)
 
 .endif
