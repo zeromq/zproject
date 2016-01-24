@@ -397,7 +397,7 @@ AM_CONDITIONAL(ON_GNU, test "x$$(project.name:c)_on_gnu" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$$(project.name:c)_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$$(project.name:c)_build_doc" = "xyes")
 
-.for project.main where test?0 = 0
+.for project.main
 # Check for $(name) intent
 AC_ARG_ENABLE([$(name)],
     AS_HELP_STRING([--enable-$(name)],
