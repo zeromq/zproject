@@ -504,6 +504,8 @@ CONFIG(debug, debug|release) {
     else:win32:Q$(PROJECT.PREFIX)_LIBNAME = $$member(Q$(PROJECT.PREFIX)_LIBNAME, 0)d
 }
 TEMPLATE -= fakelib
+CONFIG += link_pkgconfig
+PKGCONFIG += lib$(project.name)
 Q$(PROJECT.PREFIX)_LIBDIR = $$PWD/lib
 unix:$(project.QtName)-uselib:!$(project.QtName)-buildlib:QMAKE_RPATHDIR += $$Q$(PROJECT.PREFIX)_LIBDIR
 $(project.GENERATED_WARNING_HEADER:)
