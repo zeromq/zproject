@@ -56,32 +56,6 @@ fi
 
 $(project.GENERATED_WARNING_HEADER:)
 .chmod_x ("autogen.sh")
-.output "version.sh"
-#!/usr/bin/env sh
-$(project.GENERATED_WARNING_HEADER:)
-#
-# This script extracts the version from the project header file
-#
-project=$1
-appendix="_library"
-if [ ! -f include/$project$appendix.h ]; then
-    echo $(project->version.major).$(project->version.minor).$(project->version.patch) | tr -d '\\n'
-    exit 0
-fi
-MAJOR=`egrep '^#define .*_VERSION_MAJOR +[0-9]+$' include/$project$appendix.h`
-MINOR=`egrep '^#define .*_VERSION_MINOR +[0-9]+$' include/$project$appendix.h`
-PATCH=`egrep '^#define .*_VERSION_PATCH +[0-9]+$' include/$project$appendix.h`
-if [ -z "$MAJOR" -o -z "$MINOR" -o -z "$PATCH" ]; then
-    echo "version.sh: error: could not extract version from include/$project$appendix.h" 1>&2
-    exit 1
-fi
-MAJOR=`echo $MAJOR | awk '{ print $3 }'`
-MINOR=`echo $MINOR | awk '{ print $3 }'`
-PATCH=`echo $PATCH | awk '{ print $3 }'`
-echo $MAJOR.$MINOR.$PATCH | tr -d '\\n'
-
-$(project.GENERATED_WARNING_HEADER:)
-.chmod_x ("version.sh")
 .output "configure.ac"
 $(project.GENERATED_WARNING_HEADER:)
 
@@ -89,11 +63,7 @@ $(project.GENERATED_WARNING_HEADER:)
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
 #
-# The version number is extracted from include/$(project.header:) using
-# the version.sh script. Hence, it should be updated there.
-# The version in git should reflect the *next* version planned.
-#
-AC_INIT([$(project.name)],[m4_esyscmd([./version.sh $(project.header:)])],[$(project.email)])
+AC_INIT([$(project.name)],[$(->version.major).$(->version.minor).$(->version.patch)],[$(project.email)])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
@@ -591,9 +561,8 @@ EXTRA_DIST = \\
     README.md \\
 .endif
 .if file.exists ("CONTRIBUTING.md")
-    CONTRIBUTING.md \\
+    CONTRIBUTING.md
 .endif
-    version.sh
 
 include \$(srcdir)/src/Makemodule.am
 .if file.exists ("src/Makemodule-local.am")
