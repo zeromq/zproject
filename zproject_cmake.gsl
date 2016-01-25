@@ -287,8 +287,8 @@ endforeach(TEST_CLASS)
 ########################################################################
 # summary
 ########################################################################
-message(STATUS "version: ${VERSION}")
-message(STATUS "install: ${CMAKE_INSTALL_PREFIX}")
+message (STATUS "*** Version number: ${VERSION}")
+message (STATUS "*** Install target: ${CMAKE_INSTALL_PREFIX}")
 
 $(project.GENERATED_WARNING_HEADER:)
 .
