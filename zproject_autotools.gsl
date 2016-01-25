@@ -804,13 +804,13 @@ src:
 code:
 .   endif
 .   if defined (model.script)
-\tcd $\(srcdir)/src; gsl -topdir:.. -script:$(script:) \
+\tcd $\(srcdir)/src; gsl -topdir:.. -zproject:1 -script:$(script:) \
 . for model.param
 -$(param.name):$(param.value) \
 . endfor
 -q $(name:c).xml
 .   else
-\tcd $\(srcdir)/src; gsl -q $(name).xml
+\tcd $\(srcdir)/src; gsl -topdir:.. -zproject:1 -q $(name).xml
 .   endif
 .   if last ()
 
