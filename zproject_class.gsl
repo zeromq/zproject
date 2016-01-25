@@ -412,13 +412,6 @@ $(c_actor_declaration (actor):)
 $(c_method_declaration (method):)
 
 .   endfor
-.-
-.   for class.variable where draft = my.draft
-//  $(variable.description:no,block)
-$(PROJECT.PREFIX:c)_EXPORT extern volatile $(variable.c_type)
-    $(class.name:c)_verbose;
-.   endfor
-
 .endmacro
 .template 0
 #

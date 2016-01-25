@@ -367,12 +367,6 @@ function resolve_c_class (class)
         enum.description ?= "$(string.trim (enum.?""):left)"
         set_state (enum, my.class.state)
     endfor
-
-    for my.class.variable
-        variable.description ?= "$(string.trim (variable.?""):left)"
-        resolve_c_container (variable)
-        set_state (variable, my.class.state)
-    endfor
 endfunction
 
 #   Resolve all dependent data types for one container and load their API file
