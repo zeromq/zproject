@@ -297,8 +297,6 @@ function resolve_c_class (class)
         new method to my.class
             method.name = "test"
             method.singleton = 1
-            method.state = "stable"
-            method.draft = 0
             method.description = "Self test of this class."
             new argument to method
                 argument.name = "verbose"
@@ -529,6 +527,7 @@ for project.main
     else
         main.source = "src/$(main.name:c).c"
     endif
+    skeleton_main_source ()
 endfor
 
 for project.actor
@@ -542,6 +541,8 @@ for project.actor
     else
         actor.source = "src/$(actor.name:c).c"
     endif
+    skeleton_actor_header ()
+    skeleton_actor_source ()
 endfor
 
 for project.class
