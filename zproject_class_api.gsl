@@ -256,6 +256,16 @@ function resolve_c_method (method, default_description)
     endfor
 endfunction
 
+# Resolve C constant
+function resolve_c_constant (constant, default_state)
+    if defined (my.constant.type) & (my.constant.type = 'string')
+        my.constant.value = '"' + my.constant.value + '"'
+    endif
+    my.constant.description ?= "$(string.trim (my.constant.?""):left)"
+    resolve_c_container (my.constant)
+    set_state (my.constant, my.default_state)
+endfunction
+
 #   Resolve missing or implicit details in a C class model
 #
 #   Here, "class" refers to a <class/> entity in the model XML.
@@ -354,12 +364,7 @@ function resolve_c_class (class)
 
     # Resolve details of each constant
     for my.class.constant
-        if defined (constant.type) & (constant.type = 'string')
-            constant.value = '"' + constant.value + '"'
-        endif
-        constant.description ?= "$(string.trim (constant.?""):left)"
-        resolve_c_container (constant)
-        set_state (constant, my.class.state)
+        resolve_c_constant (constant, my.class.state)
     endfor
 
     # Resolve details of each constant
