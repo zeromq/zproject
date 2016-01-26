@@ -28,6 +28,7 @@ myproject_SCRIPTS = \
     zproject_debian.gsl \
     zproject_docker.gsl \
     zproject_gyp.gsl \
+    zproject_java_lib.gsl \
     zproject_java.gsl \
     zproject_java_msvc.gsl \
     zproject_mingw32.gsl \

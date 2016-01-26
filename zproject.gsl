@@ -87,6 +87,17 @@ function register_target (target, detail)
     endnew
 endfunction
 
+function _build_target (target, detail)
+    if count(root.tmp_project_copy) > 0
+        delete root->tmp_project_copy
+    endif
+    copy project to root as tmp_project_copy
+    echo "Building $(my.detail:) ($(my.target))"
+    scope root->tmp_project_copy as project
+        target_$(my.target:c) ()
+    endscope
+endfunction
+
 function build_target (target)
     if my.target = "?"
         echo "Valid targets are:"
@@ -97,18 +108,12 @@ function build_target (target)
     elsif my.target = "*"
         for project.handler by target
             if handler.target <> "autotools" & handler.target <> "cmake"
-                echo "Building $(detail:) ($(handler.target))"
-                scope project
-                    target_$(handler.target:c) ()
-                endscope
+                _build_target(handler.target, detail)
             endif
         endfor
     else
         for project.handler where handler.target = my.target
-            echo "Building $(detail:) ($(handler.target))"
-            scope project
-                target_$(handler.target:c) ()
-            endscope
+            _build_target(handler.target, detail)
         else
             echo "$(my.target) is not a valid target; valid targets are:"
             for project.handler by target
@@ -144,6 +149,7 @@ gsl from "zproject_cygwin.gsl"
 gsl from "zproject_debian.gsl"
 gsl from "zproject_docker.gsl"
 gsl from "zproject_gyp.gsl"
+gsl from "zproject_java_lib.gsl"
 gsl from "zproject_java.gsl"
 gsl from "zproject_java_msvc.gsl"
 gsl from "zproject_mingw32.gsl"
