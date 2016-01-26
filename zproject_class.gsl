@@ -109,6 +109,9 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 .   endif
 .endfor
 
+.for constant
+.   resolve_c_constant (constant, "draft")
+.endfor
 .if count (constant, scope = "public")
 //  Public constants
 .endif
