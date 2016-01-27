@@ -453,18 +453,3 @@ $(class.c_name)_test (bool verbose)
 .   close
 . endif
 .endmacro
-
-
-for main
-    skeleton_main_source ()
-endfor
-
-for actor
-    skeleton_actor_header ()
-    skeleton_actor_source ()
-endfor
-
-for class
-    skeleton_class_header ()
-    skeleton_class_source ()
-endfor

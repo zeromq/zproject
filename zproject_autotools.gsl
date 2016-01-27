@@ -56,32 +56,6 @@ fi
 
 $(project.GENERATED_WARNING_HEADER:)
 .chmod_x ("autogen.sh")
-.output "version.sh"
-#!/usr/bin/env sh
-$(project.GENERATED_WARNING_HEADER:)
-#
-# This script extracts the version from the project header file
-#
-project=$1
-appendix="_library"
-if [ ! -f include/$project$appendix.h ]; then
-    echo $(project->version.major).$(project->version.minor).$(project->version.patch) | tr -d '\\n'
-    exit 0
-fi
-MAJOR=`egrep '^#define .*_VERSION_MAJOR +[0-9]+$' include/$project$appendix.h`
-MINOR=`egrep '^#define .*_VERSION_MINOR +[0-9]+$' include/$project$appendix.h`
-PATCH=`egrep '^#define .*_VERSION_PATCH +[0-9]+$' include/$project$appendix.h`
-if [ -z "$MAJOR" -o -z "$MINOR" -o -z "$PATCH" ]; then
-    echo "version.sh: error: could not extract version from include/$project$appendix.h" 1>&2
-    exit 1
-fi
-MAJOR=`echo $MAJOR | awk '{ print $3 }'`
-MINOR=`echo $MINOR | awk '{ print $3 }'`
-PATCH=`echo $PATCH | awk '{ print $3 }'`
-echo $MAJOR.$MINOR.$PATCH | tr -d '\\n'
-
-$(project.GENERATED_WARNING_HEADER:)
-.chmod_x ("version.sh")
 .output "configure.ac"
 $(project.GENERATED_WARNING_HEADER:)
 
@@ -89,11 +63,7 @@ $(project.GENERATED_WARNING_HEADER:)
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
 #
-# The version number is extracted from include/$(project.header:) using
-# the version.sh script. Hence, it should be updated there.
-# The version in git should reflect the *next* version planned.
-#
-AC_INIT([$(project.name)],[m4_esyscmd([./version.sh $(project.header:)])],[$(project.email)])
+AC_INIT([$(project.name)],[$(->version.major).$(->version.minor).$(->version.patch)],[$(project.email)])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
@@ -591,9 +561,8 @@ EXTRA_DIST = \\
     README.md \\
 .endif
 .if file.exists ("CONTRIBUTING.md")
-    CONTRIBUTING.md \\
+    CONTRIBUTING.md
 .endif
-    version.sh
 
 include \$(srcdir)/src/Makemodule.am
 .if file.exists ("src/Makemodule-local.am")
@@ -644,14 +613,9 @@ include_HEADERS = \\
 if ENABLE_DRAFTS
 include_HEADERS += \\
 .   for class where scope = "public" & draft
-.      if !last()
-    include/$(name:c).h \\
-.      else
-    include/$(name:c).h
-.      endif
+    include/$(name:c).h$(last ()?? "\n"? " \\")
 .   endfor
 endif
-
 .endif
 src_$(project.libname)_la_SOURCES = \\
 .for class where !draft
@@ -670,19 +634,11 @@ src_$(project.libname)_la_SOURCES = \\
 if ENABLE_DRAFTS
 src_$(project.libname)_la_SOURCES += \\
 .   for class where draft
-.      if !last()
-.         if file.exists ("src/$(name:c).cc")
-    src/$(name:c).cc \\
-.         else
-    src/$(name:c).c \\
-.         endif
-.      else
-.         if file.exists ("src/$(name:c).cc")
-    src/$(name:c).cc
-.         else
-    src/$(name:c).c
-.         endif
-.      endif
+.       if file.exists ("src/$(name:c).cc")
+    src/$(name:c).cc$(last ()?? "\n"? " \\")
+.       else
+    src/$(name:c).c$(last ()?? "\n"? " \\")
+.       endif
 .   endfor
 endif
 
@@ -722,16 +678,14 @@ src_$(project.libname)_la_LIBADD = ${project_libs}
 
 .endif
 .for project.main
+if ENABLE_$(NAME:c)
 .   if main.test ?= 1
 check_PROGRAMS += src/$(main.name)
 noinst_PROGRAMS += src/$(main.name)
-.   else
-if ENABLE_$(NAME:c)
-.       if main.scope = "public"
+.   elsif main.scope = "public"
 bin_PROGRAMS += src/$(main.name)
-.       else
+.   else
 noinst_PROGRAMS += src/$(main.name)
-.       endif
 .   endif
 src_$(main.name:c)_CPPFLAGS = ${AM_CPPFLAGS}
 src_$(main.name:c)_LDADD = ${program_libs}
@@ -740,7 +694,12 @@ src_$(name:c)_SOURCES = src/$(name).cc
 .   else
 src_$(name:c)_SOURCES = src/$(name).c
 .   endif
+.#
+.#  Systemd stuff (I'd _really_ like to get rid of this/PH)
+.   if count (main, count.service ?= 1 | count.services ?= 1) \
+     | count (extra, count.cond ?= "with_systemd")
 if WITH_SYSTEMD
+.   endif
 .   if main.service ?= 1 | main.services ?= 1
 src_$(main.name:c)_servicedir = @prefix@/lib/systemd/system
 .   if ! (main.no_config ?= 1)
@@ -761,45 +720,34 @@ src_$(main.name:c)_service_DATA = src/$(main.name)@.service
 src_$(main.name:c)_$(extra.type:c)dir = $(extra.path)
 src_$(main.name:c)_$(extra.type:c)_DATA = src/$(extra.name)
 .   endfor
+.   if count (main, count.service ?= 1 | count.services ?= 1) \
+     | count (extra, count.cond ?= "with_systemd")
 endif #WITH_SYSTEMD
-
+.   endif
 .   for extra where extra.cond ?<> "with_systemd"
 src_$(main.name:c)_$(extra.path:c)_$(extra.name:c)dir = $(extra.path)
 src_$(main.name:c)_$(extra.path:c)_$(extra.name:c)_DATA = src/$(extra.name)
-
 .   endfor
-.   if main.test?0 = 0
 endif #ENABLE_$(NAME:c)
-.   endif
+
 .endfor
 .for bin
-.   if first()
-
+.   if first ()
 # Install data into /usr/local/bin
 $(project.name:c)dir = @bindir@
 $(project.name:c)_SCRIPTS = \\
 .   endif
-.   if !last()
-    $(bin.name) \\
-.   else
-    $(bin.name)
-.   endif
+    $(bin.name)$(last ()?? "\n"? " \\")
 .endfor
 .for service
-.   if first()
-
+.   if first ()
 $(project.name:c)_servicesdir = @prefix@/lib/systemd/system
 $(project.name:c)_services_DATA = \\
 .   endif
-.   if !last()
-    src/$(service.name).service \\
-.   else
-    src/$(service.name).service
-.   endif
+    src/$(service.name).service$(last ()?? "\n"? " \\")
 .endfor
-
 .for class where defined (class.api)
-.   if first()
+.   if first ()
 # Install api files into /usr/local/share/zproject
 apidir = @datadir@/zproject/$(project.name)
 dist_api_DATA = \\
@@ -808,13 +756,8 @@ dist_api_DATA = \\
 .   for class.include
     api/$(include.filename) \\
 .   endfor
-.   if !last ()
-    $(class.api) \\
-.   else
-    $(class.api)
-.   endif
+    $(class.api)$(last ()?? "\n"? " \\")
 .endfor
-
 .if count (project.class)
 # define custom target for all products of /src
 src:
@@ -822,24 +765,26 @@ src:
 \tsrc/$(main.name) \\
 .   endfor
 \tsrc/$(project.libname).la
+
 .endif
 .for model
 .   if first ()
-
 # Produce generated code from models in the src directory
 code:
 .   endif
 .   if defined (model.script)
-\tcd $\(srcdir)/src; gsl -topdir:.. -script:$(script:) \
+\tcd $\(srcdir)/src; gsl -topdir:.. -zproject:1 -script:$(script:) \
 . for model.param
 -$(param.name):$(param.value) \
 . endfor
 -q $(name:c).xml
 .   else
-\tcd $\(srcdir)/src; gsl -q $(name).xml
+\tcd $\(srcdir)/src; gsl -topdir:.. -zproject:1 -q $(name).xml
+.   endif
+.   if last ()
+
 .   endif
 .endfor
-
 check-local: src/$(project.prefix)_selftest
 \t$\(LIBTOOL) --mode=execute $\(srcdir)/src/$(project.prefix)_selftest
 
@@ -967,7 +912,7 @@ $(use.libname)\
 .       if (use.min_version <> '0.0.0')
  >= $(use.min_version)\
 .       endif
-.       if !last()
+.       if !last ()
  \
 .       endif
 .   endfor

@@ -105,7 +105,9 @@ function build_target (target)
             echo "    $(target)\
                     $(detail:)"
         endfor
-    elsif my.target = "*"
+    elsif my.target = "-"   # No targets
+        echo "Building without targets"
+    elsif my.target = "*"   # All targets
         for project.handler by target
             if handler.target <> "autotools" & handler.target <> "cmake"
                 _build_target(handler.target, detail)
@@ -127,6 +129,7 @@ endfunction
 #  These scripts must be run first to resolve missing or
 #  implicit details in the model before code generation.
 gsl from "zproject_projects.gsl"
+gsl from "zproject_skeletons.gsl"
 gsl from "zproject_class_api.gsl"
 if switches.save ?= 1
     project.save ("save.xml")
@@ -136,7 +139,6 @@ endif
 gsl from "zproject_class.gsl"
 
 #   Always run these, in any order
-gsl from "zproject_skeletons.gsl"
 gsl from "zproject_bench.gsl"
 gsl from "zproject_git.gsl"
 gsl from "zproject_valgrind.gsl"

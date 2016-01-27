@@ -26,38 +26,6 @@ enable_testing()
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
-.if count (project.class)
-########################################################################
-# determine version
-########################################################################
-foreach(which MAJOR MINOR PATCH)
-    file(
-        STRINGS
-        "${SOURCE_DIR}/include/$(project.prefix)_library.h"
-        $(PROJECT.PREFIX)_VERSION_STRING REGEX
-        "#define $(PROJECT.PREFIX)_VERSION_${which}"
-    )
-    string(
-        REGEX MATCH
-        "#define $(PROJECT.PREFIX)_VERSION_${which} ([0-9_]+)"
-        $(PROJECT.PREFIX)_REGEX_MATCH
-        "${$(PROJECT.PREFIX)_VERSION_STRING}"
-    )
-    if (NOT $(PROJECT.PREFIX)_REGEX_MATCH)
-        message(
-            FATAL_ERROR
-            "failed to parse $(PROJECT.PREFIX)_VERSION_${which} from $(project.header:)"
-        )
-    endif()
-    set($(PROJECT.PREFIX)_${which}_VERSION ${CMAKE_MATCH_1})
-endforeach(which)
-
-set(
-    $(PROJECT.PREFIX)_VERSION
-    ${$(PROJECT.PREFIX)_MAJOR_VERSION}.${$(PROJECT.PREFIX)_MINOR_VERSION}.${$(PROJECT.PREFIX)_PATCH_VERSION}
-)
-
-.endif
 ########################################################################
 # options
 ########################################################################
@@ -235,7 +203,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists-local.txt) # Optional project
 ########################################################################
 # pkgconfig
 ########################################################################
-set (VERSION "${$(PROJECT.PREFIX)_VERSION}")
+set (VERSION "$(->version.major).$(->version.minor).$(->version.patch)")
 set (prefix "${CMAKE_INSTALL_PREFIX}")
 set (exec_prefix "\\${prefix}")
 set (libdir "\\${prefix}/lib${LIB_SUFFIX}")
@@ -319,8 +287,8 @@ endforeach(TEST_CLASS)
 ########################################################################
 # summary
 ########################################################################
-message(STATUS "version: ${$(PROJECT.PREFIX)_VERSION}")
-message(STATUS "install: ${CMAKE_INSTALL_PREFIX}")
+message (STATUS "*** Version number: ${VERSION}")
+message (STATUS "*** Install target: ${CMAKE_INSTALL_PREFIX}")
 
 $(project.GENERATED_WARNING_HEADER:)
 .
