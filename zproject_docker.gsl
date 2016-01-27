@@ -26,7 +26,7 @@ RUN chmod 0440 /etc/sudoers.d/zmq
 
 USER zmq
 
-.for use where optional = 0
+.for use 
 WORKDIR /home/zmq
 RUN git clone $(use.repository).git
 WORKDIR /home/zmq/$(use.project)
@@ -40,12 +40,15 @@ RUN sudo ldconfig
 WORKDIR /home/zmq
 RUN git clone git://github.com/zeromq/$(project.name:c).git
 WORKDIR /home/zmq/$(project.name:c)
-RUN mkdir build
-WORKDIR /home/zmq/$(project.name:c)/build
-RUN cmake ..
+RUN ./autogen.sh
+RUN ./configure
 RUN make
 RUN sudo make install
 RUN sudo ldconfig
+.if file.exists ("Dockerfile.in")
+
+$(file.slurp ("Dockerfile.in"))
+.endif
 .endmacro
 
 function target_docker
