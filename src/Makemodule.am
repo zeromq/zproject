@@ -34,6 +34,7 @@ myproject_SCRIPTS = \
     zproject_mingw32.gsl \
     zproject_nuget.gsl \
     zproject_python.gsl \
+    zproject_python_cffi.gsl \
     zproject_qml.gsl \
     zproject_qt.gsl \
     zproject_redhat.gsl \

@@ -145,6 +145,7 @@
     <bin name = "zproject_mingw32.gsl" />
     <bin name = "zproject_nuget.gsl" />
     <bin name = "zproject_python.gsl" />
+    <bin name = "zproject_python_cffi.gsl" />
     <bin name = "zproject_qml.gsl" />
     <bin name = "zproject_qt.gsl" />
     <bin name = "zproject_redhat.gsl" />
