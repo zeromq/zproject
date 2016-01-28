@@ -129,7 +129,7 @@ function generate_python_cffi_binding
         for class. as f
             if class(f) = "XML item" & (name(f) = 'constructor' | name(f) = 'destructor')
                 >// $(f.description:no,block)
-                >$(c_method_declaration (f):)
+                >$(c_method_signature (f):);
                 >
             endif
         endfor
@@ -140,13 +140,11 @@ function generate_python_cffi_binding
         endfor
         for class.method
             >// $(method.description:no,block)
-            >$(c_method_declaration (method):)
+            >$(c_method_signature (method):);
             >
         endfor
     endfor
     >'''
-    >cdefs = cdefs.replace('$(PROJECT.PREFIX)_EXPORT', '')
-    >cdefs = re.sub(r'CHECK_PRINTF\\s*\\([^)]\\)\\s*', '', cdefs)
     >cdefs = re.sub(r';[^;]*\\bva_list\\b[^;]*;', ';', cdefs, flags=re.S) # we don't support anything with a va_list arg
     >
     >ffi.cdef(cdefs)

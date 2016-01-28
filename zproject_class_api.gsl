@@ -455,10 +455,9 @@ function _c_method_arglist (method)
     return my.out
 endfunction
 
-#
-# Construct the string for a method declaration in a C header
-#
-function c_method_declaration (method)
+function c_method_signature (method)
+    # this will set method.format_index to the index of
+    # the format argument, if any
     if !my.method.singleton
         new tmp_arg to method as arg
             arg.name = 'self'
@@ -476,25 +475,31 @@ function c_method_declaration (method)
         copy argument to my.method as tmp_arg
     endfor
 
-    my.out = "$(PROJECT.PREFIX)_EXPORT "
-    my.out += "$(my.method->return.c_type:)\n"
+    my.out = "$(my.method->return.c_type:)\n"
     my.out += "    $(class.c_name)_$(my.method.c_name) "
     my.out += _c_method_arglist(my.method)
-
-    my.format_index = -1
     for my.method.tmp_arg as argument
         if argument.type = "format"
             # Next argument is the format list
-            my.format_index = index()
+            my.method.format_index = index()
         endif
     endfor
-    if my.format_index >= 0
-        my.out += " CHECK_PRINTF (" + (my.format_index) + ")"
-    endif
-    my.out += ";"
     for my.method.tmp_arg
         delete tmp_arg
     endfor
+    return my.out
+endfunction
+
+#
+# Construct the string for a method declaration in a C header
+#
+function c_method_declaration (method)
+    my.out = "$(PROJECT.PREFIX)_EXPORT "
+    my.out += c_method_signature(my.method)
+    if defined(my.method.format_index)
+        my.out += " CHECK_PRINTF (" + (my.method.format_index) + ")"
+    endif
+    my.out += ";"
     return my.out
 endfunction
 
