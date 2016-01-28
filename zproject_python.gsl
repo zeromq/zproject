@@ -393,7 +393,7 @@ function generate_python_binding
         endfor
         >
         for constant
-            >    $(CONSTANT.NAME) = $(constant.value)\
+            >    $(CONSTANT.NAME:c) = $(constant.value)\
             if defined (constant.description)
                 > # $(constant.description:no)
             else
