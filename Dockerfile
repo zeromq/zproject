@@ -1,15 +1,12 @@
-FROM ubuntu:trusty
+FROM zeromqorg/gsl
 
-MAINTAINER Benjamin Henrion <zoobab@gmail.com>
+MAINTAINER ZeroMQ community
 
-RUN apt-get update && \
-    apt-get install -y uuid-dev build-essential git-core libtool unzip && \
-    apt-get install -y autotools-dev autoconf automake pkg-config libkrb5-dev && \
-    ROOTDIR=`pwd` && \
-    mkdir -p /tmp/myproject && \
-    cd /tmp/myproject && \
-    cd $ROOTDIR && \
-    ( ./autogen.sh; ./configure; make check; make install; ldconfig ) && \
+RUN apt-get install -y build-essential autoconf automake libtool pkg-config
+
+COPY . /tmp/zproject
+WORKDIR /tmp/zproject
+RUN mkdir -p /tmp/myproject && ( ./autogen.sh; ./configure; make; make install; ldconfig ) && \
     rm -rf /tmp/myproject
 
-CMD ["myproject"]
+WORKDIR /gsl
