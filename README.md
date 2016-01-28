@@ -9,40 +9,42 @@
 **<a href="#toc2-11">Overview</a>**
 &emsp;<a href="#toc3-18">Scope and Goals</a>
 
-**<a href="#toc2-54">Demo on PLAYTerm</a>**
+**<a href="#toc2-50">Demo on PLAYTerm</a>**
 
-**<a href="#toc2-59">Installation</a>**
-&emsp;<a href="#toc3-62">Requirements</a>
-&emsp;<a href="#toc3-74">Getting started</a>
+**<a href="#toc2-55">Installation</a>**
+&emsp;<a href="#toc3-58">Requirements</a>
+&emsp;<a href="#toc3-70">Getting started</a>
 
-**<a href="#toc2-98">Setup your project environment</a>**
+**<a href="#toc2-94">Setup your project environment</a>**
 
-**<a href="#toc2-135">Configuration</a>**
+**<a href="#toc2-131">Configuration</a>**
 
-**<a href="#toc2-294">Sample API model</a>**
-&emsp;<a href="#toc3-516">Supported API Model Attributes</a>
-&emsp;<a href="#toc3-532">API Types</a>
-&emsp;<a href="#toc3-573">Tips</a>
-&emsp;<a href="#toc3-590">Generate API model from C header files</a>
-&emsp;<a href="#toc4-610">Known caveats</a>
+**<a href="#toc2-299">Sample API model</a>**
+&emsp;<a href="#toc3-521">Supported API Model Attributes</a>
+&emsp;<a href="#toc3-537">API Types</a>
+&emsp;<a href="#toc3-578">Tips</a>
+&emsp;<a href="#toc3-595">Generate API model from C header files</a>
+&emsp;<a href="#toc4-617">Known caveats</a>
 
-**<a href="#toc2-615">Language Binding Notes</a>**
-&emsp;<a href="#toc3-618">JNI Language Binding</a>
+**<a href="#toc2-622">Language Binding Notes</a>**
+&emsp;<a href="#toc3-625">Java Language Binding</a>
 
-**<a href="#toc2-626">Draft API Support</a>**
+**<a href="#toc2-633">Draft API Support</a>**
 
-**<a href="#toc2-658">Removal</a>**
-&emsp;<a href="#toc3-661">autotools</a>
+**<a href="#toc2-665">Targets</a>**
 
-**<a href="#toc2-668">Notes for Writing Language Bindings</a>**
-&emsp;<a href="#toc3-671">Schema/Architecture Overview</a>
-&emsp;<a href="#toc3-690">Informal Summary</a>
-&emsp;<a href="#toc3-695">Semantic Attributes</a>
-&emsp;<a href="#toc3-732">Language-Specific Implementation Attributes</a>
+**<a href="#toc2-691">Removal</a>**
+&emsp;<a href="#toc3-694">autotools</a>
 
-**<a href="#toc2-743">Ownership and License</a>**
-&emsp;<a href="#toc3-752">Hints to Contributors</a>
-&emsp;<a href="#toc3-761">This Document</a>
+**<a href="#toc2-701">Notes for Writing Language Bindings</a>**
+&emsp;<a href="#toc3-704">Schema/Architecture Overview</a>
+&emsp;<a href="#toc3-723">Informal Summary</a>
+&emsp;<a href="#toc3-728">Semantic Attributes</a>
+&emsp;<a href="#toc3-765">Language-Specific Implementation Attributes</a>
+
+**<a href="#toc2-776">Ownership and License</a>**
+&emsp;<a href="#toc3-785">Hints to Contributors</a>
+&emsp;<a href="#toc3-794">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -65,19 +67,15 @@ All you need is a project.xml file in the project's root directory which is your
 
     One file to rule them all
 
-The following build environments are currently supported:
+At least the following build environments are currently supported:
 
-* autotools
-* cmake
-* mingw32
+* Autotools
+* CMake
+* Mingw32
 * Android
-* vs2008
-* vs2010
-* vs2012
-* vs2013
-* vs2015
+* Visual Studio
 
-Thanks to the amazing ZeroMQ community, you can do all the heavy lifting in C and then easily generate bindings in the following languages:
+Thanks to the ZeroMQ community, you can do all the heavy lifting in C and then easily generate bindings in the following languages:
 
 * Java (JNI)
 * Python
@@ -87,15 +85,15 @@ Thanks to the amazing ZeroMQ community, you can do all the heavy lifting in C an
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
-<A name="toc2-54" title="Demo on PLAYTerm" />
+<A name="toc2-50" title="Demo on PLAYTerm" />
 ## Demo on PLAYTerm
 
 There is a short Demo on PLAYTerm that shows how easy it is to get started with zproject: [ZeroMQ - Create new zproject](http://www.playterm.org/r/zeromq---create-new-zproject-1424116766)
 
-<A name="toc2-59" title="Installation" />
+<A name="toc2-55" title="Installation" />
 ## Installation
 
-<A name="toc3-62" title="Requirements" />
+<A name="toc3-58" title="Requirements" />
 ### Requirements
 
 zproject uses the universal code generator called GSL to process its XML inputs and create its outputs. Before you start you'll need to install GSL (https://github.com/imatix/gsl) on your system.
@@ -107,7 +105,7 @@ make
 make install
 ```
 
-<A name="toc3-74" title="Getting started" />
+<A name="toc3-70" title="Getting started" />
 ### Getting started
 
 GSL must be able to find the zproject resources on your system. Therefore you'll need to install them.
@@ -131,7 +129,7 @@ sudo make install
 
 NB: If you don't have superuser rights on a system you'll have to make sure zproject's gsl scripts can be found on your PATH.
 
-<A name="toc2-98" title="Setup your project environment" />
+<A name="toc2-94" title="Setup your project environment" />
 ## Setup your project environment
 
 The easiest way to start is to create a minimal project.xml.
@@ -168,7 +166,7 @@ This disclaimer can be included in your project.xml and is used whenever zprojec
 <include filename = "license.xml" />
 ```
 
-<A name="toc2-135" title="Configuration" />
+<A name="toc2-131" title="Configuration" />
 ## Configuration
 
 zproject's `project.xml` contains an extensive description of the available configuration: The following snippet is taken from the `project.xml`:
@@ -177,16 +175,28 @@ zproject's `project.xml` contains an extensive description of the available conf
 <!--
     The project.xml generates build environments for:
 
-        * android
-        * autotool
-        * cmake
-        * mingw32
-        * cygwin
-        * vs2008
-        * vs2010
-        * vs2012
-        * vs2013
-        * vs2015
+        autotools           GNU build system (default)
+        cmake               CMake build system (default)
+
+        android             Native shared library for Android
+        cygwin              Cygwin build system
+        debian              packaging for Debian
+        docker              packaging for Docker
+        java                Java JNI binding
+        java-msvc           MSVC builds for Java JNI binding
+        mingw32             Mingw32 build system
+        nuget               Packaging for NuGet
+        python              Python binding
+        qml                 QML binding
+        qt                  Qt binding
+        redhat              Packaging for RedHat
+        ruby                Ruby binding
+        travis              Travis CI scripts
+        vs2008              Microsoft Visual Studio 2008
+        vs2010              Microsoft Visual Studio 2010
+        vs2012              Microsoft Visual Studio 2012
+        vs2013              Microsoft Visual Studio 2013
+        vs2015              Microsoft Visual Studio 2015
 
     Classes are automatically added to all build environments. Further as you
     add new classes to your project you can generate skeleton header and source
@@ -238,7 +248,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         Actors, are built using the simple actor framework from czmq. If the
         actors class header or source file doesn't exist, this will generate a
         skeleton for them. The generated test method of the actor will teach
-        you how to use them. Also have a look at the czmq docs to learn more
+        you how to use them. Also have a look at the CZMQ docs to learn more
         about actors.
     <actor name = "myactor">Public actor description</actor>
     <actor name = "someactor" private = "1">Private actor description</actor>
@@ -278,56 +288,53 @@ zproject's `project.xml` contains an extensive description of the available conf
     <!-- Other source files that we need to package
     <extra name = "some_resource" />
     -->
-
-    <!--
-        Stuff that needs to be installed:
-
-        NOTICE: If you copied this file to get started you want to delete or
-                at least comment out those bin tag as they distribute the
-                zproject files.
-
-        * Linux -> /usr/local/bin
+    <!-- Specify targets to build; autotools and cmake are
+         built in all cases.
+    <target name = "cmake" />
+    <target name = "autotools" />
     -->
-    <bin name = "zproject.gsl" />
-    <bin name = "zproject_known_projects.xml" />
 
-    <bin name = "zproject_actor.gsl" />
-    <bin name = "zproject_android.gsl" />
-    <bin name = "zproject_autoconf.gsl" />
-    <bin name = "zproject_automake.gsl" />
-    <bin name = "zproject_bench.gsl" />
-    <bin name = "zproject_debian.gsl" />
-    <bin name = "zproject_bindings_python.gsl" />
-    <bin name = "zproject_bindings_qml.gsl" />
-    <bin name = "zproject_bindings_qt.gsl" />
-    <bin name = "zproject_bindings_ruby.gsl" />
-    <bin name = "zproject_bindings_jni.gsl" />
-    <bin name = "zproject_bindings_jni_vs20xx.gsl" />
-    <bin name = "zproject_ci.gsl" />
-    <bin name = "zproject_class.gsl" />
+    <!-- In order loaded by zproject.gsl -->
+    <bin name = "zproject.gsl" />
+    <bin name = "zproject_projects.gsl" />
     <bin name = "zproject_class_api.gsl" />
+
+    <!-- Mainline generation code -->
+    <bin name = "zproject_skeletons.gsl" />
+    <bin name = "zproject_bench.gsl" />
+    <bin name = "zproject_class.gsl" />
+    <bin name = "zproject_git.gsl" />
+    <bin name = "zproject_valgrind.gsl" />
+
+    <!-- Targets -->
+    <bin name = "zproject_android.gsl" />
+    <bin name = "zproject_autotools.gsl" />
     <bin name = "zproject_cmake.gsl" />
     <bin name = "zproject_cygwin.gsl" />
+    <bin name = "zproject_debian.gsl" />
     <bin name = "zproject_docker.gsl" />
-    <bin name = "zproject_docs.gsl" />
-    <bin name = "zproject_git.gsl" />
-    <bin name = "zproject_lib.gsl" />
-    <bin name = "zproject_mkman.gsl" />
+    <bin name = "zproject_gyp.gsl" />
+    <bin name = "zproject_java.gsl" />
+    <bin name = "zproject_java_msvc.gsl" />
     <bin name = "zproject_mingw32.gsl" />
     <bin name = "zproject_nuget.gsl" />
-    <bin name = "zproject_projects.gsl" />
+    <bin name = "zproject_python.gsl" />
+    <bin name = "zproject_qml.gsl" />
+    <bin name = "zproject_qt.gsl" />
     <bin name = "zproject_redhat.gsl" />
-    <bin name = "zproject_tools.gsl" />
+    <bin name = "zproject_ruby.gsl" />
+    <bin name = "zproject_travis.gsl" />
     <bin name = "zproject_vs2008.gsl" />
     <bin name = "zproject_vs20xx.gsl" />
     <bin name = "zproject_vs20xx_props.gsl" />
 
+    <bin name = "zproject_known_projects.xml" />
     <bin name = "mkapi.py" />
     <bin name = "fake_cpp" />
 </project>
 ```
 
-<A name="toc2-294" title="Sample API model" />
+<A name="toc2-299" title="Sample API model" />
 ## Sample API model
 
 The zproject scripts can also optionally generate the `@interface` in your class headers from an API model, in addition to a host of language bindings.  To opt-in to this behavior, just make a model to the `api` directory of your project.  For example, if your `project.xml` contains `<class name = "myclass"/>`, you could create the following `api/myclass.xml` file:
@@ -549,7 +556,7 @@ MYPROJECT_EXPORT void
 //  @end
 ```
 
-<A name="toc3-516" title="Supported API Model Attributes" />
+<A name="toc3-521" title="Supported API Model Attributes" />
 ### Supported API Model Attributes
 
 The following attributes are supported for methods:
@@ -565,7 +572,7 @@ The following attributes are supported for arguments and return values:
 - `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it. Implies mutable = "1".
 - `variadic = "1"` - used for representing variadic arguments.
 
-<A name="toc3-532" title="API Types" />
+<A name="toc3-537" title="API Types" />
 ### API Types
 
 This is an incomplete list of API types:
@@ -590,7 +597,7 @@ This is an incomplete list of API types:
 
 * "number" -- unsigned number, with 'size = "1|2|4|8"'.
 
-* "real" -- single-precision floating point.
+* "real" -- single-precision floating point. [TODO: single? why not double?]
 
 * "buffer" -- byte array. To return a byte array, you should specify 'size' attribute that defines size. This can be a constant, 'size = "ZUUID_LEN"', or a dot followed by method name in the same class, e.g. 'size = ".size"'.
 
@@ -606,7 +613,7 @@ This is an incomplete list of API types:
 
 * Names of classes, e.g. zmsg.
 
-<A name="toc3-573" title="Tips" />
+<A name="toc3-578" title="Tips" />
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
@@ -623,7 +630,7 @@ You can save a snapshot of the entire resolved project model using this syntax:
 gsl -save:1 project.xml
 ```
 
-<A name="toc3-590" title="Generate API model from C header files" />
+<A name="toc3-595" title="Generate API model from C header files" />
 ### Generate API model from C header files
 
 Writing API model for bigger project with a lot of classes can be tedious job. There mkapi.py, which automates most of the task.
@@ -638,28 +645,30 @@ git clone https://github.com/eliben/pycparser.git
 
 Then from root directory of your project (for example czmq), type following
 ```sh
-python mkapi.py -I /path/to/your/pycparser/utils/fake_libc_include include/czmq.h
+mkapi.py -I /path/to/your/pycparser/utils/fake_libc_include include/czmq.h
 ```
 
-Note you must use top-level include as pycparser fails if it does not know any definition.
+Note you *must* use top-level include as pycparser fails if it does not know any definition.
 
-<A name="toc4-610" title="Known caveats" />
+The tool might expect `-DWITH_DRAFTS` parameter if the class is not marked as a stable.
+
+<A name="toc4-617" title="Known caveats" />
 #### Known caveats
 
 The tool can't distinguish methods which allocates new object. It does print a comment about adding fresh = "1" attribute to each method, which return non const pointer. However the final assigment must be done manually.
 
-<A name="toc2-615" title="Language Binding Notes" />
+<A name="toc2-622" title="Language Binding Notes" />
 ## Language Binding Notes
 
-<A name="toc3-618" title="JNI Language Binding" />
-### JNI Language Binding
+<A name="toc3-625" title="Java Language Binding" />
+### Java Language Binding
 
 * Skips methods that it cannot handle properly.
 
 * To build, you need gradle (or equivalent). Run 'gradle build jar' in the bindings/jni directory.
 * To install, run 'gradle install'. This puts the files into $HOME/.m2/repository.
 
-<A name="toc2-626" title="Draft API Support" />
+<A name="toc2-633" title="Draft API Support" />
 ## Draft API Support
 
 zproject lets you mark classes and methods as 'draft' so that they are not installed by default in stable builds. This lets you deliver draft APIs to your users, and change them later.
@@ -691,20 +700,46 @@ The allowed states are:
 
 Using autotools or CMake, you can specify --with-drafts to enable draft APIs, and --without-drafts to disable them. By default, drafts are built and installed when you work in a git repository (if the directory ".git" is present), and otherwise they are not. That means, if you build from a tarball, drafts are disabled by default.
 
-<A name="toc2-658" title="Removal" />
+<A name="toc2-665" title="Targets" />
+## Targets
+
+Each target produces scripts and code for a specific build system, platform, or language binding.
+
+To see a list of available targets:
+
+    gsl -target:? project.xml
+
+To build a specific target:
+
+    gsl -target:android project.xml
+
+To run zproject without building any targets:
+
+    gsl -target:- project.xml
+
+To request specific targets in your project.xml file (autotools and cmake are automatic):
+
+    <target name = "android" />
+    <target name = "java" />
+
+To request all targets in your project.xml file:
+
+    <target name = "*" />
+
+<A name="toc2-691" title="Removal" />
 ## Removal
 
-<A name="toc3-661" title="autotools" />
+<A name="toc3-694" title="autotools" />
 ### autotools
 
 ```sh
 make uninstall
 ```
 
-<A name="toc2-668" title="Notes for Writing Language Bindings" />
+<A name="toc2-701" title="Notes for Writing Language Bindings" />
 ## Notes for Writing Language Bindings
 
-<A name="toc3-671" title="Schema/Architecture Overview" />
+<A name="toc3-704" title="Schema/Architecture Overview" />
 ### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
@@ -723,12 +758,12 @@ make uninstall
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-<A name="toc3-690" title="Informal Summary" />
+<A name="toc3-723" title="Informal Summary" />
 ### Informal Summary
 
 A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
 
-<A name="toc3-695" title="Semantic Attributes" />
+<A name="toc3-728" title="Semantic Attributes" />
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
@@ -765,7 +800,7 @@ container.variadic     # 0/1 (default: 0)
 container.va_start     # string - that holds the argment name for va_start ()
 ```
 
-<A name="toc3-732" title="Language-Specific Implementation Attributes" />
+<A name="toc3-765" title="Language-Specific Implementation Attributes" />
 ### Language-Specific Implementation Attributes
 
 Language-specific implementation attributes hold information that is not intrinsic to the concept of the container, but to the binding implementation.
@@ -776,7 +811,7 @@ However, because the container is shared between all generators, which are run i
 
 It is also important that language-specific implementation attributes use a naming convention that avoids collisions. The easiest way to avoid collisions is to prefix all language-specific attributes with the name of the language, though in principle, any collision-free convention would be acceptable.
 
-<A name="toc2-743" title="Ownership and License" />
+<A name="toc2-776" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -785,7 +820,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-752" title="Hints to Contributors" />
+<A name="toc3-785" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -794,7 +829,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-761" title="This Document" />
+<A name="toc3-794" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).

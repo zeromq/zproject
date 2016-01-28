@@ -26,19 +26,15 @@ All you need is a project.xml file in the project's root directory which is your
 
     One file to rule them all
 
-The following build environments are currently supported:
+At least the following build environments are currently supported:
 
-* autotools
-* cmake
-* mingw32
+* Autotools
+* CMake
+* Mingw32
 * Android
-* vs2008
-* vs2010
-* vs2012
-* vs2013
-* vs2015
+* Visual Studio
 
-Thanks to the amazing ZeroMQ community, you can do all the heavy lifting in C and then easily generate bindings in the following languages:
+Thanks to the ZeroMQ community, you can do all the heavy lifting in C and then easily generate bindings in the following languages:
 
 * Java (JNI)
 * Python
@@ -304,6 +300,31 @@ The allowed states are:
 * legacy - the class or method is always built and installed. It may carry a warning that support can be withdrawn at any time.
 
 Using autotools or CMake, you can specify --with-drafts to enable draft APIs, and --without-drafts to disable them. By default, drafts are built and installed when you work in a git repository (if the directory ".git" is present), and otherwise they are not. That means, if you build from a tarball, drafts are disabled by default.
+
+## Targets
+
+Each target produces scripts and code for a specific build system, platform, or language binding.
+
+To see a list of available targets:
+
+    gsl -target:? project.xml
+
+To build a specific target:
+
+    gsl -target:android project.xml
+
+To run zproject without building any targets:
+
+    gsl -target:- project.xml
+
+To request specific targets in your project.xml file (autotools and cmake are automatic):
+
+    <target name = "android" />
+    <target name = "java" />
+
+To request all targets in your project.xml file:
+
+    <target name = "*" />
 
 ## Removal
 
