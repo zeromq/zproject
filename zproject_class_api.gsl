@@ -1,4 +1,4 @@
-#   Process class API files in api/*.xml
+#   Process class API files in api/*.api
 #   
 #   This is a code generator built using the iMatix GSL code generation
 #   language. See https://github.com/imatix/gsl for details.
@@ -18,7 +18,9 @@ for project.class
             class.api = # undefined
         endif
     else
-        if file.exists ("api/$(class.name:c).xml")
+        if file.exists ("api/$(class.name:c).api")
+            class.api = "api/$(class.name:c).api"
+        elsif file.exists ("api/$(class.name:c).xml")
             class.api = "api/$(class.name:c).xml"
         endif
     endif
