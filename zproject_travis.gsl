@@ -75,6 +75,7 @@ else
 fi
 .close
 .chmod_x ("ci_build.sh")
+.directory.create ("builds/check_zproject")
 .output "builds/check_zproject/ci_build.sh"
 #!/usr/bin/env bash
 set -e
