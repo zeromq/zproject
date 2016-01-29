@@ -109,7 +109,7 @@ if [[ $(git --no-pager diff -w /code/api/*) ]]; then
     exit 1
 fi
 if [[ $(git status -s /code/api) ]]; then
-    git status -l /code/api
+    git status -s /code/api
     echo "zproto generated new files!"
     exit 1
 fi
