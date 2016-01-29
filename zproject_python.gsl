@@ -235,6 +235,19 @@ function python_method_definition(method)
     >
 endfunction
 
+function generate_python_setup_py
+    output "setup.py"
+    >from distutils.core import setup
+    >
+    >setup(name='$(project.name:c)',
+    >	  description="""$(project.description:no)""",
+    >	  version='0.1',
+    >	  url='$(project.repository)',
+    >	  packages=['$(project.name:c)'],
+    >	  package_dir={'': 'bindings/python'},
+    >)
+endfunction
+
 function generate_python_binding
     my.dir = "bindings/python/$(project.name:c)"
     directory.create (my.dir)
@@ -485,6 +498,7 @@ function target_python
         for class where defined (class.api)
             resolve_python_class (class)
         endfor
+        generate_python_setup_py ()
         generate_python_binding ()
     endif
 endfunction
