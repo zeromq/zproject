@@ -8,5 +8,3 @@ COPY . /tmp/zproject
 WORKDIR /tmp/zproject
 RUN mkdir -p /tmp/myproject && ( ./autogen.sh; ./configure; make; make install; ldconfig ) && \
     rm -rf /tmp/myproject
-
-WORKDIR /gsl
