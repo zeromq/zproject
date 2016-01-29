@@ -781,10 +781,9 @@ code:
 .   else
 \tcd $\(srcdir)/src; gsl -topdir:.. -zproject:1 -q $(name).xml
 .   endif
-.   if last ()
-
-.   endif
 .endfor
+\tgsl -target:- project.xml
+
 check-local: src/$(project.prefix)_selftest
 \t$\(LIBTOOL) --mode=execute $\(srcdir)/src/$(project.prefix)_selftest
 
