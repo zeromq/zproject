@@ -434,63 +434,73 @@ function c_actor_declaration (method)
     return out
 endfunction
 
+function _c_method_arglist (method)
+    # this requires the tmp_args to be set up
+    my.out = "("
+    for my.method.tmp_arg as argument
+        if argument.variadic
+            my.out += "..."
+        else
+            my.out += argument.c_type?""
+            if !regexp.match ("\\*$", argument.c_type?"")
+                my.out += " "
+            endif
+            my.out += (argument.c_name?"") + (last() ?? '' ? ', ')
+        endif
+    endfor
+    if count(my.method.tmp_arg) = 0
+        my.out += "void"
+    endif
+    my.out += ")"
+    return my.out
+endfunction
+
+function c_method_signature (method)
+    # this will set method.format_index to the index of
+    # the format argument, if any
+    if !my.method.singleton
+        new tmp_arg to method as arg
+            arg.name = 'self'
+            arg.c_name = 'self'
+            arg.type = '__self__'
+            arg.variadic = 0
+            if my.method.polymorphic?0
+                arg.c_type = 'void *'
+            else
+                arg.c_type = "$(class.c_name)_t *"
+            endif
+        endnew
+    endif
+    for my.method.argument
+        copy argument to my.method as tmp_arg
+    endfor
+
+    my.out = "$(my.method->return.c_type:)\n"
+    my.out += "    $(class.c_name)_$(my.method.c_name) "
+    my.out += _c_method_arglist(my.method)
+    for my.method.tmp_arg as argument
+        if argument.type = "format"
+            # Next argument is the format list
+            my.method.format_index = index()
+        endif
+    endfor
+    for my.method.tmp_arg
+        delete tmp_arg
+    endfor
+    return my.out
+endfunction
+
 #
 # Construct the string for a method declaration in a C header
 #
-function c_method_declaration (method, implementation_style)
-    my.implementation_style ?= 0
-    my.format_index = -1
-    my.current_argument_index = 0
-    out = ""
-    if !my.implementation_style
-        out += "$(PROJECT.PREFIX)_EXPORT "
+function c_method_declaration (method)
+    my.out = "$(PROJECT.PREFIX)_EXPORT "
+    my.out += c_method_signature(my.method)
+    if defined(my.method.format_index)
+        my.out += " CHECK_PRINTF (" + (my.method.format_index) + ")"
     endif
-    out += "$(my.method->return.c_type:)\n"
-    if !my.implementation_style
-        out += "    "
-    endif
-    out += "$(class.c_name)_$(my.method.c_name) ("
-    if !my.method.singleton
-        if defined (my.method.polymorphic) & my.method.polymorphic
-            out += "void *self"
-        else
-            out += "$(class.c_name)_t *self"
-        endif
-        my.current_argument_index += 1
-        if count (my.method.argument)
-            out += ", "
-        endif
-    endif
-    for my.method.argument
-        if argument.type = "format"
-            # Next argument is the format list
-            my.format_index = my.current_argument_index + 1
-        endif
-        if argument.variadic
-            out += "..."
-        else
-            out += argument.c_type?""
-            if !regexp.match ("\\*$", argument.c_type?"")
-                out += " "
-            endif
-            out += argument.c_name?""
-            if !last ()
-                out += ", "
-            endif
-        endif
-        my.current_argument_index += 1
-    endfor
-    if my.current_argument_index = 0 # no arguments
-        out += "void"
-    endif
-    out += ")"
-    if my.format_index >= 0
-        out += " CHECK_PRINTF (" + (my.format_index) + ")"
-    endif
-    if !my.implementation_style
-        out += ";"
-    endif
-    return out
+    my.out += ";"
+    return my.out
 endfunction
 
 #

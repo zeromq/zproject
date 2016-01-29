@@ -236,8 +236,15 @@ function python_method_definition(method)
 endfunction
 
 function generate_python_binding
-    directory.create ("bindings/python")
-    output "bindings/python/$(project.name:c).py"
+    my.dir = "bindings/python/$(project.name:c)"
+    directory.create (my.dir)
+    if !file.exists("$(my.dir)/__init__.py")
+        output "$(my.dir)/__init__.py"
+        ># This is a skeleton created by zproject.
+        ># You can add hand-written code here.
+        >from ._$(project.name:c)_ctypes import *
+    endif
+    output "$(my.dir)/_$(project.name:c)_ctypes.py"
     >$(project.GENERATED_WARNING_HEADER:)
     >
     >from __future__ import print_function
