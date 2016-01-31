@@ -24,6 +24,9 @@ os:
 
 sudo: false
 
+services:
+- docker
+
 env:
 - BUILD_TYPE=default
 #- BUILD_TYPE=android
