@@ -15,7 +15,10 @@
 
 register_target ("python", "Python binding")
 
-function python_register_import (lib, class)
+#   Target provides name space isolation for its functions
+function target_python
+
+function register_import (lib, class)
     if count (project->python_types.import, import.lib = my.lib) = 0
         new project->python_types.import
             import.lib = my.lib
@@ -23,7 +26,7 @@ function python_register_import (lib, class)
     endif
 endfunction
 
-function python_register_type (container, struct, pointer)
+function register_type (container, struct, pointer)
     my.fresh_bool = my.container.fresh ?? "True" ? "False"
 
     # First we need to determine whether we're 'importing' this type via
@@ -39,7 +42,7 @@ function python_register_type (container, struct, pointer)
         # don't do anything other than coerce to/from it.  This currently
         # relies on users distributing bindings from dependency projects
         # manually.
-        python_register_import(my.externlib, my.container.type)
+        register_import(my.externlib, my.container.type)
         my.container.python_type = "$(my.externlib:c).$(my.container.type:c,no)_p"
         my.container.python_return = "$(my.externlib:c).$(my.container.type:Pascal)(<>, $(my.fresh_bool:))"
     else
@@ -57,7 +60,7 @@ function python_register_type (container, struct, pointer)
     endif
 endfunction
 
-function resolve_python_container (container)
+function resolve_container (container)
     my.container.python_name = "$(my.container.name:c)"
     if my.container.python_name = "_"
         my.container.python_name = "result"
@@ -100,7 +103,7 @@ function resolve_python_container (container)
 #        my.container.python_type = "POINTER(c_byte)"
         my.container.python_type = "c_void_p"
     elsif my.container.type = "FILE"
-        python_register_type(my.container, "FILE", "FILE_p")
+        register_type(my.container, "FILE", "FILE_p")
         my.container.python_coerce = "coerce_py_file(<>)"
         my.container.python_return = "return_py_file(<>)"
         project->python_types.uses_py_file = 1
@@ -115,7 +118,7 @@ function resolve_python_container (container)
     elsif my.container.callback
         my.container.python_type = my.container.type
     else
-        python_register_type(my.container, "$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
+        register_type(my.container, "$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
     endif
 
     if my.container.by_reference
@@ -124,35 +127,35 @@ function resolve_python_container (container)
     endif
 endfunction
 
-function resolve_python_method (method)
+function resolve_method (method)
     my.method.python_name = "$(my.method.name:c)"
     if regexp.match ("^(is|from)$", my.method.python_name) # matches keyword
         my.method.python_name += "_"
     endif
     for my.method.argument where !argument.variadic
-        resolve_python_container (argument)
+        resolve_container (argument)
     endfor
     for my.method.return as ret
-        resolve_python_container (ret)
+        resolve_container (ret)
     endfor
 endfunction
 
-function resolve_python_class (class)
+function resolve_class (class)
     for my.class.callback_type as method
-        resolve_python_method (method)
+        resolve_method (method)
     endfor
     for my.class.constructor as method
-        resolve_python_method (method)
+        resolve_method (method)
     endfor
     for my.class.destructor as method
-        resolve_python_method (method)
+        resolve_method (method)
     endfor
     for my.class.method
-        resolve_python_method (method)
+        resolve_method (method)
     endfor
 endfunction
 
-function python_method_annotation(method)
+function method_annotation (method)
     fn = "lib.$(class.name:c)_$(method.name:c)"
     for my.method.return
         restype = return.python_type
@@ -175,7 +178,7 @@ function python_method_annotation(method)
     >$(fn:).argtypes = $(argtypes:)
 endfunction
 
-function python_callback_create(cb)
+function python_callback_create (cb)
     result = ""
     for my.cb.return
         result += return.python_type
@@ -187,7 +190,7 @@ function python_callback_create(cb)
     return "CFUNCTYPE($(result:))"
 endfunction
 
-function python_method_definition(method)
+function method_definition (method)
     if my.method.singleton
         argnames = ""
         callargs = ""
@@ -235,7 +238,7 @@ function python_method_definition(method)
     >
 endfunction
 
-function generate_python_setup_py
+function generate_setup_py
     output "setup.py"
     >from distutils.core import setup
     >
@@ -252,7 +255,7 @@ function generate_python_setup_py
     >)
 endfunction
 
-function generate_python_binding
+function generate_binding
     my.dir = "bindings/python/$(project.name:c)"
     directory.create (my.dir)
     if !file.exists("$(my.dir)/__init__.py")
@@ -381,19 +384,19 @@ function generate_python_binding
         endfor
 
         for constructor as method where item () = 1
-            python_method_annotation (method)
+            method_annotation (method)
         endfor
 
         for destructor as method
-            python_method_annotation (method)
+            method_annotation (method)
         endfor
 
         for constructor as method where item () > 1
-            python_method_annotation (method)
+            method_annotation (method)
         endfor
 
         for method
-            python_method_annotation (method)
+            method_annotation (method)
         endfor
 
         >
@@ -484,25 +487,24 @@ function generate_python_binding
         >        return self._as_parameter_.__nonzero__()
         >
         for constructor as method where item () > 1
-            python_method_definition (method)
+            method_definition (method)
         endfor
 
         for method
-            python_method_definition (method)
+            method_definition (method)
         endfor
     endfor
     >$(project.GENERATED_WARNING_HEADER:)
 endfunction
 
-function target_python
     if count (class, defined (class.api))
         # Container for UDTs used by this module
         new python_types
         endnew
         for class where defined (class.api)
-            resolve_python_class (class)
+            resolve_class (class)
         endfor
-        generate_python_setup_py ()
-        generate_python_binding ()
+        generate_setup_py ()
+        generate_binding ()
     endif
 endfunction

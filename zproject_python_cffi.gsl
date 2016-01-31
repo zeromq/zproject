@@ -15,7 +15,10 @@
 
 register_target ("python_cffi", "Python CFFI binding")
 
-function python_cffi_register_type (struct, pointer)
+#   Target provides name space isolation for its functions
+function target_python_cffi
+
+function register_type (struct, pointer)
     if count(project->python_types.type, type.name = my.struct) = 0
         new project->python_types.type
             type.name = my.struct
@@ -24,7 +27,7 @@ function python_cffi_register_type (struct, pointer)
     endif
 endfunction
 
-function resolve_python_cffi_container (container)
+function resolve_container (container)
     if my.container.variadic
     elsif my.container.is_enum
     elsif my.container.type = "nothing"
@@ -40,40 +43,40 @@ function resolve_python_cffi_container (container)
     elsif my.container.type = "string" | my.container.type = "format"
     elsif my.container.callback
     else
-        python_cffi_register_type ("$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
+        register_type ("$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
     endif
 endfunction
 
-function resolve_python_cffi_method (method)
+function resolve_method (method)
     my.method.python_name = "$(my.method.name:c)"
     if regexp.match ("^(is|from)$", my.method.python_name) # matches keyword
         my.method.python_name += "_"
     endif
     for my.method.argument where !argument.variadic
-        resolve_python_cffi_container (argument)
+        resolve_container (argument)
     endfor
     for my.method.return as ret
-        resolve_python_cffi_container (ret)
+        resolve_container (ret)
     endfor
 endfunction
 
-function resolve_python_cffi_class (class)
-    python_cffi_register_type("$(class.c_name)_t", "$(class.c_name)_p")
+function resolve_class (class)
+    register_type("$(class.c_name)_t", "$(class.c_name)_p")
     for my.class.callback_type as method
-        resolve_python_cffi_method (method)
+        resolve_method (method)
     endfor
     for my.class.constructor as method
-        resolve_python_cffi_method (method)
+        resolve_method (method)
     endfor
     for my.class.destructor as method
-        resolve_python_cffi_method (method)
+        resolve_method (method)
     endfor
     for my.class.method
-        resolve_python_cffi_method (method)
+        resolve_method (method)
     endfor
 endfunction
 
-function generate_python_cffi_binding
+function generate_binding
     directory.create ("bindings/python_cffi")
     output "bindings/python_cffi/$(project.name:c)_cffi.py"
     >$(project.GENERATED_WARNING_HEADER:)
@@ -150,14 +153,13 @@ function generate_python_cffi_binding
     >ffi.cdef(cdefs)
 endfunction
 
-function target_python_cffi
     if count (class, defined (class.api))
         # Container for UDTs used by this module
         new python_types
         endnew
         for class where defined (class.api)
-            resolve_python_cffi_class (class)
+            resolve_class (class)
         endfor
-        generate_python_cffi_binding ()
+        generate_binding ()
     endif
 endfunction

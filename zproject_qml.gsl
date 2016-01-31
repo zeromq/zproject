@@ -17,7 +17,10 @@
 
 register_target ("qml", "QML binding")
 
-function resolve_qml_container (container)
+#   Target provides name space isolation for its functions
+function target_qml
+
+function resolve_container (container)
     my.container.qmlName = "$(my.container.name:camel)"
     my.container.qmlArgType = my.container.c_type
     my.container.qmlArgPass = my.container.qmlName
@@ -80,11 +83,11 @@ function resolve_qml_container (container)
 endfunction
 
 # A function for constructing the string for a string of arguments in a QML C header
-function qml_method_arguments (method)
+function method_arguments (method)
     my.problematic = 0
     my.out = ""
     for my.method.argument where !argument.variadic
-        resolve_qml_container (argument)
+        resolve_container (argument)
         if !(my.method.is_destructor & first ())
             my.out += argument.qmlArgType
             if !regexp.match ("[\\*&]$", argument.qmlArgType?"")
@@ -103,8 +106,8 @@ function qml_method_arguments (method)
 endfunction
 
 # A function for constructing the string for a return type in a QML C header
-function qml_method_return_type (method)
-    resolve_qml_container (my.method->return)
+function method_return_type (method)
+    resolve_container (my.method->return)
     my.out = "$(my.method->return.qmlReturnType)"
     if !regexp.match ("[\\*&]$", my.method->return.qmlReturnType?"")
         my.out += " "
@@ -113,9 +116,9 @@ function qml_method_return_type (method)
 endfunction
 
 # A function for constructing the string for a method signature in QML C++ file
-function qml_method_signature (method, in_header)
+function method_signature (method, in_header)
     my.problematic = 0
-    my.out = qml_method_return_type (my.method)
+    my.out = method_return_type (my.method)
     if !my.in_header
         my.out += "$(class.QmlName:)"
         if my.method.singleton
@@ -135,11 +138,11 @@ function qml_method_signature (method, in_header)
     
     if method.is_destructor
         my.out += "$(class.QmlName) *qmlSelf"
-        if !(qml_method_arguments (method) = "")
+        if !(method_arguments (method) = "")
             my.out += ", "
         endif
     endif
-    my.args = qml_method_arguments (my.method)
+    my.args = method_arguments (my.method)
     if my.args = "ERROR"
         my.problematic = 1
     else
@@ -153,7 +156,7 @@ function qml_method_signature (method, in_header)
     return my.out
 endfunction
 
-.macro generate_qml_binding
+.macro generate_binding
 .#
 .directory.create ("bindings/qml/src/qml")
 .output "bindings/qml/src/$(project.qml_soname:)_plugin.h"
@@ -205,11 +208,11 @@ $(project.GENERATED_WARNING_HEADER:)
 
 #include "$(class.QmlName:).h"
 
-.for class.method where !method.singleton & defined (qml_method_signature (method, 0))
+.for class.method where !method.singleton & defined (method_signature (method, 0))
 
 ///
 //  $(method.description:no,block)
-$(qml_method_signature (method, 0)) {
+$(method_signature (method, 0)) {
     $(method->return.qmlReturnPre)$(class.c_name:)_$(method.c_name) (self\
 .   if count (method.argument)
 , \
@@ -229,11 +232,11 @@ QObject* $(class.QmlName:)::qmlAttachedProperties(QObject* object) {
     return new $(class.QmlName:)Attached(object);
 }
 
-.for class.method where method.singleton & defined (qml_method_signature (method, 0))
+.for class.method where method.singleton & defined (method_signature (method, 0))
 
 ///
 //  $(method.description:no,block)
-$(qml_method_signature (method, 0)) {
+$(method_signature (method, 0)) {
     $(method->return.qmlReturnPre)$(class.c_name:)_$(method.c_name) (\
 .   for method.argument where !argument.variadic
 $(argument.qmlArgPass)\
@@ -244,11 +247,11 @@ $(argument.qmlArgPass)\
 )$(method->return.qmlReturnPost);
 };
 .endfor
-.for class.constructor as method where defined (qml_method_signature (method, 0))
+.for class.constructor as method where defined (method_signature (method, 0))
 
 ///
 //  $(method.description:no,block)
-$(qml_method_signature (method, 0)) {
+$(method_signature (method, 0)) {
     $(class.QmlName:) *qmlSelf = new $(class.QmlName:) ();
     qmlSelf->self = $(class.c_name:)_$(method.c_name) (\
 .   for method.argument where !argument.variadic
@@ -261,11 +264,11 @@ $(argument.qmlArgPass)\
     return qmlSelf;
 };
 .endfor
-.for class.destructor as method where defined (qml_method_signature (method, 0))
+.for class.destructor as method where defined (method_signature (method, 0))
 
 ///
 //  $(method.description:no,block)
-$(qml_method_signature (method, 0)) {
+$(method_signature (method, 0)) {
     $(method->return.qmlReturnPre)$(class.c_name:)_$(method.c_name) (&qmlSelf->self\
 .       if count (method.argument) > 1
 , \
@@ -314,10 +317,10 @@ public:
     static QObject* qmlAttachedProperties(QObject* object); // defined in $(class.QmlName:).cpp
     
 public slots:\
-.for class.method where !method.singleton & defined (qml_method_signature (method, 1))
+.for class.method where !method.singleton & defined (method_signature (method, 1))
 
     //  $(method.description:no,block)
-    $(qml_method_signature (method, 1));
+    $(method_signature (method, 1));
 .endfor
 };
 
@@ -332,20 +335,20 @@ public:
     };
     
 public slots:\
-.for class.method where method.singleton & defined (qml_method_signature (method, 1))
+.for class.method where method.singleton & defined (method_signature (method, 1))
 
     //  $(method.description:no,block)
-    $(qml_method_signature (method, 1));
+    $(method_signature (method, 1));
 .endfor
-.for class.constructor as method where defined (qml_method_signature (method, 1))
+.for class.constructor as method where defined (method_signature (method, 1))
 
     //  $(method.description:no,block)
-    $(qml_method_signature (method, 1));
+    $(method_signature (method, 1));
 .endfor
-.for class.destructor as method where defined (qml_method_signature (method, 1))
+.for class.destructor as method where defined (method_signature (method, 1))
 
     //  $(method.description:no,block)
-    $(qml_method_signature (method, 1));
+    $(method_signature (method, 1));
 .endfor
 };
 
@@ -664,7 +667,6 @@ $(project.GENERATED_WARNING_HEADER:)
 ```
 .endmacro
 
-function target_qml
     if count (class, defined (class.api))
         project.QmlName = "Qml$(project.name:Pascal)"
         project.qml_soname = "qml_$(project.name:c)"
@@ -672,6 +674,6 @@ function target_qml
         for class where defined (class.api)
             class.QmlName = "Qml$(class.c_name:Pascal)"
         endfor
-        generate_qml_binding ()
+        generate_binding ()
     endif
 endfunction
