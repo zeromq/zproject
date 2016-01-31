@@ -40,6 +40,7 @@ set ($(project.prefix)jni_sources
 )
 
 add_library ($(project.prefix)jni SHARED ${$(project.prefix)jni_sources})
+add_definitions (-D$(PROJECT.PREFIX)_BUILD_DRAFT_API)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -O2")
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
@@ -366,7 +367,7 @@ Ensure you have gradle and cmake installed, then run:
     gradle build jar
     gradle test
 
-This calls javah to build the headers in src/native/c, and then compiles the C and Java pieces to create a jar file a sharable library (.so).
+This calls javah to build the headers in src/native/include, and then compiles the C and Java pieces to create a jar file a sharable library (.so).
 
 ## Building the JNI Layer for Android
 
@@ -826,7 +827,7 @@ public class $(my.class.name:pascal)Test {
     global.namespace ?= switches.namespace? "org.zeromq.$(project.prefix)"
     global.name_path ?= switches.name_path? "org/zeromq/$(project.prefix)"
     global.topdir ?= switches.topdir? "bindings/jni"
-    directory.create("$(global.topdir)")
+    directory.create ("$(global.topdir)")
 
     for project.class
         resolve_java_class(class)
