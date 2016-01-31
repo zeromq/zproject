@@ -550,7 +550,6 @@ EXTRA_DIST = \\
 .for class where scope = "private"
     src/$(name:c).h \\
 .endfor
-    src/$(project.prefix)_classes.h \\
 .if file.exists ("LICENSE")
     LICENSE \\
 .endif
@@ -561,8 +560,9 @@ EXTRA_DIST = \\
     README.md \\
 .endif
 .if file.exists ("CONTRIBUTING.md")
-    CONTRIBUTING.md
+    CONTRIBUTING.md \\
 .endif
+    src/$(project.prefix)_classes.h
 
 include \$(srcdir)/src/Makemodule.am
 .if file.exists ("src/Makemodule-local.am")
