@@ -96,6 +96,7 @@ if [[ \$(git status -s) ]]; then
     exit 1
 fi
 .close
+.chmod_x "builds/check_zproject/ci_build.sh"
 .directory.create ("builds/check_zproto")
 .output "builds/check_zproto/ci_build.sh"
 #!/usr/bin/env bash
@@ -118,4 +119,5 @@ if [[ \$(git status -s api) ]]; then
     exit 1
 fi
 .close
+.chmod_x "builds/check_zproto/ci_build.sh"
 .endmacro
