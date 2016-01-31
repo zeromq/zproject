@@ -15,6 +15,11 @@
 
 register_target ("java", "Java JNI binding")
 
+#   Target provides name space isolation for its functions
+function target_java
+
+gsl from "zproject_java_lib.gsl"
+
 .macro generate_jni_main
 .output "$(topdir)/CMakeLists.txt"
 cmake_minimum_required (VERSION 2.8)
@@ -818,7 +823,6 @@ public class $(my.class.name:pascal)Test {
 }
 .endmacro
 
-function target_java
     global.namespace ?= switches.namespace? "org.zeromq.$(project.prefix)"
     global.name_path ?= switches.name_path? "org/zeromq/$(project.prefix)"
     global.topdir ?= switches.topdir? "bindings/jni"

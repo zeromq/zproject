@@ -1,3 +1,15 @@
+#   JNI common functions
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 function resolve_jni_container (container)
     #   Type of container shown to Java apps
     my.container.jni_java_type = ""
@@ -202,7 +214,7 @@ function resolve_jni_method (method)
     endfor
 endfunction
 
-function resolve_java_class(class)
+function resolve_java_class (class)
     if defined (my.class.api)
         my.class.jni_okay = 1
         for constructor
@@ -221,4 +233,3 @@ function resolve_java_class(class)
         my.class.jni_okay = 0
     endif
 endfunction
-

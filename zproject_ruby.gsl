@@ -15,6 +15,9 @@
 
 register_target ("ruby", "Ruby binding")
 
+#   Target provides name space isolation for its functions
+function target_ruby
+
 function resolve_ruby_enums (class)
     for my.class.enum
         #   Useful to test existence of enum later when resolving
@@ -629,7 +632,6 @@ end
 $(project.GENERATED_WARNING_HEADER:)
 .endmacro
 
-function target_ruby
     project.RubyName = "$(project.name:Pascal)"
     for class where defined (class.api)
         class.ruby_require = string.replace (class.c_name, "$(project.name)_|")

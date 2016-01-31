@@ -15,6 +15,11 @@
 
 register_target ("java-msvc", "MSVC builds for Java JNI binding")
 
+#   Target provides name space isolation for its functions
+function target_java_msvc
+
+gsl from "zproject_java_lib.gsl"
+
 .macro generate_vs20xx_build_jni (path, level)
 .directory.create ("$(my.path)/$(project.libname)jni")
 .output "$(my.path)/$(project.libname)jni/$(project.libname)jni.vcxproj"
@@ -295,7 +300,6 @@ $(project.GENERATED_WARNING_HEADER:)
 </Project>
 .endmacro
 
-function target_java_msvc
     for project.class
         resolve_java_class(class)
     endfor
