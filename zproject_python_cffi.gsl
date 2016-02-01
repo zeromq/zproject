@@ -112,7 +112,7 @@ function generate_binding
     for project->python_types.type as t
         >typedef struct _$(t.name:c) $(t.name:c);
     endfor
-    for project.class
+    for class where defined (class.api) & class.private = "0"
         for class.enum
             >typedef enum {
             for enum.constant
@@ -127,7 +127,7 @@ function generate_binding
             >
         endfor
     endfor
-    for project.class
+    for class where defined (class.api) & class.private = "0"
         >// CLASS: $(class.name)
         for class. as f
             if class(f) = "XML item" & (name(f) = 'constructor' | name(f) = 'destructor')
@@ -153,11 +153,11 @@ function generate_binding
     >ffi.cdef(cdefs)
 endfunction
 
-    if count (class, defined (class.api))
+    if count (class, defined (class.api) & class.private = "0")
         # Container for UDTs used by this module
         new python_types
         endnew
-        for class where defined (class.api)
+        for class where defined (class.api) & class.private = "0"
             resolve_class (class)
         endfor
         generate_binding ()

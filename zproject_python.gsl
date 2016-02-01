@@ -54,7 +54,7 @@ function register_type (container, struct, pointer)
             endnew
         endif
         my.container.python_type = my.pointer
-        for project.class where defined (class.api) & class.name = my.container.type
+        for project.class where defined (class.api) & class.private = "0" & class.name = my.container.type
             my.container.python_return = "$(my.container.type:Pascal)(<>, $(my.fresh_bool:))"
         endfor
     endif
@@ -376,7 +376,7 @@ function generate_binding
         >
     endif
 
-    for class where defined (class.api)
+    for class where defined (class.api) & class.private = "0"
         >
         ># $(class.name)
         for callback_type as type
@@ -497,11 +497,11 @@ function generate_binding
     >$(project.GENERATED_WARNING_HEADER:)
 endfunction
 
-    if count (class, defined (class.api))
+    if count (class, defined (class.api) & class.private = "0")
         # Container for UDTs used by this module
         new python_types
         endnew
-        for class where defined (class.api)
+        for class where defined (class.api) & class.private = "0"
             resolve_class (class)
         endfor
         generate_setup_py ()
