@@ -170,12 +170,12 @@ $(project.GENERATED_WARNING_HEADER:)
 #include <QQmlExtensionPlugin>
 #include <qqml.h>
 
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
 class $(class.QmlName:);
 class $(class.QmlName:)Attached;
 .endfor
 
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
 #include "$(class.QmlName:).h"
 .endfor
 
@@ -187,7 +187,7 @@ class $(project.QmlName)Plugin : public QQmlExtensionPlugin
 public:
     void registerTypes (const char *uri)
     {
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
         qmlRegisterType<$(class.QmlName:)> (uri, 1, 0, "$(class.QmlName:)");
         qmlRegisterType<$(class.QmlName:)Attached>();
 .endfor
@@ -200,7 +200,7 @@ public:
 $(project.GENERATED_WARNING_HEADER:)
 */
 .#
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
 .output "bindings/qml/src/$(class.QmlName:).cpp"
 /*
 $(project.GENERATED_WARNING_HEADER:)
@@ -431,7 +431,7 @@ LIBS += -l$(project.linkname)
 
 HEADERS += \\
   $$SRCDIR/$(project.qml_soname:)_plugin.h \\
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
   $$SRCDIR/$(class.QmlName).h \
 .   if !last ()
 \\
@@ -440,7 +440,7 @@ HEADERS += \\
 
 
 SOURCES += \\
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
   $$SRCDIR/$(class.QmlName).cpp \
 .   if !last ()
 \\
@@ -667,11 +667,11 @@ $(project.GENERATED_WARNING_HEADER:)
 ```
 .endmacro
 
-    if count (class, defined (class.api))
+    if count (class, defined (class.api) & class.private = "0")
         project.QmlName = "Qml$(project.name:Pascal)"
         project.qml_soname = "qml_$(project.name:c)"
 
-        for class where defined (class.api)
+        for class where defined (class.api) & class.private = "0"
             class.QmlName = "Qml$(class.c_name:Pascal)"
         endfor
         generate_binding ()

@@ -410,7 +410,7 @@ endfunction
 
 .macro generate_binding ()
 .directory.create ("bindings/qt/src")
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
 .   output "bindings/qt/src/$(class.qtname).h"
 .   print_class_header (class)
 .   close
@@ -422,7 +422,7 @@ endfunction
 .   close
 .endfor
 .
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
 .   output "bindings/qt/src/$(class.qtname).cpp"
 .   print_class_body (class)
 .   close
@@ -462,7 +462,7 @@ $(project.GENERATED_WARNING_HEADER:)
 #endif
 
 //  Opaque class structures to allow forward references
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
 class $(class.QtName:);
 .endfor
 .for dependencies.class
@@ -470,7 +470,7 @@ class $(class.QtName:);
 .endfor
 
 //  Public API classes
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
 #include "$(class.qtname).h"
 .endfor
 .for dependencies.class
@@ -529,7 +529,7 @@ $(project.QtName)-uselib:!$(project.QtName)-buildlib {
 } else {
     HEADERS       += \\
                      $$PWD/$(project.QtName).h \\
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
 .   if !last() | count (dependencies.class) > 0
                      $$PWD/$(class.qtname).h \\
 .   else
@@ -545,7 +545,7 @@ $(project.QtName)-uselib:!$(project.QtName)-buildlib {
 .endfor
 
     SOURCES       += \\
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
 .   if !last() | count (dependencies.class) > 0
                      $$PWD/$(class.qtname).cpp \\
 .   else
@@ -670,7 +670,7 @@ int main(int argc, char **argv)
 
     qDebug() << "Running $(project.QtName) selftests...\\n";
 
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
     $(class.QtName)::test (verbose);
 .endfor
 .for dependencies.class
@@ -774,9 +774,9 @@ $(project.GENERATED_WARNING_HEADER:)
 .close
 .endmacro
 
-    if count (class, defined (class.api))
+    if count (class, defined (class.api) & class.private = "0")
         project.QtName = "q$(project.name)"
-        for class where defined (class.api)
+        for class where defined (class.api) & class.private = "0"
             class.QtName = "Q$(class.c_name:Pascal)"
         endfor
         for dependencies.class

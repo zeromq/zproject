@@ -12,6 +12,7 @@
 
 # Resolve filename for each class API (undefined if the file is not found)
 for project.class
+    class.private ?= "0"
     if defined (class.api)
         if !file.exists (class.api)
             echo "Could not read API file '$(class.api)' for '$(class.name)'"
@@ -35,6 +36,7 @@ for project.class where defined (class.api)
     else
         new_class.api = class.api
         new_class.api_dir = directory.resolve ('api/')
+        new_class.private = class.private
         new_class.scope = class.scope
         new_class.state = class.state? new_class.state?
         move new_class after class
