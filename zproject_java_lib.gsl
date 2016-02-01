@@ -215,7 +215,7 @@ function resolve_jni_method (method)
 endfunction
 
 function resolve_java_class (class)
-    if defined (my.class.api)
+    if defined (my.class.api) & my.class.private = "0"
         my.class.jni_okay = 1
         for constructor
             resolve_jni_method (constructor)

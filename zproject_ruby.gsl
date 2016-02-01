@@ -307,7 +307,7 @@ module $(project.RubyName:)
       opts = {
         blocking: true  # only necessary on MRI to deal with the GIL.
       }
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
 
 .for enum
       enum :$(enum.ruby_name:), [
@@ -369,7 +369,7 @@ end
 
 $(project.GENERATED_WARNING_HEADER:)
 .#
-.for class where defined (class.api)
+.for class where defined (class.api) & class.private = "0"
 .output "bindings/ruby/lib/$(project.name:c)/ffi/$(class.ruby_require:).rb"
 $(project.GENERATED_WARNING_HEADER:)
 
@@ -633,11 +633,11 @@ $(project.GENERATED_WARNING_HEADER:)
 .endmacro
 
     project.RubyName = "$(project.name:Pascal)"
-    for class where defined (class.api)
+    for class where defined (class.api) & class.private = "0"
         class.ruby_require = string.replace (class.c_name, "$(project.name)_|")
         class.RubyName = "$(class.ruby_require:Pascal)"
     endfor
-    for class where defined (class.api)
+    for class where defined (class.api) & class.private = "0"
         resolve_ruby_class (class)
     endfor
     generate_ruby_binding ()
