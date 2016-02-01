@@ -58,7 +58,7 @@ function resolve_container (container)
         my.container.qtCallPre = my.container.qtReturnType + " rv = QString ("
         my.container.qtCallPost = ")"
     elsif count (project.class, defined (class.QtName) & (my.container.type = class.c_name)) \
-        | count (project->dependencies.class, defined (class.QtName) & (my.container.type = class.c_name))
+        | count (dependencies.class, defined (class.QtName) & (my.container.type = class.c_name))
         # Resolve c classes
         for project.class where (defined (class.QtName) & (my.container.type = class.c_name))
             my.container.qtArgType = "$(class.QtName) *"
@@ -71,7 +71,7 @@ function resolve_container (container)
                 my.container.qtCallPre = my.container.qtCallPre + "*"
             endif
         endfor
-        for project->dependencies.class where (defined (class.QtName) & (my.container.type = class.c_name))
+        for dependencies.class where (defined (class.QtName) & (my.container.type = class.c_name))
             my.container.qtArgType = "$(class.QtName) *"
             my.container.qtArgPass = my.container.qtName + "->self"
             my.container.qtReturnType = "$(class.QtName) *"
