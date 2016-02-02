@@ -140,9 +140,9 @@ END
 /*  =========================================================================
     platform.h
 
-    This Source Code Form is subject to the terms of the Mozilla Public
-    License, v. 2.0. If a copy of the MPL was not distributed with this
-    file, You can obtain one at http://mozilla.org/MPL/2.0/.
+.   for project.license
+    $(string.trim (license.):block                                         )
+.   endfor
 $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
@@ -150,7 +150,8 @@ $(project.GENERATED_WARNING_HEADER:)
 #ifndef __PLATFORM_H_INCLUDED__
 #define __PLATFORM_H_INCLUDED__
 
-#define $(PROJECT.PREFIX)_HAVE_WINDOWS
+#define $(PROJECT.PREFIX)_HAVE_WINDOWS 1
+#define $(PROJECT.PREFIX)_BUILD_DRAFT_API 1
 
 #endif
 .endmacro
