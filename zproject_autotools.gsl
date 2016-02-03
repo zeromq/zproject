@@ -142,12 +142,12 @@ was_$(use.project:c)_check_lib_detected=no
 
 PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)],
     [
-.  if defined (use.optional) & (use.optional = 1)
+.  if optional
         AC_DEFINE(HAVE_$(USE.LIBNAME), 1, [The $(use.libname) library is to be used.])
 .  endif
     ],
     [
-.  if (use.min_version = '0.0.0')
+.  if use.min_version = '0.0.0'
         AC_ARG_WITH([$(use.libname)],
             [
                 AS_HELP_STRING([--with-$(use.libname)],
@@ -177,24 +177,23 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)],
                 AC_SUBST([$(use.project:c)_CFLAGS],[${$(use.project:c)_synthetic_cflags}])
                 AC_SUBST([$(use.project:c)_LIBS],[${$(use.project:c)_synthetic_libs}])
                 was_$(use.project:c)_check_lib_detected=yes
-.    if defined (use.optional) & (use.optional = 1)
+.       if optional
                 AC_DEFINE(HAVE_$(USE.LIBNAME), 1, [The $(use.libname) library is to be used.])
             ],
             [])
-.    else
+.       else
             ],
             [AC_MSG_ERROR([cannot link with -l$(use.linkname), install $(use.libname).])])
-.    endif
-.  elsif !defined (use.optional) | !(use.optional = 1)
+.       endif
+.   elsif optional
         AC_MSG_ERROR([Cannot find $(use.libname) $(use.min_version) or higher])
-.  endif
+.   endif
     ])
 
 if test "x$was_$(use.project:c)_check_lib_detected" = "xno"; then
     CFLAGS="${$(use.project:c)_CFLAGS} ${CFLAGS}"
     LIBS="${$(use.project:c)_LIBS} ${LIBS}"
 fi
-
 .endfor
 
 .# Restore user supplied flags
