@@ -13,9 +13,10 @@
 
         Also, 'cmake name' is target specific and must go.
 
+        Suggested model:
         <use
             project = "libzmq"          required
-            location = "https://github.com/zeromq"
+            master = "https://github.com/zeromq"
                                         required
             libname = "libzmq"          default = lib<prefix>
             prefix = "zmq"              default = project
@@ -23,21 +24,24 @@
             release = "<tagname>"       default = "master"
             abi = "version"             default = "0:0:0"
             header = "<filename>"       default = <prefix>.h
+            language = "C|C++"          default = "C"
+            optional = "1"              default = "0"
             <use project = "libsodium" />
-            <alias name = "zmq" />
         </use>
     -->
 
     <use project = "libzmq" prefix = "zmq"
         repository = "https://github.com/zeromq/libzmq"
-        test = "zmq_init">
-        <use project = "libsodium" optional = "1" implied = "1" />
+        test = "zmq_init"
+        >
+        <use project = "libsodium" optional = "1" />
     </use>
 
     <use project = "czmq" libname = "libczmq"
         repository = "https://github.com/zeromq/czmq"
         test = "zctx_test">
         <use project = "libzmq" />
+        <use project = "uuid" optional = "1" />
     </use>
 
     <use project = "zyre" libname = "libzyre"
@@ -59,7 +63,7 @@
 
     <use project = "libsodium" prefix = "sodium"
         repository = "https://github.com/jedisct1/libsodium"
-        release = "1.0.7"
+        release = "stable"
         test = "sodium_init" />
 
     <!-- Edgenet Projects -->
