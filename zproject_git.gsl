@@ -95,6 +95,9 @@ if !file.exists (".gitignore")
     ># Android -dependencies
     >src/app/jni/output
     >
+    ># Python build directory
+    >build/
+    >
     ># Temporary files
     >*.swp
     >*~
