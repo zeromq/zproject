@@ -71,7 +71,7 @@ if [ "$BUILD_TYPE" == "default" ]; then
     # Clone and build dependencies
 .   for use where defined (use.repository)
     git clone --quiet --depth 1 $(use.repository) $(use.project)
-    git --no-pager log -oneline -n1
+    git --no-pager log --oneline -n1
     cd $(use.project)
     ./autogen.sh 2> /dev/null
     ./configure "${CONFIG_OPTS[@]}"
