@@ -21,6 +21,7 @@ function resolve_project_dependency (use)
         my.use.prefix      ?= known.prefix?
         my.use.linkname    ?= known.linkname?
         my.use.libname     ?= known.libname?
+        my.use.release     ?= known.release?
 
         # Copy known implied dependencies into this dependency
         for known.use as implied_use
