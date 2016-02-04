@@ -28,20 +28,20 @@ USER zmq
 
 .for use 
 WORKDIR /home/zmq
-RUN git clone $(use.repository).git
+RUN git clone --quiet $(use.repository).git
 WORKDIR /home/zmq/$(use.project)
-RUN ./autogen.sh
-RUN ./configure --without-docs
+RUN ./autogen.sh 2> /dev/null
+RUN ./configure --quiet --without-docs
 RUN make
 RUN sudo make install
 RUN sudo ldconfig
 
 .endfor
 WORKDIR /home/zmq
-RUN git clone git://github.com/zeromq/$(project.name:c).git
+RUN git clone --quiet git://github.com/zeromq/$(project.name:c).git
 WORKDIR /home/zmq/$(project.name:c)
-RUN ./autogen.sh
-RUN ./configure --without-docs
+RUN ./autogen.sh 2> /dev/null
+RUN ./configure --quiet --without-docs
 RUN make
 RUN sudo make install
 RUN sudo ldconfig
