@@ -54,9 +54,10 @@ fi
 
     if [ ! -d "$$(USE.PROJECT)_ROOT" ]; then
         echo "The $(USE.PROJECT)_ROOT directory does not exist"
-        echo "  ${$(USE.PROJECT)_ROOT}"
+        echo "  ${$(USE.PROJECT)_ROOT}" run run
         exit 1
     fi
+    echo "Building $(use.project) in ${$(USE.PROJECT)_ROOT}..."
 
     (bash ${$(USE.PROJECT)_ROOT}/builds/android/build.sh) || exit 1
     UPSTREAM_PREFIX=${$(USE.PROJECT)_ROOT}/builds/android/prefix/${TOOLCHAIN_NAME}
@@ -78,8 +79,8 @@ fi
 
     export LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
 
-    (cd "${cache}/$(project.name)" && ./autogen.sh \\
-        && ./configure "${ANDROID_BUILD_OPTS[@]}" --without-documentation \\
+    (cd "${cache}/$(project.name)" && ./autogen.sh 2> /dev/null \\
+        && ./configure --quiet "${ANDROID_BUILD_OPTS[@]}" --without-docs \\
         && make -j 4 \\
         && make install) || exit 1
 }
@@ -132,7 +133,7 @@ export TOOLCHAIN_ARCH="arm"
 
 .for use where defined (use.repository)
 export $(USE.PROJECT)_ROOT="/tmp/$(use.project)"
-git clone --depth 1 $(use.repository) $$(USE.PROJECT)_ROOT
+git clone --quiet --depth 1 $(use.repository) $$(USE.PROJECT)_ROOT
 
 .endfor
 source ./build.sh
