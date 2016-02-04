@@ -31,7 +31,7 @@ WORKDIR /home/zmq
 RUN git clone $(use.repository).git
 WORKDIR /home/zmq/$(use.project)
 RUN ./autogen.sh
-RUN ./configure
+RUN ./configure --without-docs
 RUN make
 RUN sudo make install
 RUN sudo ldconfig
@@ -41,7 +41,7 @@ WORKDIR /home/zmq
 RUN git clone git://github.com/zeromq/$(project.name:c).git
 WORKDIR /home/zmq/$(project.name:c)
 RUN ./autogen.sh
-RUN ./configure
+RUN ./configure --without-docs
 RUN make
 RUN sudo make install
 RUN sudo ldconfig
