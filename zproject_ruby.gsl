@@ -324,7 +324,7 @@ module $(project.RubyName:)
         $(ruby_ffi_attach_definition (method))
       rescue ::FFI::NotFoundError
         if $VERBOSE || $DEBUG
-          warn "The function $(method.name:c)() can't be used through " +
+          warn "The function $(class.c_name)_$(method.name:c)() can't be used through " +
                "this Ruby binding because it's not available."
         end
       end
@@ -338,7 +338,7 @@ module $(project.RubyName:)
         $(ruby_ffi_attach_definition (method))
       rescue ::FFI::NotFoundError
         if $VERBOSE || $DEBUG
-          warn "The function $(method.name:c)() can't be used through " +
+          warn "The function $(class.c_name)_$(method.name:c)() can't be used through " +
                "this Ruby binding because it's not available."
         end
       end
@@ -352,7 +352,7 @@ module $(project.RubyName:)
         $(ruby_ffi_attach_definition (method))
       rescue ::FFI::NotFoundError
         if $VERBOSE || $DEBUG
-          warn "The function $(method.name:c)() can't be used through " +
+          warn "The function $(class.c_name)_$(method.name:c)() can't be used through " +
                "this Ruby binding because it's not available."
         end
       end
