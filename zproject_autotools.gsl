@@ -584,7 +584,7 @@ program_libs = $(libs:)
 
 # Programs need to link the c++ runtime if everything was compiled statically.
 if !ENABLE_SHARED
-program_libs += -lstdc++
+program_libs += -lstdc++ -lm
 endif
 
 .if count (class)
@@ -956,7 +956,7 @@ sub pull {
         while (<SOURCE>) {
             if (/$tag/) {
                 while (<SOURCE>) {
-                    last if /\\@discuss/ || /\\@end/;
+                    last if /\\@discuss/ || /\\@end/ || /\\@ignore/;
                     $_ = "    $_" if $opts eq "code";
                     s/^    // if $opts eq "left";
                     $_ = "    $_" if $opts eq "test";
