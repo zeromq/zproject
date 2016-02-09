@@ -688,11 +688,7 @@ noinst_PROGRAMS += src/$(main.name)
 .   endif
 src_$(main.name:c)_CPPFLAGS = ${AM_CPPFLAGS}
 src_$(main.name:c)_LDADD = ${program_libs}
-.   if file.exists ("src/$(name).cc")
-src_$(name:c)_SOURCES = src/$(name).cc
-.   else
-src_$(name:c)_SOURCES = src/$(name).c
-.   endif
+src_$(name:c)_SOURCES = $(main.source)
 .#
 .#  Systemd stuff (I'd _really_ like to get rid of this/PH)
 .   if count (main, count.service ?= 1 | count.services ?= 1) \
