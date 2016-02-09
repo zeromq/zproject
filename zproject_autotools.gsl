@@ -186,6 +186,8 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)],
             [AC_MSG_ERROR([cannot link with -l$(use.linkname), install $(use.libname).])])
 .       endif
 .   elsif optional
+        AC_MSG_WARN([Cannot find $(use.libname) $(use.min_version) or higher])
+.   else
         AC_MSG_ERROR([Cannot find $(use.libname) $(use.min_version) or higher])
 .   endif
     ])
