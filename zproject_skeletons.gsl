@@ -12,6 +12,8 @@
 
 ##  Generate main source if not already present
 
+.directory.create ('src')
+
 .macro skeleton_main_source
 . if !file.exists (main.source)
 .   echo "Generating skeleton for $(main.source)"
