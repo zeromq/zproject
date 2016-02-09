@@ -429,14 +429,6 @@ endfunction
 ##
 # The following functions are entirely C-specific code generation helpers.
 # They contain no useful information for higher-level language bindings.
-#
-# Construct the string for a actor declaration in a C header
-#
-function c_actor_declaration (method)
-    out =  "$(PROJECT.PREFIX)_EXPORT void\n"
-    out += "    $(actor.name:c) (zsock_t *pipe, void *args);"
-    return out
-endfunction
 
 function _c_method_arglist (method)
     # this requires the tmp_args to be set up
@@ -495,37 +487,24 @@ function c_method_signature (method)
 endfunction
 
 #
-# Construct the string for a method declaration in a C header
-#
-function c_method_declaration (method)
-    my.out = "$(PROJECT.PREFIX)_EXPORT "
-    my.out += c_method_signature(my.method)
-    if defined(my.method.format_index)
-        my.out += " CHECK_PRINTF (" + (my.method.format_index) + ")"
-    endif
-    my.out += ";"
-    return my.out
-endfunction
-
-#
 # Construct the string for a callback typedef in a C header
 #
 function c_callback_typedef (method)
-    out = "typedef $(my.method->return.c_type:) "
-    out += "($(class.c_name)_$(my.method.c_name)) ("
-    out += "\n    "
+    my.out = "typedef $(my.method->return.c_type:) "
+    my.out += "($(class.c_name)_$(my.method.c_name)) ("
+    my.out += "\n    "
     for my.method.argument
-        out += argument.c_type?""
+        my.out += argument.c_type?""
         if !regexp.match ("\\*$", argument.c_type?"")
-            out += " "
+            my.out += " "
         endif
-        out += argument.c_name?""
+        my.out += argument.c_name?""
         if !last ()
-            out += ", "
+            my.out += ", "
         endif
     endfor
-    out += ");"
-    return out
+    my.out += ");"
+    return my.out
 endfunction
 
 
