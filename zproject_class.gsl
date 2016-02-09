@@ -500,7 +500,6 @@ $(c_method_signature (method):) CHECK_PRINTF ($(format_index));
 .   endif
 .endfor
 //  @end
-
 $(HEADER_FILE_SUFFIX:)\
 .       endtemplate
         close
