@@ -104,7 +104,7 @@ IF ($(USE.PROJECT)_FOUND)
     include_directories(${$(USE.PROJECT)_INCLUDE_DIRS})
     list(APPEND MORE_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
 .if use.optional = 1
-    add_definitions(-DHAVE_$(USE.PROJECT))
+    add_definitions(-DHAVE_$(USE.LIBNAME))
     list(APPEND OPTIONAL_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
 .endif
 .if use.optional = 0
