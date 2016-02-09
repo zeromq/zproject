@@ -131,4 +131,11 @@
         <use project = "json-c" />
     </use>
 
+    <use project = "systemd"
+        libname = "libsystemd"
+        prefix = "libsystemd"
+        linkname = "systemd"
+        header = "systemd/sd-daemon.h"
+        test = "sd_listen_fds" />
+
 </known_projects>
