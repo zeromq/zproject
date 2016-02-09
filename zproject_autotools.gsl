@@ -186,6 +186,8 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)],
             [AC_MSG_ERROR([cannot link with -l$(use.linkname), install $(use.libname).])])
 .       endif
 .   elsif optional
+        AC_MSG_WARN([Cannot find $(use.libname) $(use.min_version) or higher])
+.   else
         AC_MSG_ERROR([Cannot find $(use.libname) $(use.min_version) or higher])
 .   endif
     ])
@@ -426,16 +428,16 @@ AS_IF([test "$have_ld_version_script" = "yes"],
 
 # enable specific system integration features
 AC_ARG_WITH([systemd],
-    AS_HELP_STRING([--with-systemd],
-    [Build and install with systemd integration [default=no].]),
-    [with_systemd=$withval],
-    [with_systemd=no])
+    AS_HELP_STRING([--with-systemd-units],
+    [Build and install with systemd units integration [default=no].]),
+    [with_systemd_units=$withval],
+    [with_systemd_units=no])
 
-AM_CONDITIONAL([WITH_SYSTEMD], [test x$with_systemd != xno])
+AM_CONDITIONAL([WITH_SYSTEMD_UNITS], [test x$with_systemd_units != xno])
 
-AM_COND_IF([WITH_SYSTEMD],
-    [PKG_CHECK_MODULES([SYSTEMD], [systemd >= 200], [],
-        [AC_MSG_ERROR([Cannot find required package for systemd. Note, pkg-config is required due to specified version >= 200])])],
+AM_COND_IF([WITH_SYSTEMD_UNITS],
+    [AC_DEFINE(WITH_SYSTEMD_UNITS, 1, [systemd units are going to be installed])
+    AC_SUBST(WITH_SYSTEMD_UNITS)],
     [])
 
 if test "x$cross_compiling" = "xyes"; then
@@ -472,7 +474,7 @@ AC_CONFIG_FILES([Makefile
                  src/$(project.libname).pc
 .   endif
 .   for project.main where defined (main->extra)
-.       for extra where extra.cond ?<> "with_systemd"
+.       for extra where extra.cond ?<> "with_systemd_units"
                  src/$(extra.name)
 .       endfor
 .   endfor
@@ -481,7 +483,7 @@ AC_CONFIG_FILES([Makefile
 AC_CONFIG_FILES([Makefile])
 .endif
 
-AM_COND_IF([WITH_SYSTEMD],
+AM_COND_IF([WITH_SYSTEMD_UNITS],
     [AC_CONFIG_FILES([
 .   for project.main where main.service ?= 1
                  src/$(main.name).service
@@ -493,7 +495,7 @@ AM_COND_IF([WITH_SYSTEMD],
                  src/$(service.name).service
 .   endfor
 .   for project.main where defined (main->extra)
-.       for extra where extra.cond ?= "with_systemd"
+.       for extra where extra.cond ?= "with_systemd_units"
                  src/$(extra.name)
 .       endfor
 .   endfor
@@ -692,8 +694,8 @@ src_$(name:c)_SOURCES = $(main.source)
 .#
 .#  Systemd stuff (I'd _really_ like to get rid of this/PH)
 .   if count (main, count.service ?= 1 | count.services ?= 1) \
-     | count (extra, count.cond ?= "with_systemd")
-if WITH_SYSTEMD
+     | count (extra, count.cond ?= "with_systemd_units")
+if WITH_SYSTEMD_UNITS
 .   endif
 .   if main.service ?= 1 | main.services ?= 1
 src_$(main.name:c)_servicedir = @prefix@/lib/systemd/system
@@ -711,15 +713,15 @@ src_$(main.name:c)_service_DATA = src/$(main.name).service
 src_$(main.name:c)_service_DATA = src/$(main.name)@.service
 .   endif
 .   endif
-.   for extra where extra.cond ?= "with_systemd"
+.   for extra where extra.cond ?= "with_systemd_units"
 src_$(main.name:c)_$(extra.type:c)dir = $(extra.path)
 src_$(main.name:c)_$(extra.type:c)_DATA = src/$(extra.name)
 .   endfor
 .   if count (main, count.service ?= 1 | count.services ?= 1) \
-     | count (extra, count.cond ?= "with_systemd")
-endif #WITH_SYSTEMD
+     | count (extra, count.cond ?= "with_systemd_units")
+endif #WITH_SYSTEMD_UNITS
 .   endif
-.   for extra where extra.cond ?<> "with_systemd"
+.   for extra where extra.cond ?<> "with_systemd_units"
 src_$(main.name:c)_$(extra.path:c)_$(extra.name:c)dir = $(extra.path)
 src_$(main.name:c)_$(extra.path:c)_$(extra.name:c)_DATA = src/$(extra.name)
 .   endfor
