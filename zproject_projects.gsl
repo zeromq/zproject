@@ -59,17 +59,6 @@ function resolve_project_dependency (use)
     endfor
 endfunction
 
-function resolve_extra (main)
-    for extra where defined (extra.type)
-        if extra.type = "systemd-tmpfiles"
-            extra.name ?= "$(main.name).conf"
-            extra.path ?= "/usr/lib/tmpfiles.d"
-            extra.cond = "with_systemd"
-        endif
-        extra.cond ?= ""
-    endfor
-endfunction
-
 function resolve_scope (item)
     if my.item.private ?= 1
         my.item.scope = "private"
@@ -85,7 +74,6 @@ endfor
 
 for main
     resolve_scope (main)
-    resolve_extra (main)
 endfor
 
 for actor
