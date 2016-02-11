@@ -112,7 +112,8 @@
 
     <use project = "uuid"
         test = "uuid_generate"
-        header = "uuid/uuid.h" />
+        header = "uuid/uuid.h"
+        debian_name = "uuid-dev" />
 
     <use project = "asound"
         test = "snd_asoundlib_version"
