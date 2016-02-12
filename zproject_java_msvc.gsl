@@ -269,8 +269,8 @@ $(project.GENERATED_WARNING_HEADER:)
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <EnablePREfast>false</EnablePREfast>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$\(ConfigurationType)' == 'StaticLibrary'">$(PROJECT.LIBNAME)JNI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$\(ConfigurationType)' == 'DynamicLibrary'">$(PROJECT.LIBNAME)JNI_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$\(ConfigurationType)' == 'StaticLibrary'">$(PROJECT.PREFIX)JNI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$\(ConfigurationType)' == 'DynamicLibrary'">$(PROJECT.PREFIX)JNI_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Rpcrt4.lib;Ws2_32.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
