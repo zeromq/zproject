@@ -80,9 +80,9 @@ $(project.GENERATED_WARNING_HEADER:)
     $(PROJECT.PREFIX)_MAKE_VERSION($(PROJECT.PREFIX)_VERSION_MAJOR, $(PROJECT.PREFIX)_VERSION_MINOR, $(PROJECT.PREFIX)_VERSION_PATCH)
 
 #if defined (__WINDOWS__)
-#   if defined $(PROJECT.LIBNAME)_STATIC
+#   if defined $(PROJECT.PREFIX)_STATIC
 #       define $(PROJECT.PREFIX)_EXPORT
-#   elif defined $(PROJECT.LIBNAME)_EXPORTS
+#   elif defined $(PROJECT.PREFIX)_EXPORTS
 #       define $(PROJECT.PREFIX)_EXPORT __declspec(dllexport)
 #   else
 #       define $(PROJECT.PREFIX)_EXPORT __declspec(dllimport)

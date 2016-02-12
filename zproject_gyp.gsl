@@ -46,7 +46,10 @@ $(use.project)/
 #define $(PROJECT.PREFIX)_BUILD_DRAFT_API
 
 #if defined $(PROJECT.PREFIX)_HAVE_WINDOWS
-#   define $(PROJECT.LIBNAME)_STATIC
+#   define $(PROJECT.PREFIX)_STATIC
+.for project.use where !optional
+#   define $(USE.PREFIX)_STATIC
+.endfor
 
 #elif defined $(PROJECT.PREFIX)_HAVE_OSX
 #   define $(PROJECT.PREFIX)_HAVE_IFADDRS

@@ -137,7 +137,7 @@ $(project.GENERATED_WARNING_HEADER:)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$\(Linkage-$(my.config.name))' == 'static' Or '$\(Linkage-$(my.config.name))' == 'ltcg'">
     <ClCompile>
-      <PreprocessorDefinitions>$(PROJECT.LIBNAME)_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>$(PROJECT.PREFIX)_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
 

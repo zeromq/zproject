@@ -732,8 +732,8 @@ $(project.GENERATED_WARNING_HEADER:)
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <EnablePREfast>false</EnablePREfast>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$\(ConfigurationType)' == 'StaticLibrary'">$(PROJECT.LIBNAME)_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$\(ConfigurationType)' == 'DynamicLibrary'">$(PROJECT.LIBNAME)_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$\(ConfigurationType)' == 'StaticLibrary'">$(PROJECT.PREFIX)_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$\(ConfigurationType)' == 'DynamicLibrary'">$(PROJECT.PREFIX)_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Rpcrt4.lib;Ws2_32.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -819,7 +819,7 @@ $(project.GENERATED_WARNING_HEADER:)
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$\(ProjectDir)..\\..\\..\\..\\..\\$(project.name)\\include\\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$\(Linkage-$(project.linkname))' == 'static' Or '$\(Linkage-$(project.linkname))' == 'ltcg'">$(PROJECT.LIBNAME)_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$\(Linkage-$(project.linkname))' == 'static' Or '$\(Linkage-$(project.linkname))' == 'ltcg'">$(PROJECT.PREFIX)_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies Condition="'$\(Linkage-$(project.linkname))' != ''">$(project.libname).lib;%(AdditionalDependencies)</AdditionalDependencies>
