@@ -13,70 +13,158 @@
 register_target ("gyp", "GYP build system (project.gyp)")
 
 .macro target_gyp
-.output "project.gyp"
+.directory.create ("builds/gyp")
+.output "builds/gyp/.gitignore"
+project.Makefile
+*.mk
+out/
+Makefile
+.output "builds/gyp/platform.h"
+/*  =========================================================================
+    $(project.name) - $(project.description?'':)
+
+.   for project.license
+    $(string.trim (license.):block                                         )
+.   endfor
+    =========================================================================
+*/
+
+#ifndef __PLATFORM_H_INCLUDED__
+#define __PLATFORM_H_INCLUDED__
+
+//  This file provides the configuration for Linux, Windows, and OS/X
+//  as determined by $(PROJECT.PREFIX)_HAVE_XXX macros passed from project.gyp
+
+//  Check that we're being called from our gyp makefile
+#ifndef $(PROJECT.PREFIX)_GYP_BUILD
+#   error "foreign platform.h detected, please re-configure"
+#endif
+
+#define $(PROJECT.PREFIX)_BUILD_DRAFT_API
+
+#if defined $(PROJECT.PREFIX)_HAVE_WINDOWS
+#   define $(PROJECT.LIBNAME)_STATIC
+
+#elif defined $(PROJECT.PREFIX)_HAVE_OSX
+#   define $(PROJECT.PREFIX)_HAVE_IFADDRS
+#   define HAVE_GETIFADDRS
+#   define HAVE_NET_IF_H
+#   define HAVE_NET_IF_MEDIA_H
+
+#elif defined $(PROJECT.PREFIX)_HAVE_LINUX
+#   define $(PROJECT.PREFIX)_HAVE_IFADDRS
+#   define HAVE_GETIFADDRS
+#   define HAVE_LINUX_WIRELESS_H
+#   define HAVE_NET_IF_H
+#   define HAVE_NET_IF_MEDIA_H
+
+#else
+#   error "No platform defined, abandoning"
+#endif
+
+#endif
+.output "builds/gyp/project.gyp"
 $(project.GENERATED_WARNING_HEADER:)
 
 #   gyp --depth=.
 {
-    'target_defaults': {
-        'default_configuration': 'Debug',
-        'configurations': {
-            'Debug': {
-                'defines': [ 'DEBUG', '_DEBUG' ],
-                'msvs_settings': {
-                    'VCCLCompilerTool': {
-                        'RuntimeLibrary': 1, # static debug
-                    },
-                },
-            },
-            'Release': {
-                'defines': [ 'NDEBUG' ],
-                'msvs_settings': {
-                    'VCCLCompilerTool': {
-                        'RuntimeLibrary': 0, # static release
-                    },
-                },
-            }
-        },
-        'msvs_settings': {
-            'VCLinkerTool': {
-                'GenerateDebugInformation': 'true',
-            },
-        },
-    },
+  'target_defaults': {
     'include_dirs': [
-        'include'
+      '../../include',
+      '.'
     ],
-    'targets': [
-.if count (class)
-      {
-        'target_name': '$(project.libname)',
-        'type': 'static_library',
-        'sources': [
-.   for class by name
-            'src/$(name:c).c'$(last ()?? ""? ",")
-.   endfor
-        ]
-      },
-.endif
-.for main
-      {
-        'target_name': '$(name)',
-        'type': 'executable',
-        'sources': [
-            'src/$(name).c'
-        ],
-        'dependencies': [
-            '$(project.libname)'
+    'defines': [
+      '$(PROJECT.PREFIX)_GYP_BUILD'
+    ],
+    'conditions': [
+      [ 'OS=="win"', {
+        'defines': [
+          '$(PROJECT.PREFIX)_HAVE_WINDOWS'
         ],
         'libraries': [
-.   for project.use
-            '-l$(linkname)',
-.   endfor
-            '-lpthread'
+          'ws2_32',
+          'advapi32',
+          'iphlpapi'
         ]
-      }$(last ()?? ""? ",")
-.endfor
+      }],
+      [ 'OS=="mac"', {
+        'defines': [
+          '$(PROJECT.PREFIX)_HAVE_OSX'
+        ]
+      }],
+      [ 'OS=="linux"', {
+        'defines': [
+          '$(PROJECT.PREFIX)_HAVE_LINUX'
+        ],
+        'libraries': [
+          '-lpthread'
+        ]
+      }]
     ]
+  },
+  'targets': [
+.if count (class)
+    {
+      'target_name': '$(project.libname)',
+      'type': 'static_library',
+      'sources': [
+        'platform.h',
+        '../../include/$(project.header)',
+.   if file.exists ("include/$(project.prelude)")
+        '../../include/$(project.prelude)',
+.   endif
+.   for class by name
+        '../../src/$(name:c).c',
+.       if scope = "public"
+        '../../include/$(name:c).h',
+.       else
+        '../../src/$(name:c).h',
+.       endif
+.   endfor
+.   for header by name
+        '../../include/$(header.name).h',
+.   endfor
+.   for extra by name
+        '../../src/$(extra.name)',
+.   endfor
+        '../../include/$(project.prefix)_library.h',
+        '../../src/$(project.prefix)_selftest.c',
+        '../../src/$(project.prefix)_classes.h'
+      ],
+      'dependencies': [
+.   for project.use where !optional
+.       use.gypfile = "../$(use.project)/builds/gyp/project.gyp"
+.       if file.exists (gypfile)
+        '../../$(gypfile):$(use.libname)',
+.       else
+.           echo "E: please checkout $(use.project) into ../$(use.project)"
+.       endif
+.   endfor
+      ],
+      'copies': [
+        {
+          'destination': '../../src',
+          'files': [
+              'platform.h'
+          ]
+        }
+      ]
+    },
+.endif
+.for main
+    {
+      'target_name': '$(name)',
+      'type': 'executable',
+      'sources': [
+        '../../src/$(name).c'
+      ],
+.   if count (project.class)
+      'dependencies': [
+        '$(project.libname)'
+      ]
+.   endif
+    }$(last ()?? ""? ",")
+.endfor
+  ]
 }
 .endmacro
