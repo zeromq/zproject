@@ -26,16 +26,12 @@
             header = "<filename>"       default = <prefix>.h
             language = "C|C++"          default = "C"
             optional = "1"              default = "0"
-            <use project = "libsodium" />
         </use>
     -->
 
     <use project = "libzmq" prefix = "zmq"
         repository = "https://github.com/zeromq/libzmq"
-        test = "zmq_init"
-        >
-        <use project = "libsodium" optional = "1" />
-    </use>
+        test = "zmq_init" />
 
     <use project = "czmq" libname = "libczmq"
         repository = "https://github.com/zeromq/czmq"
@@ -59,13 +55,6 @@
         <use project = "czmq" />
     </use>
 
-    <!-- Core dependencies -->
-
-    <use project = "libsodium" prefix = "sodium"
-        repository = "https://github.com/jedisct1/libsodium"
-        release = "stable"
-        test = "sodium_init" />
-
     <!-- Edgenet Projects -->
 
     <use project = "drops" libname = "libdrops"
@@ -83,6 +72,11 @@
 
     <!-- Various known third-party projects
         (If you're unsure of where a project belongs, add it here) -->
+
+    <use project = "libsodium" prefix = "sodium"
+        repository = "https://github.com/jedisct1/libsodium"
+        release = "stable"
+        test = "sodium_init" />
 
     <use project = "libcurl"
         repository = "https://github.com/bagder/curl"

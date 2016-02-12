@@ -26,7 +26,7 @@ RUN chmod 0440 /etc/sudoers.d/zmq
 
 USER zmq
 
-.for use 
+.for use where !optional
 WORKDIR /home/zmq
 RUN git clone --quiet $(use.repository).git
 WORKDIR /home/zmq/$(use.project)
