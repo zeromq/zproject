@@ -74,6 +74,9 @@ $(project.GENERATED_WARNING_HEADER:)
   'target_defaults': {
     'include_dirs': [
       '../../include',
+.for project.use where !optional
+      '../../../$(use.project)/include',
+.endfor
       '.'
     ],
     'defines': [
