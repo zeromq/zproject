@@ -19,6 +19,9 @@ project.Makefile
 *.mk
 out/
 Makefile
+.for project.use where !optional
+$(use.project)/
+.endfor
 .output "builds/gyp/platform.h"
 /*  =========================================================================
     $(project.name) - $(project.description?'':)
