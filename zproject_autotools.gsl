@@ -478,16 +478,22 @@ AC_CONFIG_FILES([Makefile
                  src/$(extra.name)
 .       endfor
 .   endfor
+.   for project.main where main.service ?= 1
+                 src/$(main.name).cfg
+.   endfor
                  ])
 .else
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile
+.   for project.main where main.service ?= 1
+                 src/$(main.name).cfg
+.   endfor
+                ])
 .endif
 
 AM_COND_IF([WITH_SYSTEMD_UNITS],
     [AC_CONFIG_FILES([
 .   for project.main where main.service ?= 1
                  src/$(main.name).service
-                 src/$(main.name).cfg
 .   endfor
     ])],
     [])
@@ -684,10 +690,10 @@ src_$(name:c)_SOURCES = $(main.source)
 .#
 .#  Systemd stuff
 .   if main.service ?= 1
+src_$(main.name:c)_config_DATA = src/$(main.name).cfg
+src_$(main.name:c)_configdir = \$(sysconfdir)/$(project.name)
 if WITH_SYSTEMD_UNITS
 src_$(main.name:c)_servicedir = @prefix@/lib/systemd/system
-src_$(main.name:c)_configdir = \$(sysconfdir)/$(project.name)
-src_$(main.name:c)_config_DATA = src/$(main.name).cfg
 src_$(main.name:c)_service_DATA = src/$(main.name).service
 endif #WITH_SYSTEMD_UNITS
 .   endif
