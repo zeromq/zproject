@@ -10,7 +10,7 @@
 #   License, v. 2.0. If a copy of the MPL was not distributed with this
 #   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-function resolve_jni_container (container)
+function resolve_container (container)
     #   Type of container shown to Java apps
     my.container.jni_java_type = ""
     #   Type of container passed to native code
@@ -123,8 +123,8 @@ function resolve_jni_container (container)
     return 0            #   Seems to be OK
 endfunction
 
-function resolve_jni_method (method)
-    my.method.jni_okay = 1
+function resolve_method (method)
+    my.method.okay = 1
 
     if my.method.name = "clone" \
     |  my.method.name = "close" \
@@ -157,8 +157,8 @@ function resolve_jni_method (method)
     endif
 
     for my.method.argument
-        if resolve_jni_container (argument) = 1
-            my.method.jni_okay = 0
+        if resolve_container (argument) = 1
+            my.method.okay = 0
             #echo "Skipping $(class.name).$(my.method.name) - can't deal with argument type $(argument.type)"
             last
         endif
@@ -201,35 +201,35 @@ function resolve_jni_method (method)
     endfor
 
     for my.method.return
-        if resolve_jni_container (return)
-            my.method.jni_okay = 0
+        if resolve_container (return)
+            my.method.okay = 0
             #echo "Skipping $(class.name).$(my.method.name) - can't deal with return type $(return.type:)"
         else
             #   returned buffers need a size attribute
             if type = "buffer" & !defined (return.size)
-                my.method.jni_okay = 0
+                my.method.okay = 0
                 #echo "Skipping $(class.name).$(my.method.name) - can't return unsized fresh buffer"
             endif
         endif
     endfor
 endfunction
 
-function resolve_java_class (class)
+function resolve_class (class)
     if defined (my.class.api) & my.class.private = "0"
-        my.class.jni_okay = 1
+        my.class.okay = 1
         for constructor
-            resolve_jni_method (constructor)
-            if index () = 1 & constructor.jni_okay = 0
-                my.class.jni_okay = 0
+            resolve_method (constructor)
+            if index () = 1 & constructor.okay = 0
+                my.class.okay = 0
             endif
         endfor
         for destructor
-            resolve_jni_method (destructor)
+            resolve_method (destructor)
         endfor
         for method
-            resolve_jni_method (method)
+            resolve_method (method)
         endfor
     else
-        my.class.jni_okay = 0
+        my.class.okay = 0
     endif
 endfunction

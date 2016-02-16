@@ -7,19 +7,13 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
 #
-# The version number is extracted from include/myproject.h using
-# the version.sh script. Hence, it should be updated there.
-# The version in git should reflect the *next* version planned.
-#
-AC_INIT([myproject],[m4_esyscmd([./version.sh myproject.h])],[email@hostname.com])
+AC_INIT([myproject],[1.0.0],[email@hostname.com])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADERS([src/platform.h])
 AM_INIT_AUTOMAKE([subdir-objects tar-ustar foreign])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
-m4_pattern_allow([AC_PROG_LIBTOOL])
-m4_pattern_allow([AC_LIBTOOL_WIN32_DLL])
 
 # This defines PACKAGE_VERSION_... in src/platform.h
 PV_MAJOR=`echo $PACKAGE_VERSION | cut -d . -f 1`
@@ -256,16 +250,16 @@ AC_SUBST([pkgconfigdir])
 
 # enable specific system integration features
 AC_ARG_WITH([systemd],
-    AS_HELP_STRING([--with-systemd],
-    [Build and install with systemd integration [default=no].]),
-    [with_systemd=$withval],
-    [with_systemd=no])
+    AS_HELP_STRING([--with-systemd-units],
+    [Build and install with systemd units integration [default=no].]),
+    [with_systemd_units=$withval],
+    [with_systemd_units=no])
 
-AM_CONDITIONAL([WITH_SYSTEMD], [test x$with_systemd != xno])
+AM_CONDITIONAL([WITH_SYSTEMD_UNITS], [test x$with_systemd_units != xno])
 
-AM_COND_IF([WITH_SYSTEMD],
-    [PKG_CHECK_MODULES([SYSTEMD], [systemd >= 200], [],
-        [AC_MSG_ERROR([Cannot find required package for systemd. Note, pkg-config is required due to specified version >= 200])])],
+AM_COND_IF([WITH_SYSTEMD_UNITS],
+    [AC_DEFINE(WITH_SYSTEMD_UNITS, 1, [systemd units are going to be installed])
+    AC_SUBST(WITH_SYSTEMD_UNITS)],
     [])
 
 if test "x$cross_compiling" = "xyes"; then
@@ -274,13 +268,13 @@ if test "x$cross_compiling" = "xyes"; then
 else
     # enable draft API by default if we're in a git repository
     # else disable it by default; then allow --enable-drafts=yes/no override
-    AC_CHECK_FILE(.git, [gitmaster=yes], [gitmaster=no])
+    AC_CHECK_FILE($srcdir/.git, [gitmaster=yes], [gitmaster=no])
 fi
 
 AC_ARG_ENABLE([drafts],
     AS_HELP_STRING([--enable-drafts],
         [Build and install draft classes and methods [default=yes.]]),
-    [enable_drafts=$withval],
+    [enable_drafts=$enableval],
     [enable_drafts=$gitmaster])
 
 AM_CONDITIONAL([ENABLE_DRAFTS], [test x$enable_drafts != xno])
@@ -297,7 +291,7 @@ fi
 # Specify output files
 AC_CONFIG_FILES([Makefile])
 
-AM_COND_IF([WITH_SYSTEMD],
+AM_COND_IF([WITH_SYSTEMD_UNITS],
     [AC_CONFIG_FILES([
     ])],
     [])

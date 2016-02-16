@@ -20,7 +20,7 @@ function target_java
 
 gsl from "zproject_java_lib.gsl"
 
-.macro generate_jni_main
+.macro generate_wrapper
 .output "$(topdir)/CMakeLists.txt"
 cmake_minimum_required (VERSION 2.8)
 
@@ -34,7 +34,7 @@ find_library ($(PROJECT.PREFIX)_LIBRARY NAMES $(project.prefix) REQUIRED)
 include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} ../../include src/native/include)
 
 set ($(project.prefix)jni_sources
-.for project.class where class.jni_okay
+.for project.class where class.okay
     src/main/c/$(namespace:c)_$(class.name:pascal).c
 .endfor
 )
@@ -89,7 +89,7 @@ task generateJniHeaders(type: Exec, dependsOn: 'classes') {
     def appclasspath = configurations.runtime.files*.getAbsolutePath().join(":")
     def nativeIncludes = "src/native/include"
     def jniClasses = [
-.   for project.class where class.jni_okay
+.   for project.class where class.okay
             '$(namespace).$(name:pascal)'$(last ()?? ""? ",")
 .   endfor
     ]
@@ -405,7 +405,7 @@ You need MS Visual Studio 2010 or later.
 
 You need the Java SDK. Set the JAVA_HOME environment to the installation location, e.g. C:\Program Files\Java\jdk1.8.0_66.
 
-1. Check out all dependent projects from github, at the same level as this project. E.g.: libsodium, libzmq, czmq.
+1. Check out all dependent projects from github, at the same level as this project. E.g.: libzmq, czmq.
 2. In each project, open a console in builds/msvc/vs2010 and run the build.bat batch file.
 3. In this project, open a console in bindings/jni/msvc/vs2010 and run the build.bat batch file.
 
@@ -531,7 +531,7 @@ include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} ../src/native/in
 # message (STATUS "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
 
 set ($(project.prefix)jni_sources
-.for project.class where class.jni_okay
+.for project.class where class.okay
     ../src/main/c/$(namespace:c)_$(class.name:pascal).c
 .endfor
 )
@@ -618,7 +618,7 @@ link_directories (
 )
 .endmacro
 
-.macro generate_jni_class_java (class)
+.macro generate_class_in_java (class)
 .   directory.create ("$(topdir)/src/main/java/$(name_path)")
 .   output "$(topdir)/src/main/java/$(name_path)/$(my.class.name:pascal).java"
 /*
@@ -646,7 +646,7 @@ implements AutoCloseable\
     }
     public long self;
 .   my.class.jni_void_new = 0
-.   for constructor where jni_okay
+.   for constructor where okay
     /*
     $(description:no,block)
     */
@@ -676,7 +676,7 @@ implements AutoCloseable\
         self = 0;
     }
 .   endfor
-.   for method where jni_okay
+.   for method where okay
 .       if name = "test"
 .           my.prefix = "public static"
 .       else
@@ -774,7 +774,7 @@ $(my.return)\
 
 .endmacro
 
-.macro generate_jni_class_c (class)
+.macro generate_class_in_c (class)
 .   directory.create ("$(topdir)/src/main/c/")
 .   my.cname = "$(namespace:c)_$(my.class.name:pascal)"
 .   output "$(topdir)/src/main/c/$(my.cname:).c"
@@ -787,18 +787,18 @@ $(project.GENERATED_WARNING_HEADER:)
 #include "$(project.header:)"
 #include "$(my.cname:).h"
 
-.   for constructor where jni_okay
+.   for constructor where okay
 .       generate_jni_method_c (constructor)
 .   endfor
-.   for destructor where jni_okay
+.   for destructor where okay
 .       generate_jni_method_c (destructor)
 .   endfor
-.   for method where jni_okay
+.   for method where okay
 .       generate_jni_method_c (method)
 .   endfor
 .endmacro
 
-.macro generate_jni_test (class)
+.macro generate_test_wrapper (class)
 .   directory.create ("$(topdir)/src/test/java/$(name_path)")
 .   output "$(topdir)/src/test/java/$(name_path)/$(my.class.name:pascal)Test.java"
 /*
@@ -825,21 +825,21 @@ public class $(my.class.name:pascal)Test {
 }
 .endmacro
 
-    global.namespace ?= switches.namespace? "org.zeromq.$(project.prefix)"
-    global.name_path ?= switches.name_path? "org/zeromq/$(project.prefix)"
-    global.topdir ?= switches.topdir? "bindings/jni"
-    directory.create ("$(global.topdir)")
+    project.namespace ?= switches.namespace? "org.zeromq.$(project.prefix)"
+    project.name_path ?= switches.name_path? "org/zeromq/$(project.prefix)"
+    project.topdir = "bindings/jni"
+    directory.create (topdir)
 
     for project.class
-        resolve_java_class(class)
-        if class.jni_okay
-            generate_jni_class_java (class)
-            generate_jni_class_c (class)
-            generate_jni_test (class)
+        resolve_class (class)
+        if class.okay
+            generate_class_in_java (class)
+            generate_class_in_c (class)
+            generate_test_wrapper (class)
         endif
     endfor
 
-    if count (project.class, jni_okay = 1)
-        generate_jni_main ()
+    if count (project.class, okay = 1)
+        generate_wrapper ()
     endif
 endfunction

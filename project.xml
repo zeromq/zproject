@@ -141,6 +141,7 @@
     <bin name = "zproject_docker.gsl" />
     <bin name = "zproject_gyp.gsl" />
     <bin name = "zproject_java.gsl" />
+    <bin name = "zproject_java_lib.gsl" />
     <bin name = "zproject_java_msvc.gsl" />
     <bin name = "zproject_mingw32.gsl" />
     <bin name = "zproject_nodejs.gsl" />
