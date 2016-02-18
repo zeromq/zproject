@@ -13,8 +13,45 @@
 register_target ("gyp", "GYP build system (project.gyp)")
 
 .macro target_gyp
-.directory.create ("builds/gyp")
-.output "builds/gyp/.gitignore"
+.my.targetdir = "builds/gyp"
+.directory.create (my.targetdir)
+.output "$(my.targetdir)/README.md"
+# GYP Builds
+
+## About GYP (Generate Your Projects)
+
+GYP is a tool from Google, written in Python, that does multi-platform builds for C/C++ projects. It is rather cleaner and simpler than the old autotools, and CMake approaches. Like zproject, you define a model, not a script. GYP files are written in JSON.
+
+To install GYP on Debian/Ubuntu:
+
+    sudo apt-get install gyp
+
+To install GYP on Windows, you need git and Python 2.7. Then:
+
+    git clone https://chromium.googlesource.com/external/gyp
+    cd gyp
+    python setup.py install
+
+## How to build this project
+
+To build this project, first check out its dependencies, at the same level as this directory:
+
+.for project.use where !optional
+    git clone $(use.repository)
+.endfor
+
+On Linux, build just this project in $(my.targetdir) and it will automatically build its dependencies:
+
+    gyp --depth=.
+    make -j5
+
+On Windows, you need Visual Studio 2015. Then:
+
+    gyp --depth=.
+    "\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\vcvars32.bat"
+    msbuild /m /v:m project.sln
+
+.output "$(my.targetdir)/.gitignore"
 project.Makefile
 *.mk
 out/
@@ -22,7 +59,7 @@ Makefile
 .for project.use where !optional
 $(use.project)/
 .endfor
-.output "builds/gyp/platform.h"
+.output "$(my.targetdir)/platform.h"
 /*  =========================================================================
     $(project.name) - $(project.description?'':)
 
@@ -65,9 +102,9 @@ $(use.project)/
 #endif
 
 #endif
-.output "builds/gyp/project.gyp"
+.output "$(my.targetdir)/project.gyp"
 $(project.GENERATED_WARNING_HEADER:)
-
+#   GYP file for $(project.name:)
 #   gyp --depth=.
 {
   'target_defaults': {
@@ -106,6 +143,11 @@ $(project.GENERATED_WARNING_HEADER:)
         'defines': [
           '$(PROJECT.PREFIX)_HAVE_LINUX'
         ],
+        'xcode_settings': {
+          'OTHER_CFLAGS': [
+            '-fPIC'
+          ],
+        },
         'libraries': [
           '-lpthread'
         ]
@@ -143,7 +185,7 @@ $(project.GENERATED_WARNING_HEADER:)
       ],
       'dependencies': [
 .   for project.use where !optional
-.       use.gypfile = "../$(use.project)/builds/gyp/project.gyp"
+.       use.gypfile = "../$(use.project)/$(my.targetdir)/project.gyp"
 .       if file.exists (gypfile)
         '../../$(gypfile):$(use.libname)',
 .       else

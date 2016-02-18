@@ -70,12 +70,12 @@ $(project.GENERATED_WARNING_HEADER:)
 .for header where scope = "public"
     <ClInclude Include="..\\..\\..\\..\\..\\include\\$(name:c).h" />
 .endfor
-.for class where jni_okay
+.for class where okay
     <ClInclude Include="..\\..\\..\\src\\native\\include\\$(namespace:c)_$(class.name:pascal).h" />
 .endfor
   </ItemGroup>
   <ItemGroup>
-.for class where jni_okay
+.for class where okay
     <ClCompile Include="..\\..\\..\\src\\main\\c\\$(namespace:c)_$(class.name:pascal).c">
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
@@ -96,7 +96,7 @@ $(project.GENERATED_WARNING_HEADER:)
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-.for class where jni_okay
+.for class where okay
     <ClCompile Include="..\\..\\..\\src\\main\\c\\$(namespace:c)_$(class.name:pascal).c">
       <Filter>src</Filter>
     </ClCompile>
@@ -111,7 +111,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Filter>include</Filter>
     </ClInclude>
 .endfor
-.for class where jni_okay
+.for class where okay
     <ClInclude Include="..\\..\\..\\src\\native\\include\\$(namespace:c)_$(class.name:pascal).h">
       <Filter>include</Filter>
     </ClInclude>
@@ -225,7 +225,7 @@ ECHO *** ERROR, build tools not found: %tools%
 .output "$(my.path)/call_javah.bat"
 @ECHO OFF
 ECHO Generating native JNI headers...
-.for class where jni_okay
+.for class where okay
 IF EXIST ..\\..\\..\\src\\native\\include\\$(namespace:c)_$(class.name:pascal).h GOTO HAVE_$(class.name:pascal)
 "%JAVA_HOME%\\bin\\javah.exe" -d ..\\..\\..\\src\\native\\include -classpath ..\\..\\..\\src\\main\\java $(namespace).$(name:pascal)
 :HAVE_$(class.name:pascal)
@@ -300,10 +300,13 @@ $(project.GENERATED_WARNING_HEADER:)
 </Project>
 .endmacro
 
+    project.namespace ?= switches.namespace? "org.zeromq.$(project.prefix)"
+    project.name_path ?= switches.name_path? "org/zeromq/$(project.prefix)"
+
     for project.class
-        resolve_java_class(class)
+        resolve_class (class)
     endfor
-    if count (project.class, jni_okay = 1)
+    if count (project.class, okay = 1)
         generate_vs20xx_main      ("bindings/jni/msvc")
         generate_vs20xx_props     ("bindings/jni/msvc/properties")
         generate_vs20xx_build_jni ("bindings/jni/msvc/vs2010", "10")

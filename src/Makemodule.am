@@ -6,9 +6,8 @@ program_libs =
 
 # Programs need to link the c++ runtime if everything was compiled statically.
 if !ENABLE_SHARED
-program_libs += -lstdc++
+program_libs += -lstdc++ -lm
 endif
-
 
 # Install data into /usr/local/bin
 myprojectdir = @bindir@
@@ -28,10 +27,11 @@ myproject_SCRIPTS = \
     zproject_debian.gsl \
     zproject_docker.gsl \
     zproject_gyp.gsl \
-    zproject_java_lib.gsl \
     zproject_java.gsl \
+    zproject_java_lib.gsl \
     zproject_java_msvc.gsl \
     zproject_mingw32.gsl \
+    zproject_nodejs.gsl \
     zproject_nuget.gsl \
     zproject_python.gsl \
     zproject_python_cffi.gsl \
@@ -47,7 +47,7 @@ myproject_SCRIPTS = \
     mkapi.py \
     fake_cpp
 
-
+	gsl -target:- project.xml
 
 check-local: src/myproject_selftest
 	$(LIBTOOL) --mode=execute $(srcdir)/src/myproject_selftest

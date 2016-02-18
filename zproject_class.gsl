@@ -495,7 +495,7 @@ $(HEADER_FILE_PREFIX:)\
 .   if first ()
 //  @ignore
 .   endif
-$(c_method_signature (method):) CHECK_PRINTF ($(format_index));
+$(PROJECT.PREFIX)_EXPORT $(c_method_signature (method):) CHECK_PRINTF ($(format_index));
 .   if last ()
 .   endif
 .endfor

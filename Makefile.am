@@ -24,12 +24,11 @@ noinst_LTLIBRARIES =
 TESTS =
 
 EXTRA_DIST = \
-    src/myproject_classes.h \
     LICENSE \
     README.txt \
     README.md \
     CONTRIBUTING.md \
-    version.sh
+    src/myproject_classes.h
 
 include $(srcdir)/src/Makemodule.am
 
