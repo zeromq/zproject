@@ -135,20 +135,19 @@ cd $BUILD_ROOT
 echo "I: checking Node.js dependencies..."
 
 failed=0
-for package in node-ninja bindings nan; do
+set +e
+for package in node-ninja bindings nan prebuild; do
     npm list --depth 1 $package > /dev/null 2>&1
-    if [ $? -eq 1]; then
-        echo "E: $package isn't installed, run 'npm install [-g] $package'"
-        failed=1
+    if [ $? -eq 1 ]; then
+        npm list --global --depth 1 $package > /dev/null 2>&1
+        if [ $? -eq 1 ]; then
+            echo "E: $package isn't installed, run 'npm install [-g] $package'"
+            failed=1
+        fi
     fi
 done
-test failed -eq 1 && exit
-
-#   We want prebuild installed locally
-if [ ! -d node_modules/prebuild ]; then
-    echo "I:     npm install 'prebuild'..."
-    npm install prebuild --save
-fi
+test $failed -eq 0 || exit
+set -e
 
 #   Calculate how many compiles we can do in parallel
 export JOBS=$\([[ $\(uname) = 'Darwin' ]] \\
@@ -157,13 +156,7 @@ export JOBS=$\([[ $\(uname) = 'Darwin' ]] \\
 
 #   Build the binding using node-ninja
 echo "I: building Node.js binding:"
-node-ninja $LOGLEVEL --mklocal configure
-node-ninja $LOGLEVEL --mklocal build
-
-# prebuild -b 4.3.0 --incremental  #   v4.3.0 LTS
-# prebuild -b 5.6.0 --incremental  #   v5.6.0 stable
-
-file out/Release/$(project.name:c).node
+prebuild --all --backend=node-ninja
 .close
 .chmod_x ("$(topdir)/build.sh")
 .output "$(topdir)/binding.gyp"
@@ -178,6 +171,7 @@ $(project.GENERATED_WARNING_HEADER:)
       ],
       'include_dirs': [
           "<!(node -e \\"require('nan')\\")",
+          -- dependencies!
           '../../include'
       ],
       'dependencies': [
