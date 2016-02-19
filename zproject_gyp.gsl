@@ -36,7 +36,7 @@ To install GYP on Windows, you need git and Python 2.7. Then:
 
 To build this project, first check out its dependencies, at the same level as this directory:
 
-.for project.use where !optional
+.for project.use where !optional & defined (use.repository)
     git clone $(use.repository)
 .endfor
 

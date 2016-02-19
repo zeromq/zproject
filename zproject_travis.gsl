@@ -69,6 +69,15 @@ if [ "$BUILD_TYPE" == "default" ]; then
     CONFIG_OPTS+=("--quiet")
 
     # Clone and build dependencies
+.   for use where defined (use.tarball)
+    wget $(use.tarball)
+    tar -xzf \$(basename "$(use.tarball)")
+    cd \$(basename "$(use.tarball)" .tar.gz)
+    ./configure "${CONFIG_OPTS[@]}"
+    make -j4
+    make install
+    cd ..
+.   endfor
 .   for use where defined (use.repository)
 .      if defined (use.release)
     git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)

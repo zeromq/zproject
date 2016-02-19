@@ -170,10 +170,12 @@ IF EXIST "..\\..\\..\\$(use.project)" (
 .   if optional
     ECHO Building without $(use.project)
     ECHO #undef HAVE_$(USE.PROJECT)>> platform.h
-.   else
+.   elsif defined (use.repository)
     ECHO Building without $(use.project)
     ECHO $(project.name:) cannot build without $(use.project)
+.       if defined (use.repository)
     ECHO Please clone $(use.repository), and then configure & build
+.       endif
     ECHO TODO: resolve this problem automatically.
     GOTO error
 .   endif
@@ -645,7 +647,9 @@ IF EXIST "..\\..\\..\\..\\$(use.project)\\$(my.path)\\$(use.project).import.prop
     ECHO Building without $(use.project)
 .   else
     ECHO Did not find $(use.project), aborting.
+.       if defined (use.repository)
     ECHO Please clone from $(use.repository), and then build.
+.       endif
     GOTO error
 .   endif
 )
