@@ -38,7 +38,6 @@
 
 int main (int argc, char *argv [])
 {
-    puts ("$(main.name) - $(main.?'')");
     bool verbose = false;
     int argn;
     for (argn = 1; argn < argc; argn++) {
