@@ -523,6 +523,9 @@ AM_CPPFLAGS = \\
 .for use
     \${$(use.project:c)_CFLAGS} \\
 .endfor
+.if project.use_cxx
+    -D__STDC_FORMAT_MACROS \\
+.endif
     -I\$(srcdir)/include
 
 .libs = ""
