@@ -174,6 +174,34 @@ $(project.GENERATED_WARNING_HEADER:)
           -- dependencies!
           '../../include'
       ],
+      'conditions': [
+        [ 'OS=="win"', {
+          'defines': [
+.for project.use where !optional
+            '$(USE.PREFIX)_STATIC',
+.endfor
+            '$(PROJECT.PREFIX)_STATIC'
+          ],
+          'libraries': [
+            'ws2_32',
+            'advapi32',
+            'iphlpapi',
+            'Rpcrt4'
+          ]
+        }],
+        [ 'OS=="mac"', {
+        }],
+        [ 'OS=="linux"', {
+          'xcode_settings': {
+            'OTHER_CFLAGS': [
+              '-fPIC'
+            ],
+          },
+          'libraries': [
+            '-lpthread'
+          ]
+        }],
+      ],
       'dependencies': [
           '../../builds/gyp/project.gyp:$(project.libname)'
       ]
