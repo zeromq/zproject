@@ -326,7 +326,7 @@ NODE_MODULE ($(project.name:c), $(project.name:c)_initialize)
     target_gyp ()
 
     project.topdir = "bindings/nodejs"
-    directory.create (my.topdir)
+    directory.create (project.topdir)
     for project.class
         resolve_class (class)
     endfor
