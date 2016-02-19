@@ -138,7 +138,8 @@ function generate_binding
         endfor
         for class.actor
             >// $(actor.description:no,block)
-            >$(c_actor_declaration (actor):)
+            >$(PROJECT.PREFIX)_EXPORT void
+            >   $(actor.name:c) (zsock_t *pipe, void *args);
             >
         endfor
         for class.method
