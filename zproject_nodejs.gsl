@@ -117,7 +117,7 @@ done
 BUILD_ROOT=`pwd`
 cd ../../..
 
-.for project.use where !optional
+.for project.use where !optional & defined (use.repository)
 #   Check dependent projects
 if [ ! -d $(use.project) ]; then
     echo "I:    cloning $(use.repository) into `pwd`/$(use.project)..."
