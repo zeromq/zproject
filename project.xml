@@ -53,8 +53,12 @@
         These projects must be known by zproject, and the list of
         known projects is maintained in the zproject_known_projects.xml model.
         You need not specify subdependencies if they are implied.
+        Dependencies that support the autotools build system are automatically
+        build by travis ci if you supply a git repository or a tarball URI.
     <use project = "zyre" min_major= "1" min_minor = "1" min_patch = "0" />
     <use project = "uuid" optional= "1" implied = "1" />
+    <use project = "myfirstlib" repository = "http://myfirstlib.org/myfirstlib.git" />
+    <use project = "mysecondlib" tarball = "http://mysecondlib.org/mysecondlib-1.2.3.tar.gz" />
     -->
 
     <!-- Header Files
