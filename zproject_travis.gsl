@@ -86,7 +86,12 @@ if [ "$BUILD_TYPE" == "default" ]; then
 .      endif
     cd $(use.project)
     git --no-pager log --oneline -n1
-    ./autogen.sh 2> /dev/null
+    if [ -e autogen.sh ]; then
+        ./autogen.sh 2> /dev/null
+    fi
+    if [ -e buildconf ]; then
+        ./buildconf 2> /dev/null
+    fi
     ./configure "${CONFIG_OPTS[@]}"
     make -j4
     make install
