@@ -170,7 +170,7 @@ IF EXIST "..\\..\\..\\$(use.project)" (
 .   if optional
     ECHO Building without $(use.project)
     ECHO #undef HAVE_$(USE.PROJECT)>> platform.h
-.   elsif defined (use.repository)
+.   else
     ECHO Building without $(use.project)
     ECHO $(project.name:) cannot build without $(use.project)
 .       if defined (use.repository)
