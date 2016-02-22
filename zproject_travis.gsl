@@ -105,6 +105,15 @@ if [ "$BUILD_TYPE" == "default" ]; then
     make check
     make memcheck
     make install
+
+    # Build and check this project without DRAFT APIs
+    make clean
+    git reset --hard HEAD
+    ./autogen.sh 2> /dev/null
+    ./configure --enable-drafts=no "${CONFIG_OPTS[@]}"
+    make -j4
+    make check
+    make install
 else
     pushd "./builds/${BUILD_TYPE}" && REPO_DIR="\$(dirs -l +1)" ./ci_build.sh
 fi

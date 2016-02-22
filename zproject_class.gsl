@@ -349,6 +349,34 @@ $(project.GENERATED_WARNING_HEADER:)
 $(PROJECT.PREFIX)_EXPORT $(c_method_signature (method):);
 .       endif
 .   endfor
+.   for constant where draft = 1
+.      if first ()
+
+//  *** Draft constants, defined for internal use only ***
+.      endif
+#define $(CLASS.NAME:c)_$(NAME:c) $(value)  // $(constant.description:no,block)
+.   endfor
+.   for class.enum where draft = 1
+.      if first ()
+
+//  *** Draft enums, defined for internal use only ***
+.      endif
+// $(enum.description:no,block)
+typedef enum {
+.       for enum.constant
+.           comma = last ()?? ""? ","
+    $(CLASS.NAME:c)_$(CONSTANT.NAME:c) = $(value)$(comma)   //  $(string.trim (constant.?''):left)
+.       endfor
+} $(class.name:c)_$(enum.name:c)_t;
+.   endfor
+.   for class.callback_type where draft = 1
+.      if first ()
+
+//  *** Draft callbacks, defined for internal use only ***
+.      endif
+// $(callback_type.description:no,block)
+$(c_callback_typedef (callback_type))
+.   endfor
 .endfor
 
 .for constant where scope = "private"
