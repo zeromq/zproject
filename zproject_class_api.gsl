@@ -556,10 +556,17 @@ for project.class
         resolve_c_class (class)
     else
         # If there is no API model for this class,
-        # all we can do is resolve the name.
+        # all we can do is resolve the name and state
         class.c_name = "$(class.name:c)"
+        set_state (class, "draft")
     endif
 endfor
+
+if count (project.class, !private & !draft)
+    project.stable = 1
+else
+    project.stable = 0
+endif
 
 # Resolve the dependencies of the classes from this project and load their APIs
 #
