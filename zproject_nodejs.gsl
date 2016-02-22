@@ -229,10 +229,8 @@ $(project.GENERATED_WARNING_HEADER:)
     "url": "https://github.com/hintjens/zyre-nodejs"
   },
   "dependencies": {
-    "prebuild": "^3.0.3"
-  },
-  "devDependencies": {
-    "node-ninja": "^0.3.0",
+    "prebuild": "^3.0.3",
+    "node-ninja": "^1.0.1",
     "nan": "^2.2.0"
   }
 }
@@ -351,7 +349,7 @@ NODE_MODULE ($(project.name:c), $(project.name:c)_initialize)
 .endmacro
 
     #   We always need the gyp target
-    target_gyp ()
+    assume_target ("gyp")
 
     project.topdir = "bindings/nodejs"
     directory.create (project.topdir)

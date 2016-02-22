@@ -16,15 +16,7 @@ set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 ########################################################################
 # options
 ########################################################################
-if (EXISTS "${SOURCE_DIR}/.git")
-    OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" ON)
-else ()
-    OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" OFF)
-endif ()
-
-IF (ENABLE_DRAFTS)
-    ADD_DEFINITIONS (-DMYPROJECT_BUILD_DRAFT_API)
-ENDIF (ENABLE_DRAFTS)
+ADD_DEFINITIONS (-DMYPROJECT_BUILD_DRAFT_API)
 
 ########################################################################
 # platform.h

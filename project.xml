@@ -46,7 +46,7 @@
         Current version of your project.
         This will be used to package your distribution
     -->
-    <version major = "1" minor = "0" patch = "0" />
+    <version major = "1" minor = "1" patch = "0" />
 
     <!--
         Specify which other projects this depends on.
