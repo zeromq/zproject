@@ -69,7 +69,6 @@ $(project.GENERATED_WARNING_HEADER:)
 .endfor
 
 //  $(PROJECT.PREFIX) version macros for compile-time API detection
-
 #define $(PROJECT.PREFIX)_VERSION_MAJOR $(project->version.major)
 #define $(PROJECT.PREFIX)_VERSION_MINOR $(project->version.minor)
 #define $(PROJECT.PREFIX)_VERSION_PATCH $(project->version.patch)
@@ -91,6 +90,12 @@ $(project.GENERATED_WARNING_HEADER:)
 #   define $(PROJECT.PREFIX)_EXPORT
 #endif
 
+.if !project.stable
+//  Project has no stable classes, so we build the draft API
+#undef  $(PROJECT.PREFIX)_BUILD_DRAFT_API
+#define $(PROJECT.PREFIX)_BUILD_DRAFT_API
+
+.endif
 //  Opaque class structures to allow forward references
 //  These classes are stable or legacy and built in all releases
 .for project.class where scope = "public" & !draft
@@ -99,7 +104,7 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 .endfor
 .for project.class where scope = "public" & draft
 .   if first ()
-//  Draft classes are by default not built stable releases
+//  Draft classes are by default not built in stable releases
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
 typedef struct _$(class.c_name)_t $(class.c_name)_t;
