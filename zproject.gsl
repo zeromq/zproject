@@ -87,15 +87,37 @@ function register_target (target, detail)
     endnew
 endfunction
 
-function _build_target (target, detail)
-    if count (root.tmp_project_copy) > 0
-        delete root->tmp_project_copy
+function assume_target (target)
+    if count (project.target, name = my.target) = 0
+        new target to project
+            target.name = my.target
+        endnew
     endif
-    copy project to root as tmp_project_copy
+endfunction
+
+function build_target_in_scope (target, detail)
     echo "Building $(my.detail:) ($(my.target))"
-    scope root->tmp_project_copy as project
+    copy project to root as project_copy
+    scope root->project_copy as project
+        #   Resolve target options if any
+        for project.target where name = my.target
+            for option
+                if defined (option.value)
+                    project.$(my.target)_$(option.name:c) = option.value
+                else
+                    for option.item
+                        copy item to project as $(my.target)_$(option.name:c)
+                    endfor
+                endif
+            endfor
+        endfor
         target_$(my.target:c) ()
     endscope
+
+    if switches.save ?= 1
+        root->project_copy.save ("save.xml")
+    endif
+    delete root->project_copy
 endfunction
 
 function build_target (target)
@@ -109,13 +131,13 @@ function build_target (target)
         echo "Building without targets"
     elsif my.target = "*"   # All targets
         for project.handler by target
-            if handler.target <> "autotools" & handler.target <> "cmake"
-                _build_target (handler.target, detail)
+            if count (project.target, name = handler.target) = 0
+                build_target_in_scope (handler.target, detail)
             endif
         endfor
     else
         for project.handler where handler.target = my.target
-            _build_target (handler.target, detail)
+            build_target_in_scope (handler.target, detail)
         else
             echo "$(my.target) is not a valid target; valid targets are:"
             for project.handler by target
@@ -131,9 +153,6 @@ endfunction
 gsl from "zproject_projects.gsl"
 gsl from "zproject_skeletons.gsl"
 gsl from "zproject_class_api.gsl"
-if switches.save ?= 1
-    project.save ("save.xml")
-endif
 
 #   Generate main class support
 gsl from "zproject_class.gsl"
@@ -171,9 +190,8 @@ gsl from "zproject_vs20xx_props.gsl"
 if defined (switches.target)
     build_target (switches.target)
 else
-    #   Build mandatory targets
-    build_target ("autotools")
-    build_target ("cmake")
+    assume_target ("autotools")
+    assume_target ("cmake")
     for project.target
         build_target (target.name)
     endfor

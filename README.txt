@@ -334,7 +334,24 @@ To request all targets in your project.xml file:
 make uninstall
 ```
 
-## Notes for Writing Language Bindings
+## Notes for Writing Language Targets
+
+This is the general form of a target:
+
+```
+register_target ("somename", "Decription of target")
+
+function target_somename
+
+\.macro generate_something
+    ...
+\.endmacro
+
+    project.topdir = "someplace/somename"
+    directory.create (project.topdir)
+    generate_something ()
+endfunction
+```
 
 ### Schema/Architecture Overview
 
@@ -394,15 +411,36 @@ container.variadic     # 0/1 (default: 0)
 container.va_start     # string - that holds the argment name for va_start ()
 ```
 
-### Language-Specific Implementation Attributes
+### Target Scopes
 
-Language-specific implementation attributes hold information that is not intrinsic to the concept of the container, but to the binding implementation.
+Each target works in its own copy of 'project'. It can therefore modify and extend 'project' as wanted, without affecting other targets.
 
-In practice, language-specific attributes may contain any information that is useful to store as part of the container model to facilitate generation, according to any schema that is useful, but it may be helpful to try to follow patterns observed in other code generator scripts.
+### Target Options
 
-However, because the container is shared between all generators, which are run in an unspecified order, it's important that generators not rely on information resolved in generators. The one exceptions is that many generators will rely directly on information from the C implementation to which they bind.
+A target can accept options via project.xml like this:
 
-It is also important that language-specific implementation attributes use a naming convention that avoids collisions. The easiest way to avoid collisions is to prefix all language-specific attributes with the name of the language, though in principle, any collision-free convention would be acceptable.
+```
+<project
+    name = "..."
+    >
+    ...
+    <target name = "*" />
+    <target name = "nuget">
+        <option name = "id" value = "czmq_vc120" />
+        <option name = "dependency">
+            <item name = "libzmq_vc120" value = "4.2.0.0" />
+        </option>
+    </target>
+</project>
+```
+
+This generates all targets (`name = "*"`) and then configures the `nuget` target with options. Zproject aare provided to the target handler as:
+
+```
+project.nuget_id = "czmq_vc120"
+project.nuget_dependency.name = "libzmq_vc120"
+project.nuget_dependency.value = "4.2.0.0"
+```
 
 ## Ownership and License
 

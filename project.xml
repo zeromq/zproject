@@ -123,6 +123,13 @@
     <target name = "cmake" />
     <target name = "autotools" />
     -->
+    <!-- Targets may be customizable with their own options -->
+    <target name = "cmake">
+        <option name = "single setting" value = "value" />
+        <option name = "list setting">
+            <item name = "item name" value = "item value" />
+        </option>
+    </target>
 
     <!-- In order loaded by zproject.gsl -->
     <bin name = "zproject.gsl" />
