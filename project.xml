@@ -46,7 +46,7 @@
         Current version of your project.
         This will be used to package your distribution
     -->
-    <version major = "1" minor = "0" patch = "0" />
+    <version major = "1" minor = "1" patch = "0" />
 
     <!--
         Specify which other projects this depends on.
@@ -123,6 +123,13 @@
     <target name = "cmake" />
     <target name = "autotools" />
     -->
+    <!-- Targets may be customizable with their own options -->
+    <target name = "cmake">
+        <option name = "single setting" value = "value" />
+        <option name = "list setting">
+            <item name = "item name" value = "item value" />
+        </option>
+    </target>
 
     <!-- In order loaded by zproject.gsl -->
     <bin name = "zproject.gsl" />

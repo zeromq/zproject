@@ -7,7 +7,7 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
 #
-AC_INIT([myproject],[1.0.0],[email@hostname.com])
+AC_INIT([myproject],[1.1.0],[email@hostname.com])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
@@ -36,7 +36,7 @@ AC_SUBST(PACKAGE_VERSION)
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 #
 # libmyproject -version-info
-LTVER="1:0:0"
+LTVER="1:1:0"
 AC_SUBST(LTVER)
 
 # Capture c flags
@@ -54,7 +54,7 @@ PKG_PROG_PKG_CONFIG
 
 # Code coverage
 AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
-                  [With GCC Code Coverage reporting.])],
+                  [With GCC Code Coverage reporting])],
                   [MYPROJECT_GCOV="$withval"])
 
 if test "x${MYPROJECT_GCOV}" == "xyes"; then
@@ -195,7 +195,7 @@ case "${host_os}" in
         myproject_on_gnu="yes"
         ;;
     *)
-        AC_MSG_ERROR([unsupported system: ${host_os}.])
+        AC_MSG_ERROR([unsupported system: ${host_os}])
         ;;
 esac
 
@@ -249,9 +249,9 @@ AC_SUBST([pkgconfigdir])
 
 
 # enable specific system integration features
-AC_ARG_WITH([systemd],
+AC_ARG_WITH([systemd-units],
     AS_HELP_STRING([--with-systemd-units],
-    [Build and install with systemd units integration [default=no].]),
+    [Build and install with systemd units integration [default=no]]),
     [with_systemd_units=$withval],
     [with_systemd_units=no])
 
@@ -262,26 +262,13 @@ AM_COND_IF([WITH_SYSTEMD_UNITS],
     AC_SUBST(WITH_SYSTEMD_UNITS)],
     [])
 
-if test "x$cross_compiling" = "xyes"; then
-    #   Enable draft by default when cross-compiling
-    gitmaster=yes
-else
-    # enable draft API by default if we're in a git repository
-    # else disable it by default; then allow --enable-drafts=yes/no override
-    AC_CHECK_FILE($srcdir/.git, [gitmaster=yes], [gitmaster=no])
-fi
-
-AC_ARG_ENABLE([drafts],
-    AS_HELP_STRING([--enable-drafts],
-        [Build and install draft classes and methods [default=yes.]]),
-    [enable_drafts=$enableval],
-    [enable_drafts=$gitmaster])
-
+#   Project has no stable classes so enable draft API by default
+enable_drafts=yes
 AM_CONDITIONAL([ENABLE_DRAFTS], [test x$enable_drafts != xno])
 
 if test "x$enable_drafts" = "xyes"; then
     AC_MSG_NOTICE([Building stable and legacy API + draft API])
-    AC_DEFINE(MYPROJECT_BUILD_DRAFT_API, 1, [Provide draft classes and methods.])
+    AC_DEFINE(MYPROJECT_BUILD_DRAFT_API, 1, [Provide draft classes and methods])
     AC_SUBST(pkg_config_defines, "-DMYPROJECT_BUILD_DRAFT_API=1")
 else
     AC_MSG_NOTICE([Building stable and legacy API (no draft API)])
@@ -289,7 +276,8 @@ else
 fi
 
 # Specify output files
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile
+                ])
 
 AM_COND_IF([WITH_SYSTEMD_UNITS],
     [AC_CONFIG_FILES([

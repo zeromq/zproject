@@ -7,44 +7,45 @@
 
 
 **<a href="#toc2-11">Overview</a>**
-*  <a href="#toc3-18">Scope and Goals</a>
+&emsp;<a href="#toc3-18">Scope and Goals</a>
 
 **<a href="#toc2-50">Demo on PLAYTerm</a>**
 
 **<a href="#toc2-55">Installation</a>**
-*  <a href="#toc3-58">Requirements</a>
-*  <a href="#toc3-70">Getting started</a>
+&emsp;<a href="#toc3-58">Requirements</a>
+&emsp;<a href="#toc3-70">Getting started</a>
 
 **<a href="#toc2-94">Setup your project environment</a>**
 
 **<a href="#toc2-131">Configuration</a>**
 
-**<a href="#toc2-306">Sample API model</a>**
-*  <a href="#toc3-528">Supported API Model Attributes</a>
-*  <a href="#toc3-544">API Types</a>
-*  <a href="#toc3-585">Tips</a>
-*  <a href="#toc3-602">Generate API model from C header files</a>
-&emsp;<a href="#toc4-624">Known caveats</a>
+**<a href="#toc2-313">Sample API model</a>**
+&emsp;<a href="#toc3-535">Supported API Model Attributes</a>
+&emsp;<a href="#toc3-551">API Types</a>
+&emsp;<a href="#toc3-592">Tips</a>
+&emsp;<a href="#toc3-609">Generate API model from C header files</a>
+&emsp;<a href="#toc4-631">Known caveats</a>
 
-**<a href="#toc2-629">Language Binding Notes</a>**
-*  <a href="#toc3-632">Java Language Binding</a>
+**<a href="#toc2-636">Language Binding Notes</a>**
+&emsp;<a href="#toc3-639">Java Language Binding</a>
 
-**<a href="#toc2-640">Draft API Support</a>**
+**<a href="#toc2-647">Draft API Support</a>**
 
-**<a href="#toc2-672">Targets</a>**
+**<a href="#toc2-679">Targets</a>**
 
-**<a href="#toc2-698">Removal</a>**
-*  <a href="#toc3-701">autotools</a>
+**<a href="#toc2-705">Removal</a>**
+&emsp;<a href="#toc3-708">autotools</a>
 
-**<a href="#toc2-708">Notes for Writing Language Bindings</a>**
-*  <a href="#toc3-711">Schema/Architecture Overview</a>
-*  <a href="#toc3-730">Informal Summary</a>
-*  <a href="#toc3-735">Semantic Attributes</a>
-*  <a href="#toc3-772">Language-Specific Implementation Attributes</a>
+**<a href="#toc2-715">Notes for Writing Language Targets</a>**
+&emsp;<a href="#toc3-735">Schema/Architecture Overview</a>
+&emsp;<a href="#toc3-754">Informal Summary</a>
+&emsp;<a href="#toc3-759">Semantic Attributes</a>
+&emsp;<a href="#toc3-796">Target Scopes</a>
+&emsp;<a href="#toc3-801">Target Options</a>
 
-**<a href="#toc2-783">Ownership and License</a>**
-*  <a href="#toc3-792">Hints to Contributors</a>
-*  <a href="#toc3-801">This Document</a>
+**<a href="#toc2-829">Ownership and License</a>**
+&emsp;<a href="#toc3-838">Hints to Contributors</a>
+&emsp;<a href="#toc3-847">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -297,6 +298,13 @@ zproject's `project.xml` contains an extensive description of the available conf
     <target name = "cmake" />
     <target name = "autotools" />
     -->
+    <!-- Targets may be customizable with their own options -->
+    <target name = "cmake">
+        <option name = "single setting" value = "value" />
+        <option name = "list setting">
+            <item name = "item name" value = "item value" />
+        </option>
+    </target>
 
     <!-- In order loaded by zproject.gsl -->
     <bin name = "zproject.gsl" />
@@ -341,7 +349,7 @@ zproject's `project.xml` contains an extensive description of the available conf
 </project>
 ```
 
-<A name="toc2-306" title="Sample API model" />
+<A name="toc2-313" title="Sample API model" />
 ## Sample API model
 
 The zproject scripts can also optionally generate the `@interface` in your class headers from an API model, in addition to a host of language bindings.  To opt-in to this behavior, just make a model to the `api` directory of your project.  For example, if your `project.xml` contains `<class name = "myclass"/>`, you could create the following `api/myclass.api` file:
@@ -563,7 +571,7 @@ MYPROJECT_EXPORT void
 //  @end
 ```
 
-<A name="toc3-528" title="Supported API Model Attributes" />
+<A name="toc3-535" title="Supported API Model Attributes" />
 ### Supported API Model Attributes
 
 The following attributes are supported for methods:
@@ -579,7 +587,7 @@ The following attributes are supported for arguments and return values:
 - `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it. Implies mutable = "1".
 - `variadic = "1"` - used for representing variadic arguments.
 
-<A name="toc3-544" title="API Types" />
+<A name="toc3-551" title="API Types" />
 ### API Types
 
 This is an incomplete list of API types:
@@ -620,7 +628,7 @@ This is an incomplete list of API types:
 
 * Names of classes, e.g. zmsg.
 
-<A name="toc3-585" title="Tips" />
+<A name="toc3-592" title="Tips" />
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
@@ -637,7 +645,7 @@ You can save a snapshot of the entire resolved project model using this syntax:
 gsl -save:1 project.xml
 ```
 
-<A name="toc3-602" title="Generate API model from C header files" />
+<A name="toc3-609" title="Generate API model from C header files" />
 ### Generate API model from C header files
 
 Writing API model for bigger project with a lot of classes can be tedious job. There mkapi.py, which automates most of the task.
@@ -659,15 +667,15 @@ Note you *must* use top-level include as pycparser fails if it does not know any
 
 The tool might expect `-DWITH_DRAFTS` parameter if the class is not marked as a stable.
 
-<A name="toc4-624" title="Known caveats" />
+<A name="toc4-631" title="Known caveats" />
 #### Known caveats
 
 The tool can't distinguish methods which allocates new object. It does print a comment about adding fresh = "1" attribute to each method, which return non const pointer. However the final assigment must be done manually.
 
-<A name="toc2-629" title="Language Binding Notes" />
+<A name="toc2-636" title="Language Binding Notes" />
 ## Language Binding Notes
 
-<A name="toc3-632" title="Java Language Binding" />
+<A name="toc3-639" title="Java Language Binding" />
 ### Java Language Binding
 
 * Skips methods that it cannot handle properly.
@@ -675,7 +683,7 @@ The tool can't distinguish methods which allocates new object. It does print a c
 * To build, you need gradle (or equivalent). Run 'gradle build jar' in the bindings/jni directory.
 * To install, run 'gradle install'. This puts the files into $HOME/.m2/repository.
 
-<A name="toc2-640" title="Draft API Support" />
+<A name="toc2-647" title="Draft API Support" />
 ## Draft API Support
 
 zproject lets you mark classes and methods as 'draft' so that they are not installed by default in stable builds. This lets you deliver draft APIs to your users, and change them later.
@@ -707,7 +715,7 @@ The allowed states are:
 
 Using autotools or CMake, you can specify --with-drafts to enable draft APIs, and --without-drafts to disable them. By default, drafts are built and installed when you work in a git repository (if the directory ".git" is present), and otherwise they are not. That means, if you build from a tarball, drafts are disabled by default.
 
-<A name="toc2-672" title="Targets" />
+<A name="toc2-679" title="Targets" />
 ## Targets
 
 Each target produces scripts and code for a specific build system, platform, or language binding.
@@ -733,20 +741,37 @@ To request all targets in your project.xml file:
 
     <target name = "*" />
 
-<A name="toc2-698" title="Removal" />
+<A name="toc2-705" title="Removal" />
 ## Removal
 
-<A name="toc3-701" title="autotools" />
+<A name="toc3-708" title="autotools" />
 ### autotools
 
 ```sh
 make uninstall
 ```
 
-<A name="toc2-708" title="Notes for Writing Language Bindings" />
-## Notes for Writing Language Bindings
+<A name="toc2-715" title="Notes for Writing Language Targets" />
+## Notes for Writing Language Targets
 
-<A name="toc3-711" title="Schema/Architecture Overview" />
+This is the general form of a target:
+
+```
+register_target ("somename", "Decription of target")
+
+function target_somename
+
+\.macro generate_something
+    ...
+\.endmacro
+
+    project.topdir = "someplace/somename"
+    directory.create (project.topdir)
+    generate_something ()
+endfunction
+```
+
+<A name="toc3-735" title="Schema/Architecture Overview" />
 ### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
@@ -765,12 +790,12 @@ make uninstall
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-<A name="toc3-730" title="Informal Summary" />
+<A name="toc3-754" title="Informal Summary" />
 ### Informal Summary
 
 A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
 
-<A name="toc3-735" title="Semantic Attributes" />
+<A name="toc3-759" title="Semantic Attributes" />
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
@@ -807,18 +832,40 @@ container.variadic     # 0/1 (default: 0)
 container.va_start     # string - that holds the argment name for va_start ()
 ```
 
-<A name="toc3-772" title="Language-Specific Implementation Attributes" />
-### Language-Specific Implementation Attributes
+<A name="toc3-796" title="Target Scopes" />
+### Target Scopes
 
-Language-specific implementation attributes hold information that is not intrinsic to the concept of the container, but to the binding implementation.
+Each target works in its own copy of 'project'. It can therefore modify and extend 'project' as wanted, without affecting other targets.
 
-In practice, language-specific attributes may contain any information that is useful to store as part of the container model to facilitate generation, according to any schema that is useful, but it may be helpful to try to follow patterns observed in other code generator scripts.
+<A name="toc3-801" title="Target Options" />
+### Target Options
 
-However, because the container is shared between all generators, which are run in an unspecified order, it's important that generators not rely on information resolved in generators. The one exceptions is that many generators will rely directly on information from the C implementation to which they bind.
+A target can accept options via project.xml like this:
 
-It is also important that language-specific implementation attributes use a naming convention that avoids collisions. The easiest way to avoid collisions is to prefix all language-specific attributes with the name of the language, though in principle, any collision-free convention would be acceptable.
+```
+<project
+    name = "..."
+    >
+    ...
+    <target name = "*" />
+    <target name = "nuget">
+        <option name = "id" value = "czmq_vc120" />
+        <option name = "dependency">
+            <item name = "libzmq_vc120" value = "4.2.0.0" />
+        </option>
+    </target>
+</project>
+```
 
-<A name="toc2-783" title="Ownership and License" />
+This generates all targets (`name = "*"`) and then configures the `nuget` target with options. Zproject aare provided to the target handler as:
+
+```
+project.nuget_id = "czmq_vc120"
+project.nuget_dependency.name = "libzmq_vc120"
+project.nuget_dependency.value = "4.2.0.0"
+```
+
+<A name="toc2-829" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -827,7 +874,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-792" title="Hints to Contributors" />
+<A name="toc3-838" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -836,9 +883,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-801" title="This Document" />
+<A name="toc3-847" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).
-
-_This documentation was generated using [Gitdown](https://github.com/zeromq/gitdown)_
