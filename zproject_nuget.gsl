@@ -264,6 +264,8 @@ $(project.GENERATED_WARNING_HEADER:)
 </ProjectSchemaDefinitions>
 .endmacro
 
+    project.nuget_id ?= project.prefix + "vc120"
+    project.nuget_platformtoolset ?= "v120"
     project.nuget_version = "$(project->version.major).$(project->version.minor).$(project->version.patch).0"
     project.nuget_versionp = "$(project->version.major)_$(project->version.minor)_$(project->version.patch)_0"
     project.topdir = "builds/msvc/nuget"
