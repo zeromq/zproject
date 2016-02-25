@@ -55,7 +55,7 @@ Description: $(project.name)
  This package contains shared library for $(project.name): $(project.description)
 
 Package: $(string.replace (project.name, "_|-"))-dev
-Architecture: all
+Architecture: any
 Section: libdevel
 Depends:
 .for project.use
