@@ -33,8 +33,7 @@ $(project.name) ($(->version.major).$(->version.minor).$(->version.patch)) UNREL
 Source:         $(string.replace (project.name, "_|-"))
 Section:        net
 Priority:       optional
-Maintainer:     John Doe <John.Doe@example.com>
-Uploaders:      John Doe <John.Doe@example.com>
+Maintainer:     $(project.name) Developers <$(project.email)>
 Standards-Version: 3.9.7
 Build-Depends: debhelper (>= 9),
     pkg-config,
