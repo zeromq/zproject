@@ -30,11 +30,9 @@ Priority:       optional
 Maintainer:     John Doe <John.Doe@example.com>
 Uploaders:      John Doe <John.Doe@example.com>
 Standards-Version: 3.9.7
-Build-Depends: bison, debhelper (>= 8),
+Build-Depends: debhelper (>= 8),
     pkg-config,
-    automake,
-    autoconf,
-    libtool,
+    dh-autoreconf,
 .for project.use
 .if use.project = "libzmq"
     libzmq4-dev,
