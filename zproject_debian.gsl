@@ -54,7 +54,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: $(project.name)
  This package contains shared library for $(project.name): $(project.description)
 
-Package: $(string.replace (project.name, "_|-"))-dev
+Package: $(string.replace (project.libname, "_|-"))-dev
 Architecture: any
 Section: libdevel
 Depends:
@@ -146,7 +146,7 @@ debian/tmp$(extra.path)/$(extra.name)
 .if project.exports_classes
 .   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
 debian/tmp/usr/lib/*/$(project.libname).so.*
-.   output ("packaging/debian/$(string.replace (project.name, "_|-"))-dev.install")
+.   output ("packaging/debian/$(string.replace (project.libname, "_|-"))-dev.install")
 debian/tmp/usr/include/*
 debian/tmp/usr/lib/*/$(project.libname).so
 debian/tmp/usr/lib/*/pkgconfig/$(project.libname).pc
