@@ -30,7 +30,7 @@ Priority:       optional
 Maintainer:     John Doe <John.Doe@example.com>
 Uploaders:      John Doe <John.Doe@example.com>
 Standards-Version: 3.9.7
-Build-Depends: debhelper (>= 8),
+Build-Depends: debhelper (>= 9),
     pkg-config,
     dh-autoreconf,
 .for project.use
