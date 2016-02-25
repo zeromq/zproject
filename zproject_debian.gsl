@@ -116,28 +116,28 @@ override_dh_auto_configure:
 .   output ("packaging/debian/$(string.replace (project.name, "_|-")).install")
 .# generate binary names
 .   for project.main where scope = "public"
-debian/tmp/usr/bin/$(main.name)
+usr/bin/$(main.name)
 .       if file.exists ("src/$(main.name).cfg.example")
-debian/tmp/etc/$(project.name)/$(main.name).cfg.example
+etc/$(project.name)/$(main.name).cfg.example
 .       endif
 .   endfor
 .   for project.bin
-debian/tmp/usr/bin/$(bin.name)
+usr/bin/$(bin.name)
 .   endfor
 .# generate service file names
 .   for project.main where main.service ?= 1 | main.services ?= 1
 .       if main.no_config ?= 0
-debian/tmp/etc/$(project.name)/$(main.name).cfg
+etc/$(project.name)/$(main.name).cfg
 .       endif
-debian/tmp/usr/lib/systemd/system/$(main.name)*.service
+usr/lib/systemd/system/$(main.name)*.service
 .   endfor
 .   for project.service
-debian/tmp/lib/systemd/system/$(service.name)*.service
+lib/systemd/system/$(service.name)*.service
 .   endfor
 
 .for project.main where defined (main->extra)
 .    for extra
-debian/tmp$(extra.path)/$(extra.name)
+$(extra.path)/$(extra.name)
 .    endfor
 .endfor
 
@@ -145,10 +145,10 @@ debian/tmp$(extra.path)/$(extra.name)
 
 .if project.exports_classes
 .   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
-debian/tmp/usr/lib/*/$(project.libname).so.*
+usr/lib/*/$(project.libname).so.*
 .   output ("packaging/debian/$(string.replace (project.libname, "_|-"))-dev.install")
-debian/tmp/usr/include/*
-debian/tmp/usr/lib/*/$(project.libname).so
-debian/tmp/usr/lib/*/pkgconfig/$(project.libname).pc
+usr/include/*
+usr/lib/*/$(project.libname).so
+usr/lib/*/pkgconfig/$(project.libname).pc
 .endif
 .endmacro
