@@ -149,15 +149,12 @@ usr/lib/systemd/system/$(main.name)*.service
 .   for project.service
 lib/systemd/system/$(service.name)*.service
 .   endfor
-
 .for project.main where defined (main->extra)
 .    for extra
 $(extra.path)/$(extra.name)
 .    endfor
 .endfor
-
 .endif
-
 .if project.exports_classes
 .   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
 usr/lib/*/$(project.libname).so.*
