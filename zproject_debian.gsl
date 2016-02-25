@@ -96,40 +96,6 @@ Depends:
 Description: debugging symbols for $(project.name)
  This package contains the debugging symbols for $(project.name) : $(project.description).
 
-.output "packaging/debian/$(project.name).dsc"
-Format:         1.0
-Source:         $(string.replace (project.name, "_|-"))
-Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)-1
-.if project.exports_classes
-Binary:         $(string.replace (project.libname, "_|-"))$(project->version.major), $(string.replace (project.name, "_|-"))-dev
-.endif
-Architecture:   any all
-Maintainer:     John Doe <John.Doe@example.com>
-Standards-Version: 3.9.5
-Build-Depends: bison, debhelper (>= 8),
-    pkg-config,
-    automake,
-    autoconf,
-    libtool,
-.for project.use
-.   if use.project = "libzmq"
-    libzmq4-dev,
-.   elsif defined(use.debian_name)
-    $(use.debian_name),
-.   elsif regexp.match("^lib", use.libname)
-    $(string.replace (use.libname, "_|-"))-dev,
-.   else
-    lib$(string.replace (use.libname, "_|-"))-dev,
-.   endif
-.endfor
-    dh-autoreconf
-
-.if project.exports_classes
-Package-List:
- $(string.replace (project.libname, "_|-"))$(project->version.major) deb net optional arch=any
- $(string.replace (project.name, "_|-"))-dev deb libdevel optional arch=any
-.endif
-
 .output "packaging/debian/rules"
 #!/usr/bin/make -f
 # -*- makefile -*-
