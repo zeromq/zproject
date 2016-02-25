@@ -35,7 +35,7 @@ Build-Depends: debhelper (>= 9),
     dh-autoreconf,
 .for project.use
 .if use.project = "libzmq"
-    libzmq4-dev,
+    libzmq5-dev,
 .elsif defined(use.debian_name)
     $(use.debian_name),
 .elsif regexp.match("^lib", use.libname)
@@ -60,7 +60,7 @@ Section: libdevel
 Depends:
 .for project.use
 .if use.project = "libzmq"
-    libzmq4-dev,
+    libzmq5-dev,
 .elsif defined(use.debian_name)
     $(use.debian_name),
 .elsif regexp.match("^lib", use.libname)
