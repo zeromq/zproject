@@ -29,7 +29,7 @@ Section:        net
 Priority:       optional
 Maintainer:     John Doe <John.Doe@example.com>
 Uploaders:      John Doe <John.Doe@example.com>
-Standards-Version: 3.9.5
+Standards-Version: 3.9.7
 Build-Depends: bison, debhelper (>= 8),
     pkg-config,
     automake,
