@@ -409,6 +409,7 @@ container.enum_name    # string if is_enum, otherwise undefined
 container.enum_class   # string if is_enum, otherwise undefined
 container.variadic     # 0/1 (default: 0)
 container.va_start     # string - that holds the argment name for va_start ()
+container.optional     # 0/1 (default: 0), up to binding generator to use
 ```
 
 ### Target Scopes

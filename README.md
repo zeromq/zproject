@@ -40,12 +40,12 @@
 &emsp;<a href="#toc3-735">Schema/Architecture Overview</a>
 &emsp;<a href="#toc3-754">Informal Summary</a>
 &emsp;<a href="#toc3-759">Semantic Attributes</a>
-&emsp;<a href="#toc3-796">Target Scopes</a>
-&emsp;<a href="#toc3-801">Target Options</a>
+&emsp;<a href="#toc3-797">Target Scopes</a>
+&emsp;<a href="#toc3-802">Target Options</a>
 
-**<a href="#toc2-829">Ownership and License</a>**
-&emsp;<a href="#toc3-838">Hints to Contributors</a>
-&emsp;<a href="#toc3-847">This Document</a>
+**<a href="#toc2-830">Ownership and License</a>**
+&emsp;<a href="#toc3-839">Hints to Contributors</a>
+&emsp;<a href="#toc3-848">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -221,7 +221,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         Current version of your project.
         This will be used to package your distribution
     -->
-    <version major = "1" minor = "0" patch = "0" />
+    <version major = "1" minor = "1" patch = "0" />
 
     <!--
         Specify which other projects this depends on.
@@ -830,14 +830,15 @@ container.enum_name    # string if is_enum, otherwise undefined
 container.enum_class   # string if is_enum, otherwise undefined
 container.variadic     # 0/1 (default: 0)
 container.va_start     # string - that holds the argment name for va_start ()
+container.optional     # 0/1 (default: 0), up to binding generator to use
 ```
 
-<A name="toc3-796" title="Target Scopes" />
+<A name="toc3-797" title="Target Scopes" />
 ### Target Scopes
 
 Each target works in its own copy of 'project'. It can therefore modify and extend 'project' as wanted, without affecting other targets.
 
-<A name="toc3-801" title="Target Options" />
+<A name="toc3-802" title="Target Options" />
 ### Target Options
 
 A target can accept options via project.xml like this:
@@ -865,7 +866,7 @@ project.nuget_dependency.name = "libzmq_vc120"
 project.nuget_dependency.value = "4.2.0.0"
 ```
 
-<A name="toc2-829" title="Ownership and License" />
+<A name="toc2-830" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -874,7 +875,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-838" title="Hints to Contributors" />
+<A name="toc3-839" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -883,7 +884,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-847" title="This Document" />
+<A name="toc3-848" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).
