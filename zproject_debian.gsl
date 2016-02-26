@@ -15,7 +15,7 @@ register_target ("debian", "packaging for Debian")
 .macro target_debian
 .directory.create ('packaging/debian')
 .output "packaging/debian/changelog"
-$(project.name) ($(->version.major).$(->version.minor).$(->version.patch)) UNRELEASED; urgency=low
+$(project.name:lower) ($(->version.major).$(->version.minor).$(->version.patch)) UNRELEASED; urgency=low
 
   * Initial packaging.
 
@@ -30,7 +30,7 @@ $(project.name) ($(->version.major).$(->version.minor).$(->version.patch)) UNREL
 #    $(string.trim (license.):block                                         )
 .   endfor
 
-Source:         $(string.replace (project.name, "_|-"))
+Source:         $(string.replace (project.name, "_|-"):lower)
 Section:        net
 Priority:       optional
 Maintainer:     $(project.name) Developers <$(project.email)>
@@ -80,20 +80,20 @@ Description: development files for $(project.name)
 .endif
 
 .if project.has_main
-Package: $(string.replace (project.name, "_|"))
+Package: $(string.replace (project.name, "_|-"):lower)
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: $(project.description)
  Main package for $(project.name): $(project.description)
 .endif
 
-Package: $(project.name)-dbg
+Package: $(string.replace (project.name, "_|-"):lower)-dbg
 Architecture: any
 Section: debug
 Priority: extra
 Depends:
 .if project.has_main
-    $(string.replace (project.name, "_|-")) (= ${binary:Version}),
+    $(string.replace (project.name, "_|-"):lower) (= ${binary:Version}),
 .else
     $(string.replace (project.libname, "_|-"))$(project->version.major) (= ${binary:Version}),
 .endif
@@ -116,7 +116,7 @@ License: $(project.name)_license
 # -*- makefile -*-
 
 override_dh_strip:
-	dh_strip --dbg-package=$(project.name)-dbg
+	dh_strip --dbg-package=$(string.replace (project.name, "_|-"):lower)-dbg
 
 override_dh_auto_test:
 	echo "Skipped for now"
@@ -128,7 +128,7 @@ override_dh_auto_configure:
 	dh $@ --with autoreconf,systemd
 
 .if project.has_main
-.   output ("packaging/debian/$(string.replace (project.name, "_|-")).install")
+.   output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).install")
 .# generate binary names
 .   for project.main where scope = "public"
 usr/bin/$(main.name)
