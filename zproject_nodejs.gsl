@@ -15,7 +15,59 @@ register_target ("nodejs", "Node.js binding")
 #   Target provides name space isolation for its functions
 function target_nodejs
 
-function resolve_class (class)
+function resolve_method (method)
+    my.method.called = ""
+    comma = ""
+
+    for argument
+        #   Get NAN types for integer casting
+        if type = "integer"
+            argument.nan_type = "int"
+        elsif type = "number"
+            if size = 1 | size = 2 | size = 4
+                argument.nan_type = "uint32_t"
+            else
+                argument.nan_type = "int64_t"
+            endif
+        elsif type = "size"
+            argument.nan_type = "int64_t"
+        elsif type = "boolean"
+            argument.nan_type = "bool"
+        elsif type = "real"
+            argument.nan_type = "double"
+        endif
+
+        #   These are the types of argument we support so far
+        if type = "integer" | type = "number" | type = "size" | type = "boolean" \
+        |  type = "string" \
+        |  type = "real"
+            my.method.called += "$(comma)$(c_type)$(c_name)"
+            comma = ", "
+
+        elsif type = "format"
+            my.method.called += "$(comma)$(c_type)$(c_name)"
+            comma = ", "
+
+        elsif type = "nothing" \
+        |     destructor_self ?= 1
+            #   Ignore silently
+
+        elsif count (project.class, class.c_name = argument.type)
+            my.method.called += "$(comma)$(c_type)$(c_name)"
+            comma = ", "
+            argument.is_object = 1
+
+        elsif count (project->dependencies.class, class.c_name = argument.type)
+            my.method.bypass = 1
+            echo "nodejs: what do we do with '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)?"
+
+        else
+            my.method.bypass = 1
+            echo "nodejs: can't do '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)"
+        endif
+    else
+        my.method.called += "void"
+    endfor
 endfunction
 
 .macro generate_binding
@@ -64,7 +116,7 @@ This is a wrapping of the native C $(project.libname) library. See binding.cc fo
 
 We get these classes:
 
-.for project.class where scope = "public" & state <> "legacy"
+.for project.class where defined (class.api)
 * $(class.name:Pascal) - $(class.description:)
 .endfor
 
@@ -81,6 +133,11 @@ npm-debug.log*
 .for project.use where !optional
 $(use.project)/
 .endfor
+.if !file.exists ("$(topdir)/.prebuildrc")
+.output "$(topdir)/.prebuildrc"
+prebuild[] = 4.2.4
+prebuild[] = 5.6.0
+.endif
 .output "$(topdir)/build.sh"
 #! /bin/bash
 #
@@ -154,9 +211,10 @@ export JOBS=$\([[ $\(uname) = 'Darwin' ]] \\
     && sysctl -n hw.logicalcpu_max \\
     || lscpu -p | egrep -v '^#' | wc -l)
 
-#   Build the binding using node-ninja
+#   Build the binding using node-ninja directly, not prebuild
 echo "I: building Node.js binding:"
-prebuild --all --backend=node-ninja
+node-ninja configure
+node-ninja build
 .close
 .chmod_x ("$(topdir)/build.sh")
 .output "$(topdir)/binding.gyp"
@@ -171,7 +229,9 @@ $(project.GENERATED_WARNING_HEADER:)
       ],
       'include_dirs': [
           "<!(node -e \\"require('nan')\\")",
-          -- dependencies!
+.   for project.use where !optional
+          '../../../$(use.project)/include',
+.   endfor
           '../../include'
       ],
       'conditions': [
@@ -211,9 +271,8 @@ $(project.GENERATED_WARNING_HEADER:)
 .output "$(topdir)/package.json"
 {
   "name": "$(project.name)",
-  # ???
-  "version": "0.0.0",
-  "description": "$(project.name)",
+  "version": "$(nodejs_version)",
+  "description": "$(project.description:)",
   "scripts": {
     "install": "prebuild --install",
     "test": "echo \\"Error: no test specified\\" && exit 1",
@@ -225,8 +284,7 @@ $(project.GENERATED_WARNING_HEADER:)
   "gypfile": true,
   "repository": {
     "type": "git",
-    # ???
-    "url": "https://github.com/hintjens/zyre-nodejs"
+    "url": "$(nodejs_repo)"
   },
   "dependencies": {
     "prebuild": "^3.0.3",
@@ -244,14 +302,99 @@ $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
-#define $(PROJECT.PREFIX)_BUILD_DRAFT_API
-#include "$(project.header).h"
+#include "$(project.header)"
 #include "nan.h"
 
 using namespace v8;
 using namespace Nan;
 
-.for project.class where scope = "public" & state <> "legacy"
+.function invoke (method, map_objects)
+    if my.method.singleton
+        my.invoke = ""
+        comma = ""
+    else
+        my.invoke = "$(class.c_name)->self"
+        comma = ", "
+    endif
+
+    for argument
+        #   These are the types of argument we support so far
+        if type = "integer" \
+        |  type = "number" \
+        |  type = "size" \
+        |  type = "boolean" \
+        |  type = "string" \
+        |  type = "real"
+            my.invoke += "$(comma)$(c_name)"
+            comma = ", "
+
+        elsif type = "format"
+            my.invoke += "$(comma)\"%s\", $(c_name)"
+            comma = ", "
+
+        elsif type = "nothing"
+        #   Ignore silently
+
+        elsif count (project.class, class.c_name = argument.type)
+            if my.map_objects ?= 1
+                my.invoke += "$(comma)$(c_name)->get_self ()"
+            else
+                my.invoke += "$(comma)$(c_name)"
+            endif
+            comma = ", "
+
+        else
+            echo "nodejs: '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)?"
+            echo "nodejs: unexpected 'invoke ()'"
+        endif
+    endfor
+    return my.invoke
+.endfunction
+.
+.macro resolve_arguments (raw)
+.   my.invoke = ""
+.   for argument
+.       if type = "integer" | type = "number" | type = "size" | type = "boolean" | type = "real"
+        if (info [$(index () - 1)]->IsUndefined ())
+            return Nan::ThrowTypeError ("method requires a `$(name)`");
+        else
+.           if type = "boolean"
+        if (!info [$(index () - 1)]->IsBoolean ())
+.           elsif type = "real"
+        if (!info [$(index () - 1)]->IsDouble ())
+.           else
+        if (!info [$(index () - 1)]->IsNumber ())
+.           endif
+            return Nan::ThrowTypeError ("`$(name)` must be a number");
+        $(c_type) $(c_name) = Nan::To<$(nan_type:)>(info [$(index () - 1)]).FromJust ();
+
+.       elsif type = "string" | type = "format"
+        char *$(c_name);
+        if (info [$(index () - 1)]->IsUndefined ())
+.           if optional
+            $(c_name) = NULL;
+.           else
+            return Nan::ThrowTypeError ("method requires a `$(name)`");
+.           endif
+        else
+        if (!info [$(index () - 1)]->IsString ())
+            return Nan::ThrowTypeError ("`$(name)` must be a string");
+        else {
+            Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
+            $(c_name) = *$(c_name)_utf8;
+        }
+.       elsif argument.is_object ?= 1
+        $(type:Pascal) *$(name) = Nan::ObjectWrap::Unwrap<$(type:Pascal)>(info [$(index () - 1)].As<Object>());
+
+.       elsif type = "nothing"
+.           #   Do nothing
+.       else
+        //  TODO: How do we check $(type)/$(c_type) $(name)?
+.       endif
+.   endfor
+.endmacro
+.
+.for project.class where defined (class.api)
 class $(class.name:Pascal): public Nan::ObjectWrap {
     public:
         static NAN_MODULE_INIT (Init) {
@@ -266,7 +409,10 @@ class $(class.name:Pascal): public Nan::ObjectWrap {
 .   for class.destructor
             Nan::SetPrototypeMethod (tpl, "$(destructor.name)", $(destructor.name));
 .   endfor
-.   for class.method
+.   if count (class.constructor)
+            Nan::SetPrototypeMethod (tpl, "defined", defined);
+.   endif
+.   for class.method where !defined (bypass)
             Nan::SetPrototypeMethod (tpl, "$(method.name:Camel)", $(method.c_name));
 .   endfor
 
@@ -276,8 +422,8 @@ class $(class.name:Pascal): public Nan::ObjectWrap {
         }
     private:
 .   for class.constructor where name = "new"
-        explicit $(class.name:Pascal) (arguments) {
-            self = $(c_name) (name);
+        explicit $(class.name:Pascal) ($(called:)) {
+            self = $(class.c_name:)_$(c_name) ($(invoke (constructor)));
         }
 .   else
         explicit $(class.name:Pascal) () {
@@ -288,13 +434,12 @@ class $(class.name:Pascal): public Nan::ObjectWrap {
 
     static NAN_METHOD (New) {
         assert (info.IsConstructCall ());
-        $(class.name:Pascal) *$(class.c_name);
-.#        if (info [0]->IsString ()) {
-.#            Nan::Utf8String name (info [0].As<String>());
-.#            $(class.c_name) = new $(class.name:Pascal) (*name);
-.#        }
-.#        else
-        $(class.c_name) = new $(class.name:Pascal) ();
+.   for class.constructor where name = "new"
+.       resolve_arguments ()
+        $(class.name:Pascal) *$(class.c_name) = new $(class.name:Pascal) ($(invoke (constructor, 1)));
+.   else
+        $(class.name:Pascal) *$(class.c_name) = new $(class.name:Pascal) ();
+.   endfor
         if ($(class.c_name)) {
             $(class.c_name)->Wrap (info.This ());
             info.GetReturnValue ().Set (info.This ());
@@ -315,10 +460,32 @@ class $(class.name:Pascal): public Nan::ObjectWrap {
     }
 
 .   endif
-.   for class.method
+.   for class.method where !defined (bypass)
     static NAN_METHOD ($(method.c_name)) {
+.       if !singleton
         $(class.name:Pascal) *$(class.c_name) = Nan::ObjectWrap::Unwrap <$(class.name:Pascal)> (info.Holder ());
-        $(class.c_name)_$(method.c_name) ($(class.c_name)->self);
+.       endif
+.       resolve_arguments ()
+.       if ->return.type = "string"
+        $(->return.c_type) return_value = $(class.c_name)_$(method.c_name) ($(invoke (method)));
+        info.GetReturnValue ().Set (Nan::New (return_value).ToLocalChecked ());
+.
+.       elsif ->return.type = "integer" | ->return.type = "number" \
+        |     ->return.type = "size" | ->return.type = "real"
+        $(->return.c_type) return_value = $(class.c_name)_$(method.c_name) ($(invoke (method)));
+        info.GetReturnValue().Set (Nan::New<Number>(return_value));
+.
+.       elsif ->return.type = "boolean"
+        $(->return.c_type) return_value = $(class.c_name)_$(method.c_name) ($(invoke (method)));
+        info.GetReturnValue().Set (Nan::New<Boolean>(return_value));
+.
+.       elsif ->return.type = "nothing"
+        $(class.c_name)_$(method.c_name) ($(invoke (method)));
+.
+.       else
+        $(class.c_name)_$(method.c_name) ($(invoke (method)));
+.           echo "nodejs: what do we do with return '$(->return.type)', $(class.c_name).$(method.c_name)?"
+.       endif
     }
 
 .   endfor
@@ -340,7 +507,7 @@ class $(class.name:Pascal): public Nan::ObjectWrap {
 
 extern "C" NAN_MODULE_INIT ($(project.name:c)_initialize)
 {
-.for project.class where scope = "public" & state <> "legacy"
+.for project.class where defined (class.api)
     $(class.name:Pascal)::Init (target);
 .endfor
 }
@@ -353,8 +520,16 @@ NODE_MODULE ($(project.name:c), $(project.name:c)_initialize)
 
     project.topdir = "bindings/nodejs"
     directory.create (project.topdir)
-    for project.class
-        resolve_class (class)
+    for project.class where defined (class.api)
+        for constructor
+            resolve_method (constructor)
+        endfor
+        for destructor
+            resolve_method (destructor)
+        endfor
+        for method
+            resolve_method (method)
+        endfor
     endfor
     generate_binding ()
 endfunction

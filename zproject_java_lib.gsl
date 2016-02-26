@@ -215,7 +215,7 @@ function resolve_method (method)
 endfunction
 
 function resolve_class (class)
-    if defined (my.class.api) & my.class.private = "0"
+    if defined (my.class.api) & !my.class.private
         my.class.okay = 1
         for constructor
             resolve_method (constructor)
