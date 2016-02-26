@@ -133,8 +133,8 @@ npm-debug.log*
 .for project.use where !optional
 $(use.project)/
 .endfor
-.if !file.exists ("$(topdir)/.prebuild.rc")
-.output "$(topdir)/.prebuild.rc"
+.if !file.exists ("$(topdir)/.prebuildrc")
+.output "$(topdir)/.prebuildrc"
 prebuild[] = 4.2.4
 prebuild[] = 5.6.0
 .endif
