@@ -14,6 +14,12 @@ register_target ("debian", "packaging for Debian")
 
 .macro target_debian
 .directory.create ('packaging/debian')
+.output "packaging/debian/changelog"
+$(project.name:lower) ($(->version.major).$(->version.minor).$(->version.patch)) UNRELEASED; urgency=low
+
+  * Initial packaging.
+
+ -- $(project.name) Developers <$(project.email)>  Wed, 31 Dec 2014 00:00:00 +0000
 .output "packaging/debian/compat"
 9
 .output "packaging/debian/control"
@@ -24,20 +30,17 @@ register_target ("debian", "packaging for Debian")
 #    $(string.trim (license.):block                                         )
 .   endfor
 
-Source:         $(string.replace (project.name, "_|-"))
+Source:         $(string.replace (project.name, "_|-"):lower)
 Section:        net
 Priority:       optional
-Maintainer:     John Doe <John.Doe@example.com>
-Uploaders:      John Doe <John.Doe@example.com>
-Standards-Version: 3.9.5
-Build-Depends: bison, debhelper (>= 8),
+Maintainer:     $(project.name) Developers <$(project.email)>
+Standards-Version: 3.9.7
+Build-Depends: debhelper (>= 9),
     pkg-config,
-    automake,
-    autoconf,
-    libtool,
+    dh-autoreconf,
 .for project.use
 .if use.project = "libzmq"
-    libzmq4-dev,
+    libzmq5-dev,
 .elsif defined(use.debian_name)
     $(use.debian_name),
 .elsif regexp.match("^lib", use.libname)
@@ -56,13 +59,13 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: $(project.name)
  This package contains shared library for $(project.name): $(project.description)
 
-Package: $(string.replace (project.name, "_|-"))-dev
-Architecture: all
+Package: $(string.replace (project.libname, "_|-"))-dev
+Architecture: any
 Section: libdevel
 Depends:
 .for project.use
 .if use.project = "libzmq"
-    libzmq4-dev,
+    libzmq5-dev,
 .elsif defined(use.debian_name)
     $(use.debian_name),
 .elsif regexp.match("^lib", use.libname)
@@ -77,20 +80,20 @@ Description: development files for $(project.name)
 .endif
 
 .if project.has_main
-Package: $(string.replace (project.name, "_|"))
+Package: $(string.replace (project.name, "_|-"):lower)
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: $(project.description)
  Main package for $(project.name): $(project.description)
 .endif
 
-Package: $(project.name)-dbg
+Package: $(string.replace (project.name, "_|-"):lower)-dbg
 Architecture: any
 Section: debug
 Priority: extra
 Depends:
 .if project.has_main
-    $(string.replace (project.name, "_|-")) (= ${binary:Version}),
+    $(string.replace (project.name, "_|-"):lower) (= ${binary:Version}),
 .else
     $(string.replace (project.libname, "_|-"))$(project->version.major) (= ${binary:Version}),
 .endif
@@ -98,95 +101,66 @@ Depends:
 Description: debugging symbols for $(project.name)
  This package contains the debugging symbols for $(project.name) : $(project.description).
 
-.output "packaging/debian/$(project.name).dsc"
-Format:         1.0
-Source:         $(string.replace (project.name, "_|-"))
-Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)-1
-.if project.exports_classes
-Binary:         $(string.replace (project.libname, "_|-"))$(project->version.major), $(string.replace (project.name, "_|-"))-dev
-.endif
-Architecture:   any all
-Maintainer:     John Doe <John.Doe@example.com>
-Standards-Version: 3.9.5
-Build-Depends: bison, debhelper (>= 8),
-    pkg-config,
-    automake,
-    autoconf,
-    libtool,
-.for project.use
-.   if use.project = "libzmq"
-    libzmq4-dev,
-.   elsif defined(use.debian_name)
-    $(use.debian_name),
-.   elsif regexp.match("^lib", use.libname)
-    $(string.replace (use.libname, "_|-"))-dev,
-.   else
-    lib$(string.replace (use.libname, "_|-"))-dev,
-.   endif
-.endfor
-    dh-autoreconf
+.output "packaging/debian/copyright"
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: $(project.name)
 
-.if project.exports_classes
-Package-List:
- $(string.replace (project.libname, "_|-"))$(project->version.major) deb net optional arch=any
- $(string.replace (project.name, "_|-"))-dev deb libdevel optional arch=any
-.endif
-
+Files: *
+Copyright: 2015- $(project.name) Developers <$(project.email)>
+License: $(project.name)_license
+.   for project.license
+ $(string.trim (license.):block                                         )
+.   endfor
 .output "packaging/debian/rules"
 #!/usr/bin/make -f
 # -*- makefile -*-
 
 override_dh_strip:
-	dh_strip --dbg-package=$(project.name)-dbg
+	dh_strip --dbg-package=$(string.replace (project.name, "_|-"):lower)-dbg
 
 override_dh_auto_test:
 	echo "Skipped for now"
 
 override_dh_auto_configure:
-	dh_auto_configure -- --with-systemd
+	dh_auto_configure -- --with-systemd-units
 
 %:
-	dh $@ --with=autoreconf
-
-\.PHONY: override_dh_strip override_dh_auto_test override_dh_auto_configure
+	dh $@ --with autoreconf,systemd
 
 .if project.has_main
-.   output ("packaging/debian/$(string.replace (project.name, "_|-")).install")
+.   output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).install")
 .# generate binary names
 .   for project.main where scope = "public"
-debian/tmp/usr/bin/$(main.name)
+usr/bin/$(main.name)
 .       if file.exists ("src/$(main.name).cfg.example")
-debian/tmp/etc/$(project.name)/$(main.name).cfg.example
+etc/$(project.name)/$(main.name).cfg.example
 .       endif
 .   endfor
 .   for project.bin
-debian/tmp/usr/bin/$(bin.name)
+usr/bin/$(bin.name)
 .   endfor
 .# generate service file names
 .   for project.main where main.service ?= 1 | main.services ?= 1
 .       if main.no_config ?= 0
-debian/tmp/etc/$(project.name)/$(main.name).cfg
+etc/$(project.name)/$(main.name).cfg
 .       endif
-debian/tmp/usr/lib/systemd/system/$(main.name)*.service
+usr/lib/systemd/system/$(main.name)*.service
 .   endfor
 .   for project.service
-debian/tmp/lib/systemd/system/$(service.name)*.service
+lib/systemd/system/$(service.name)*.service
 .   endfor
-
 .for project.main where defined (main->extra)
 .    for extra
-debian/tmp$(extra.path)/$(extra.name)
+$(extra.path)/$(extra.name)
 .    endfor
 .endfor
-
 .endif
-
 .if project.exports_classes
 .   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
-debian/tmp/usr/lib/*/$(project.libname).so.*
-.   output ("packaging/debian/$(string.replace (project.name, "_|-"))-dev.install")
-debian/tmp/usr/include/*
-debian/tmp/usr/lib/*/$(project.libname).so
-debian/tmp/usr/lib/*/pkgconfig/$(project.libname).pc
+usr/lib/*/$(project.libname).so.*
+.   output ("packaging/debian/$(string.replace (project.libname, "_|-"))-dev.install")
+usr/include/*
+usr/lib/*/$(project.libname).so
+usr/lib/*/pkgconfig/$(project.libname).pc
 .endif
 .endmacro
