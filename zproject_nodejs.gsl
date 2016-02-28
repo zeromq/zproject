@@ -59,7 +59,7 @@ function resolve_method (method)
 
         elsif count (project->dependencies.class, class.c_name = argument.type)
             my.method.bypass = 1
-            echo "nodejs: what do we do with '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)?"
+            echo "nodejs: can't do '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)"
 
         else
             my.method.bypass = 1
@@ -68,6 +68,13 @@ function resolve_method (method)
     else
         my.method.called += "void"
     endfor
+
+    if count (project.class, class.c_name = my.method->return.type) \
+    |  count (project->dependencies.class, class.c_name = my.method->return.type)
+        my.method.bypass = 1
+        echo "nodejs: skipping '$(->return.type)' $(class.c_name).$(c_name) ()"
+    endif
+
 endfunction
 
 .macro generate_binding
@@ -119,7 +126,6 @@ We get these classes:
 .for project.class where defined (class.api)
 * $(class.name:Pascal) - $(class.description:)
 .endfor
-
 .output "$(topdir)/.gitignore"
 node_modules
 build
@@ -271,7 +277,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .output "$(topdir)/package.json"
 {
   "name": "$(project.name)",
-  "version": "$(nodejs_version)",
+  "version": "$(nodejs_version?'0.0.1')",
   "description": "$(project.description:)",
   "scripts": {
     "install": "prebuild --install",
@@ -284,7 +290,7 @@ $(project.GENERATED_WARNING_HEADER:)
   "gypfile": true,
   "repository": {
     "type": "git",
-    "url": "$(nodejs_repo)"
+    "url": "$(nodejs_repo?'')"
   },
   "dependencies": {
     "prebuild": "^3.0.3",
@@ -292,9 +298,9 @@ $(project.GENERATED_WARNING_HEADER:)
     "nan": "^2.2.0"
   }
 }
-.output "$(topdir)/binding.cc"
+.output "$(topdir)/binding.h"
 /*  =========================================================================
-    $(project.name:c) Node.js binding
+    $(project.name:c) Node.js binding header file
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -302,12 +308,64 @@ $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
+#ifndef $(PROJECT.NAME:C)_BINDING_H_INCLUDED
+#define $(PROJECT.NAME:C)_BINDING_H_INCLUDED
+
 #include "$(project.header)"
 #include "nan.h"
 
 using namespace v8;
 using namespace Nan;
 
+.for project.class where defined (class.api)
+class $(class.name:Pascal): public Nan::ObjectWrap {
+    public:
+        static NAN_MODULE_INIT (Init);
+.   if count (class.constructor)
+        $(class.c_name)_t *get_self ();
+.   endif
+    private:
+.   for class.constructor where name = "new"
+        explicit $(class.name:Pascal) ($(called:));
+        explicit $(class.name:Pascal) ($(class.c_name)_t *self);
+.   else
+        explicit $(class.name:Pascal) ();
+.   endfor
+        ~$(class.name:Pascal) ();
+.   if count (class.constructor)
+    $(class.c_name)_t *self;
+.   endif
+    static Nan::Persistent <Function> &constructor ();
+
+    static NAN_METHOD (New);
+.   for class.destructor
+    static NAN_METHOD (destroy);
+.   endfor
+.   if count (class.constructor)
+    static NAN_METHOD (defined);
+.   endif
+.   for class.method where !defined (bypass)
+    static NAN_METHOD ($(method.c_name));
+.   endfor
+};
+
+.endfor
+#endif
+.output "$(topdir)/binding.cc"
+/*  =========================================================================
+    $(project.name:c) Node.js binding implementation
+
+.   for project.license
+    $(string.trim (license.):block                                         )
+.   endfor
+    =========================================================================
+*/
+
+#include "binding.h"
+
+using namespace v8;
+using namespace Nan;
+.
 .function invoke (method, map_objects)
     if my.method.singleton
         my.invoke = ""
@@ -335,7 +393,8 @@ using namespace Nan;
         elsif type = "nothing"
         #   Ignore silently
 
-        elsif count (project.class, class.c_name = argument.type)
+        elsif count (project.class, class.c_name = argument.type) \
+        |     count (project->dependencies.class, class.c_name = argument.type)
             if my.map_objects ?= 1
                 my.invoke += "$(comma)$(c_name)->get_self ()"
             else
@@ -395,114 +454,117 @@ using namespace Nan;
 .endmacro
 .
 .for project.class where defined (class.api)
-class $(class.name:Pascal): public Nan::ObjectWrap {
-    public:
-        static NAN_MODULE_INIT (Init) {
-            Nan::HandleScope scope;
 
-            // Prepare constructor template
-            Local <FunctionTemplate> tpl = Nan::New <FunctionTemplate> (New);
-            tpl->SetClassName (Nan::New ("$(class.name:Pascal)").ToLocalChecked ());
-            tpl->InstanceTemplate ()->SetInternalFieldCount (1);
+NAN_MODULE_INIT ($(class.name:Pascal)::Init) {
+    Nan::HandleScope scope;
 
-            // Prototypes
+    // Prepare constructor template
+    Local <FunctionTemplate> tpl = Nan::New <FunctionTemplate> (New);
+    tpl->SetClassName (Nan::New ("$(class.name:Pascal)").ToLocalChecked ());
+    tpl->InstanceTemplate ()->SetInternalFieldCount (1);
+
+    // Prototypes
 .   for class.destructor
-            Nan::SetPrototypeMethod (tpl, "$(destructor.name)", $(destructor.name));
+    Nan::SetPrototypeMethod (tpl, "$(destructor.name)", $(destructor.name));
 .   endfor
 .   if count (class.constructor)
-            Nan::SetPrototypeMethod (tpl, "defined", defined);
+    Nan::SetPrototypeMethod (tpl, "defined", defined);
 .   endif
 .   for class.method where !defined (bypass)
-            Nan::SetPrototypeMethod (tpl, "$(method.name:Camel)", $(method.c_name));
+    Nan::SetPrototypeMethod (tpl, "$(method.name:Camel)", $(method.c_name));
 .   endfor
 
-            constructor ().Reset (Nan::GetFunction (tpl).ToLocalChecked ());
-            Nan::Set (target, Nan::New ("$(class.name:Pascal)").ToLocalChecked (),
-            Nan::GetFunction (tpl).ToLocalChecked ());
-        }
-    private:
+    constructor ().Reset (Nan::GetFunction (tpl).ToLocalChecked ());
+    Nan::Set (target, Nan::New ("$(class.name:Pascal)").ToLocalChecked (),
+    Nan::GetFunction (tpl).ToLocalChecked ());
+}
 .   for class.constructor where name = "new"
-        explicit $(class.name:Pascal) ($(called:)) {
-            self = $(class.c_name:)_$(c_name) ($(invoke (constructor)));
-        }
-.   else
-        explicit $(class.name:Pascal) () {
-        }
-.   endfor
-        ~$(class.name:Pascal) () {
-        }
 
-    static NAN_METHOD (New) {
-        assert (info.IsConstructCall ());
+$(class.name:Pascal)::$(class.name:Pascal) ($(called:)) {
+    self = $(class.c_name:)_$(c_name) ($(invoke (constructor)));
+}
+
+$(class.name:Pascal)::$(class.name:Pascal) ($(class.c_name)_t *self_) {
+    self = self_;
+}
+.   else
+
+$(class.name:Pascal)::$(class.name:Pascal) () {
+}
+.   endfor
+
+$(class.name:Pascal)::~$(class.name:Pascal) () {
+}
+
+NAN_METHOD ($(class.name:Pascal)::New) {
+    assert (info.IsConstructCall ());
 .   for class.constructor where name = "new"
 .       resolve_arguments ()
-        $(class.name:Pascal) *$(class.c_name) = new $(class.name:Pascal) ($(invoke (constructor, 1)));
+    $(class.name:Pascal) *$(class.c_name) = new $(class.name:Pascal) ($(invoke (constructor, 1)));
 .   else
-        $(class.name:Pascal) *$(class.c_name) = new $(class.name:Pascal) ();
+    $(class.name:Pascal) *$(class.c_name) = new $(class.name:Pascal) ();
 .   endfor
-        if ($(class.c_name)) {
-            $(class.c_name)->Wrap (info.This ());
-            info.GetReturnValue ().Set (info.This ());
-        }
+    if ($(class.c_name)) {
+        $(class.c_name)->Wrap (info.This ());
+        info.GetReturnValue ().Set (info.This ());
     }
-
+}
 .   for class.destructor
-    static NAN_METHOD (destroy) {
-        $(class.name:Pascal) *$(class.c_name) = Nan::ObjectWrap::Unwrap <$(class.name:Pascal)> (info.Holder ());
-        $(class.c_name)_$(destructor.name) (&$(class.c_name)->self);
-    }
+
+NAN_METHOD ($(class.name:Pascal)::destroy) {
+    $(class.name:Pascal) *$(class.c_name) = Nan::ObjectWrap::Unwrap <$(class.name:Pascal)> (info.Holder ());
+    $(class.c_name)_$(destructor.name) (&$(class.c_name)->self);
+}
 
 .   endfor
 .   if count (class.constructor)
-    static NAN_METHOD (defined) {
-        $(class.name:Pascal) *$(class.c_name) = Nan::ObjectWrap::Unwrap <$(class.name:Pascal)> (info.Holder ());
-        info.GetReturnValue ().Set (Nan::New ($(class.c_name)->self != NULL));
-    }
 
+NAN_METHOD ($(class.name:Pascal)::defined) {
+    $(class.name:Pascal) *$(class.c_name) = Nan::ObjectWrap::Unwrap <$(class.name:Pascal)> (info.Holder ());
+    info.GetReturnValue ().Set (Nan::New ($(class.c_name)->self != NULL));
+}
 .   endif
 .   for class.method where !defined (bypass)
-    static NAN_METHOD ($(method.c_name)) {
+
+NAN_METHOD ($(class.name:Pascal)::$(method.c_name)) {
 .       if !singleton
-        $(class.name:Pascal) *$(class.c_name) = Nan::ObjectWrap::Unwrap <$(class.name:Pascal)> (info.Holder ());
+    $(class.name:Pascal) *$(class.c_name) = Nan::ObjectWrap::Unwrap <$(class.name:Pascal)> (info.Holder ());
 .       endif
 .       resolve_arguments ()
 .       if ->return.type = "string"
-        $(->return.c_type) return_value = $(class.c_name)_$(method.c_name) ($(invoke (method)));
-        info.GetReturnValue ().Set (Nan::New (return_value).ToLocalChecked ());
+    $(->return.c_type) return_value = $(class.c_name)_$(method.c_name) ($(invoke (method)));
+    info.GetReturnValue ().Set (Nan::New (return_value).ToLocalChecked ());
 .
 .       elsif ->return.type = "integer" | ->return.type = "number" \
         |     ->return.type = "size" | ->return.type = "real"
-        $(->return.c_type) return_value = $(class.c_name)_$(method.c_name) ($(invoke (method)));
-        info.GetReturnValue().Set (Nan::New<Number>(return_value));
+    $(->return.c_type) return_value = $(class.c_name)_$(method.c_name) ($(invoke (method)));
+    info.GetReturnValue().Set (Nan::New<Number>(return_value));
 .
 .       elsif ->return.type = "boolean"
-        $(->return.c_type) return_value = $(class.c_name)_$(method.c_name) ($(invoke (method)));
-        info.GetReturnValue().Set (Nan::New<Boolean>(return_value));
+    $(->return.c_type) return_value = $(class.c_name)_$(method.c_name) ($(invoke (method)));
+    info.GetReturnValue().Set (Nan::New<Boolean>(return_value));
 .
 .       elsif ->return.type = "nothing"
-        $(class.c_name)_$(method.c_name) ($(invoke (method)));
+    $(class.c_name)_$(method.c_name) ($(invoke (method)));
 .
 .       else
-        $(class.c_name)_$(method.c_name) ($(invoke (method)));
+.           my.method.bypass = 1
 .           echo "nodejs: what do we do with return '$(->return.type)', $(class.c_name).$(method.c_name)?"
 .       endif
-    }
-
+}
 .   endfor
-    static Nan::Persistent <Function> & constructor () {
-        static Nan::Persistent <Function> my_constructor;
-        return my_constructor;
-    }
+
+Nan::Persistent <Function> &$(class.name:Pascal)::constructor () {
+    static Nan::Persistent <Function> my_constructor;
+    return my_constructor;
+}
 
 .   if count (class.constructor)
-    $(class.c_name)_t *self;
-    public:
-        $(class.c_name)_t *get_self () {
-            return self;
-        }
-.   endif
-};
 
+$(class.c_name)_t *$(class.name:Pascal)::get_self () {
+    return self;
+}
+.   endif
 .endfor
 
 extern "C" NAN_MODULE_INIT ($(project.name:c)_initialize)
