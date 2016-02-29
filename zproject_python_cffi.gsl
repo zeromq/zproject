@@ -29,7 +29,6 @@ endfunction
 
 function resolve_container (container)
     if my.container.variadic
-    elsif my.container.is_enum
     elsif my.container.type = "nothing"
     elsif my.container.type = "anything"
     elsif my.container.type = "boolean"
@@ -113,14 +112,6 @@ function generate_binding
         >typedef struct _$(t.name:c) $(t.name:c);
     endfor
     for class where defined (class.api) & class.private = "0"
-        for class.enum
-            >typedef enum {
-            for enum.constant
-                comma = last ()?? ""? ","
-                >    $(CLASS.NAME:c)_$(CONSTANT.NAME:c) = $(value)$(comma)   //  $(string.trim (constant.?''):left)
-            endfor
-            >} $(class.name:c)_$(enum.name:c)_t;
-        endfor
         for class.callback_type
             >// $(callback_type.description:no,block)
             >$(c_callback_typedef (callback_type):)

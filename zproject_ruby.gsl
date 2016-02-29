@@ -18,15 +18,6 @@ register_target ("ruby", "Ruby binding")
 #   Target provides name space isolation for its functions
 function target_ruby
 
-function resolve_ruby_enums (class)
-    for my.class.enum
-        #   Useful to test existence of enum later when resolving
-        #   arguments of enum type
-        enum.c_type    = "$(my.class.c_name:)_$(enum.name:c)_t"
-        enum.ruby_name = "$(my.class.c_name:)_$(enum.name:c)"
-    endfor
-endfunction
-
 # Work out Ruby name based on container.name and and set it as
 # container.ruby_name.
 function sanitize_ruby_container_name(container)
@@ -101,9 +92,6 @@ function resolve_ruby_container (container)
         my.container.ruby_doc_type = "Integer, #to_int, #to_i"
         my.container.ruby_ffi_type = "char"
         my.container.coerce_to_c = "Integer($(my.container.ruby_name:))"
-    elsif my.container.is_enum
-        my.container.ruby_doc_type = "Symbol"
-        my.container.ruby_ffi_type = "$(my.container.enum_class:)_$(my.container.enum_name)"
     elsif count (project.class, defined (class.RubyName) & (my.container.type = class.c_name))
         for project.class where (defined (class.RubyName) & (my.container.type = class.c_name))
             if my.container.by_reference
@@ -242,7 +230,6 @@ function ruby_doc_arg_description (argument)
 endfunction
 
 function resolve_ruby_class (class)
-    resolve_ruby_enums (class)
     for my.class.constructor as method
         resolve_ruby_method (method)
     endfor
@@ -309,15 +296,6 @@ module $(project.RubyName:)
       }
 .for class where defined (class.api) & class.private = "0"
 
-.for enum
-      enum :$(enum.ruby_name:), [
-.  for enum.constant
-.       # Ruby doesn't care about that last trailing comma ;-)
-        :$(constant.name:c), $(constant.value),
-.  endfor
-      ]
-
-.endfor
 .for constructor as method
 .  if method.state = 'draft'
       begin # DRAFT method

@@ -356,19 +356,6 @@ $(PROJECT.PREFIX)_EXPORT $(c_method_signature (method):);
 .      endif
 #define $(CLASS.NAME:c)_$(NAME:c) $(value)  // $(constant.description:no,block)
 .   endfor
-.   for class.enum where draft = 1
-.      if first ()
-
-//  *** Draft enums, defined for internal use only ***
-.      endif
-// $(enum.description:no,block)
-typedef enum {
-.       for enum.constant
-.           comma = last ()?? ""? ","
-    $(CLASS.NAME:c)_$(CONSTANT.NAME:c) = $(value)$(comma)   //  $(string.trim (constant.?''):left)
-.       endfor
-} $(class.name:c)_$(enum.name:c)_t;
-.   endfor
 .   for class.callback_type where draft = 1
 .      if first ()
 
@@ -401,16 +388,6 @@ $(c_callback_typedef (callback_type))
 .   if last ()
 
 .   endif
-.   endfor
-.   for class.enum where draft = my.draft
-// $(enum.description:no,block)
-typedef enum {
-.       for enum.constant
-.           comma = last ()?? ""? ","
-    $(CLASS.NAME:c)_$(CONSTANT.NAME:c) = $(value)$(comma)   //  $(string.trim (constant.?''):left)
-.       endfor
-} $(class.name:c)_$(enum.name:c)_t;
-
 .   endfor
 .   for class.callback_type where draft = my.draft
 // $(callback_type.description:no,block)

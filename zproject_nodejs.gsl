@@ -17,6 +17,7 @@ function target_nodejs
 
 function resolve_method (method)
     my.method.called = ""
+    my.method.exported = 1
     comma = ""
 
     for argument
@@ -38,13 +39,16 @@ function resolve_method (method)
         endif
 
         #   These are the types of argument we support so far
-        if type = "integer" | type = "number" | type = "size" | type = "boolean" \
-        |  type = "string" \
+        if type = "integer" \
+        |  type = "number" \
+        |  type = "size" \
+        |  type = "boolean" \
         |  type = "real"
-            my.method.called += "$(comma)$(c_type)$(c_name)"
+            my.method.called += "$(comma)$(c_type) $(c_name)"
             comma = ", "
 
-        elsif type = "format"
+        elsif type = "format" \
+        |     type = "string"
             my.method.called += "$(comma)$(c_type)$(c_name)"
             comma = ", "
 
@@ -58,11 +62,11 @@ function resolve_method (method)
             argument.is_object = 1
 
         elsif count (project->dependencies.class, class.c_name = argument.type)
-            my.method.bypass = 1
+            my.method.exported = 0
             echo "nodejs: can't do '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)"
 
         else
-            my.method.bypass = 1
+            my.method.exported = 0
             echo "nodejs: can't do '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)"
         endif
     else
@@ -71,10 +75,9 @@ function resolve_method (method)
 
     if count (project.class, class.c_name = my.method->return.type) \
     |  count (project->dependencies.class, class.c_name = my.method->return.type)
-        my.method.bypass = 1
+        my.method.exported = 0
         echo "nodejs: skipping '$(->return.type)' $(class.c_name).$(c_name) ()"
     endif
-
 endfunction
 
 .macro generate_binding
@@ -123,7 +126,7 @@ This is a wrapping of the native C $(project.libname) library. See binding.cc fo
 
 We get these classes:
 
-.for project.class where defined (class.api)
+.for project.class where exported
 * $(class.name:Pascal) - $(class.description:)
 .endfor
 .output "$(topdir)/.gitignore"
@@ -231,6 +234,11 @@ $(project.GENERATED_WARNING_HEADER:)
     {
       'target_name': '$(project.name)',
       'sources': [
+.   for project.use where !optional
+.       if file.exists ("../$(use.project)/$(topdir)/binding.cc")
+          '../../../$(use.project)/$(topdir)/binding.cc',
+.       endif
+.   endfor
           'binding.cc'
       ],
       'include_dirs': [
@@ -300,7 +308,7 @@ $(project.GENERATED_WARNING_HEADER:)
 }
 .output "$(topdir)/binding.h"
 /*  =========================================================================
-    $(project.name:c) Node.js binding header file
+    $(project.name:) Node.js binding header file
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -311,13 +319,15 @@ $(project.GENERATED_WARNING_HEADER:)
 #ifndef $(PROJECT.NAME:C)_BINDING_H_INCLUDED
 #define $(PROJECT.NAME:C)_BINDING_H_INCLUDED
 
+#define $(PROJECT.PREFIX)_BUILD_DRAFT_API
+
 #include "$(project.header)"
 #include "nan.h"
 
 using namespace v8;
 using namespace Nan;
 
-.for project.class where defined (class.api)
+.for project.class where exported
 class $(class.name:Pascal): public Nan::ObjectWrap {
     public:
         static NAN_MODULE_INIT (Init);
@@ -344,8 +354,8 @@ class $(class.name:Pascal): public Nan::ObjectWrap {
 .   if count (class.constructor)
     static NAN_METHOD (defined);
 .   endif
-.   for class.method where !defined (bypass)
-    static NAN_METHOD ($(method.c_name));
+.   for class.method where exported
+    static NAN_METHOD (_$(method.c_name));
 .   endfor
 };
 
@@ -353,7 +363,7 @@ class $(class.name:Pascal): public Nan::ObjectWrap {
 #endif
 .output "$(topdir)/binding.cc"
 /*  =========================================================================
-    $(project.name:c) Node.js binding implementation
+    $(project.name:) Node.js binding implementation
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -376,6 +386,8 @@ using namespace Nan;
     endif
 
     for argument
+        argument.ref = by_reference?? '&'? ''
+
         #   These are the types of argument we support so far
         if type = "integer" \
         |  type = "number" \
@@ -383,7 +395,7 @@ using namespace Nan;
         |  type = "boolean" \
         |  type = "string" \
         |  type = "real"
-            my.invoke += "$(comma)$(c_name)"
+            my.invoke += "$(comma)$(ref)$(c_name)"
             comma = ", "
 
         elsif type = "format"
@@ -398,7 +410,7 @@ using namespace Nan;
             if my.map_objects ?= 1
                 my.invoke += "$(comma)$(c_name)->get_self ()"
             else
-                my.invoke += "$(comma)$(c_name)"
+                my.invoke += "$(comma)$(ref)$(c_name)"
             endif
             comma = ", "
 
@@ -414,46 +426,46 @@ using namespace Nan;
 .   my.invoke = ""
 .   for argument
 .       if type = "integer" | type = "number" | type = "size" | type = "boolean" | type = "real"
-        if (info [$(index () - 1)]->IsUndefined ())
-            return Nan::ThrowTypeError ("method requires a `$(name)`");
-        else
+    if (info [$(index () - 1)]->IsUndefined ())
+        return Nan::ThrowTypeError ("method requires a `$(name)`");
+    else
 .           if type = "boolean"
-        if (!info [$(index () - 1)]->IsBoolean ())
+    if (!info [$(index () - 1)]->IsBoolean ())
 .           elsif type = "real"
-        if (!info [$(index () - 1)]->IsDouble ())
+    if (!info [$(index () - 1)]->IsDouble ())
 .           else
-        if (!info [$(index () - 1)]->IsNumber ())
+    if (!info [$(index () - 1)]->IsNumber ())
 .           endif
-            return Nan::ThrowTypeError ("`$(name)` must be a number");
-        $(c_type) $(c_name) = Nan::To<$(nan_type:)>(info [$(index () - 1)]).FromJust ();
+        return Nan::ThrowTypeError ("`$(name)` must be a number");
+    $(c_type) $(c_name) = Nan::To<$(nan_type:)>(info [$(index () - 1)]).FromJust ();
 
 .       elsif type = "string" | type = "format"
-        char *$(c_name);
-        if (info [$(index () - 1)]->IsUndefined ())
+    char *$(c_name);
+    if (info [$(index () - 1)]->IsUndefined ())
 .           if optional
-            $(c_name) = NULL;
+        $(c_name) = NULL;
 .           else
-            return Nan::ThrowTypeError ("method requires a `$(name)`");
+        return Nan::ThrowTypeError ("method requires a `$(name)`");
 .           endif
-        else
-        if (!info [$(index () - 1)]->IsString ())
-            return Nan::ThrowTypeError ("`$(name)` must be a string");
-        else {
-            Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
-            $(c_name) = *$(c_name)_utf8;
-        }
+    else
+    if (!info [$(index () - 1)]->IsString ())
+        return Nan::ThrowTypeError ("`$(name)` must be a string");
+    else {
+        Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
+        $(c_name) = *$(c_name)_utf8;
+    }
 .       elsif argument.is_object ?= 1
-        $(type:Pascal) *$(name) = Nan::ObjectWrap::Unwrap<$(type:Pascal)>(info [$(index () - 1)].As<Object>());
+    $(type:Pascal) *$(name) = Nan::ObjectWrap::Unwrap<$(type:Pascal)>(info [$(index () - 1)].As<Object>());
 
 .       elsif type = "nothing"
 .           #   Do nothing
 .       else
-        //  TODO: How do we check $(type)/$(c_type) $(name)?
+    //  TODO: How do we check $(type)/$(c_type) $(name)?
 .       endif
 .   endfor
 .endmacro
 .
-.for project.class where defined (class.api)
+.for project.class where exported
 
 NAN_MODULE_INIT ($(class.name:Pascal)::Init) {
     Nan::HandleScope scope;
@@ -470,8 +482,8 @@ NAN_MODULE_INIT ($(class.name:Pascal)::Init) {
 .   if count (class.constructor)
     Nan::SetPrototypeMethod (tpl, "defined", defined);
 .   endif
-.   for class.method where !defined (bypass)
-    Nan::SetPrototypeMethod (tpl, "$(method.name:Camel)", $(method.c_name));
+.   for class.method where exported
+    Nan::SetPrototypeMethod (tpl, "$(method.name:Camel)", _$(method.c_name));
 .   endfor
 
     constructor ().Reset (Nan::GetFunction (tpl).ToLocalChecked ());
@@ -524,9 +536,9 @@ NAN_METHOD ($(class.name:Pascal)::defined) {
     info.GetReturnValue ().Set (Nan::New ($(class.c_name)->self != NULL));
 }
 .   endif
-.   for class.method where !defined (bypass)
+.   for class.method where exported
 
-NAN_METHOD ($(class.name:Pascal)::$(method.c_name)) {
+NAN_METHOD ($(class.name:Pascal)::_$(method.c_name)) {
 .       if !singleton
     $(class.name:Pascal) *$(class.c_name) = Nan::ObjectWrap::Unwrap <$(class.name:Pascal)> (info.Holder ());
 .       endif
@@ -548,7 +560,6 @@ NAN_METHOD ($(class.name:Pascal)::$(method.c_name)) {
     $(class.c_name)_$(method.c_name) ($(invoke (method)));
 .
 .       else
-.           my.method.bypass = 1
 .           echo "nodejs: what do we do with return '$(->return.type)', $(class.c_name).$(method.c_name)?"
 .       endif
 }
@@ -569,7 +580,7 @@ $(class.c_name)_t *$(class.name:Pascal)::get_self () {
 
 extern "C" NAN_MODULE_INIT ($(project.name:c)_initialize)
 {
-.for project.class where defined (class.api)
+.for project.class where exported
     $(class.name:Pascal)::Init (target);
 .endfor
 }
@@ -582,16 +593,24 @@ NODE_MODULE ($(project.name:c), $(project.name:c)_initialize)
 
     project.topdir = "bindings/nodejs"
     directory.create (project.topdir)
-    for project.class where defined (class.api)
-        for constructor
-            resolve_method (constructor)
-        endfor
-        for destructor
-            resolve_method (destructor)
-        endfor
-        for method
-            resolve_method (method)
-        endfor
+    for project.class
+        if defined (class.api) & scope = "public"
+            class.exported = 1
+            for constructor
+                resolve_method (constructor)
+                if !constructor.exported
+                    class.exported = 0
+                endif
+            endfor
+            for destructor
+                resolve_method (destructor)
+            endfor
+            for method
+                resolve_method (method)
+            endfor
+        else
+            class.exported = 0
+        endif
     endfor
     generate_binding ()
 endfunction
