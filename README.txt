@@ -214,8 +214,6 @@ This is an incomplete list of API types:
 
 * "FILE", "va_list", "zmq_pollitem", "socket" -- literally that, in C. (Not sure if it is wise to use raw C types.)
 
-* enumerations - to be reviewed as these have a specific syntax that crams multiple properties into one attribute, not our usual way of working.
-
 * callbacks - tbd.
 
 * Names of classes, e.g. zmsg.
@@ -404,9 +402,6 @@ container.mutable      # 0/1 (default: 0)
 container.by_reference # 0/1 (default: 0)
 container.callback     # 0/1 (default: 0)
 container.fresh        # 0/1 (default: 0)
-container.is_enum      # 0/1 (default: 0)
-container.enum_name    # string if is_enum, otherwise undefined
-container.enum_class   # string if is_enum, otherwise undefined
 container.variadic     # 0/1 (default: 0)
 container.va_start     # string - that holds the argment name for va_start ()
 container.optional     # 0/1 (default: 0), up to binding generator to use

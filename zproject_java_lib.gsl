@@ -104,10 +104,6 @@ function resolve_container (container)
     elsif my.container.callback ?= 1
         return 1        #   Don't implement callbacks yet
 
-    elsif my.container.is_enum
-        my.container.jni_java_type = "int"
-        my.container.jni_jni_type = "jint"
-
     elsif my.container.type = "va_list" \
     |     my.container.type = "FILE" \
     |     my.container.type = "zmq_pollitem" \

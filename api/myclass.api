@@ -11,12 +11,9 @@
 
     <constant name = "default port" value = "8080">registered with IANA</constant>
 
-    <enum name = "mode">
-        Enumeration defining different work modes. Constants are mandatory.
-        <constant name="normal" constant = "1">
-        <constant name="fast"   constant = "2">
-        <constant name="safe"   constant = "3">
-    </enum>
+    <constant name = "normal" value = "1">
+    <constant name = "fast"   value = "2">
+    <constant name = "safe"   value = "3">
 
     <!-- Constructor is optional; default one has no arguments -->
     <constructor>
@@ -141,13 +138,7 @@
             Supported sizes are 1, 2, 4, and 8.
         </argument>
         <argument name = "a byte" type = "byte" />
-        <argument name = "conversion mode" type = "enum:myclass.mode">
-            The container for this argument will get the following attributes:
-            * `is_enum = 1"
-            * `enum_class = "myclass"`
-            * `enum_name = "mode"`
-            * `c_type = "my_class_mode_t"`
-        </argument>
+        <argument name = "conversion mode" type = "integer" />
         <argument name = "char pointer to C string" type = "string" />
         <argument name = "byte pointer to buffer" type = "buffer" />
         <argument name = "buffer size" type = "size" />

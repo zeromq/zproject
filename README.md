@@ -20,32 +20,32 @@
 **<a href="#toc2-131">Configuration</a>**
 
 **<a href="#toc2-313">Sample API model</a>**
-&emsp;<a href="#toc3-535">Supported API Model Attributes</a>
-&emsp;<a href="#toc3-551">API Types</a>
-&emsp;<a href="#toc3-592">Tips</a>
-&emsp;<a href="#toc3-609">Generate API model from C header files</a>
-&emsp;<a href="#toc4-631">Known caveats</a>
+&emsp;<a href="#toc3-526">Supported API Model Attributes</a>
+&emsp;<a href="#toc3-542">API Types</a>
+&emsp;<a href="#toc3-581">Tips</a>
+&emsp;<a href="#toc3-598">Generate API model from C header files</a>
+&emsp;<a href="#toc4-620">Known caveats</a>
 
-**<a href="#toc2-636">Language Binding Notes</a>**
-&emsp;<a href="#toc3-639">Java Language Binding</a>
+**<a href="#toc2-625">Language Binding Notes</a>**
+&emsp;<a href="#toc3-628">Java Language Binding</a>
 
-**<a href="#toc2-647">Draft API Support</a>**
+**<a href="#toc2-636">Draft API Support</a>**
 
-**<a href="#toc2-679">Targets</a>**
+**<a href="#toc2-668">Targets</a>**
 
-**<a href="#toc2-705">Removal</a>**
-&emsp;<a href="#toc3-708">autotools</a>
+**<a href="#toc2-694">Removal</a>**
+&emsp;<a href="#toc3-697">autotools</a>
 
-**<a href="#toc2-715">Notes for Writing Language Targets</a>**
-&emsp;<a href="#toc3-735">Schema/Architecture Overview</a>
-&emsp;<a href="#toc3-754">Informal Summary</a>
-&emsp;<a href="#toc3-759">Semantic Attributes</a>
-&emsp;<a href="#toc3-797">Target Scopes</a>
-&emsp;<a href="#toc3-802">Target Options</a>
+**<a href="#toc2-704">Notes for Writing Language Targets</a>**
+&emsp;<a href="#toc3-724">Schema/Architecture Overview</a>
+&emsp;<a href="#toc3-743">Informal Summary</a>
+&emsp;<a href="#toc3-748">Semantic Attributes</a>
+&emsp;<a href="#toc3-783">Target Scopes</a>
+&emsp;<a href="#toc3-788">Target Options</a>
 
-**<a href="#toc2-830">Ownership and License</a>**
-&emsp;<a href="#toc3-839">Hints to Contributors</a>
-&emsp;<a href="#toc3-848">This Document</a>
+**<a href="#toc2-816">Ownership and License</a>**
+&emsp;<a href="#toc3-825">Hints to Contributors</a>
+&emsp;<a href="#toc3-834">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -368,12 +368,9 @@ The zproject scripts can also optionally generate the `@interface` in your class
 
     <constant name = "default port" value = "8080">registered with IANA</constant>
 
-    <enum name = "mode">
-        Enumeration defining different work modes. Constants are mandatory.
-        <constant name="normal" constant = "1">
-        <constant name="fast"   constant = "2">
-        <constant name="safe"   constant = "3">
-    </enum>
+    <constant name = "normal" value = "1">
+    <constant name = "fast"   value = "2">
+    <constant name = "safe"   value = "3">
 
     <!-- Constructor is optional; default one has no arguments -->
     <constructor>
@@ -498,13 +495,7 @@ The zproject scripts can also optionally generate the `@interface` in your class
             Supported sizes are 1, 2, 4, and 8.
         </argument>
         <argument name = "a byte" type = "byte" />
-        <argument name = "conversion mode" type = "enum:myclass.mode">
-            The container for this argument will get the following attributes:
-            * `is_enum = 1"
-            * `enum_class = "myclass"`
-            * `enum_name = "mode"`
-            * `c_type = "my_class_mode_t"`
-        </argument>
+        <argument name = "conversion mode" type = "integer" />
         <argument name = "char pointer to C string" type = "string" />
         <argument name = "byte pointer to buffer" type = "buffer" />
         <argument name = "buffer size" type = "size" />
@@ -571,7 +562,7 @@ MYPROJECT_EXPORT void
 //  @end
 ```
 
-<A name="toc3-535" title="Supported API Model Attributes" />
+<A name="toc3-526" title="Supported API Model Attributes" />
 ### Supported API Model Attributes
 
 The following attributes are supported for methods:
@@ -587,7 +578,7 @@ The following attributes are supported for arguments and return values:
 - `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it. Implies mutable = "1".
 - `variadic = "1"` - used for representing variadic arguments.
 
-<A name="toc3-551" title="API Types" />
+<A name="toc3-542" title="API Types" />
 ### API Types
 
 This is an incomplete list of API types:
@@ -622,13 +613,11 @@ This is an incomplete list of API types:
 
 * "FILE", "va_list", "zmq_pollitem", "socket" -- literally that, in C. (Not sure if it is wise to use raw C types.)
 
-* enumerations - to be reviewed as these have a specific syntax that crams multiple properties into one attribute, not our usual way of working.
-
 * callbacks - tbd.
 
 * Names of classes, e.g. zmsg.
 
-<A name="toc3-592" title="Tips" />
+<A name="toc3-581" title="Tips" />
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
@@ -645,7 +634,7 @@ You can save a snapshot of the entire resolved project model using this syntax:
 gsl -save:1 project.xml
 ```
 
-<A name="toc3-609" title="Generate API model from C header files" />
+<A name="toc3-598" title="Generate API model from C header files" />
 ### Generate API model from C header files
 
 Writing API model for bigger project with a lot of classes can be tedious job. There mkapi.py, which automates most of the task.
@@ -667,15 +656,15 @@ Note you *must* use top-level include as pycparser fails if it does not know any
 
 The tool might expect `-DWITH_DRAFTS` parameter if the class is not marked as a stable.
 
-<A name="toc4-631" title="Known caveats" />
+<A name="toc4-620" title="Known caveats" />
 #### Known caveats
 
 The tool can't distinguish methods which allocates new object. It does print a comment about adding fresh = "1" attribute to each method, which return non const pointer. However the final assigment must be done manually.
 
-<A name="toc2-636" title="Language Binding Notes" />
+<A name="toc2-625" title="Language Binding Notes" />
 ## Language Binding Notes
 
-<A name="toc3-639" title="Java Language Binding" />
+<A name="toc3-628" title="Java Language Binding" />
 ### Java Language Binding
 
 * Skips methods that it cannot handle properly.
@@ -683,7 +672,7 @@ The tool can't distinguish methods which allocates new object. It does print a c
 * To build, you need gradle (or equivalent). Run 'gradle build jar' in the bindings/jni directory.
 * To install, run 'gradle install'. This puts the files into $HOME/.m2/repository.
 
-<A name="toc2-647" title="Draft API Support" />
+<A name="toc2-636" title="Draft API Support" />
 ## Draft API Support
 
 zproject lets you mark classes and methods as 'draft' so that they are not installed by default in stable builds. This lets you deliver draft APIs to your users, and change them later.
@@ -715,7 +704,7 @@ The allowed states are:
 
 Using autotools or CMake, you can specify --with-drafts to enable draft APIs, and --without-drafts to disable them. By default, drafts are built and installed when you work in a git repository (if the directory ".git" is present), and otherwise they are not. That means, if you build from a tarball, drafts are disabled by default.
 
-<A name="toc2-679" title="Targets" />
+<A name="toc2-668" title="Targets" />
 ## Targets
 
 Each target produces scripts and code for a specific build system, platform, or language binding.
@@ -741,17 +730,17 @@ To request all targets in your project.xml file:
 
     <target name = "*" />
 
-<A name="toc2-705" title="Removal" />
+<A name="toc2-694" title="Removal" />
 ## Removal
 
-<A name="toc3-708" title="autotools" />
+<A name="toc3-697" title="autotools" />
 ### autotools
 
 ```sh
 make uninstall
 ```
 
-<A name="toc2-715" title="Notes for Writing Language Targets" />
+<A name="toc2-704" title="Notes for Writing Language Targets" />
 ## Notes for Writing Language Targets
 
 This is the general form of a target:
@@ -771,7 +760,7 @@ function target_somename
 endfunction
 ```
 
-<A name="toc3-735" title="Schema/Architecture Overview" />
+<A name="toc3-724" title="Schema/Architecture Overview" />
 ### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
@@ -790,12 +779,12 @@ endfunction
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-<A name="toc3-754" title="Informal Summary" />
+<A name="toc3-743" title="Informal Summary" />
 ### Informal Summary
 
 A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
 
-<A name="toc3-759" title="Semantic Attributes" />
+<A name="toc3-748" title="Semantic Attributes" />
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
@@ -825,20 +814,17 @@ container.mutable      # 0/1 (default: 0)
 container.by_reference # 0/1 (default: 0)
 container.callback     # 0/1 (default: 0)
 container.fresh        # 0/1 (default: 0)
-container.is_enum      # 0/1 (default: 0)
-container.enum_name    # string if is_enum, otherwise undefined
-container.enum_class   # string if is_enum, otherwise undefined
 container.variadic     # 0/1 (default: 0)
 container.va_start     # string - that holds the argment name for va_start ()
 container.optional     # 0/1 (default: 0), up to binding generator to use
 ```
 
-<A name="toc3-797" title="Target Scopes" />
+<A name="toc3-783" title="Target Scopes" />
 ### Target Scopes
 
 Each target works in its own copy of 'project'. It can therefore modify and extend 'project' as wanted, without affecting other targets.
 
-<A name="toc3-802" title="Target Options" />
+<A name="toc3-788" title="Target Options" />
 ### Target Options
 
 A target can accept options via project.xml like this:
@@ -866,7 +852,7 @@ project.nuget_dependency.name = "libzmq_vc120"
 project.nuget_dependency.value = "4.2.0.0"
 ```
 
-<A name="toc2-830" title="Ownership and License" />
+<A name="toc2-816" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -875,7 +861,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-839" title="Hints to Contributors" />
+<A name="toc3-825" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -884,7 +870,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-848" title="This Document" />
+<A name="toc3-834" title="This Document" />
 ### This Document
 
 This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).

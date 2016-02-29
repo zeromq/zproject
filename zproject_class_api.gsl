@@ -78,7 +78,6 @@ function resolve_c_container (container)
     my.container.callback ?= 0
     my.container.fresh ?= 0
     my.container.variadic ?= 0
-    my.container.is_enum ?= 0
     my.container.optional ?= 0
 
     # Resolve language-specific attributes for the C language.
@@ -167,12 +166,6 @@ function resolve_c_container (container)
         endif
     elsif my.container.callback
         my.c_type = "$(my.type:c)"
-    elsif string.prefix (my.container.type, ":") = "enum"
-        my.container.is_enum = 1
-        my.class_sep = string.locate (my.container.type, ".")
-        my.container.enum_class = string.substr (my.container.type, 5, my.class_sep-1)
-        my.container.enum_name = string.substr (my.container.type, my.class_sep+1)
-        my.c_type = "$(my.container.enum_class:c)_$(my.container.enum_name:c)_t"
     else
         #   Map unknown type XYZ to "XYZ_t *" and resolve later
         my.container.foreign = 1
@@ -370,12 +363,6 @@ function resolve_c_class (class)
     # Resolve details of each constant
     for my.class.constant
         resolve_c_constant (constant, my.class.state)
-    endfor
-
-    # Resolve details of each constant
-    for my.class.enum
-        enum.description ?= "$(string.trim (enum.?""):left)"
-        set_state (enum, my.class.state)
     endfor
 endfunction
 

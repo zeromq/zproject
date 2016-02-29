@@ -68,10 +68,6 @@ function resolve_container (container)
 
     if my.container.variadic
         my.container.python_type = "" # ctypes doesn't explictly state variadic signatures, so we just leave it off
-    elsif my.container.is_enum
-        my.container.python_type = "c_int"
-        my.container.python_coerce = "$(my.container.enum_class:Pascal).$(my.container.enum_name:Pascal)[<>]"
-        my.container.python_return = "$(my.container.enum_class:Pascal).$(my.container.enum_name:Pascal)_out[<>]"
     elsif my.container.type = "nothing"
         my.container.python_type = "None"
     elsif my.container.type = "anything"
@@ -404,20 +400,6 @@ function generate_binding
         >    """
         >    $(class.description:no)
         >    """
-        for enum
-            >
-            >    $(enum.name:Pascal) = {
-            for enum.constant
-                >        '$(constant.name)': $(constant.value),
-            endfor
-            >    }
-            >
-            >    $(enum.name:Pascal)_out = {
-            for enum.constant
-                >         $(constant.value): '$(constant.name)',
-            endfor
-            >    }
-        endfor
         >
         for constant
             >    $(CONSTANT.NAME:c) = $(constant.value)\
