@@ -37,7 +37,6 @@
         repository = "https://github.com/zeromq/czmq"
         test = "zctx_test">
         <use project = "libzmq" />
-        <use project = "uuid" optional = "1" />
     </use>
 
     <use project = "zyre" libname = "libzyre"

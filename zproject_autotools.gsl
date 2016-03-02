@@ -1081,7 +1081,7 @@ $(name:c).txt:
 \t./mkman $@
 .endfor
 clean:
-\trm -f *.1 *.3
+\trm -f *.1 *.3 *.7
 \t./mkman \
 .for project.class where scope = "public"
 $(name:c) \

@@ -35,11 +35,11 @@ OBJS =\
 all: $(project.libname).dll $(project.prefix)_selftest.exe
 
 $(project.libname).dll: $\(OBJS)
-	$\(CC) -shared -o $@ $\(OBJS) -Wl,--out-implib,$@.a $\(LIBDIR) -lzmq -luuid
+	$\(CC) -shared -o $@ $\(OBJS) -Wl,--out-implib,$@.a $\(LIBDIR) -lzmq
 
 # the test functions are not exported into the DLL
 $(project.prefix)_selftest.exe: $(project.prefix)_selftest.o $\(OBJS)
-	$\(CC) -o $@ $^ $\(LIBDIR) -lzmq -luuid
+	$\(CC) -o $@ $^ $\(LIBDIR) -lzmq
 clean:
 	del *.o *.a *.dll *.exe
 

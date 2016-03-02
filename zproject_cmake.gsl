@@ -89,7 +89,7 @@ endif()
 
 # required libraries for cygwin
 if (CYGWIN)
-    set(MORE_LIBRARIES -luuid)
+    set(MORE_LIBRARIES)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${SOURCE_DIR}")
