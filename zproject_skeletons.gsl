@@ -236,12 +236,12 @@ $(actor.name:c)_stop ($(actor.name:c)_t *self)
 }
 
 
-//  Here we handle incomming message from the node
+//  Here we handle incoming message from the node
 
 static void
 $(actor.name:c)_recv_api ($(actor.name:c)_t *self)
 {
-//  Get the whole message of the pipe in one go
+    //  Get the whole message of the pipe in one go
     zmsg_t *request = zmsg_recv (self->pipe);
     if (!request)
        return;        //  Interrupted
@@ -265,6 +265,8 @@ $(actor.name:c)_recv_api ($(actor.name:c)_t *self)
         zsys_error ("invalid command '%s'", command);
         assert (false);
     }
+    zstr_free (&command);
+    zmsg_destroy (&request);
 }
 
 
@@ -282,9 +284,9 @@ $(actor.name:c)_actor (zsock_t *pipe, void *args)
     zsock_signal (self->pipe, 0);
 
     while (!self->terminated) {
-       zsock_t *which = (zsock_t *) zpoller_wait (self->poller, 0);
-       if (which == self->pipe)
-          $(actor.name:c)_recv_api (self);
+        zsock_t *which = (zsock_t *) zpoller_wait (self->poller, 0);
+        if (which == self->pipe)
+            $(actor.name:c)_recv_api (self);
        //  Add other sockets when you need them.
     }
     $(actor.name:c)_destroy (&self);
