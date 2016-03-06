@@ -106,17 +106,14 @@ typedef struct _$(actor.name:c)_t $(actor.name:c)_t;
 //  Enable verbose logging of commands and activity:
 //
 //      zstr_send ($(actor.name:c), "VERBOSE");
-//      zsock_wait ($(actor.name:c));
 //
 //  Start $(actor.name:c) actor.
 //
 //      zstr_sendx ($(actor.name:c), "START", NULL);
-//      zsock_wait ($(actor.name:c));
 //
 //  Stop $(actor.name:c) actor.
 //
 //      zstr_sendx ($(actor.name:c), "STOP", NULL);
-//      zsock_wait ($(actor.name:c));
 //
 //  This is the $(actor.name:c) constructor as a zactor_fn;
 $(PROJECT.PREFIX)_EXPORT void
@@ -248,15 +245,13 @@ $(actor.name:c)_recv_api ($(actor.name:c)_t *self)
 
     char *command = zmsg_popstr (request);
     if (streq (command, "START"))
-        zsock_signal (self->pipe, $(actor.name:c)_start (self));
+        $(actor.name:c)_start (self);
     else
     if (streq (command, "STOP"))
-        zsock_signal (self->pipe, $(actor.name:c)_stop (self));
+        $(actor.name:c)_stop (self);
     else
-    if (streq (command, "VERBOSE")) {
+    if (streq (command, "VERBOSE"))
         self->verbose = true;
-        zsock_signal (self->pipe, 0);
-    }
     else
     if (streq (command, "$TERM"))
         //  The $TERM command is send by zactor_destroy() method
