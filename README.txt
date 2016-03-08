@@ -44,9 +44,9 @@ Thanks to the ZeroMQ community, you can do all the heavy lifting in C and then e
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
-## Demo on PLAYTerm
+## Tutorial
 
-There is a short Demo on PLAYTerm that shows how easy it is to get started with zproject: [ZeroMQ - Create new zproject](http://www.playterm.org/r/zeromq---create-new-zproject-1424116766)
+To understand step by step what zproject can do for you, read chapter 3 of [@hintjens](https://github.com/hintjens) book [Scalable C](https://hintjens.gitbooks.io/scalable-c/content/chapter3.html). Note that the book is still work in progress!
 
 ## Installation
 
@@ -455,5 +455,3 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
 ### This Document
-
-This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).

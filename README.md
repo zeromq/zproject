@@ -7,45 +7,45 @@
 
 
 **<a href="#toc2-11">Overview</a>**
-&emsp;<a href="#toc3-18">Scope and Goals</a>
+*  <a href="#toc3-18">Scope and Goals</a>
 
-**<a href="#toc2-50">Demo on PLAYTerm</a>**
+**<a href="#toc2-50">Tutorial</a>**
 
 **<a href="#toc2-55">Installation</a>**
-&emsp;<a href="#toc3-58">Requirements</a>
-&emsp;<a href="#toc3-70">Getting started</a>
+*  <a href="#toc3-58">Requirements</a>
+*  <a href="#toc3-70">Getting started</a>
 
 **<a href="#toc2-94">Setup your project environment</a>**
 
 **<a href="#toc2-131">Configuration</a>**
 
 **<a href="#toc2-313">Sample API model</a>**
-&emsp;<a href="#toc3-526">Supported API Model Attributes</a>
-&emsp;<a href="#toc3-542">API Types</a>
-&emsp;<a href="#toc3-581">Tips</a>
-&emsp;<a href="#toc3-598">Generate API model from C header files</a>
+*  <a href="#toc3-526">Supported API Model Attributes</a>
+*  <a href="#toc3-542">API Types</a>
+*  <a href="#toc3-581">Tips</a>
+*  <a href="#toc3-598">Generate API model from C header files</a>
 &emsp;<a href="#toc4-620">Known caveats</a>
 
 **<a href="#toc2-625">Language Binding Notes</a>**
-&emsp;<a href="#toc3-628">Java Language Binding</a>
+*  <a href="#toc3-628">Java Language Binding</a>
 
 **<a href="#toc2-636">Draft API Support</a>**
 
 **<a href="#toc2-668">Targets</a>**
 
 **<a href="#toc2-694">Removal</a>**
-&emsp;<a href="#toc3-697">autotools</a>
+*  <a href="#toc3-697">autotools</a>
 
 **<a href="#toc2-704">Notes for Writing Language Targets</a>**
-&emsp;<a href="#toc3-724">Schema/Architecture Overview</a>
-&emsp;<a href="#toc3-743">Informal Summary</a>
-&emsp;<a href="#toc3-748">Semantic Attributes</a>
-&emsp;<a href="#toc3-783">Target Scopes</a>
-&emsp;<a href="#toc3-788">Target Options</a>
+*  <a href="#toc3-724">Schema/Architecture Overview</a>
+*  <a href="#toc3-743">Informal Summary</a>
+*  <a href="#toc3-748">Semantic Attributes</a>
+*  <a href="#toc3-783">Target Scopes</a>
+*  <a href="#toc3-788">Target Options</a>
 
 **<a href="#toc2-816">Ownership and License</a>**
-&emsp;<a href="#toc3-825">Hints to Contributors</a>
-&emsp;<a href="#toc3-834">This Document</a>
+*  <a href="#toc3-825">Hints to Contributors</a>
+*  <a href="#toc3-834">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -86,10 +86,10 @@ Thanks to the ZeroMQ community, you can do all the heavy lifting in C and then e
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
-<A name="toc2-50" title="Demo on PLAYTerm" />
-## Demo on PLAYTerm
+<A name="toc2-50" title="Tutorial" />
+## Tutorial
 
-There is a short Demo on PLAYTerm that shows how easy it is to get started with zproject: [ZeroMQ - Create new zproject](http://www.playterm.org/r/zeromq---create-new-zproject-1424116766)
+To understand step by step what zproject can do for you, read chapter 3 of [@hintjens](https://github.com/hintjens) book [Scalable C](https://hintjens.gitbooks.io/scalable-c/content/chapter3.html). Note that the book is still work in progress!
 
 <A name="toc2-55" title="Installation" />
 ## Installation
@@ -873,4 +873,4 @@ Before opening a pull request read our [contribution guidelines](https://github.
 <A name="toc3-834" title="This Document" />
 ### This Document
 
-This document is originally at README.txt and is built using [gitdown](http://github.com/imatix/gitdown).
+_This documentation was generated using [Gitdown](https://github.com/zeromq/gitdown)_
