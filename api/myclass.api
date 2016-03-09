@@ -1,19 +1,19 @@
-<!--
-    This model defines a public API for binding.
+<class name = "myclass">
+    <!--
+        This model defines a public API for binding.
 
-    It shows a language binding developer what to expect from the API XML
-    files.
--->
-<class name = "myclass" >
+        It shows a language binding developer what to expect from the API XML
+        files.
+    -->
     My Feature-Rich Class
 
     <include filename = "license.xml" />
 
     <constant name = "default port" value = "8080">registered with IANA</constant>
 
-    <constant name = "normal" value = "1">
-    <constant name = "fast"   value = "2">
-    <constant name = "safe"   value = "3">
+    <constant name = "normal" value = "1" />
+    <constant name = "fast"   value = "2" />
+    <constant name = "safe"   value = "3" />
 
     <!-- Constructor is optional; default one has no arguments -->
     <constructor>
@@ -23,7 +23,7 @@
 
     <!-- Destructor is optional; default one follows standard style -->
     <destructor>
-        Destructors implicitely get a new argument prepended, which:
+        Destructors implicitly get a new argument prepended, which:
 
         * is called `self_p`
         * is of this class' type
@@ -75,6 +75,7 @@
         <argument name = "string" type = "string" variadic = "1" />
         <return type = "boolean" />
     </method>
+
     <method name = "vsend strings">
         This does something with a series of strings (until NULL). The strings
         won't be touched (they're declared immutable by default).
