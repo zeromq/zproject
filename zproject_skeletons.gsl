@@ -295,19 +295,10 @@ void
 $(actor.name:c)_test (bool verbose)
 {
     printf (" * $(actor.name:c): ");
-    //int rc = 0;
     //  @selftest
     //  Simple create/destroy test
     zactor_t *$(actor.name:c) = zactor_new ($(actor.name:c)_actor, NULL);
-    /*
-    zstr_send ($(actor.name:c), "START");
-    rc = zsock_wait ($(actor.name:c));             //  Wait until actor started
-    assert (rc == 0);
 
-    zstr_send ($(actor.name:c), "STOP");
-    rc = zsock_wait ($(actor.name:c));             //  Wait until actor stopped
-    assert (rc == 0);
-    */
     zactor_destroy (&$(actor.name:c));
     //  @end
 
