@@ -20,7 +20,7 @@
                                         required
             libname = "libzmq"          default = lib<prefix>
             prefix = "zmq"              default = project
-            test = "zmq_init"           required
+            test = "zmq_init"           required same as AC_CHECK_LIB in autoconf
             release = "<tagname>"       default = "master"
             abi = "version"             default = "0:0:0"
             header = "<filename>"       default = <prefix>.h
