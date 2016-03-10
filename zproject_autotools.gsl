@@ -167,6 +167,10 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)],
                 AC_MSG_ERROR([${with_$(use.libname)}/include/$(use.header) not found. Please check $(use.libname) prefix])
             fi
         fi
+.       if !defined(use.test)
+.           abort "test is not set on project " + use.project + " please ensure it is set"
+.       endif
+
 
         AC_CHECK_LIB([$(use.libname)], [$(use.test:)],
             [
