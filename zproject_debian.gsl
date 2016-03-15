@@ -50,7 +50,8 @@ Build-Depends: debhelper (>= 9),
 .endif
 .endfor
     dh-autoreconf,
-    systemd
+    systemd,
+    dh-systemd
 
 .if project.exports_classes
 Package: $(string.replace (project.libname, "_|-"))$(project->version.major)
