@@ -70,8 +70,8 @@ The following will install the zproject files to `/usr/local/bin`.
 ```sh
 git clone https://github.com/zeromq/zproject.git
 cd zproject
-autogen.sh
-configure
+./autogen.sh
+./configure
 make
 make install
 ```
