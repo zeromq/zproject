@@ -245,8 +245,10 @@ zproject's `project.xml` contains an extensive description of the available conf
         Classes, if the class header or source file doesn't exist, this will
         generate a skeletons for them.
         use private = "1" for internal classes
+        use notest = "1" if you do not want self test generated
     <class name = "myclass">Public class description</class>
     <class name = "someother" private = "1">Private class description</class>
+    <class name = "myclasswithouttests" private = "1">My class</class>
     -->
 
     <!--
@@ -254,7 +256,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         actors class header or source file doesn't exist, this will generate a
         skeleton for them. The generated test method of the actor will teach
         you how to use them. Also have a look at the CZMQ docs to learn more
-        about actors.
+        about actors. You can also specify notest="1" to not generate tests
     <actor name = "myactor">Public actor description</actor>
     <actor name = "someactor" private = "1">Private actor description</actor>
     -->
