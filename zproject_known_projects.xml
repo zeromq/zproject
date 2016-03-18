@@ -132,4 +132,9 @@
         header = "systemd/sd-daemon.h"
         test = "sd_listen_fds" />
 
+    <use project = "protobuf-c"
+         repository = "https://github.com/protobuf-c/protobuf-c/"
+         test = "protobuf_c_version"
+         header = "protobuf-c/protobuf-c.h"/>
+
 </known_projects>
