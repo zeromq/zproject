@@ -187,14 +187,18 @@ typedef struct {
 
 static test_item_t
 all_tests [] = {
-.for class where !draft
+.for class where !draft 
+.   if !defined(class.notest) | !class.notest="1"
     { "$(class.c_name)", $(class.c_name)_test },
+.   endif
 .endfor
 .for class where draft
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
+.   if !defined(class.notest) | !class.notest="1"
     { "$(class.c_name)", $(class.c_name)_test },
+.   endif
 .   if last ()
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
