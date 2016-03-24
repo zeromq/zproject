@@ -39,6 +39,7 @@ for project.class where defined (class.api)
         new_class.private = class.private
         new_class.scope = class.scope
         new_class.state = class.state? new_class.state?
+        new_class.selftest ?= 1
         move new_class after class
         delete class
     endif

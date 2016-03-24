@@ -69,7 +69,6 @@ function resolve_scope (item)
     endif
 endfunction
 
-
 for use
     resolve_project_dependency (use)
 endfor
