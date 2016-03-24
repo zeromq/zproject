@@ -69,7 +69,8 @@
     <!--
         Classes, if the class header or source file doesn't exist, this will
         generate a skeletons for them.
-        use private = "1" for internal classes
+        Use private = "1" for internal classes
+        Use selftest = "0" to not generate selftest code
     <class name = "myclass">Public class description</class>
     <class name = "someother" private = "1">Private class description</class>
     -->
@@ -80,6 +81,7 @@
         skeleton for them. The generated test method of the actor will teach
         you how to use them. Also have a look at the CZMQ docs to learn more
         about actors.
+        Use selftest = "0" to not generate selftest code
     <actor name = "myactor">Public actor description</actor>
     <actor name = "someactor" private = "1">Private actor description</actor>
     -->
