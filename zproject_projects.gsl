@@ -79,16 +79,19 @@ for main
 endfor
 
 for actor
+    actor.selftest ?= 1
     new class to project
         class.name = actor.name
         class.private = actor.private?
         class.description = actor.description?
+        class.selftest = actor.selftest
     endnew
     resolve_scope (actor)
 endfor
 
 for class
     resolve_scope (class)
+    class.selftest ?= 1
 endfor
 
 for constant

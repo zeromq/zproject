@@ -287,7 +287,7 @@ $(actor.name:c)_actor (zsock_t *pipe, void *args)
     $(actor.name:c)_destroy (&self);
 }
 
-.   if !defined(actor.notest) | !actor.notest="1"
+.   if actor.selftest
 //  --------------------------------------------------------------------------
 //  Self test of this actor.
 
@@ -350,7 +350,7 @@ $(PROJECT.PREFIX)_EXPORT $(class.c_name)_t *
 $(PROJECT.PREFIX)_EXPORT void
     $(class.c_name)_destroy ($(class.c_name)_t **self_p);
 
-.   if !defined(class.notest) | !class.notest="1"
+.   if class.selftest
 //  Self test of this class
 $(PROJECT.PREFIX)_EXPORT void
     $(class.c_name)_test (bool verbose);
@@ -425,7 +425,7 @@ $(class.c_name)_destroy ($(class.c_name)_t **self_p)
     }
 }
 
-.   if !defined(class.notest) | !class.notest="1"
+.   if class.selftest
 //  --------------------------------------------------------------------------
 //  Self test of this class
 
