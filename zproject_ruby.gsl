@@ -354,6 +354,11 @@ $(project.GENERATED_WARNING_HEADER:)
 module $(project.RubyName:)
   module FFI
 
+.for class.constant
+    # $(constant.description:no,block)
+    $(CONSTANT.NAME:c) = $(constant.value)
+
+.endfor
     # $(class.description:no,block)
     # @note This class is 100% generated using zproject.
 .    # TODO: extract boilerplate into a reusable module
