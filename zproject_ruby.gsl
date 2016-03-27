@@ -354,15 +354,15 @@ $(project.GENERATED_WARNING_HEADER:)
 module $(project.RubyName:)
   module FFI
 
-.for class.constant
-    # $(constant.description:no,block)
-    $(CONSTANT.NAME:c) = $(constant.value)
-
-.endfor
     # $(class.description:no,block)
     # @note This class is 100% generated using zproject.
 .    # TODO: extract boilerplate into a reusable module
     class $(class.RubyName:)
+.for class.constant
+      # $(constant.description:no,block)
+      $(CONSTANT.NAME:c) = $(constant.value)
+
+.endfor
       # Raised when one tries to use an instance of {$(class.RubyName:)} after
       # the internal pointer to the native object has been nullified.
       class DestroyedError < RuntimeError; end
