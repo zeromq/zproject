@@ -25,7 +25,7 @@
 #
 #     - if clean argument is present, the scrip will clean any git repository clones and re-clone them.
 #       Clean does not apply to zproject itself, only to other repositories used in the process
-#       such as gsl, libsodium, libzmq, czmq, malamute and zyre.
+#       such as gsl, libzmq, czmq, malamute and zyre.
 #
 #     - Important to notice that if clean is used in command line, the script will ask for confirmation
 #       that the ../gitprojects directory is actually gone. I have had some problems when using
@@ -72,7 +72,7 @@ phase=building
 loglogs
 
 # if errors from previous run, remove them before restarting
-for project in gsl libsodium libzmq czmq malamute zyre; do
+for project in gsl libzmq czmq malamute zyre; do
   for phase in gsl-generation building autogen-config make make-install make-check; do
     test -f ${BUILD_PREFIX}/${project}_${phase}.err && rm -f ${BUILD_PREFIX}/${project}_${phase}.err 
     test -f ${BUILD_PREFIX}/${project}_${phase}.ok  && rm -f ${BUILD_PREFIX}/${project}_${phase}.ok
@@ -85,7 +85,6 @@ pushd ./gitprojects > /dev/null 2>&1
 
 # get required but not generated projects for zeromq stack
 test -d gsl       || git clone --depth 1 https://github.com/imatix/gsl         gsl
-test -d libsodium || git clone -b stable https://github.com/jedisct1/libsodium libsodium
 test -d libzmq    || git clone --depth 1 https://github.com/zeromq/libzmq      libzmq
 # get required projects for zeromq stack
 test -d czmq      || git clone --depth 1 https://github.com/zeromq/czmq        czmq
@@ -121,7 +120,7 @@ loglogs
 # testing building
 echo Building zeromq stack components
 phase=autogen-config
-for project in libsodium libzmq czmq malamute zyre; do
+for project in libzmq czmq malamute zyre; do
     (
         pwd &&
         cd ../gitprojects/$project &&
@@ -133,7 +132,7 @@ done
 loglogs
 
 phase=make
-for project in libsodium libzmq czmq malamute zyre; do
+for project in libzmq czmq malamute zyre; do
     (
         cd ../gitprojects/$project &&
         make &&
@@ -143,7 +142,7 @@ done
 loglogs
 
 phase=make-install
-for project in libsodium libzmq czmq malamute zyre; do
+for project in libzmq czmq malamute zyre; do
     (
         cd ../gitprojects/$project &&
         DESTDIR=${BUILD_PREFIX} make install &&
@@ -173,7 +172,7 @@ function logfailed() {
 
 # inform user of final results
 finalresult=0
-for project in zproject gsl libsodium libzmq czmq malamute zyre; do
+for project in zproject gsl libzmq czmq malamute zyre; do
   for phase in gsl-generation building autogen-config make make-install make-check; do
     test -f ${BUILD_PREFIX}/${project}_${phase}.err && logfailed ${BUILD_PREFIX}/${project}_${phase}.err
   done
