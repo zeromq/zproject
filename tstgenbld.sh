@@ -40,8 +40,14 @@ export STARTDATE=`date`
 
 function loglogs() {
     echo ..Logfiles after ${phase} phase
-    test -f ${BUILD_PREFIX}/*.err && ls ${BUILD_PREFIX}/*.err
-#   test -f ${BUILD_PREFIX}/*.ok && ls ${BUILD_PREFIX}/*.ok
+    for err in "${BUILD_PREFIX}"/*.err
+    do
+        test -f "${err}" && ls "${err}"
+    done
+#    for ok in "${BUILD_PREFIX}"/*.ok
+#    do
+#        test -f "${ok}" && ls "${ok}"
+#    done
     return 0
 }
 
