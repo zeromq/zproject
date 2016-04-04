@@ -231,6 +231,8 @@ This is an incomplete list of API types:
 
 * "time" -- long time (64 bits), "time_t" in C.
 
+* "msecs" -- long number of msecs, "int64_t" in C.
+
 * "file_size" -- long file size (64 bits).
 
 * "boolean" -- Boolean.
@@ -245,7 +247,7 @@ This is an incomplete list of API types:
 
 * "real" -- single-precision floating point. [TODO: single? why not double?]
 
-* "buffer" -- byte array. To return a byte array, you should specify 'size' attribute that defines size. This can be a constant, 'size = "ZUUID_LEN"', or a dot followed by method name in the same class, e.g. 'size = ".size"'.
+* "buffer" -- byte array. When passing a buffer argument, if the next argument has type 'size', the binding may fill the size automatically. To return a buffer, you should specify 'size' attribute that defines how to set the buffer size. This can be a constant, 'size = "ZUUID_LEN"', or a dot followed by method name in the same class, e.g. 'size = ".size"'.
 
 * "string" -- character array.
 
