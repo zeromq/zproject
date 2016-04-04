@@ -15,8 +15,10 @@ register_target ("nuget", "Packaging for NuGet")
 function target_nuget
 
 .macro generate_packaging
+.terminator="\r\n"
 .output "$(topdir)/package.bat"
 @ECHO OFF
+$(project.generated_warning_header_for_dot_bat:)
 ECHO Started nuget packaging build.
 ECHO.
 REM http://nuget.codeplex.com/releases
@@ -262,6 +264,7 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 -->
 </ProjectSchemaDefinitions>
+.terminator="\n"
 .endmacro
 
     project.nuget_id ?= project.prefix + "vc120"

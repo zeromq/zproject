@@ -102,3 +102,9 @@ if !file.exists (".gitignore")
     >*.swp
     >*~
 endif
+if !file.exists (".gitattributes")
+    echo "Generating initial .gitattributes file"
+    output ".gitattributes"
+    ># disables auto CRLF conversion for all files; create the file correctly and it will be allright
+    >* -text
+endif
