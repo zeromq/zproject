@@ -257,6 +257,11 @@ $(project.GENERATED_WARNING_HEADER:)
 
 #define $(PROJECT.PREFIX)_BUILD_DRAFT_API
 
+.   for project.use where !optional
+.       if file.exists ("../$(use.project)/$(topdir)/binding.h")
+#include "../../../$(use.project)/$(topdir)/binding.h"
+.       endif
+.   endfor
 #include "$(project.header)"
 #include "nan.h"
 
