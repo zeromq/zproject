@@ -15,71 +15,6 @@ register_target ("nodejs", "Node.js binding")
 #   Target provides name space isolation for its functions
 function target_nodejs
 
-function resolve_method (method)
-    my.method.called = ""
-    my.method.exported = 1
-    comma = ""
-
-    for argument
-        #   Get NAN types for integer casting
-        if type = "integer"
-            argument.nan_type = "int"
-        elsif type = "number"
-            if size = 1 | size = 2 | size = 4
-                argument.nan_type = "uint32_t"
-            else
-                argument.nan_type = "int64_t"
-            endif
-        elsif type = "size"
-            argument.nan_type = "int64_t"
-        elsif type = "boolean"
-            argument.nan_type = "bool"
-        elsif type = "real"
-            argument.nan_type = "double"
-        endif
-
-        #   These are the types of argument we support so far
-        if type = "integer" \
-        |  type = "number" \
-        |  type = "size" \
-        |  type = "boolean" \
-        |  type = "real"
-            my.method.called += "$(comma)$(c_type) $(c_name)"
-            comma = ", "
-
-        elsif type = "format" \
-        |     type = "string"
-            my.method.called += "$(comma)$(c_type)$(c_name)"
-            comma = ", "
-
-        elsif type = "nothing" \
-        |     destructor_self ?= 1
-            #   Ignore silently
-
-        elsif count (project.class, class.c_name = argument.type)
-            my.method.called += "$(comma)$(c_type)$(c_name)"
-            comma = ", "
-            argument.is_object = 1
-
-        elsif count (project->dependencies.class, class.c_name = argument.type)
-            my.method.exported = 0
-            echo "nodejs: can't do '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)"
-
-        else
-            my.method.exported = 0
-            echo "nodejs: can't do '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)"
-        endif
-    else
-        my.method.called += "void"
-    endfor
-
-    if count (project.class, class.c_name = my.method->return.type) \
-    |  count (project->dependencies.class, class.c_name = my.method->return.type)
-        my.method.exported = 0
-        echo "nodejs: skipping '$(->return.type)' $(class.c_name).$(c_name) ()"
-    endif
-endfunction
-
 .macro generate_binding
 .output "$(topdir)/README.md"
 # Node.js Binding for $(project.name:)
@@ -306,6 +241,7 @@ $(project.GENERATED_WARNING_HEADER:)
     "nan": "^2.2.0"
   }
 }
+.
 .output "$(topdir)/binding.h"
 /*  =========================================================================
     $(project.name:) Node.js binding header file
@@ -331,20 +267,17 @@ using namespace Nan;
 class $(class.name:Pascal): public Nan::ObjectWrap {
     public:
         static NAN_MODULE_INIT (Init);
-.   if count (class.constructor)
-        $(class.c_name)_t *get_self ();
-.   endif
-    private:
 .   for class.constructor where name = "new"
         explicit $(class.name:Pascal) ($(called:));
         explicit $(class.name:Pascal) ($(class.c_name)_t *self);
 .   else
         explicit $(class.name:Pascal) ();
 .   endfor
-        ~$(class.name:Pascal) ();
 .   if count (class.constructor)
-    $(class.c_name)_t *self;
+        $(class.c_name)_t *self;
 .   endif
+    private:
+        ~$(class.name:Pascal) ();
     static Nan::Persistent <Function> &constructor ();
 
     static NAN_METHOD (New);
@@ -392,10 +325,15 @@ using namespace Nan;
         if type = "integer" \
         |  type = "number" \
         |  type = "size" \
+        |  type = "time" \
+        |  type = "msecs" \
+        |  type = "file_size" \
         |  type = "boolean" \
         |  type = "string" \
+        |  type = "buffer" \
+        |  type = "char" \
         |  type = "real"
-            my.invoke += "$(comma)$(ref)$(c_name)"
+            my.invoke += "$(comma)($(c_type))$(ref)$(c_name)"
             comma = ", "
 
         elsif type = "format"
@@ -405,10 +343,9 @@ using namespace Nan;
         elsif type = "nothing"
         #   Ignore silently
 
-        elsif count (project.class, class.c_name = argument.type) \
-        |     count (project->dependencies.class, class.c_name = argument.type)
+        elsif argument.is_object ?= 1
             if my.map_objects ?= 1
-                my.invoke += "$(comma)$(c_name)->get_self ()"
+                my.invoke += "$(comma)$(ref)$(c_name)->self"
             else
                 my.invoke += "$(comma)$(ref)$(c_name)"
             endif
@@ -422,10 +359,15 @@ using namespace Nan;
     return my.invoke
 .endfunction
 .
-.macro resolve_arguments (raw)
-.   my.invoke = ""
+.macro resolve_arguments (method, raw)
 .   for argument
-.       if type = "integer" | type = "number" | type = "size" | type = "boolean" | type = "real"
+.       if type = "integer" \
+        |  type = "number" \
+        |  type = "time" \
+        |  type = "msecs" \
+        |  type = "file_size" \
+        |  type = "boolean" \
+        |  type = "real"
     if (info [$(index () - 1)]->IsUndefined ())
         return Nan::ThrowTypeError ("method requires a `$(name)`");
     else
@@ -439,6 +381,19 @@ using namespace Nan;
         return Nan::ThrowTypeError ("`$(name)` must be a number");
     $(c_type) $(c_name) = Nan::To<$(nan_type:)>(info [$(index () - 1)]).FromJust ();
 
+.       elsif type = "char"
+    char $(c_name);
+    if (info [$(index () - 1)]->IsUndefined ())
+        return Nan::ThrowTypeError ("method requires a `$(name)`");
+    else
+    if (!info [$(index () - 1)]->IsString ())
+        return Nan::ThrowTypeError ("`$(name)` must be a string");
+    else {
+        Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
+        if (strlen (*$(c_name)_utf8) != 1)
+            return Nan::ThrowTypeError ("`$(name)` must be a single character");
+        $(c_name) = (*$(c_name)_utf8) [0];
+    }
 .       elsif type = "string" | type = "format"
     char *$(c_name);
     if (info [$(index () - 1)]->IsUndefined ())
@@ -454,14 +409,31 @@ using namespace Nan;
         Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
         $(c_name) = *$(c_name)_utf8;
     }
+.       elsif type = "buffer"
+    if (info [$(index () - 1)]->IsUndefined ())
+        return Nan::ThrowTypeError ("method requires a argument to provide data");
+    Local<Object> buffer_node = info [$(index () - 1)].As<Object> ();
+    const byte *$(c_name) = (const byte *) node::Buffer::Data (buffer_node);
+.       elsif type = "size"
+.           if my.prev_type ?= "buffer"
+    size_t $(c_name) = node::Buffer::Length (buffer_node);
+.           else
+    if (info [$(index () - 1)]->IsUndefined ())
+        return Nan::ThrowTypeError ("method requires a `$(name)`");
+    else
+    if (!info [$(index () - 1)]->IsNumber ())
+        return Nan::ThrowTypeError ("`$(name)` must be a number");
+    $(c_type) $(c_name) = Nan::To<$(nan_type:)>(info [$(index () - 1)]).FromJust ();
+.           endif
 .       elsif argument.is_object ?= 1
-    $(type:Pascal) *$(name) = Nan::ObjectWrap::Unwrap<$(type:Pascal)>(info [$(index () - 1)].As<Object>());
-
+    $(type:Pascal) *$(c_name) = Nan::ObjectWrap::Unwrap<$(type:Pascal)>(info [$(index () - 1)].As<Object>());
 .       elsif type = "nothing"
 .           #   Do nothing
 .       else
-    //  TODO: How do we check $(type)/$(c_type) $(name)?
+.           echo "nodejs: unhandled '$(type:)', $(class.c_name).$(my.method.c_name).$(argument.c_name)"
+    //  TODO: How do we check $(type)/$(c_type) $(c_name)?
 .       endif
+.       my.prev_type = type
 .   endfor
 .endmacro
 .
@@ -511,7 +483,7 @@ $(class.name:Pascal)::~$(class.name:Pascal) () {
 NAN_METHOD ($(class.name:Pascal)::New) {
     assert (info.IsConstructCall ());
 .   for class.constructor where name = "new"
-.       resolve_arguments ()
+.       resolve_arguments (constructor)
     $(class.name:Pascal) *$(class.c_name) = new $(class.name:Pascal) ($(invoke (constructor, 1)));
 .   else
     $(class.name:Pascal) *$(class.c_name) = new $(class.name:Pascal) ();
@@ -542,25 +514,53 @@ NAN_METHOD ($(class.name:Pascal)::_$(method.c_name)) {
 .       if !singleton
     $(class.name:Pascal) *$(class.c_name) = Nan::ObjectWrap::Unwrap <$(class.name:Pascal)> (info.Holder ());
 .       endif
-.       resolve_arguments ()
-.       if ->return.type = "string"
-    $(->return.c_type) return_value = $(class.c_name)_$(method.c_name) ($(invoke (method)));
-    info.GetReturnValue ().Set (Nan::New (return_value).ToLocalChecked ());
-.
-.       elsif ->return.type = "integer" | ->return.type = "number" \
-        |     ->return.type = "size" | ->return.type = "real"
-    $(->return.c_type) return_value = $(class.c_name)_$(method.c_name) ($(invoke (method)));
-    info.GetReturnValue().Set (Nan::New<Number>(return_value));
+.       resolve_arguments (method)
+.       if ->return.type = "integer" \
+        |  ->return.type = "number" \
+        |  ->return.type = "size" \
+        |  ->return.type = "time" \
+        |  ->return.type = "msecs" \
+        |  ->return.type = "file_size" \
+        |  ->return.type = "real"
+    $(->return.c_type) result = $(class.c_name)_$(method.c_name) ($(invoke (method, 1)));
+    info.GetReturnValue ().Set (Nan::New<Number>(result));
 .
 .       elsif ->return.type = "boolean"
-    $(->return.c_type) return_value = $(class.c_name)_$(method.c_name) ($(invoke (method)));
-    info.GetReturnValue().Set (Nan::New<Boolean>(return_value));
+    bool result = $(class.c_name)_$(method.c_name) ($(invoke (method, 1)));
+    info.GetReturnValue ().Set (Nan::New<Boolean>(result));
+.
+.       elsif ->return.type = "string"
+    char *result = (char *) $(class.c_name)_$(method.c_name) ($(invoke (method, 1)));
+    info.GetReturnValue ().Set (Nan::New (result).ToLocalChecked ());
+.
+.       elsif ->return.type = "char"
+    char result [2] = " ";
+    result [0] = $(class.c_name)_$(method.c_name) ($(invoke (method, 1)));
+    info.GetReturnValue ().Set (Nan::New (result).ToLocalChecked ());
+.
+.       elsif ->return.type = "buffer"
+.           if regexp.match ("^\\.(.*)", ->return.size, my.size)
+.               my.size = "$(class.c_name)_$(my.size) ($(class.c_name)->self)"
+.           else
+.               my.size = ->return.size
+.           endif
+    const char *result = (const char *) $(class.c_name)_$(method.c_name) ($(invoke (method, 1)));
+    info.GetReturnValue().Set (Nan::CopyBuffer (result, $(my.size)).ToLocalChecked ());
+.       elsif ->return.is_object ?= 1
+    $(->return.c_type)result = $(class.c_name)_$(method.c_name) ($(invoke (method, 1)));
+    $(->return.type:Pascal) *$(->return.type:c)_result = new $(->return.type:Pascal) (result);
+    if ($(->return.type:c)_result) {
+    //  Don't yet know how to return a new object
+    //      $(->return.type:c)->Wrap (info.This ());
+    //      info.GetReturnValue ().Set (info.This ());
+        info.GetReturnValue ().Set (Nan::New<Boolean>(true));
+    }
 .
 .       elsif ->return.type = "nothing"
-    $(class.c_name)_$(method.c_name) ($(invoke (method)));
+    $(class.c_name)_$(method.c_name) ($(invoke (method, 1)));
 .
 .       else
-.           echo "nodejs: what do we do with return '$(->return.type)', $(class.c_name).$(method.c_name)?"
+.           echo "nodejs: what do we do with return '$(->return.type:)', $(class.c_name).$(method.c_name)?"
 .       endif
 }
 .   endfor
@@ -570,12 +570,6 @@ Nan::Persistent <Function> &$(class.name:Pascal)::constructor () {
     return my_constructor;
 }
 
-.   if count (class.constructor)
-
-$(class.c_name)_t *$(class.name:Pascal)::get_self () {
-    return self;
-}
-.   endif
 .endfor
 
 extern "C" NAN_MODULE_INIT ($(project.name:c)_initialize)
@@ -588,6 +582,92 @@ extern "C" NAN_MODULE_INIT ($(project.name:c)_initialize)
 NODE_MODULE ($(project.name:c), $(project.name:c)_initialize)
 .endmacro
 
+function resolve_method (method)
+    my.method.called = ""
+    my.method.exported = 1
+    comma = ""
+
+    for argument
+        #   These are the types of argument we support so far
+        if type = "integer" \
+        |  type = "number" \
+        |  type = "size" \
+        |  type = "time" \
+        |  type = "msecs" \
+        |  type = "file_size" \
+        |  type = "boolean" \
+        |  type = "char" \
+        |  type = "real"
+            my.method.called += "$(comma)$(c_type) $(c_name)"
+            comma = ", "
+
+            #   Get NAN types for integer casting
+            if type = "integer"
+                argument.nan_type = "int"
+            elsif type = "number"
+                if size = 1 | size = 2 | size = 4
+                    argument.nan_type = "uint32_t"
+                else
+                    argument.nan_type = "int64_t"
+                endif
+            elsif type = "size" \
+            |     type = "time" \
+            |     type = "msecs" \
+            |     type = "file_size"
+                argument.nan_type = "int64_t"
+            elsif type = "boolean"
+                argument.nan_type = "bool"
+            elsif type = "real"
+                argument.nan_type = "double"
+            endif
+
+        elsif type = "format" \
+        |     type = "string" \
+        |     type = "buffer"
+            my.method.called += "$(comma)$(c_type)$(c_name)"
+            comma = ", "
+
+        elsif type = "nothing" \
+        |     destructor_self ?= 1
+            #   Ignore silently
+
+        elsif count (project.class, class.c_name = argument.type) \
+        |     count (project->dependencies.class, class.c_name = argument.type)
+            my.method.called += "$(comma)$(c_type)$(c_name)"
+            comma = ", "
+            argument.is_object = 1
+
+        else
+            my.method.exported = 0
+            # echo "nodejs: can't do '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)"
+        endif
+    else
+        my.method.called += "void"
+    endfor
+
+    #   Check if method return is something we know about
+    if ->return.type = "integer" \
+    |  ->return.type = "number" \
+    |  ->return.type = "size" \
+    |  ->return.type = "time" \
+    |  ->return.type = "msecs" \
+    |  ->return.type = "file_size" \
+    |  ->return.type = "real" \
+    |  ->return.type = "boolean" \
+    |  ->return.type = "string" \
+    |  ->return.type = "char" \
+    |  ->return.type = "buffer"
+        #   Good stuff, we know how to return these
+
+    elsif count (project.class, class.c_name = my.method->return.type) \
+    |     count (project->dependencies.class, class.c_name = my.method->return.type)
+        my.method->return.is_object = 1
+
+    else
+        my.method.exported = 0
+    endif
+endfunction
+
     #   We always need the gyp target
     assume_target ("gyp")
 
@@ -598,16 +678,19 @@ NODE_MODULE ($(project.name:c), $(project.name:c)_initialize)
             class.exported = 1
             for constructor
                 resolve_method (constructor)
-                if !constructor.exported
+                if !constructor.exported & constructor.name = "new"
+                    # echo "Suppress $(class.name)"
                     class.exported = 0
                 endif
             endfor
-            for destructor
-                resolve_method (destructor)
-            endfor
-            for method
-                resolve_method (method)
-            endfor
+            if class.exported
+                for destructor
+                    resolve_method (destructor)
+                endfor
+                for method
+                    resolve_method (method)
+                endfor
+            endif
         else
             class.exported = 0
         endif
