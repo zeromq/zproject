@@ -14,6 +14,7 @@ register_target ("vs2008", "Microsoft Visual Studio 2008")
 
 .macro target_vs2008
 .directory.create ('builds/msvc/vs2008/$(project.name:c)')
+.terminator="\r\n"
 .output "builds/msvc/vs2008/$(project.name:c)/$(project.name:c).sln"
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
@@ -342,4 +343,5 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 -->
 </VisualStudioProject>
+.terminator="\n"
 .endmacro

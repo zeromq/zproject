@@ -12,6 +12,8 @@
 
 .macro generate_vs20xx_props (path)
 .directory.create (my.path)
+.# change terminator for Windows file (CR+LF)
+.terminator="\r\n"
 .output "$(my.path)/Common.props"
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -447,7 +449,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalOptions>/Oy- %(AdditionalOptions)</AdditionalOptions>
-      <!--<DebugInformationFormat>ProgramDatabase</DebugInformationFormat>-->
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
@@ -460,7 +462,7 @@
     </ResourceCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <!--<GenerateDebugInformation>true</GenerateDebugInformation>-->
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
@@ -538,4 +540,5 @@
   </ItemDefinitionGroup>
 
 </Project>
+.terminator="\n"
 .endmacro

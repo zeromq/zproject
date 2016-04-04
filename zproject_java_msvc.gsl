@@ -22,6 +22,7 @@ gsl from "zproject_java_lib.gsl"
 
 .macro generate_vs20xx_build_jni (path, level)
 .directory.create ("$(my.path)/$(project.libname)jni")
+.terminator="\r\n"
 .output "$(my.path)/$(project.libname)jni/$(project.libname)jni.vcxproj"
 <?xml version="1.0" encoding="utf-8"?>
 <!--
@@ -179,8 +180,10 @@ Global
         HideSolutionNode = FALSE
     EndGlobalSection
 EndGlobal
+.terminator="\r\n"
 .output "$(my.path)/build.bat"
 @ECHO OFF
+$(project.generated_warning_header_for_dot_bat:)
 SET solution=$(project.name:c).sln
 SET version=$(my.level)
 SET log=build.log
@@ -224,6 +227,7 @@ ECHO *** ERROR, build tools not found: %tools%
 :end
 .output "$(my.path)/call_javah.bat"
 @ECHO OFF
+$(project.generated_warning_header_for_dot_bat:)
 ECHO Generating native JNI headers...
 .for class where okay
 IF EXIST ..\\..\\..\\src\\native\\include\\$(namespace:c)_$(class.name:pascal).h GOTO HAVE_$(class.name:pascal)
@@ -298,6 +302,7 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 -->
 </Project>
+.terminator="\n"
 .endmacro
 
     project.namespace ?= switches.namespace? "org.zeromq.$(project.prefix)"

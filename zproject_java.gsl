@@ -266,8 +266,10 @@ JVM_OPTS[${#JVM_OPTS[*]}]="-Dorg.gradle.appname=$APP_BASE_NAME"
 
 exec "$JAVACMD" "${JVM_OPTS[@]}" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
 .
+.terminator="\r\n"
 .output "$(topdir)/gradlew.bat"
 @if "%DEBUG%" == "" @echo off
+$(project.generated_warning_header_for_dot_bat:)
 @rem  Gradle startup script for Windows
 
 @rem Set local scope for the variables with windows NT shell
@@ -355,6 +357,7 @@ if "%OS%"=="Windows_NT" endlocal
 
 :omega
 .
+.terminator="\n"
 .output "$(topdir)/README.md"
 # $(project.prefix)-jni
 
@@ -433,6 +436,7 @@ gradle-app.setting
 $(project.libname)jni.so
 .
 .directory.create ("$(topdir)/android")
+.terminator="\n"
 .output "$(topdir)/android/build.sh"
 #!/bin/bash
 $(project.GENERATED_WARNING_HEADER:)
