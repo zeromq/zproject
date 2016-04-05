@@ -19,7 +19,9 @@ function target_nodejs
 .output "$(topdir)/README.md"
 # Node.js Binding for $(project.name:)
 
-This is a development kit.
+This is a development kit. Note: this README is generated automatically
+by zproject from project.xml. Please DO NOT modify by hand except for test
+purposes.
 
 ## Prerequisites
 
@@ -86,6 +88,8 @@ prebuild[] = 5.6.0
 #! /bin/bash
 #
 #   Builds $(project.name:c).node package from a fresh git clone
+#
+$(project.GENERATED_WARNING_HEADER:)
 #
 set -e                      #   exit on any error
 FORCE=0
@@ -249,6 +253,8 @@ $(project.GENERATED_WARNING_HEADER:)
 .   for project.license
     $(string.trim (license.):block                                         )
 .   endfor
+
+$(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
@@ -306,6 +312,8 @@ class $(class.name:Pascal): public Nan::ObjectWrap {
 .   for project.license
     $(string.trim (license.):block                                         )
 .   endfor
+
+$(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
