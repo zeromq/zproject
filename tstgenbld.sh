@@ -46,7 +46,7 @@
 #
 
 # set next line to "-o xtrace" if debugging
-XTRACE="-o xtrace"
+XTRACE="+o xtrace"
 set ${XTRACE}
 
 export STARTDATE=`date`
@@ -125,7 +125,7 @@ loglogs
 
 
 # go where we will clone our target projects
-pushd ${GITPROJECTS}
+pushd ${GITPROJECTS} > /dev/null 2>&1
 echo Projects will be cloned to here "${PWD}"
 #read -p "Press ENTER to continue: "
 
@@ -157,7 +157,7 @@ phase=gsl-generation
 for project in czmq malamute zyre; do
     (
         cd ${GITPROJECTS}/$project &&
-        ${BUILD_PREFIX}/bin/gsl -target:* project.xml &&
+        ${BUILD_PREFIX}/bin/gsl project.xml &&
         exit $?
     ) > ${BUILD_PREFIX}/${project}_${phase}.err 2>&1 && test 0 -eq $? &&
         mv ${BUILD_PREFIX}/${project}_${phase}.err  ${BUILD_PREFIX}/${project}_${phase}.ok
