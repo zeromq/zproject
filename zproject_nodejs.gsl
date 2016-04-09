@@ -292,10 +292,13 @@ using namespace Nan;
         |  type = "msecs" \
         |  type = "file_size" \
         |  type = "boolean" \
-        |  type = "string" \
-        |  type = "buffer" \
         |  type = "char" \
         |  type = "real"
+            my.invoke += "$(comma)($(c_type)) $(ref)$(c_name)"
+            comma = ", "
+
+        elsif type = "string" \
+        |     type = "buffer"
             my.invoke += "$(comma)($(c_type))$(ref)$(c_name)"
             comma = ", "
 
@@ -306,7 +309,7 @@ using namespace Nan;
         elsif type = "nothing"
         #   Ignore silently
 
-        elsif argument.is_object ?= 1
+        elsif argument.is_object ?= 1 | type = "sockish"
             if my.map_objects ?= 1
                 my.invoke += "$(comma)$(ref)$(c_name)->self"
             else
@@ -333,17 +336,38 @@ using namespace Nan;
         |  type = "real"
     if (info [$(index () - 1)]->IsUndefined ())
         return Nan::ThrowTypeError ("method requires a `$(name)`");
-    else
-.           if type = "boolean"
-    if (!info [$(index () - 1)]->IsBoolean ())
-.           elsif type = "real"
-    if (!info [$(index () - 1)]->IsDouble ())
-.           else
-    if (!info [$(index () - 1)]->IsNumber ())
-.           endif
-        return Nan::ThrowTypeError ("`$(name)` must be a number");
-    $(c_type) $(c_name) = Nan::To<$(nan_type:)>(info [$(index () - 1)]).FromJust ();
 
+    $(c_type) $(c_name);
+.           if type = "boolean"
+.               my.check = "IsBoolean"
+.               my.what = "Boolean"
+.           elsif type = "real"
+.               my.check = "IsDouble"
+.               my.what = "number"
+.           elsif type = "integer" & count (argument.map)
+.               my.check = "IsNumber"
+.               my.what = "number or string"
+    if (info [$(index () - 1)]->IsString ()) {
+        Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
+        char *$(c_name)_name = *$(c_name)_utf8;
+        for (char *$(c_name)_ptr = $(c_name)_name; *$(c_name)_ptr; $(c_name)_ptr++)
+            *$(c_name)_ptr = tolower (*$(c_name)_ptr);
+.               for map
+        if (streq ($(c_name)_name, "$(map.name)"))
+            $(c_name) = $(map.value:);
+        else
+.               endfor
+            return Nan::ThrowTypeError ("`$(name)` not a valid string");
+    }
+    else
+.           else
+.               my.check = "IsNumber"
+.               my.what = "number"
+.           endif
+    if (info [$(index () - 1)]->$(my.check:) ())
+        $(c_name) = Nan::To<$(nan_type:)>(info [$(index () - 1)]).FromJust ();
+    else
+        return Nan::ThrowTypeError ("`$(name)` must be a $(my.what:)");
 .       elsif type = "char"
     char $(c_name);
     if (info [$(index () - 1)]->IsUndefined ())
@@ -388,6 +412,8 @@ using namespace Nan;
         return Nan::ThrowTypeError ("`$(name)` must be a number");
     $(c_type) $(c_name) = Nan::To<$(nan_type:)>(info [$(index () - 1)]).FromJust ();
 .           endif
+.       elsif type = "sockish"
+    Zsock *$(c_name) = Nan::ObjectWrap::Unwrap<Zsock>(info [$(index () - 1)].As<Object>());
 .       elsif argument.is_object ?= 1
     $(type:Pascal) *$(c_name) = Nan::ObjectWrap::Unwrap<$(type:Pascal)>(info [$(index () - 1)].As<Object>());
 .       elsif type = "nothing"
@@ -609,6 +635,9 @@ This is a wrapping of the native C $(project.libname) library. See binding.cc fo
         |     type = "buffer"
             my.args += "$(comma)String"
 
+        elsif type = "sockish"
+            my.args += "$(comma)Zsock"
+
         elsif argument.is_object ?= 1
             my.args += "$(comma)$(type:Pascal)"
         endif
@@ -704,6 +733,10 @@ function resolve_method (method)
         |     type = "string" \
         |     type = "buffer"
             my.method.called += "$(comma)$(c_type)$(c_name)"
+            comma = ", "
+
+        elsif type = "sockish"
+            my.method.called += "$(comma)zsock_t *$(c_name)"
             comma = ", "
 
         elsif type = "nothing" \
