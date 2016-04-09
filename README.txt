@@ -219,6 +219,18 @@ The following attributes are supported for arguments and return values:
 - `fresh = "1"` - the return value is freshly allocated, and the caller receives ownership of the object and the responsibility for destroying it. Implies mutable = "1".
 - `variadic = "1"` - used for representing variadic arguments.
 
+For integer arguments you can specify one or more 'map' values, which a binding target can use to generate alternative methods. For example:
+
+'''
+<argument name = "socket type" type = "integer">
+    <map name = "PAIR" value = "ZMQ_PAIR" />
+    <map name = "PUB"  value = "ZMQ_PUB" />
+    <map name = "SUB"  value = "ZMQ_SUB" />
+</argument>
+'''
+
+The value should be a constant that the binding code has access to.
+
 ### API Types
 
 This is an incomplete list of API types:
@@ -250,6 +262,8 @@ This is an incomplete list of API types:
 * "buffer" -- byte array. When passing a buffer argument, if the next argument has type 'size', the binding may fill the size automatically. To return a buffer, you should specify 'size' attribute that defines how to set the buffer size. This can be a constant, 'size = "ZUUID_LEN"', or a dot followed by method name in the same class, e.g. 'size = ".size"'.
 
 * "string" -- character array.
+
+* "sockish" -- a variant socket type, may be a zsock_t, libzmq void *, or an actor handle.
 
 * "format" -- printf format, followed by zero or more arguments.
 

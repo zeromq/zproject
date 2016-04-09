@@ -27,6 +27,7 @@ function resolve_container (container)
         my.container.jni_jni_type = "void"
 
     elsif my.container.type = "anything" \
+    |     my.container.type = "sockish" \
     |     my.container.type = "size" \
     |     my.container.type = "time" \
     |     my.container.type = "msecs" \
@@ -187,7 +188,7 @@ function resolve_method (method)
                 jni_native_invocation_c += "$(comma)$(argument.c_name)_"
             elsif by_reference = 1
                 jni_native_invocation_c += "$(comma)($(argument.c_type)) (intptr_t) &$(argument.c_name)"
-            elsif jni_is_class = 1 | type = "anything"
+            elsif jni_is_class = 1 | type = "anything" | type = "sockish"
                 jni_native_invocation_c += "$(comma)($(argument.c_type)) (intptr_t) $(argument.c_name)"
             else
                 jni_native_invocation_c += "$(comma)($(argument.c_type)) $(argument.c_name)"

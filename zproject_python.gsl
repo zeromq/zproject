@@ -70,7 +70,7 @@ function resolve_container (container)
         my.container.python_type = "" # ctypes doesn't explictly state variadic signatures, so we just leave it off
     elsif my.container.type = "nothing"
         my.container.python_type = "None"
-    elsif my.container.type = "anything"
+    elsif my.container.type = "anything" | my.container.type = "sockish"
         my.container.python_type = "c_void_p"
         my.container.python_return = "c_void_p(<>)"
     elsif my.container.type = "boolean"

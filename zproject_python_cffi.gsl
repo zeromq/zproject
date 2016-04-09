@@ -30,7 +30,7 @@ endfunction
 function resolve_container (container)
     if my.container.variadic
     elsif my.container.type = "nothing"
-    elsif my.container.type = "anything"
+    elsif my.container.type = "anything" | my.container.type = "sockish"
     elsif my.container.type = "boolean"
     elsif my.container.type = "byte"
     elsif my.container.type = "integer" | my.container.type = "file_size" | my.container.type = "time"
