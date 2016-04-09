@@ -103,7 +103,7 @@ function resolve_c_container (container)
         my.c_type = "void"
     elsif my.type = "nothing"
         my.c_type = "void"
-    elsif my.type = "anything"
+    elsif my.type = "anything" | my.type = "sockish"
         my.c_type = "void"
         my.stars = "*"
     elsif my.type = "byte"
