@@ -49,7 +49,8 @@
 
 **<a href="#toc2-889">Ownership and License</a>**
 *  <a href="#toc3-898">Hints to Contributors</a>
-*  <a href="#toc3-907">This Document</a>
+*  <a href="#toc3-907">Hints to Windows Contributors</a>
+*  <a href="#toc3-914">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -947,7 +948,14 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-907" title="This Document" />
+<A name="toc3-907" title="Hints to Windows Contributors" />
+### Hints to Windows Contributors
+
+If you are a Windows contributor and need some visual aid of how to contribute, please open CONTRIBUTING.docx file in Windows Word or while visiting docs.google.com.
+
+This should give you a step by step of how a contribution can be done.
+
+<A name="toc3-914" title="This Document" />
 ### This Document
 
-_This documentation was generated using [Gitdown](https://github.com/zeromq/gitdown)_
+_This documentation was generated from zproject/README.txt using [Gitdown](https://github.com/zeromq/gitdown)_
