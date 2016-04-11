@@ -509,4 +509,10 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
+### Hints to Windows Contributors
+
+If you are a Windows contributor and need some visual aid of how to contribute, please open CONTRIBUTING.docx file in Windows Word or while visiting docs.google.com.
+
+This should give you a step by step of how a contribution can be done.
+
 ### This Document
