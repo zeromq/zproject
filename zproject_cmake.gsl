@@ -15,7 +15,29 @@ register_target ("cmake", "CMake build system")
 .macro target_cmake
 .output "CMakeLists.txt"
 $(project.GENERATED_WARNING_HEADER:)
-
+#-----------------------------------------------------------------------
+#
+# in order to build out of sorce with cmake perform the following actions:
+# 1. in parallel with top project directory create build directory
+#    mkdir build_<project name>
+#    e.g. mkdir build_malamute
+# 2. move to the build directory
+#    cd build_malamaute
+# 3. establish two soft links
+#    - to top project directory  ln -s ../malamute top
+#    - to source directory       ln -s ../malamute/src src
+# 4. generate makefiles from cmake script(s)
+#    cmake ../malamute
+# 5. build the project
+#    make
+#
+# if you wish to work with eclipse
+# - select file/import/from existing sources
+# - select build build directory and confirm
+# - new project will be generated and populated with the source files (e.g. malamute)   
+#    
+#
+#
 ########################################################################
 # Project setup
 ########################################################################
@@ -247,10 +269,10 @@ target_link_libraries(
 .endfor
     ${OPTIONAL_LIBRARIES}
 )
-set_target_properties(
-    $(main.name)
-    PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${SOURCE_DIR}/src"
-)
+#set_target_properties(
+#    $(main.name)
+#    PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${SOURCE_DIR}/src"
+#)
 .endfor
 
 ########################################################################
