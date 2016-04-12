@@ -751,7 +751,7 @@ function resolve_method (method)
 
         else
             my.method.exported = 0
-            # echo "nodejs: can't do '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)"
+            echo "nodejs: can't do '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)"
         endif
     else
         my.method.called += "void"
@@ -768,7 +768,8 @@ function resolve_method (method)
     |  ->return.type = "boolean" \
     |  ->return.type = "string" \
     |  ->return.type = "char" \
-    |  ->return.type = "buffer"
+    |  ->return.type = "buffer" \
+    |  ->return.type = "nothing"
         #   Good stuff, we know how to return these
 
     elsif count (project.class, class.c_name = my.method->return.type) \
@@ -776,6 +777,7 @@ function resolve_method (method)
         my.method->return.is_object = 1
 
     else
+        # echo "Suppress $(class.name).$(my.method.name)"
         my.method.exported = 0
     endif
 endfunction
