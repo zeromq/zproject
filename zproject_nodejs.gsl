@@ -34,6 +34,21 @@ $(use.project)/
 prebuild[] = 4.2.4
 prebuild[] = 5.6.0
 .endif
+.if !file.exists ("$(topdir)/index.js")
+.output "$(topdir)/index.js"
+/*
+    $(project.name:) exported constants and other initializations
+
+.   for project.license
+    $(string.trim (license.):block                                         )
+.   endfor
+ */
+
+module.exports = {
+    $(PROJECT.PREFIX)_WHATEVER: 1
+}
+
+.endif
 .output "$(topdir)/build.sh"
 #! /bin/bash
 #
@@ -182,6 +197,7 @@ $(project.GENERATED_WARNING_HEADER:)
     "rebuild": "prebuild --compile",
     "prebuild": "prebuild --strip --verbose"
   },
+  "main": "index",
   "author": "See AUTHORS",
   "license": "MPL-2.0",
   "gypfile": true,
@@ -190,9 +206,11 @@ $(project.GENERATED_WARNING_HEADER:)
     "url": "$(nodejs_repo?'')"
   },
   "dependencies": {
-    "prebuild": "^3.0.3",
+    "bindings": "^1.2.1",
+    "nan": "^2.2.0",
     "node-ninja": "^1.0.1",
-    "nan": "^2.2.0"
+    "prebuild": "^3.0.3"
+
   }
 }
 .
@@ -751,7 +769,7 @@ function resolve_method (method)
 
         else
             my.method.exported = 0
-            echo "nodejs: can't do '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)"
+            # echo "nodejs: can't do '$(type)', $(class.c_name).$(my.method.c_name).$(argument.c_name)"
         endif
     else
         my.method.called += "void"
