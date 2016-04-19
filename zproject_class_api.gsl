@@ -1,5 +1,5 @@
 #   Process class API files in api/*.api
-#   
+#
 #   This is a code generator built using the iMatix GSL code generation
 #   language. See https://github.com/imatix/gsl for details.
 #
@@ -379,6 +379,16 @@ function resolve_container_dependencies (class_name, container)
         if defined (dir)
             for dir.directory
                 api_file = directory.path + directory.name + "/"  + "$(my.container.type:c).xml"
+                if resolved = 0 & file.exists (api_file)
+                    dependency = XML.load_file (api_file)
+                    dependency.api_dir = directory.path + directory.name + "/"
+                    dependency.resolved = 0
+                    dependency.project = directory.name
+                    resolve_c_class (dependency)
+                    move dependency to project->dependencies
+                    resolved = 1
+                endif
+                api_file = directory.path + directory.name + "/"  + "$(my.container.type:c).api"
                 if resolved = 0 & file.exists (api_file)
                     dependency = XML.load_file (api_file)
                     dependency.api_dir = directory.path + directory.name + "/"
