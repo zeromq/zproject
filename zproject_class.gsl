@@ -337,6 +337,9 @@ $(project.GENERATED_WARNING_HEADER:)
 .for header where scope = "private"
 #include "$(header.name).h"
 .endfor
+
+//  *** To avoid double-definitions, only define if building without draft ***
+#ifndef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .for class where draft = 0
 .   for constant where draft = 1
 .      if first ()
@@ -365,6 +368,8 @@ $(PROJECT.PREFIX)_EXPORT $(c_method_signature (method):);
 .       endif
 .   endfor
 .endfor
+
+#endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 
 .for constant where scope = "private"
 .   if first ()
