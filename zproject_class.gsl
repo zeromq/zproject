@@ -338,17 +338,6 @@ $(project.GENERATED_WARNING_HEADER:)
 #include "$(header.name).h"
 .endfor
 .for class where draft = 0
-.   for . as method where draft = 1
-.       if name () = "constructor" | name () = "method" | name () = "destructor"
-
-//  *** Draft method, defined for internal use only ***
-//  $(.description:no,block)
-.           if ->return.fresh
-//  Caller owns return value and must destroy it when done.
-.           endif
-$(PROJECT.PREFIX)_EXPORT $(c_method_signature (method):);
-.       endif
-.   endfor
 .   for constant where draft = 1
 .      if first ()
 
@@ -363,6 +352,17 @@ $(PROJECT.PREFIX)_EXPORT $(c_method_signature (method):);
 .      endif
 // $(callback_type.description:no,block)
 $(c_callback_typedef (callback_type))
+.   endfor
+.   for . as method where draft = 1
+.       if name () = "constructor" | name () = "method" | name () = "destructor"
+
+//  *** Draft method, defined for internal use only ***
+//  $(.description:no,block)
+.           if ->return.fresh
+//  Caller owns return value and must destroy it when done.
+.           endif
+$(PROJECT.PREFIX)_EXPORT $(c_method_signature (method):);
+.       endif
 .   endfor
 .endfor
 
