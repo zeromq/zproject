@@ -24,6 +24,7 @@ register_target ("vs2015", "Microsoft Visual Studio 2015")
 *.user
 *.aps
 *.log
+*.tlog
 ipch/
 .terminator="\r\n"
 .output "$(my.path)/resource.rc"
@@ -139,7 +140,7 @@ END
 .output "$(my.path)/platform.h"
 #error "Run configure.bat to create platform.h"
 .output "$(my.path)/configure.bat"
-@ECHO OFF
+@if "%ECHOON%" == "" (@echo off) else (@echo %ECHOON%)&:: set ECHOON=on if you want to debug this script
 $(project.generated_warning_header_for_dot_bat:)
 @setlocal
 :-  configure.bat creates platform.h and configures the build process
@@ -648,7 +649,7 @@ Global
     EndGlobalSection
 EndGlobal
 .output "$(my.path)/build.bat"
-@ECHO OFF
+@if "%ECHOON%" == "" (@echo off) else (@echo %ECHOON%)&:: set ECHOON=on if you want to debug this script
 $(project.generated_warning_header_for_dot_bat:)
 :: Usage:     build.bat [Clean]
 @setlocal
@@ -698,6 +699,7 @@ ECHO %action% $(project.name:)... (%packages%)
 
 :: set correct environment for build target
 CALL %environment% x86 >> %log%
+@if "%ECHOON%" == "" (@echo off) else (@echo %ECHOON%)&:: set ECHOON=on if you want to debug this script
 ECHO Platform=x86
 
 ECHO Configuration=DynDebug
@@ -724,6 +726,7 @@ IF errorlevel 1 GOTO error
 
 :: set correct environment for build target
 CALL %environment% x86_amd64 >> %log%
+@if "%ECHOON%" == "" (@echo off) else (@echo %ECHOON%)&:: set ECHOON=on if you want to debug this script
 ECHO Platform=x64
 
 ECHO Configuration=DynDebug

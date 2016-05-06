@@ -17,7 +17,7 @@ function target_nuget
 .macro generate_packaging
 .terminator="\r\n"
 .output "$(topdir)/package.bat"
-@ECHO OFF
+@if "%ECHOON%" == "" (@echo off) else (@echo %ECHOON%)&:: set ECHOON=on if you want to debug this script
 $(project.generated_warning_header_for_dot_bat:)
 ECHO Started nuget packaging build.
 ECHO.
