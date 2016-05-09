@@ -231,6 +231,10 @@ For integer arguments you can specify one or more 'map' values, which a binding 
 
 The value should be a constant that the binding code has access to.
 
+The following attributes are supported for arguments:
+
+- `polymorphic` - indicates that the passed class instance is a `sockish` type. For an example see CZMQ's zsock class.
+
 ### API Types
 
 This is an incomplete list of API types:
