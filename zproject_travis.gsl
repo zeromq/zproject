@@ -44,6 +44,20 @@ before_install:
 
 # Hand off to generated script for each BUILD_TYPE
 script: ./ci_build.sh
+before_deploy: . ./ci_deploy.sh
+deploy:
+  provider: releases
+  api_key:
+    # To encrypt your access token run: `travis encrypt -r user/repo`
+    secure: <encrypted github access token>
+  file_glob: true
+  file: ${$(PROJECT.NAME:c)_DEPLOYMENT}
+  skip_cleanup: true
+  on:
+    branch: master
+    tags: true
+    condition: $TRAVIS_OS_NAME =~ (linux) && $BUILD_TYPE =~ (default)
+.   close
 .endif
 .
 .output "ci_build.sh"
@@ -108,11 +122,12 @@ if [ "$BUILD_TYPE" == "default" ]; then
     # Build and check this project without DRAFT APIs
     make clean
     git reset --hard HEAD
-    ./autogen.sh 2> /dev/null
-    ./configure --enable-drafts=no "${CONFIG_OPTS[@]}"
-    make -j4
-    make check
-    make install
+    (
+        ./autogen.sh 2> /dev/null
+        ./configure --enable-drafts=no "${CONFIG_OPTS[@]}"
+        export DISTCHECK_CONFIGURE_FLAGS="${CONFIG_OPTS[@]}" &&
+        make VERBOSE=1 distcheck
+    ) || exit 1
 else
     pushd "./builds/${BUILD_TYPE}" && REPO_DIR="\$(dirs -l +1)" ./ci_build.sh
 fi
@@ -162,4 +177,30 @@ if [[ \$(git status -s api) ]]; then
 fi
 .close
 .chmod_x ("builds/check_zproto/ci_build.sh")
+.
+.output "ci_deploy.sh"
+#!/usr/bin/env bash
+
+$(project.GENERATED_WARNING_HEADER)
+
+set -x
+set -e
+
+if [[ $BUILD_TYPE == "default" ]]; then
+    # Tell travis to deploy all files in dist
+    mkdir dist
+    export $(PROJECT.NAME)_DEPLOYMENT=dist/*
+    # Move archives to dist
+    mv *.tar.gz dist
+    mv *.zip dist
+    # Generate hash sums
+    cd dist
+    md5sum *.zip *.tar.gz > MD5SUMS
+    sha1sum *.zip *.tar.gz > SHA1SUMS
+    cd -
+else
+    export $(PROJECT.NAME)_DEPLOYMENT=""
+fi
+.close
+.chmod_x ("ci_deploy.sh")
 .endmacro
