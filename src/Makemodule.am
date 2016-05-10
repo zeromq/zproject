@@ -50,31 +50,31 @@ myproject_SCRIPTS = \
 	cd $(srcdir); gsl -target:- project.xml
 
 check-local: src/myproject_selftest
-	$(LIBTOOL) --mode=execute $(srcdir)/src/myproject_selftest
+	$(LIBTOOL) --mode=execute $(builddir)/src/myproject_selftest
 
 check-verbose: src/myproject_selftest
-	$(LIBTOOL) --mode=execute $(srcdir)/src/myproject_selftest -v
+	$(LIBTOOL) --mode=execute $(builddir)/src/myproject_selftest -v
 
 # Run the selftest binary under valgrind to check for memory leaks
 memcheck: src/myproject_selftest
 	$(LIBTOOL) --mode=execute valgrind --tool=memcheck \
 		--leak-check=full --show-reachable=yes --error-exitcode=1 \
 		--suppressions=$(srcdir)/src/.valgrind.supp \
-		$(srcdir)/src/myproject_selftest
+		$(builddir)/src/myproject_selftest
 
 # Run the selftest binary under valgrind to check for performance leaks
 callcheck: src/myproject_selftest
 	$(LIBTOOL) --mode=execute valgrind --tool=callgrind \
-		$(srcdir)/src/myproject_selftest
+		$(builddir)/src/myproject_selftest
 
 # Run the selftest binary under gdb for debugging
 debug: src/myproject_selftest
 	$(LIBTOOL) --mode=execute gdb -q \
-		$(srcdir)/src/myproject_selftest
+		$(builddir)/src/myproject_selftest
 
 # Run the selftest binary with verbose switch for tracing
 animate: src/myproject_selftest
-	$(LIBTOOL) --mode=execute $(srcdir)/src/myproject_selftest -v
+	$(LIBTOOL) --mode=execute $(builddir)/src/myproject_selftest -v
 
 if WITH_GCOV
 coverage: src/myproject_selftest
