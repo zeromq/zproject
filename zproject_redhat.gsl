@@ -67,7 +67,9 @@ This package contains shared library.
 
 %files -n $(project.libname)$(project->version.major)
 %defattr(-,root,root)
+.if file.exists ('COPYING')
 %doc COPYING
+.endif
 %{_libdir}/$(project.libname).so.*
 
 %package devel
