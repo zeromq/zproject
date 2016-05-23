@@ -22,6 +22,7 @@ gsl from "zproject_java_lib.gsl"
 
 .macro generate_wrapper
 .output "$(topdir)/CMakeLists.txt"
+$(project.GENERATED_WARNING_HEADER:)
 cmake_minimum_required (VERSION 2.8)
 
 project ($(project.prefix)jni CXX)
