@@ -106,6 +106,10 @@ task buildNative(type: Exec, dependsOn: 'initCMake') {
 }
 jar.dependsOn buildNative
 test.dependsOn buildNative
+
+clean.doFirst {
+    delete "${rootDir}/CMakeCache.txt"
+}
 .
 .output "$(topdir)/gradlew"
 #!/usr/bin/env bash
