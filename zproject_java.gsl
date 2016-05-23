@@ -22,16 +22,45 @@ gsl from "zproject_java_lib.gsl"
 
 .macro generate_wrapper
 .output "$(topdir)/CMakeLists.txt"
+$(project.GENERATED_WARNING_HEADER:)
 cmake_minimum_required (VERSION 2.8)
 
 project ($(project.prefix)jni CXX)
 enable_language (C)
 
-find_package (JNI REQUIRED)
-find_library (ZMQ_LIBRARY NAMES zmq libzmq REQUIRED)
-find_library ($(PROJECT.PREFIX)_LIBRARY NAMES $(project.prefix) REQUIRED)
+# Search for Find*.cmake files in the following locations
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../..")
 
-include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} ../../include src/native/include)
+########################################################################
+# JNI dependency
+########################################################################
+find_package (JNI REQUIRED)
+include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} src/native/include)
+.for use where use.optional = 0
+
+########################################################################
+# $(USE.PROJECT) dependency
+########################################################################
+find_package($(use.project) REQUIRED)
+IF ($(USE.PROJECT)_FOUND)
+    include_directories(${$(USE.PROJECT)_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
+ELSE ($(USE.PROJECT)_FOUND)
+    message( FATAL_ERROR "$(use.project) not found." )
+ENDIF ($(USE.PROJECT)_FOUND)
+.endfor
+
+########################################################################
+# $(PROJECT.PREFIX) dependency
+########################################################################
+find_package($(project.prefix) REQUIRED)
+IF ($(PROJECT.PREFIX)_FOUND)
+    include_directories(${$(PROJECT.PREFIX)_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${$(PROJECT.PREFIX)_LIBRARIES})
+ELSE ($(PROJECT.PREFIX)_FOUND)
+    message( FATAL_ERROR "$(project.prefix) not found." )
+ENDIF ($(PROJECT.PREFIX)_FOUND)
 
 set ($(project.prefix)jni_sources
 .for project.class where class.okay
@@ -47,7 +76,50 @@ set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
-target_link_libraries ($(project.prefix)jni ${ZMQ_LIBRARY} ${$(PROJECT.PREFIX)_LIBRARY})
+target_link_libraries ($(project.prefix)jni ${MORE_LIBRARIES})
+.
+.output "$(topdir)/Find$(project.name:c).cmake"
+$(project.GENERATED_WARNING_HEADER:)
+
+if (NOT MSVC)
+    include(FindPkgConfig)
+    pkg_check_modules(PC_$(PROJECT.NAME) "$(project.libname)")
+    if (NOT PC_$(PROJECT.NAME)_FOUND)
+        pkg_check_modules(PC_$(PROJECT.NAME) "$(project.libname)")
+    endif (NOT PC_$(PROJECT.NAME)_FOUND)
+    if (PC_$(PROJECT.NAME)_FOUND)
+        # some libraries install the headers is a subdirectory of the include dir
+        # returned by pkg-config, so use a wildcard match to improve chances of finding
+        # headers and SOs.
+        set(PC_$(PROJECT.NAME)_INCLUDE_HINTS ${PC_$(PROJECT.NAME)_INCLUDE_DIRS} ${PC_$(PROJECT.NAME)_INCLUDE_DIRS}/*)
+        set(PC_$(PROJECT.NAME)_LIBRARY_HINTS ${PC_$(PROJECT.NAME)_LIBRARY_DIRS} ${PC_$(PROJECT.NAME)_LIBRARY_DIRS}/*)
+    endif(PC_$(PROJECT.NAME)_FOUND)
+endif (NOT MSVC)
+
+find_path (
+    $(PROJECT.NAME)_INCLUDE_DIRS
+    NAMES $(project.header)
+    HINTS ${PC_$(PROJECT.NAME)_INCLUDE_HINTS}
+)
+
+find_library (
+    $(PROJECT.NAME)_LIBRARIES
+    NAMES $(project.prefix)
+    HINTS ${PC_$(PROJECT.NAME)_LIBRARY_HINTS}
+)
+
+include(FindPackageHandleStandardArgs)
+
+find_package_handle_standard_args(
+    $(PROJECT.NAME)
+    REQUIRED_VARS $(PROJECT.NAME)_LIBRARIES $(PROJECT.NAME)_INCLUDE_DIRS
+)
+mark_as_advanced(
+    $(PROJECT.NAME)_FOUND
+    $(PROJECT.NAME)_LIBRARIES $(PROJECT.NAME)_INCLUDE_DIRS
+)
+
+$(project.GENERATED_WARNING_HEADER:)
 .
 .directory.create ("$(topdir)/gradle/wrapper")
 .output "$(topdir)/gradle/wrapper/gradle-wrapper.properties"
@@ -106,6 +178,10 @@ task buildNative(type: Exec, dependsOn: 'initCMake') {
 }
 jar.dependsOn buildNative
 test.dependsOn buildNative
+
+clean.doFirst {
+    delete "${rootDir}/CMakeCache.txt"
+}
 .
 .output "$(topdir)/gradlew"
 #!/usr/bin/env bash
@@ -455,6 +531,7 @@ $(project.GENERATED_WARNING_HEADER:)
 #
 #   Exit if any step fails
 set -e
+set -x
 
 export ANDROID_API_LEVEL=android-8
 export ANDROID_SYS_ROOT=$ANDROID_NDK_ROOT/platforms/$ANDROID_API_LEVEL/arch-$TOOLCHAIN_ARCH
@@ -480,7 +557,9 @@ echo "********  Building $(project.name:) Android native libraries"
 echo "********  Building $(project.name:) JNI interface & classes"
 ( cd .. && gradle build jar )
 
+echo "********  Building $(project.name:) JNI for Android"
 rm -rf build && mkdir build && cd build
+export ANDROID_BUILD_PREFIX=$ANDROID_BUILD_PREFIX
 cmake -v -DCMAKE_TOOLCHAIN_FILE=../android_toolchain.cmake ..
 
 #   CMake wrongly searches current directory and then toolchain path instead
@@ -488,7 +567,6 @@ cmake -v -DCMAKE_TOOLCHAIN_FILE=../android_toolchain.cmake ..
 ln -s $ANDROID_SYS_ROOT/usr/lib/crtend_so.o
 ln -s $ANDROID_SYS_ROOT/usr/lib/crtbegin_so.o
 
-echo "********  Building $(project.name:) JNI for Android"
 make $MAKE_OPTIONS
 
 echo "********  Building $(project.name:c).jar for Android"
@@ -521,19 +599,39 @@ cmake_minimum_required (VERSION 2.8)
 project ($(project.name:c)jni CXX)
 enable_language (C)
 
+# Search for Find*.cmake files in the following locations
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../..")
+
+########################################################################
+# JNI dependency
+########################################################################
 find_package (JNI REQUIRED)
-
 include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} ../src/native/include)
+.for use where use.optional = 0
 
-# message (STATUS "JNI_INCLUDE_DIRS=${JNI_INCLUDE_DIRS}")
-# message (STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
-# message (STATUS "JNI_FOUND=${JNI_FOUND}")
-# message (STATUS "JAVA_AWT_LIBRARY=${JAVA_AWT_LIBRARY}")
-# message (STATUS "JAVA_JVM_LIBRARY=${JAVA_JVM_LIBRARY}")
-# message (STATUS "JAVA_INCLUDE_PATH=${JAVA_INCLUDE_PATH}")
-# message (STATUS "JAVA_INCLUDE_PATH2=${JAVA_INCLUDE_PATH2}")
-# message (STATUS "JAVA_AWT_INCLUDE_PATH=${JAVA_AWT_INCLUDE_PATH}")
-# message (STATUS "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
+########################################################################
+# $(USE.PROJECT) dependency
+########################################################################
+find_package($(use.project) REQUIRED)
+IF ($(USE.PROJECT)_FOUND)
+    include_directories(${$(USE.PROJECT)_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
+ELSE ($(USE.PROJECT)_FOUND)
+    message( FATAL_ERROR "$(use.project) not found." )
+ENDIF ($(USE.PROJECT)_FOUND)
+.endfor
+
+########################################################################
+# $(PROJECT.PREFIX) dependency
+########################################################################
+find_package($(project.prefix) REQUIRED)
+IF ($(PROJECT.PREFIX)_FOUND)
+    include_directories(${$(PROJECT.PREFIX)_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${$(PROJECT.PREFIX)_LIBRARIES})
+ELSE ($(PROJECT.PREFIX)_FOUND)
+    message( FATAL_ERROR "$(project.prefix) not found." )
+ENDIF ($(PROJECT.PREFIX)_FOUND)
 
 set ($(project.prefix)jni_sources
 .for project.class where class.okay
@@ -543,17 +641,13 @@ set ($(project.prefix)jni_sources
 
 add_library ($(project.prefix)jni SHARED ${$(project.prefix)jni_sources})
 add_definitions (-D$(PROJECT.PREFIX)_BUILD_DRAFT_API)
-target_link_libraries ($(project.prefix)jni
-    $(project.linkname)
-.for project.use where optional = 0
-    $(use.linkname)
-.endfor
-)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -O2")
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
+
+target_link_libraries ($(project.prefix)jni ${MORE_LIBRARIES})
 .
 .output "$(topdir)/android/android_toolchain.cmake"
 $(project.GENERATED_WARNING_HEADER:)
@@ -569,58 +663,103 @@ set (BUILD_ANDROID True)
 include (CMakeForceCompiler)
 include (FindPkgConfig)
 
-# where is the target environment
+# Where is the target environment
 set (ANDROID_NDK_ROOT $ENV{ANDROID_NDK_ROOT})
 set (ANDROID_SYS_ROOT $ENV{ANDROID_SYS_ROOT})
 set (ANDROID_API_LEVEL $ENV{ANDROID_API_LEVEL})
 set (TOOLCHAIN_PATH $ENV{TOOLCHAIN_PATH})
 set (TOOLCHAIN_HOST $ENV{TOOLCHAIN_HOST})
 set (TOOLCHAIN_ARCH $ENV{TOOLCHAIN_ARCH})
+set (LIBRARIES_BUILD_PREFIX $ENV{ANDROID_BUILD_PREFIX})
 
-# api level see doc https://github.com/taka-no-me/android-cmake
-set (CMAKE_INSTALL_PREFIX /tmp)
+# Here is the target environment located
+set (CMAKE_INSTALL_PREFIX "${LIBRARIES_BUILD_PREFIX}")
 set (CMAKE_FIND_ROOT_PATH
     "${TOOLCHAIN_PATH}"
-    "${CMAKE_INSTALL_PREFIX}"
-    "${CMAKE_INSTALL_PREFIX}/share")
+    "${LIBRARIES_BUILD_PREFIX}"
+    "${LIBRARIES_BUILD_PREFIX}/share")
+
+# pkg_config should not search for packages of the host system,
+# but for the target system. To do this, there is the environment variable
+# PKG_CONFIG_LIBDIR, which was added to pkg_config explicitely for crosscompiling.
+# So set this here to point inside the CMAKE_FIND_ROOT_PATH so it can find
+# only packages for the target system when crosscompiling.
+set(pkgconfigLibDir)
+foreach(currentFindRoot ${CMAKE_FIND_ROOT_PATH})
+    set(pkgconfigLibDir "${pkgconfigLibDir}:${currentFindRoot}/lib/pkgconfig")
+endforeach(currentFindRoot)
+set(ENV{PKG_CONFIG_LIBDIR} "${pkgconfigLibDir}")
+set(ENV{PKG_CONFIG_PATH} "")
 
 # Prefix detection only works with compiler id "GNU"
 # CMake will look for prefixed g++, cpp, ld, etc. automatically
 CMAKE_FORCE_C_COMPILER (${TOOLCHAIN_PATH}/arm-linux-androideabi-gcc GNU)
 
-.for use where optional = 0
-#   Find location of $(use.header) file
-pkg_check_modules (PC_$(USE.PROJECT) "$(use.libname)")
-if (NOT PC_$(USE.PROJECT)_FOUND)
-    pkg_check_modules(PC_$(USE.PROJECT) "$(use.prefix)")
-endif (NOT PC_$(USE.PROJECT)_FOUND)
-
-if (PC_$(USE.PROJECT)_FOUND)
-    set (PC_$(USE.PROJECT)_INCLUDE_HINTS ${PC_$(USE.PROJECT)_INCLUDE_DIRS} ${PC_$(USE.PROJECT)_INCLUDE_DIRS}/*)
-endif (PC_$(USE.PROJECT)_FOUND)
-
-find_path (
-    $(USE.PROJECT)_INCLUDE_DIR
-    NAMES $(use.header)
-    HINTS ${PC_$(USE.PROJECT)_INCLUDE_HINTS}
-)
-
-.endfor
 cmake_policy (SET CMP0015 NEW)   #  Use relative paths in link_directories
 
-include_directories (
-.for use where optional = 0
-    ${$(USE.PROJECT)_INCLUDE_DIR}
-.endfor
-    ../../../include
-    ../../../bindings/jni/src/native/include
-    ../../../builds/android/prefix/arm-linux-androideabi-4.9/include
-    ${ANDROID_SYS_ROOT}/usr/include
-)
-link_directories (
-    ../../../builds/android/prefix/arm-linux-androideabi-4.9/lib
-    ${ANDROID_SYS_ROOT}/usr/lib
-)
+include_directories (${ANDROID_SYS_ROOT}/usr/include)
+link_directories (${ANDROID_SYS_ROOT}/usr/lib)
+.
+.output "$(topdir)/ci_build.sh"
+#!/usr/bin/env bash
+
+set -x
+set -e
+
+########################################################################
+# Build and check the jni binding
+########################################################################
+
+BUILD_PREFIX=/tmp
+
+CONFIG_OPTS=()
+CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("CPPFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("CXXFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("LDFLAGS=-L${BUILD_PREFIX}/lib")
+CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
+CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
+CONFIG_OPTS+=("--with-docs=no")
+CONFIG_OPTS+=("--quiet")
+
+pushd ../../..
+
+git clone --quiet --depth 1 https://github.com/zeromq/libzmq libzmq
+cd libzmq
+git --no-pager log --oneline -n1
+\./autogen.sh 2> /dev/null
+\./configure "${CONFIG_OPTS[@]}"
+make -j4
+make install
+
+popd
+pushd ../..
+
+\./autogen.sh 2> /dev/null
+\./configure "${CONFIG_OPTS[@]}"
+make -j4
+make install
+
+popd
+
+TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig gradle build jar
+TERM=dumb gradle clean
+
+########################################################################
+#  Build and check the jni android binding
+########################################################################
+
+pushd ../../builds/android
+
+\. ./ci_build.sh
+
+popd
+
+pushd android
+
+TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig ./build.sh
+
+popd
 .endmacro
 
 .macro generate_class_in_java (class)
