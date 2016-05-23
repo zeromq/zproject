@@ -520,6 +520,7 @@ TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig ./build.sh
 
 popd
 .close
+.chmod_x ("$(topdir)/ci_build.sh")
 .if ! file.exists ("$(topdir)/gradle/wrapper/gradle-wrapper.jar")
 .   echo "Note: Could not locate gradle wrapper for JNI Binding! See bindings/jni/README.md."
 .endif
