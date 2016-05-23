@@ -446,6 +446,11 @@ Ensure you have gradle and cmake installed, then run:
     gradle build jar
     gradle test
 
+If you don't like to install gradle beforehand just use the gradle wrapper
+
+    ./gradlew build jar
+    ./gradlew test
+
 This calls javah to build the headers in src/native/include, and then compiles the C and Java pieces to create a jar file a sharable library (.so).
 
 ## Building the JNI Layer for Android
@@ -555,7 +560,7 @@ echo "********  Building $(project.name:) Android native libraries"
 
 #   Ensure we've built JNI interface
 echo "********  Building $(project.name:) JNI interface & classes"
-( cd .. && gradle build jar )
+( cd .. && ./gradlew build jar )
 
 echo "********  Building $(project.name:) JNI for Android"
 rm -rf build && mkdir build && cd build
@@ -742,8 +747,8 @@ make install
 
 popd
 
-TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig gradle build jar
-TERM=dumb gradle clean
+TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig ./gradlew build jar
+TERM=dumb ./gradlew clean
 
 ########################################################################
 #  Build and check the jni android binding
