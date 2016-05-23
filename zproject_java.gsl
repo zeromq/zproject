@@ -699,29 +699,67 @@ cmake_policy (SET CMP0015 NEW)   #  Use relative paths in link_directories
 
 include_directories (${ANDROID_SYS_ROOT}/usr/include)
 link_directories (${ANDROID_SYS_ROOT}/usr/lib)
+.
+.output "$(topdir)/ci_build.sh"
+#!/usr/bin/env bash
 
-find_path (
-    $(USE.PROJECT)_INCLUDE_DIR
-    NAMES $(use.header)
-    HINTS ${PC_$(USE.PROJECT)_INCLUDE_HINTS}
-)
+set -x
+set -e
 
-.endfor
-cmake_policy (SET CMP0015 NEW)   #  Use relative paths in link_directories
+########################################################################
+# Build and check the jni binding
+########################################################################
 
-include_directories (
-.for use where optional = 0
-    ${$(USE.PROJECT)_INCLUDE_DIR}
-.endfor
-    ../../../include
-    ../../../bindings/jni/src/native/include
-    ../../../builds/android/prefix/arm-linux-androideabi-4.9/include
-    ${ANDROID_SYS_ROOT}/usr/include
-)
-link_directories (
-    ../../../builds/android/prefix/arm-linux-androideabi-4.9/lib
-    ${ANDROID_SYS_ROOT}/usr/lib
-)
+BUILD_PREFIX=/tmp
+
+CONFIG_OPTS=()
+CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("CPPFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("CXXFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("LDFLAGS=-L${BUILD_PREFIX}/lib")
+CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
+CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
+CONFIG_OPTS+=("--with-docs=no")
+CONFIG_OPTS+=("--quiet")
+
+pushd ../../..
+
+git clone --quiet --depth 1 https://github.com/zeromq/libzmq libzmq
+cd libzmq
+git --no-pager log --oneline -n1
+\./autogen.sh 2> /dev/null
+\./configure "${CONFIG_OPTS[@]}"
+make -j4
+make install
+
+popd
+pushd ../..
+
+\./autogen.sh 2> /dev/null
+\./configure "${CONFIG_OPTS[@]}"
+make -j4
+make install
+
+popd
+
+TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig gradle build jar
+TERM=dumb gradle clean
+
+########################################################################
+#  Build and check the jni android binding
+########################################################################
+
+pushd ../../builds/android
+
+\. ./ci_build.sh
+
+popd
+
+pushd android
+
+TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig ./build.sh
+
+popd
 .endmacro
 
 .macro generate_class_in_java (class)
