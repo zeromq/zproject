@@ -120,7 +120,8 @@ if [ "$BUILD_TYPE" == "default" ]; then
     make install
 
     # Build and check this project without DRAFT APIs
-    make clean
+    make distclean
+    git clean -f
     git reset --hard HEAD
     (
         ./autogen.sh 2> /dev/null
