@@ -553,6 +553,10 @@ noinst_LTLIBRARIES =
 TESTS =
 
 EXTRA_DIST = \\
+    CMakeLists.txt \\
+.for use
+    Find$(use.project:c).cmake \\
+.endfor
 .for extra
     src/$(extra.name) \\
 .endfor
