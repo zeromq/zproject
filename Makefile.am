@@ -24,6 +24,7 @@ noinst_LTLIBRARIES =
 TESTS =
 
 EXTRA_DIST = \
+    CMakeLists.txt \
     LICENSE \
     README.txt \
     README.md \
