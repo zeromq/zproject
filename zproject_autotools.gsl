@@ -560,6 +560,22 @@ echo --with-docs=\\(yes\\|no\\)    *requires asciidoc and xmlto
 
 echo
 echo '##########################################################################'
+
+echo
+echo Configure complete! Now procced with:
+echo "    - 'make'               compile the project"
+echo "    - 'make check'         run the project's selftest"
+echo "    - 'make install'       install the project to $prefix"
+echo
+echo Further options are:
+echo "    - 'make callcheck'     run the project's selftest with valgrind to"
+echo "                           check for performance leaks"
+echo "    - 'make check-verbose' run the project's selftest in verbose mode"
+echo "    - 'make code'          generate code from models in src directory"
+echo "                           (requires zproject and zproto)"
+echo "    - 'make debug'         run the project's selftest under gdb"
+echo "    - 'make memcheck'      run the project's selftest with valgrind to"
+echo "                           check for memory leaks"
 echo
 ])
 
