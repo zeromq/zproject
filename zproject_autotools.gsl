@@ -543,12 +543,12 @@ echo C compiler.................... : $CC
 echo C compiler flags.............. : $CFLAGS
 echo Configure date................ : $BUILD_DATE
 echo Build architecture............ : $BUILD_ARCH
-echo Build docs.................... : $czmq_build_doc
+echo Build docs.................... : $$(project.name:c)_build_doc
 echo Build host.................... : $BUILD_HOST
 echo Build user.................... : $USER
 echo Draft API..................... : $enable_drafts
 echo Install dir................... : $prefix
-echo Install man pages............. : $czmq_install_man
+echo Install man pages............. : $$(project.name:c)_install_man
 
 echo
 echo Help:
