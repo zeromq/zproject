@@ -26,6 +26,8 @@
             header = "<filename>"       default = <prefix>.h
             language = "C|C++"          default = "C"
             optional = "1"              default = "0"
+            debian_name = "libzmq5-dev" default = lib<name>-dev
+            redhat_name = "zeromq-devel" default = <name>-devel
         </use>
     -->
 
