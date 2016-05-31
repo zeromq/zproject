@@ -21,35 +21,37 @@
 
 **<a href="#toc2-158">Configuration</a>**
 
-**<a href="#toc2-342">Sample Usage</a>**
+**<a href="#toc2-342">Project dependencies</a>**
 
-**<a href="#toc2-369">Sample API model</a>**
-*  <a href="#toc3-583">Supported API Model Attributes</a>
-*  <a href="#toc3-611">API Types</a>
-*  <a href="#toc3-654">Tips</a>
-*  <a href="#toc3-671">Generate API model from C header files</a>
-&emsp;<a href="#toc4-693">Known caveats</a>
+**<a href="#toc2-493">Sample Usage</a>**
 
-**<a href="#toc2-698">Language Binding Notes</a>**
-*  <a href="#toc3-701">Java Language Binding</a>
+**<a href="#toc2-524">Sample API model</a>**
+*  <a href="#toc3-738">Supported API Model Attributes</a>
+*  <a href="#toc3-770">API Types</a>
+*  <a href="#toc3-813">Tips</a>
+*  <a href="#toc3-830">Generate API model from C header files</a>
+&emsp;<a href="#toc4-852">Known caveats</a>
 
-**<a href="#toc2-709">Draft API Support</a>**
+**<a href="#toc2-857">Language Binding Notes</a>**
+*  <a href="#toc3-860">Java Language Binding</a>
 
-**<a href="#toc2-741">Targets</a>**
+**<a href="#toc2-868">Draft API Support</a>**
 
-**<a href="#toc2-767">Removal</a>**
-*  <a href="#toc3-770">autotools</a>
+**<a href="#toc2-900">Targets</a>**
 
-**<a href="#toc2-777">Notes for Writing Language Targets</a>**
-*  <a href="#toc3-797">Schema/Architecture Overview</a>
-*  <a href="#toc3-816">Informal Summary</a>
-*  <a href="#toc3-821">Semantic Attributes</a>
-*  <a href="#toc3-856">Target Scopes</a>
-*  <a href="#toc3-861">Target Options</a>
+**<a href="#toc2-926">Removal</a>**
+*  <a href="#toc3-929">autotools</a>
 
-**<a href="#toc2-889">Ownership and License</a>**
-*  <a href="#toc3-898">Hints to Contributors</a>
-*  <a href="#toc3-907">This Document</a>
+**<a href="#toc2-936">Notes for Writing Language Targets</a>**
+*  <a href="#toc3-956">Schema/Architecture Overview</a>
+*  <a href="#toc3-975">Informal Summary</a>
+*  <a href="#toc3-980">Semantic Attributes</a>
+*  <a href="#toc3-1015">Target Scopes</a>
+*  <a href="#toc3-1020">Target Options</a>
+
+**<a href="#toc2-1048">Ownership and License</a>**
+*  <a href="#toc3-1057">Hints to Contributors</a>
+*  <a href="#toc3-1066">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -382,7 +384,158 @@ zproject's `project.xml` contains an extensive description of the available conf
 </project>
 ```
 
-<A name="toc2-342" title="Sample Usage" />
+<A name="toc2-342" title="Project dependencies" />
+## Project dependencies
+
+zproject's `use` element defines project dependencies. Model is described in `zproject_known_projects.xml` file
+
+```xml
+<known_projects>
+
+    <!-- ZeroMQ Projects -->
+    <!--
+        Problem: naming style is inconsistent
+        we sometimes use libxxx and sometimes xxx; the git repo name
+        is unpredictable; sometimes we override with the prefix and
+        sometimes with libname.
+
+        Proposed solution: project name should always be git repo
+        name; prefix and libname should always be specified. For
+        compatibility we can define aliases. E.g.:
+
+        Also, 'cmake name' is target specific and must go.
+
+        Suggested model:
+        <use
+            project = "libzmq"          required
+            master = "https://github.com/zeromq"
+                                        required
+            libname = "libzmq"          default = lib<prefix>
+            prefix = "zmq"              default = project
+            test = "zmq_init"           required same as AC_CHECK_LIB in autoconf
+            release = "<tagname>"       default = "master"
+            abi = "version"             default = "0:0:0"
+            header = "<filename>"       default = <prefix>.h
+            language = "C|C++"          default = "C"
+            optional = "1"              default = "0"
+            debian_name = "libzmq5-dev" default = lib<name>-dev
+            redhat_name = "zeromq-devel" default = <name>-devel
+        </use>
+    -->
+
+    <use project = "libzmq" prefix = "zmq" debian_name = "libzmq5-dev" redhat_name = "zeromq-devel"
+        repository = "https://github.com/zeromq/libzmq"
+        test = "zmq_init" />
+
+    <use project = "czmq" libname = "libczmq"
+        repository = "https://github.com/zeromq/czmq"
+        test = "zctx_test">
+        <use project = "libzmq" />
+    </use>
+
+    <use project = "zyre" libname = "libzyre"
+        repository = "https://github.com/zeromq/zyre"
+        test = "zyre_test">
+        <use project = "czmq" />
+    </use>
+
+    <use project = "malamute" libname = "libmlm"
+        repository = "https://github.com/zeromq/malamute"
+        header = "malamute.h"
+        prefix = "mlm"
+        test = "mlm_server_test">
+        <use project = "libzmq" />
+        <use project = "czmq" />
+    </use>
+
+    <!-- Edgenet Projects -->
+
+    <use project = "drops" libname = "libdrops"
+        repository = "https://github.com/edgenet/drops"
+        test = "drops_test">
+        <use project = "czmq" />
+        <use project = "zyre" />
+    </use>
+
+    <use project = "hydra" libname = "libhydra"
+        repository = "https://github.com/edgenet/hydra"
+        test = "hydra_server_test">
+        <use project = "czmq" />
+    </use>
+
+    <!-- Various known third-party projects
+        (If you're unsure of where a project belongs, add it here) -->
+
+    <use project = "libsodium" prefix = "sodium"
+        repository = "https://github.com/jedisct1/libsodium"
+        release = "stable"
+        test = "sodium_init" />
+
+    <use project = "libcurl"
+        repository = "https://github.com/bagder/curl"
+        test = "curl_easy_init"
+        header = "curl/curl.h" />
+
+    <use project = "editline"
+        repository = "https://github.com/troglobit/editline"
+        test = "readline" />
+
+    <use project = "fuse"
+        repository = "http://git.code.sf.net/p/fuse/fuse"
+        test = "fuse_main" />
+
+    <use project = "jansson"
+        repository = "https://github.com/akheron/jansson"
+        test = "json_object" />
+
+    <use project = "jemalloc"
+        repository = "https://github.com/jemalloc/jemalloc"
+        test = "malloc"
+        header = "jemalloc/jemalloc.h" />
+
+    <use project = "msgpack"
+        repository = "https://github.com/msgpack/msgpack-c.git"
+        test = "msgpack_version" />
+
+    <use project = "uuid"
+        test = "uuid_generate"
+        header = "uuid/uuid.h"
+        debian_name = "uuid-dev" />
+
+    <use project = "asound"
+        test = "snd_asoundlib_version"
+        header = "alsa/asoundlib.h" />
+
+    <use project = "zdb"
+        repository = "https://bitbucket.org/tildeslash/libzdb.git"
+        test = "ConnectionPool_start" />
+
+    <use project = "json-c"
+        header = "json-c/json.h"
+        test = "json_object_to_json_string" />
+
+    <use project = "lognorm"
+        test = "ln_initCtx">
+        <use project = "json-c" />
+    </use>
+
+    <use project = "systemd"
+        libname = "libsystemd"
+        prefix = "libsystemd"
+        linkname = "systemd"
+        header = "systemd/sd-daemon.h"
+        test = "sd_listen_fds" />
+
+    <use project = "protobuf-c"
+         repository = "https://github.com/protobuf-c/protobuf-c/"
+         test = "protobuf_c_version"
+         header = "protobuf-c/protobuf-c.h"/>
+
+</known_projects>
+```
+
+
+<A name="toc2-493" title="Sample Usage" />
 ## Sample Usage
 
 Here is an example how to use gsl to generate the necessary files for the target project CZMQ.
@@ -391,25 +544,29 @@ Second, regenerate the files. Even though CZMQ is the target project where you w
 
 ```sh
 #!/usr/bin/env bash
-
 set -x
+set -e
 
-mkdir tmp
-BUILD_PREFIX=$PWD/tmp
+if [ "$BUILD_TYPE" == "default" ]; then
+    mkdir tmp
+    BUILD_PREFIX=$PWD/tmp
 
-( ./autogen.sh && ./configure --prefix=${BUILD_PREFIX} && make && make install ) || exit 1
+    ( ./autogen.sh && ./configure --prefix="${BUILD_PREFIX}" && make && make install ) || exit 1
 
-git clone --depth 1 https://github.com/imatix/gsl gsl
-( cd gsl/src && make -j4 && DESTDIR=${BUILD_PREFIX} make install ) || exit 1
+    git clone --depth 1 https://github.com/imatix/gsl gsl
+    ( cd gsl/src && make -j4 && DESTDIR=${BUILD_PREFIX} make install ) || exit 1
 
-git clone --depth 1 https://github.com/zeromq/czmq czmq
-( cd czmq && PATH=$PATH:${BUILD_PREFIX}/bin gsl -target:* project.xml ) || exit 1
+    git clone --depth 1 https://github.com/zeromq/czmq czmq
+    ( cd czmq && PATH=$PATH:${BUILD_PREFIX}/bin gsl -target:* project.xml ) || exit 1
+else
+    pushd "./builds/${BUILD_TYPE}" && REPO_DIR="$(dirs -l +1)" ./ci_build.sh
+fi
 ```
 Note: This file is the continuous integration file for this project (zproject/ci_build.sh).
 
 When the script completes, you could check in the modified files in CZMQ subtree which now have been regenerated using czmq/project.xml.
 
-<A name="toc2-369" title="Sample API model" />
+<A name="toc2-524" title="Sample API model" />
 ## Sample API model
 
 The zproject scripts can also optionally generate the `@interface` in your class headers from an API model, in addition to a host of language bindings.  To opt-in to this behavior, just make a model to the `api` directory of your project.  For example, if your `project.xml` contains `<class name = "myclass"/>`, you could create the following `api/myclass.api` file:
@@ -623,7 +780,7 @@ MYPROJECT_EXPORT void
 //  @end
 ```
 
-<A name="toc3-583" title="Supported API Model Attributes" />
+<A name="toc3-738" title="Supported API Model Attributes" />
 ### Supported API Model Attributes
 
 The following attributes are supported for methods:
@@ -651,7 +808,11 @@ For integer arguments you can specify one or more 'map' values, which a binding 
 
 The value should be a constant that the binding code has access to.
 
-<A name="toc3-611" title="API Types" />
+The following attributes are supported for arguments:
+
+- `polymorphic` - indicates that the passed class instance is a `sockish` type. For an example see CZMQ's zsock class.
+
+<A name="toc3-770" title="API Types" />
 ### API Types
 
 This is an incomplete list of API types:
@@ -694,7 +855,7 @@ This is an incomplete list of API types:
 
 * Names of classes, e.g. zmsg.
 
-<A name="toc3-654" title="Tips" />
+<A name="toc3-813" title="Tips" />
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
@@ -711,7 +872,7 @@ You can save a snapshot of the entire resolved project model using this syntax:
 gsl -save:1 project.xml
 ```
 
-<A name="toc3-671" title="Generate API model from C header files" />
+<A name="toc3-830" title="Generate API model from C header files" />
 ### Generate API model from C header files
 
 Writing API model for bigger project with a lot of classes can be tedious job. There mkapi.py, which automates most of the task.
@@ -733,15 +894,15 @@ Note you *must* use top-level include as pycparser fails if it does not know any
 
 The tool might expect `-DWITH_DRAFTS` parameter if the class is not marked as a stable.
 
-<A name="toc4-693" title="Known caveats" />
+<A name="toc4-852" title="Known caveats" />
 #### Known caveats
 
 The tool can't distinguish methods which allocates new object. It does print a comment about adding fresh = "1" attribute to each method, which return non const pointer. However the final assigment must be done manually.
 
-<A name="toc2-698" title="Language Binding Notes" />
+<A name="toc2-857" title="Language Binding Notes" />
 ## Language Binding Notes
 
-<A name="toc3-701" title="Java Language Binding" />
+<A name="toc3-860" title="Java Language Binding" />
 ### Java Language Binding
 
 * Skips methods that it cannot handle properly.
@@ -749,7 +910,7 @@ The tool can't distinguish methods which allocates new object. It does print a c
 * To build, you need gradle (or equivalent). Run 'gradle build jar' in the bindings/jni directory.
 * To install, run 'gradle install'. This puts the files into $HOME/.m2/repository.
 
-<A name="toc2-709" title="Draft API Support" />
+<A name="toc2-868" title="Draft API Support" />
 ## Draft API Support
 
 zproject lets you mark classes and methods as 'draft' so that they are not installed by default in stable builds. This lets you deliver draft APIs to your users, and change them later.
@@ -781,7 +942,7 @@ The allowed states are:
 
 Using autotools or CMake, you can specify --with-drafts to enable draft APIs, and --without-drafts to disable them. By default, drafts are built and installed when you work in a git repository (if the directory ".git" is present), and otherwise they are not. That means, if you build from a tarball, drafts are disabled by default.
 
-<A name="toc2-741" title="Targets" />
+<A name="toc2-900" title="Targets" />
 ## Targets
 
 Each target produces scripts and code for a specific build system, platform, or language binding.
@@ -807,17 +968,17 @@ To request all targets in your project.xml file:
 
     <target name = "*" />
 
-<A name="toc2-767" title="Removal" />
+<A name="toc2-926" title="Removal" />
 ## Removal
 
-<A name="toc3-770" title="autotools" />
+<A name="toc3-929" title="autotools" />
 ### autotools
 
 ```sh
 make uninstall
 ```
 
-<A name="toc2-777" title="Notes for Writing Language Targets" />
+<A name="toc2-936" title="Notes for Writing Language Targets" />
 ## Notes for Writing Language Targets
 
 This is the general form of a target:
@@ -837,7 +998,7 @@ function target_somename
 endfunction
 ```
 
-<A name="toc3-797" title="Schema/Architecture Overview" />
+<A name="toc3-956" title="Schema/Architecture Overview" />
 ### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
@@ -856,12 +1017,12 @@ endfunction
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-<A name="toc3-816" title="Informal Summary" />
+<A name="toc3-975" title="Informal Summary" />
 ### Informal Summary
 
 A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
 
-<A name="toc3-821" title="Semantic Attributes" />
+<A name="toc3-980" title="Semantic Attributes" />
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
@@ -896,12 +1057,12 @@ container.va_start     # string - that holds the argment name for va_start ()
 container.optional     # 0/1 (default: 0), up to binding generator to use
 ```
 
-<A name="toc3-856" title="Target Scopes" />
+<A name="toc3-1015" title="Target Scopes" />
 ### Target Scopes
 
 Each target works in its own copy of 'project'. It can therefore modify and extend 'project' as wanted, without affecting other targets.
 
-<A name="toc3-861" title="Target Options" />
+<A name="toc3-1020" title="Target Options" />
 ### Target Options
 
 A target can accept options via project.xml like this:
@@ -929,7 +1090,7 @@ project.nuget_dependency.name = "libzmq_vc120"
 project.nuget_dependency.value = "4.2.0.0"
 ```
 
-<A name="toc2-889" title="Ownership and License" />
+<A name="toc2-1048" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -938,7 +1099,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-898" title="Hints to Contributors" />
+<A name="toc3-1057" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -947,7 +1108,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-907" title="This Document" />
+<A name="toc3-1066" title="This Document" />
 ### This Document
 
-_This documentation was generated using [Gitdown](https://github.com/zeromq/gitdown)_
+_This documentation was generated from zproject/README.txt using [Gitdown](https://github.com/zeromq/gitdown)_
