@@ -134,21 +134,9 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/$(bin.name)
 .endfor
 .# generate service file names
-.for project.main where main.service ?= 1 | main.services ?= 1
-.if main.no_config ?= 0
+.for project.main where main.service ?= 1
 %config(noreplace) %{_systemconfdir}/$(project.name)/$(main.name).cfg
-.endif
-%{_prefix}/lib/systemd/system/$(main.name)*.service
-.endfor
-.for project.service
-%{_prefix}/lib/systemd/system/$(service.name)*.service
-.endfor
-
-.for project.main where defined (main->extra)
-.    for extra
-%dir $(extra.path)
-$(extra.path)/$(extra.name)
-.    endfor
+%{_prefix}/lib/systemd/system/$(main.name).service
 .endfor
 .endif
 

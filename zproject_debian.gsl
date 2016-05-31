@@ -137,21 +137,12 @@ etc/$(project.name)/$(main.name).cfg.example
 usr/bin/$(bin.name)
 .   endfor
 .# generate service file names
-.   for project.main where main.service ?= 1 | main.services ?= 1
-.       if main.no_config ?= 0
+.   for project.main where main.service ?= 1
 etc/$(project.name)/$(main.name).cfg
-.       endif
-usr/lib/systemd/system/$(main.name)*.service
+usr/lib/systemd/system/$(main.name).service
 .   endfor
-.   for project.service
-lib/systemd/system/$(service.name)*.service
-.   endfor
-.for project.main where defined (main->extra)
-.    for extra
-$(extra.path)/$(extra.name)
-.    endfor
-.endfor
 .endif
+
 .if project.exports_classes
 .   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
 usr/lib/*/$(project.libname).so.*
