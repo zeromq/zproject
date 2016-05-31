@@ -1170,7 +1170,7 @@ $(name:c).txt:
 .endfor
 .for project.main where scope = "public"
 $(name).txt:
-\t./mkman $@
+\t./mkman $(name:c) $@
 .endfor
 clean:
 \trm -f *.1 *.3 *.7

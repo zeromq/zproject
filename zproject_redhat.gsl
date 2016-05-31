@@ -31,11 +31,13 @@ License:        $(project.license?"MIT")
 URL:            $(project.url?"http://example.com/")
 Source0:        %{name}-%{version}.tar.gz
 Group:          System/Libraries
+BuildRequires:  asciidoc
 BuildRequires:  automake
 BuildRequires:  autoconf
 BuildRequires:  libtool
 BuildRequires:  pkg-config
 BuildRequires:  systemd-devel
+BuildRequires:  xmlto
 .if project.use_cxx
 BuildRequires:  gcc-c++
 .endif
@@ -91,6 +93,8 @@ This package contains development files.
 %{_includedir}/*
 %{_libdir}/$(project.libname).so
 %{_libdir}/pkgconfig/$(project.libname).pc
+%{_mandir}/man3/*
+%{_mandir}/man7/*
 .endif
 
 %prep
@@ -126,6 +130,7 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .# generate binary names
 .for project.main where scope = "public"
 %{_bindir}/$(main.name)
+%{_mandir}/man1/$(main.name)*
 .if file.exists ("src/$(main.name).cfg.example")
 %{_sysconfdir}/$(project.name)/$(main.name).cfg.example
 .endif
@@ -135,7 +140,7 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .endfor
 .# generate service file names
 .for project.main where main.service ?= 1
-%config(noreplace) %{_systemconfdir}/$(project.name)/$(main.name).cfg
+%config(noreplace) %{_sysconfdir}/$(project.name)/$(main.name).cfg
 %{_prefix}/lib/systemd/system/$(main.name).service
 .endfor
 .endif
