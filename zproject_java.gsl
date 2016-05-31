@@ -227,6 +227,7 @@ publishing {
 
 clean.doFirst {
     delete "${rootDir}/CMakeCache.txt"
+    delete "${rootDir}/libczmqjni.so"
 }
 .
 .output "$(topdir)/README.md"
