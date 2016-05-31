@@ -126,14 +126,19 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 */
 
-apply plugin: 'java'
-apply plugin: 'maven'
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id "com.jfrog.bintray" version "1.6"
+}
+
 group = "org.zeromq"
 version = "$(->version.major).$(->version.minor).$(->version.patch)"
 
 repositories {
     mavenLocal()
     mavenCentral()
+    jcenter()
 }
 
 sourceCompatibility = 1.7
@@ -150,7 +155,7 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.8'
+    gradleVersion = '2.13'
 }
 
 //  ------------------------------------------------------------------
@@ -180,7 +185,7 @@ jar.dependsOn buildNative
 test.dependsOn buildNative
 
 //  ------------------------------------------------------------------
-//  Install section
+//  Install and Publish section
 
 task sourcesJar(type: Jar, dependsOn: 'classes') {
     classifier = 'sources'
@@ -192,9 +197,51 @@ task javadocJar(type: Jar, dependsOn: 'javadoc') {
     from javadoc.destinationDir
 }
 
-artifacts {
-    archives sourcesJar
-    archives javadocJar
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            pom.withXml {
+                asNode().appendNode('packaging', 'jar')
+                asNode().appendNode('name', '$(project.name:c)-jni')
+                asNode().appendNode('description', '$(project.description:no)')
+                asNode().appendNode('url', '$(project.url)')
+
+                def license = asNode().appendNode('licenses').appendNode('license')
+                license.appendNode('name', 'Mozilla Public License Version 2.0')
+                license.appendNode('url', 'https://www.mozilla.org/en-US/MPL/2.0/')
+
+                def scm = asNode().appendNode('scm')
+                scm.appendNode('connection', '$(project.url).git')
+                scm.appendNode('developerConnection', '$(project.url).git')
+                scm.appendNode('url', '$(project.url)')
+            }
+        }
+    }
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['mavenJava']
+    publish = true
+    pkg {
+        repo = "maven"
+        name = "$(project.name:c)-jni"
+        desc = "$(project.description:no)"
+        userOrg = System.getenv('BINTRAY_USER_ORG')
+        licenses = ["MPL-2.0"]
+        websiteUrl = '$(project.url)'
+        issueTrackerUrl = '$(project.url)/issues'
+        vcsUrl = '$(project.url).git'
+        githubRepo = System.getenv('BINTRAY_USER_ORG') + '/$(project.name:c)'
+        version {
+            name = '$(->version.major).$(->version.minor).$(->version.patch)'
+            vcsTag= '$(->version.major).$(->version.minor).$(->version.patch)'
+        }
+    }
 }
 
 //  ------------------------------------------------------------------
@@ -202,6 +249,7 @@ artifacts {
 
 clean.doFirst {
     delete "${rootDir}/CMakeCache.txt"
+    delete "${rootDir}/libczmqjni.so"
 }
 .
 .output "$(topdir)/README.md"
@@ -222,6 +270,15 @@ If you don't like to install gradle beforehand just use the gradle wrapper
     ./gradlew test
 
 This calls javah to build the headers in src/native/include, and then compiles the C and Java pieces to create a jar file a sharable library (.so).
+
+## Installing the JNI Layer for Linux
+
+If you like to use this JNI Layer in another project you'll need to distribute it
+to a location where the other project can locate it. The easiest way to do this
+is by leveraging maven and install to the local maven repository located at
+$HOME/.m2. Therefore simply run:
+
+    ./gradlew publishToMavenLocal
 
 ## Building the JNI Layer for Android
 
@@ -536,7 +593,7 @@ make -j4
 make install
 .       if count (project->dependencies.class, class.project = use.project) > 0
 # Build jni dependency
-( cd bindings/jni && TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig ./gradlew install )
+( cd bindings/jni && TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig ./gradlew publishToMavenLocal )
 .       endif
 cd ..
 
