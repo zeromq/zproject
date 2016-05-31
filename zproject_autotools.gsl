@@ -1000,13 +1000,14 @@ sub pull {
 sub generate_manpage {
     local ($name) = @_;
     $name = $1 if $name =~ /(\\w+)\\.\\w+/;
+    $outp = $2 if $outp =~ /(\w+)\.\w+/;
 
     #   Check if we're making the man page for a main program, or a class
 
     $cat = 0;           #   Unknown category
     exit unless open (MAKEFILE, "Makefile");
     while (<MAKEFILE>) {
-        if (/MAN1.*$name\\.1/) {
+        if (/MAN1.*$outp\\.1/) {
 .if project.use_cxx
             $source = "../src/$name.cc";
             $header = "../src/$name.cc";
@@ -1040,10 +1041,10 @@ sub generate_manpage {
     close (SOURCE);
 
     #   Open output file
-    die "Can't create $name.txt: $!"
-        unless open (OUTPUT, ">$name.txt");
+    die "Can't create $outp.txt: $!"
+        unless open (OUTPUT, ">$outp.txt");
 
-    printf "Generating $name.txt...\\n";
+    printf "Generating $outp.txt...\\n";
     $underline = "=" x (length ($name) + 3);
 
     $template = <<"END";
@@ -1052,7 +1053,7 @@ $underline
 
 NAME
 ----
-$name - $title
+$outp - $title
 
 SYNOPSIS
 --------
@@ -1087,10 +1088,10 @@ END
 
     #   Generate a simple text documentation for README.txt
     close OUTPUT;
-    printf "Generating $name.doc...\\n";
-    die "Can't create $name.doc: $!"
-        unless open (OUTPUT, ">$name.doc");
-    print OUTPUT "#### $name - $title\\n\\n";
+    printf "Generating $outp.doc...\\n";
+    die "Can't create $outp.doc: $!"
+        unless open (OUTPUT, ">$outp.doc");
+    print OUTPUT "#### $oupt - $title\\n\\n";
     print OUTPUT pull ("$source\\@header,left");
     print OUTPUT "\\n";
     print OUTPUT pull ("$source\\@discuss,left");
@@ -1103,10 +1104,12 @@ END
 }
 
 $name = shift (@ARGV);
-while ($name) {
-    generate_manpage ($name);
-    $name = shift (@ARGV);
+$outp = shift (@ARGV);
+if (!$outp) {
+    $outp=$name
 }
+
+generate_manpage ($name, $outp);
 .close
 .chmod_x ("doc/mkman")
 .endmacro
@@ -1124,7 +1127,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .endfor
 .man1 = ""
 .for project.main where scope = "public"
-.   man1 += " $(name:c).1"
+.   man1 += " $(name).1"
 .   if "$(main.name)" = "$(project.name)"
 .       project.manpage = ""
 .   endif
@@ -1166,17 +1169,16 @@ $(name:c).txt:
 \t./mkman $@
 .endfor
 .for project.main where scope = "public"
-$(name:c).txt:
+$(name).txt:
 \t./mkman $@
 .endfor
 clean:
 \trm -f *.1 *.3 *.7
-\t./mkman \
 .for project.class where scope = "public"
-$(name:c) \
+\t./mkman $(name:c)
 .endfor
 .for project.main where scope = "public"
-$(name:c) \
+\t./mkman $(name:c) $(name)
 .endfor
 
 endif
