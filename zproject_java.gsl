@@ -126,8 +126,11 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 */
 
-apply plugin: 'java'
-apply plugin: 'maven'
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
 group = "org.zeromq"
 version = "$(->version.major).$(->version.minor).$(->version.patch)"
 
@@ -150,7 +153,7 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.8'
+    gradleVersion = '2.13'
 }
 
 //  ------------------------------------------------------------------
@@ -192,9 +195,31 @@ task javadocJar(type: Jar, dependsOn: 'javadoc') {
     from javadoc.destinationDir
 }
 
-artifacts {
-    archives sourcesJar
-    archives javadocJar
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            pom.withXml {
+                asNode().appendNode('packaging', 'jar')
+                asNode().appendNode('name', '$(project.name:c)-jni')
+                asNode().appendNode('description', '$(project.description:no)')
+                asNode().appendNode('url', '$(project.url)')
+
+                def license = asNode().appendNode('licenses').appendNode('license')
+                license.appendNode('name', 'Mozilla Public License Version 2.0')
+                license.appendNode('url', 'https://www.mozilla.org/en-US/MPL/2.0/')
+
+                def scm = asNode().appendNode('scm')
+                scm.appendNode('connection', '$(project.url).git')
+                scm.appendNode('developerConnection', '$(project.url).git')
+                scm.appendNode('url', '$(project.url)')
+            }
+        }
+    }
+}
+
 }
 
 //  ------------------------------------------------------------------
@@ -536,7 +561,7 @@ make -j4
 make install
 .       if count (project->dependencies.class, class.project = use.project) > 0
 # Build jni dependency
-( cd bindings/jni && TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig ./gradlew install )
+( cd bindings/jni && TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig ./gradlew publishToMavenLocal )
 .       endif
 cd ..
 
