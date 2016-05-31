@@ -507,14 +507,40 @@ CONFIG_OPTS+=("--quiet")
 
 pushd ../../..
 
-git clone --quiet --depth 1 https://github.com/zeromq/libzmq libzmq
-cd libzmq
-git --no-pager log --oneline -n1
-\./autogen.sh 2> /dev/null
+# Clone and build dependencies
+.   for use where defined (use.tarball)
+wget $(use.tarball)
+tar -xzf \$(basename "$(use.tarball)")
+cd \$(basename "$(use.tarball)" .tar.gz)
 \./configure "${CONFIG_OPTS[@]}"
 make -j4
 make install
+cd ..
+.   endfor
+.   for use where defined (use.repository)
+.      if defined (use.release)
+git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+.      else
+git clone --quiet --depth 1 $(use.repository) $(use.project)
+.      endif
+cd $(use.project)
+git --no-pager log --oneline -n1
+if [ -e autogen.sh ]; then
+    ./autogen.sh 2> /dev/null
+fi
+if [ -e buildconf ]; then
+    ./buildconf 2> /dev/null
+fi
+\./configure "${CONFIG_OPTS[@]}"
+make -j4
+make install
+.       if count (project->dependencies.class, class.project = use.project) > 0
+# Build jni dependency
+( cd bindings/jni && TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig ./gradlew install )
+.       endif
+cd ..
 
+.   endfor
 popd
 pushd ../..
 
