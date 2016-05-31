@@ -50,6 +50,8 @@ Build-Depends: debhelper (>= 9),
     dh-autoreconf,
     systemd,
     dh-systemd
+Build-Depends-Indep: asciidoc,
+                     xmlto
 
 .if project.exports_classes
 Package: $(string.replace (project.libname, "_|-"))$(project->version.major)
@@ -129,6 +131,7 @@ override_dh_auto_configure:
 .# generate binary names
 .   for project.main where scope = "public"
 usr/bin/$(main.name)
+usr/share/man/man1/$(main.name).1
 .       if file.exists ("src/$(main.name).cfg.example")
 etc/$(project.name)/$(main.name).cfg.example
 .       endif
@@ -150,5 +153,7 @@ usr/lib/*/$(project.libname).so.*
 usr/include/*
 usr/lib/*/$(project.libname).so
 usr/lib/*/pkgconfig/$(project.libname).pc
+usr/share/man/man3/*
+usr/share/man/man7/*
 .endif
 .endmacro
