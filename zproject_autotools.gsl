@@ -1007,13 +1007,22 @@ sub generate_manpage {
     exit unless open (MAKEFILE, "Makefile");
     while (<MAKEFILE>) {
         if (/MAN1.*$name\\.1/) {
+.if project.use_cxx
+            $source = "../src/$name.cc";
+            $header = "../src/$name.cc";
+.else
             $source = "../src/$name.c";
             $header = "../src/$name.c";
+.endif
             $cat = 1;
             last;
         }
         elsif (/MAN3.*$name\\.3/) {
+.if project.use_cxx
+            $source = "../src/$name.cc";
+.else
             $source = "../src/$name.c";
+.endif
             $header = "../include/$name.h";
             $cat = 3;
             last;
