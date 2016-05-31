@@ -129,6 +129,7 @@ $(project.GENERATED_WARNING_HEADER:)
 plugins {
     id 'java'
     id 'maven-publish'
+    id "com.jfrog.bintray" version "1.6"
 }
 
 group = "org.zeromq"
@@ -137,6 +138,7 @@ version = "$(->version.major).$(->version.minor).$(->version.patch)"
 repositories {
     mavenLocal()
     mavenCentral()
+    jcenter()
 }
 
 sourceCompatibility = 1.7
@@ -183,7 +185,7 @@ jar.dependsOn buildNative
 test.dependsOn buildNative
 
 //  ------------------------------------------------------------------
-//  Install section
+//  Install and Publish section
 
 task sourcesJar(type: Jar, dependsOn: 'classes') {
     classifier = 'sources'
@@ -220,6 +222,26 @@ publishing {
     }
 }
 
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['mavenJava']
+    publish = true
+    pkg {
+        repo = "maven"
+        name = "$(project.name:c)-jni"
+        desc = "$(project.description:no)"
+        userOrg = System.getenv('BINTRAY_USER_ORG')
+        licenses = ["MPL-2.0"]
+        websiteUrl = '$(project.url)'
+        issueTrackerUrl = '$(project.url)/issues'
+        vcsUrl = '$(project.url).git'
+        githubRepo = System.getenv('BINTRAY_USER_ORG') + '/$(project.name:c)'
+        version {
+            name = '$(->version.major).$(->version.minor).$(->version.patch)'
+            vcsTag= '$(->version.major).$(->version.minor).$(->version.patch)'
+        }
+    }
 }
 
 //  ------------------------------------------------------------------
