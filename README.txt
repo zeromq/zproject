@@ -154,6 +154,15 @@ zproject's `project.xml` contains an extensive description of the available conf
 .pull project.xml
 ```
 
+## Project dependencies
+
+zproject's `use` element defines project dependencies. Model is described in `zproject_known_projects.xml` file
+
+```xml
+.pull zproject_known_projects.xml
+```
+
+
 ## Sample Usage
 
 Here is an example how to use gsl to generate the necessary files for the target project CZMQ.

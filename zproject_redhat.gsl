@@ -40,10 +40,8 @@ BuildRequires:  systemd-devel
 BuildRequires:  gcc-c++
 .endif
 .for project.use
-.if use.project = "libzmq"
-BuildRequires:  zeromq-devel
-.elsif defined(use.spec_name)
-BuildRequires:  $(use.spec_name)
+.if defined(use.redhat_name)
+BuildRequires:  $(use.redhat_name)
 .else
 BuildRequires:  $(use.project)-devel
 .endif
@@ -77,10 +75,8 @@ Summary:        $(project.description)
 Group:          System/Libraries
 Requires:       $(project.libname)$(project->version.major) = %{version}
 .for project.use
-.if use.project = "libzmq"
-Requires:       zeromq-devel
-.elsif defined(use.spec_name)
-Requires:       $(use.spec_name)
+.if defined(use.redhat_name)
+Requires:       $(use.redhat_name)
 .else
 Requires:       $(use.project)-devel
 .endif
@@ -138,21 +134,9 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/$(bin.name)
 .endfor
 .# generate service file names
-.for project.main where main.service ?= 1 | main.services ?= 1
-.if main.no_config ?= 0
+.for project.main where main.service ?= 1
 %config(noreplace) %{_systemconfdir}/$(project.name)/$(main.name).cfg
-.endif
-%{_prefix}/lib/systemd/system/$(main.name)*.service
-.endfor
-.for project.service
-%{_prefix}/lib/systemd/system/$(service.name)*.service
-.endfor
-
-.for project.main where defined (main->extra)
-.    for extra
-%dir $(extra.path)
-$(extra.path)/$(extra.name)
-.    endfor
+%{_prefix}/lib/systemd/system/$(main.name).service
 .endfor
 .endif
 

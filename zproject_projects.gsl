@@ -23,7 +23,10 @@ function resolve_project_dependency (use)
         my.use.libname     ?= known.libname?
         my.use.release     ?= known.release?
         my.use.debian_name ?= known.debian_name?
-        my.use.spec_name   ?= known.spec_name?
+        # The spec_name is only transitional - I assume it wasn't widelly used
+        # maybe trigger a warning if used?
+        my.use.redhat_name ?= known.spec_name?
+        my.use.redhat_name ?= known.redhat_name?
 
         # Copy known implied dependencies into this dependency
         for known.use as implied_use

@@ -39,9 +39,7 @@ Build-Depends: debhelper (>= 9),
     pkg-config,
     dh-autoreconf,
 .for project.use
-.if use.project = "libzmq"
-    libzmq5-dev,
-.elsif defined(use.debian_name)
+.if defined(use.debian_name)
     $(use.debian_name),
 .elsif regexp.match("^lib", use.libname)
     $(string.replace (use.libname, "_|-"))-dev,
@@ -65,9 +63,7 @@ Architecture: any
 Section: libdevel
 Depends:
 .for project.use
-.if use.project = "libzmq"
-    libzmq5-dev,
-.elsif defined(use.debian_name)
+.if defined(use.debian_name)
     $(use.debian_name),
 .elsif regexp.match("^lib", use.libname)
     $(string.replace (use.libname, "_|-"))-dev,
@@ -141,21 +137,12 @@ etc/$(project.name)/$(main.name).cfg.example
 usr/bin/$(bin.name)
 .   endfor
 .# generate service file names
-.   for project.main where main.service ?= 1 | main.services ?= 1
-.       if main.no_config ?= 0
+.   for project.main where main.service ?= 1
 etc/$(project.name)/$(main.name).cfg
-.       endif
-usr/lib/systemd/system/$(main.name)*.service
+usr/lib/systemd/system/$(main.name).service
 .   endfor
-.   for project.service
-lib/systemd/system/$(service.name)*.service
-.   endfor
-.for project.main where defined (main->extra)
-.    for extra
-$(extra.path)/$(extra.name)
-.    endfor
-.endfor
 .endif
+
 .if project.exports_classes
 .   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
 usr/lib/*/$(project.libname).so.*
