@@ -81,6 +81,12 @@ $(project.GENERATED_WARNING_HEADER:)
 #if defined (__WINDOWS__)
 #   if defined $(PROJECT.PREFIX)_STATIC
 #       define $(PROJECT.PREFIX)_EXPORT
+#   elif defined $(PROJECT.PREFIX)_INTERNAL_BUILD
+#       if defined DLL_EXPORT
+#           define $(PROJECT.PREFIX)_EXPORT __declspec(dllexport)
+#       else
+#           define $(PROJECT.PREFIX)_EXPORT
+#       endif
 #   elif defined $(PROJECT.PREFIX)_EXPORTS
 #       define $(PROJECT.PREFIX)_EXPORT __declspec(dllexport)
 #   else
