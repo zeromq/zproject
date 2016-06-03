@@ -33,10 +33,20 @@ env:
 #- BUILD_TYPE=check-py
 #- BUILD_TYPE=cmake
 
+matrix:
+  include:
+  - env: BUILD_TYPE=valgrind
+    os: linux
+    dist: trusty
+    sudo: required
+    addons:
+      apt:
+        packages:
+        - valgrind
+
 addons:
   apt:
     packages:
-    - valgrind
     - git
 
 before_install:
@@ -207,4 +217,64 @@ else
 fi
 .close
 .chmod_x ("ci_deploy.sh")
+.
+.directory.create ("builds/valgrind")
+.output "builds/valgrind/ci_build.sh"
+#!/usr/bin/env bash
+
+$(project.GENERATED_WARNING_HEADER)
+
+set -x
+
+cd ../..
+
+mkdir tmp
+BUILD_PREFIX=$PWD/tmp
+
+CONFIG_OPTS=()
+CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("CPPFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("CXXFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("LDFLAGS=-L${BUILD_PREFIX}/lib")
+CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
+CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
+CONFIG_OPTS+=("--with-docs=no")
+CONFIG_OPTS+=("--quiet")
+
+# Clone and build dependencies
+.for use where defined (use.tarball)
+wget $(use.tarball)
+tar -xzf \$(basename "$(use.tarball)")
+cd \$(basename "$(use.tarball)" .tar.gz)
+\./configure "${CONFIG_OPTS[@]}"
+make -j4
+make install
+cd ..
+.endfor
+.for use where defined (use.repository)
+. if defined (use.release)
+git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+. else
+git clone --quiet --depth 1 $(use.repository) $(use.project)
+. endif
+cd $(use.project)
+git --no-pager log --oneline -n1
+if [ -e autogen.sh ]; then
+    ./autogen.sh 2> /dev/null
+fi
+if [ -e buildconf ]; then
+    ./buildconf 2> /dev/null
+fi
+\./configure "${CONFIG_OPTS[@]}"
+make -j4
+make install
+cd ..
+.endfor
+
+# Build and check this project
+\./autogen.sh 2> /dev/null
+\./configure --enable-drafts=yes "${CONFIG_OPTS[@]}"
+make VERBOSE=1 memcheck || exit 1
+.close
+.chmod_x ("builds/valgrind/ci_build.sh")
 .endmacro
