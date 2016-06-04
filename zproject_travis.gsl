@@ -150,6 +150,10 @@ fi
 #!/usr/bin/env bash
 set -ex
 
+.for project.use where !optional
+git clone --quiet --depth 1 $(use.repository) $(use.project)
+.endfor
+
 docker run -v "$REPO_DIR":/gsl zeromqorg/zproject project.xml
 
 # keep an eye on git version used by CI
