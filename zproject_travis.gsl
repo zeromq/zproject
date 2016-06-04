@@ -150,9 +150,11 @@ fi
 #!/usr/bin/env bash
 set -ex
 
+cd ..
 .for project.use where !optional
 git clone --quiet --depth 1 $(use.repository) $(use.project)
 .endfor
+cd -
 
 docker run -v "$REPO_DIR":/gsl zeromqorg/zproject project.xml
 
