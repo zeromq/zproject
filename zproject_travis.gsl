@@ -150,7 +150,7 @@ fi
 #!/usr/bin/env bash
 set -ex
 
-cd ..
+cd $REPO_DIR/..
 .for project.use where !optional
 git clone --quiet --depth 1 $(use.repository) $(use.project)
 .endfor
