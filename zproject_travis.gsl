@@ -151,7 +151,7 @@ fi
 set -ex
 
 cd $REPO_DIR/..
-.for project.use where !optional
+.for project.use where !optional & defined (use.repository)
 git clone --quiet --depth 1 $(use.repository) $(use.project)
 .endfor
 cd -
