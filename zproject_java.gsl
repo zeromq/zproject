@@ -255,6 +255,8 @@ clean.doFirst {
 .output "$(topdir)/README.md"
 # $(project.prefix)-jni
 
+[ ![Download](https://api.bintray.com/packages/zeromq/maven/$(project.prefix)-jni/images/download.svg) ](https://bintray.com/zeromq/maven/$(project.prefix)-jni/_latestVersion)
+
 JNI Binding for $(project.name:)
 
 ## Building the JNI Layer for Linux
