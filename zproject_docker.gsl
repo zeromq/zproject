@@ -15,7 +15,7 @@ register_target ("docker", "packaging for Docker")
 .macro generate_docker_file ()
 .output "Dockerfile"
 FROM ubuntu:trusty
-MAINTAINER Benjamin Henrion <zoobab@gmail.com>
+MAINTAINER $(project.name) Developers <$(project.email)>
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update -y -q
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y -q --force-yes build-essential git-core libtool autotools-dev autoconf automake pkg-config unzip libkrb5-dev cmake
