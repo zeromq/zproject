@@ -78,6 +78,10 @@ if !file.exists (".gitignore")
     >install_manifest.txt
     >Testing/
     >
+    ># Valgrind files
+    >callgrind*
+    >vgcore*
+    >
     ># GYP files
     >project.Makefile
     >*.target.mk
