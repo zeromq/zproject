@@ -298,6 +298,10 @@ set(cmake_generated ${CMAKE_BINARY_DIR}/CMakeCache.txt
                     ${CMAKE_BINARY_DIR}/CTestTestfile.cmake
                     ${CMAKE_BINARY_DIR}/Testing
                     ${CMAKE_BINARY_DIR}/compile_commands.json
+                    ${CMAKE_BINARY_DIR}/src/$(project.name)_selftest
+.for project.main
+                    ${CMAKE_BINARY_DIR}/src/$(main.name)
+.endfor
 )
 
 add_custom_command(
