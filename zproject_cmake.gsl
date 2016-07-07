@@ -286,6 +286,27 @@ foreach(TEST_CLASS ${TEST_CLASSES})
     )
 endforeach(TEST_CLASS)
 
+########################################################################
+# cleanup
+########################################################################
+add_custom_target (distclean @echo cleaning for source distribution)
+
+set(cmake_generated ${CMAKE_BINARY_DIR}/CMakeCache.txt
+                    ${CMAKE_BINARY_DIR}/cmake_install.cmake
+                    ${CMAKE_BINARY_DIR}/Makefile
+                    ${CMAKE_BINARY_DIR}/CMakeFiles
+                    ${CMAKE_BINARY_DIR}/CTestTestfile.cmake
+                    ${CMAKE_BINARY_DIR}/Testing
+                    ${CMAKE_BINARY_DIR}/compile_commands.json
+)
+
+add_custom_command(
+    DEPENDS clean
+    COMMENT "distribution clean"
+    COMMAND rm
+    ARGS    -rf CMakeTmp ${cmake_generated}
+    TARGET  distclean
+)
 
 ########################################################################
 # summary
