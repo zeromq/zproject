@@ -372,6 +372,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .close
 .
 .# CI testing for using cmake
+.directory.create ('builds/cmake')
 .output "builds/cmake/ci_build.sh"
 #!/usr/bin/env bash
 set -ex
