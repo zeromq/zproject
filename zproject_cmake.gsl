@@ -289,7 +289,7 @@ endforeach(TEST_CLASS)
 ########################################################################
 # cleanup
 ########################################################################
-add_custom_target (distclean @echo cleaning for source distribution)
+add_custom_target (distclean @echo Cleaning for source distribution)
 
 set(cmake_generated ${CMAKE_BINARY_DIR}/CMakeCache.txt
                     ${CMAKE_BINARY_DIR}/cmake_install.cmake
@@ -298,6 +298,9 @@ set(cmake_generated ${CMAKE_BINARY_DIR}/CMakeCache.txt
                     ${CMAKE_BINARY_DIR}/CTestTestfile.cmake
                     ${CMAKE_BINARY_DIR}/Testing
                     ${CMAKE_BINARY_DIR}/compile_commands.json
+                    ${CMAKE_BINARY_DIR}/src/platform.h
+                    ${CMAKE_BINARY_DIR}/src/$(project.libname).pc
+                    ${CMAKE_BINARY_DIR}/src/$(project.libname).so
                     ${CMAKE_BINARY_DIR}/src/$(project.name)_selftest
 .for project.main
                     ${CMAKE_BINARY_DIR}/src/$(main.name)
