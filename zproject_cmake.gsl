@@ -25,6 +25,7 @@ enable_language(C)
 enable_testing()
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 ########################################################################
 # options
