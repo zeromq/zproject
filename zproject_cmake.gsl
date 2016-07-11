@@ -26,14 +26,18 @@ enable_testing()
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+# Select flags
+SET(CMAKE_C_FLAGS_RELEASE "-O3")
 
 ########################################################################
 # options
 ########################################################################
 .if project.stable
 if (EXISTS "${SOURCE_DIR}/.git")
+    set (CMAKE_BUILD_TYPE Debug)
     OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" ON)
 else ()
+    set (CMAKE_BUILD_TYPE Release)
     OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" OFF)
 endif ()
 .else
@@ -111,6 +115,9 @@ IF ($(USE.PROJECT)_FOUND)
     add_definitions(-DHAVE_$(USE.LIBNAME))
     list(APPEND OPTIONAL_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
 .endif
+.   if defined (use.description)
+    set_feature_info($(use.project) "$(use.description:)")
+.   endif
 .if use.optional = 0
 ELSE ($(USE.PROJECT)_FOUND)
     message( FATAL_ERROR "$(use.project) not found." )
