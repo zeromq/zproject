@@ -26,14 +26,18 @@ enable_testing()
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+# Select flags
+SET(CMAKE_C_FLAGS_RELEASE "-O3")
 
 ########################################################################
 # options
 ########################################################################
 .if project.stable
 if (EXISTS "${SOURCE_DIR}/.git")
+    set (CMAKE_BUILD_TYPE Debug)
     OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" ON)
 else ()
+    set (CMAKE_BUILD_TYPE Release)
     OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" OFF)
 endif ()
 .else
@@ -111,6 +115,9 @@ IF ($(USE.PROJECT)_FOUND)
     add_definitions(-DHAVE_$(USE.LIBNAME))
     list(APPEND OPTIONAL_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
 .endif
+.   if defined (use.description)
+    set_feature_info($(use.project) "$(use.description:)")
+.   endif
 .if use.optional = 0
 ELSE ($(USE.PROJECT)_FOUND)
     message( FATAL_ERROR "$(use.project) not found." )
@@ -328,8 +335,43 @@ add_custom_command(
 ########################################################################
 # summary
 ########################################################################
-message (STATUS "*** Version number: ${VERSION}")
-message (STATUS "*** Install target: ${CMAKE_INSTALL_PREFIX}")
+message ("")
+message (STATUS "******************* Configuration Summary *******************")
+message (STATUS "General:")
+message (STATUS "  Version           :   ${VERSION}")
+message (STATUS "  System            :   ${CMAKE_SYSTEM_NAME}")
+message (STATUS "  C compiler        :   ${CMAKE_C_COMPILER}")
+message (STATUS "  Debug C flags     :   ${CMAKE_C_FLAGS_DEBUG} ${CMAKE_C_FLAGS}")
+message (STATUS "  Release C flags   :   ${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS}")
+message (STATUS "  Build type        :   ${CMAKE_BUILD_TYPE}")
+IF (ENABLE_DRAFTS)
+message (STATUS "  Draft API         :   Yes")
+ELSE (ENABLE_DRAFTS)
+message (STATUS "  Draft API         :   No")
+ENDIF (ENABLE_DRAFTS)
+message (STATUS "")
+message (STATUS "Dependencies:")
+include(FeatureSummary)
+feature_summary (WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
+message (STATUS "")
+message (STATUS "Install:")
+message (STATUS "  Install prefix    :" "${CMAKE_INSTALL_PREFIX}")
+message (STATUS "")
+message (STATUS "************************* Options ***************************")
+message (STATUS "Options:")
+message (STATUS "  Use the Draft API (default = yes):")
+message (STATUS "  -DENABLE-DRAFTS=[yes|no]")
+message (STATUS "")
+message (STATUS "*************************************************************")
+message (STATUS "Configuration complete! Now procced with:")
+message (STATUS "  'make'                compile the project")
+message (STATUS "  'make test'           run the project's selftest")
+message (STATUS "  'make install'        install the project to ${CMAKE_INSTALL_PREFIX}")
+message (STATUS "")
+message (STATUS "Further options are:")
+message (STATUS "  'ctest -T memcheck'   run the project's selftest with")
+message (STATUS "                        valgrind to check for memory leaks")
+message (STATUS "")
 
 $(project.GENERATED_WARNING_HEADER:)
 .
