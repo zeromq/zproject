@@ -110,6 +110,8 @@ License: $(project.name)_license
 .   for project.license
  $(string.trim (license.):block                                         )
 .   endfor
+.output "packaging/debian/format"
+3.0 (quilt)
 .output "packaging/debian/rules"
 #!/usr/bin/make -f
 # -*- makefile -*-
