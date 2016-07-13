@@ -31,11 +31,12 @@ License:        $(project.license?"MIT")
 URL:            $(project.url?"http://example.com/")
 Source0:        %{name}-%{version}.tar.gz
 Group:          System/Libraries
+BuildRequires:  ghostscript-core
 BuildRequires:  asciidoc
 BuildRequires:  automake
 BuildRequires:  autoconf
 BuildRequires:  libtool
-BuildRequires:  pkg-config
+BuildRequires:  pkgconfig
 BuildRequires:  systemd-devel
 BuildRequires:  xmlto
 .if project.use_cxx
