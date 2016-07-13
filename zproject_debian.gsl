@@ -110,6 +110,8 @@ License: $(project.name)_license
 .   for project.license
  $(string.trim (license.):block                                         )
 .   endfor
+.output "packaging/debian/format"
+3.0 (quilt)
 .output "packaging/debian/rules"
 #!/usr/bin/make -f
 # -*- makefile -*-
@@ -156,4 +158,28 @@ usr/lib/*/pkgconfig/$(project.libname).pc
 usr/share/man/man3/*
 usr/share/man/man7/*
 .endif
+.output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).dsc")
+Format: 3.0 (quilt)
+Binary: $(project.name)
+Source: $(project.name)
+Version: $(->version.major).$(->version.minor).$(->version.patch)
+Maintainer: $(project.name) Developers <$(project.email)>
+Architecture: any
+Build-Depends: debhelper (>= 9),
+    pkg-config,
+    dh-autoreconf,
+.for project.use
+.if defined(use.debian_name)
+    $(use.debian_name),
+.elsif regexp.match("^lib", use.libname)
+    $(string.replace (use.libname, "_|-"))-dev,
+.else
+    lib$(string.replace (use.libname, "_|-"))-dev,
+.endif
+.endfor
+    dh-autoreconf,
+    systemd,
+    dh-systemd
+Build-Depends-Indep: asciidoc,
+                     xmlto
 .endmacro
