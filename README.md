@@ -226,6 +226,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         redhat              Packaging for RedHat
         ruby                Ruby binding
         travis              Travis CI scripts
+        vagrant             Vagrant Environment
         vs2008              Microsoft Visual Studio 2008
         vs2010              Microsoft Visual Studio 2010
         vs2012              Microsoft Visual Studio 2012
@@ -374,6 +375,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_redhat.gsl" />
     <bin name = "zproject_ruby.gsl" />
     <bin name = "zproject_travis.gsl" />
+    <bin name = "zproject_vagrant.gsl" />
     <bin name = "zproject_vs2008.gsl" />
     <bin name = "zproject_vs20xx.gsl" />
     <bin name = "zproject_vs20xx_props.gsl" />
