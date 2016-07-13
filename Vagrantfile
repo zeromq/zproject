@@ -1,7 +1,7 @@
 #e -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# This will setup a clean Ubuntu1404 LTS env with a python virtualenv called "pyre" for testing
+# This will setup a clean Ubuntu1404 LTS env
 
 $script = <<SCRIPT
 apt-get update
