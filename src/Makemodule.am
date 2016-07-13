@@ -40,6 +40,7 @@ myproject_SCRIPTS = \
     zproject_redhat.gsl \
     zproject_ruby.gsl \
     zproject_travis.gsl \
+    zproject_vagrant.gsl \
     zproject_vs2008.gsl \
     zproject_vs20xx.gsl \
     zproject_vs20xx_props.gsl \
