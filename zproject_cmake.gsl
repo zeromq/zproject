@@ -25,14 +25,19 @@ enable_language(C)
 enable_testing()
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+# Select flags
+SET(CMAKE_C_FLAGS_RELEASE "-O3")
 
 ########################################################################
 # options
 ########################################################################
 .if project.stable
 if (EXISTS "${SOURCE_DIR}/.git")
+    set (CMAKE_BUILD_TYPE Debug)
     OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" ON)
 else ()
+    set (CMAKE_BUILD_TYPE Release)
     OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" OFF)
 endif ()
 .else
@@ -110,6 +115,9 @@ IF ($(USE.PROJECT)_FOUND)
     add_definitions(-DHAVE_$(USE.LIBNAME))
     list(APPEND OPTIONAL_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
 .endif
+.   if defined (use.description)
+    set_feature_info($(use.project) "$(use.description:)")
+.   endif
 .if use.optional = 0
 ELSE ($(USE.PROJECT)_FOUND)
     message( FATAL_ERROR "$(use.project) not found." )
@@ -256,8 +264,15 @@ set_target_properties(
 ########################################################################
 # tests
 ########################################################################
-set(CLASSTEST_TIMEOUT 5 CACHE STRING "Timeout of the selftest of a class")
-set(TOTAL_TIMEOUT 20 CACHE STRING "Timout of the total testsuite")
+set(CLASSTEST_TIMEOUT 60 CACHE STRING "Timeout of the selftest of a class")
+set(TOTAL_TIMEOUT 600 CACHE STRING "Timout of the total testsuite")
+
+if(UNIX)
+    find_program(MEMORYCHECK_COMMAND valgrind)
+    set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --show-reachable=yes \\
+                                     --error-exitcode=1 \\
+                                     --suppressions=src/.valgrind.supp")
+endif()
 
 set(TEST_CLASSES
 .for class where !draft
@@ -286,12 +301,78 @@ foreach(TEST_CLASS ${TEST_CLASSES})
     )
 endforeach(TEST_CLASS)
 
+include(CTest)
+
+########################################################################
+# cleanup
+########################################################################
+add_custom_target (distclean @echo Cleaning for source distribution)
+
+set(cmake_generated ${CMAKE_BINARY_DIR}/CMakeCache.txt
+                    ${CMAKE_BINARY_DIR}/cmake_install.cmake
+                    ${CMAKE_BINARY_DIR}/Makefile
+                    ${CMAKE_BINARY_DIR}/CMakeFiles
+                    ${CMAKE_BINARY_DIR}/CTestTestfile.cmake
+                    ${CMAKE_BINARY_DIR}/DartConfiguration.tcl
+                    ${CMAKE_BINARY_DIR}/Testing
+                    ${CMAKE_BINARY_DIR}/compile_commands.json
+                    ${CMAKE_BINARY_DIR}/src/platform.h
+                    ${CMAKE_BINARY_DIR}/src/$(project.libname).pc
+                    ${CMAKE_BINARY_DIR}/src/$(project.libname).so
+                    ${CMAKE_BINARY_DIR}/src/$(project.name)_selftest
+.for project.main
+                    ${CMAKE_BINARY_DIR}/src/$(main.name)
+.endfor
+)
+
+add_custom_command(
+    DEPENDS clean
+    COMMENT "distribution clean"
+    COMMAND rm
+    ARGS    -rf CMakeTmp ${cmake_generated}
+    TARGET  distclean
+)
 
 ########################################################################
 # summary
 ########################################################################
-message (STATUS "*** Version number: ${VERSION}")
-message (STATUS "*** Install target: ${CMAKE_INSTALL_PREFIX}")
+message ("")
+message (STATUS "******************* Configuration Summary *******************")
+message (STATUS "General:")
+message (STATUS "  Version           :   ${VERSION}")
+message (STATUS "  System            :   ${CMAKE_SYSTEM_NAME}")
+message (STATUS "  C compiler        :   ${CMAKE_C_COMPILER}")
+message (STATUS "  Debug C flags     :   ${CMAKE_C_FLAGS_DEBUG} ${CMAKE_C_FLAGS}")
+message (STATUS "  Release C flags   :   ${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS}")
+message (STATUS "  Build type        :   ${CMAKE_BUILD_TYPE}")
+IF (ENABLE_DRAFTS)
+message (STATUS "  Draft API         :   Yes")
+ELSE (ENABLE_DRAFTS)
+message (STATUS "  Draft API         :   No")
+ENDIF (ENABLE_DRAFTS)
+message (STATUS "")
+message (STATUS "Dependencies:")
+include(FeatureSummary)
+feature_summary (WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
+message (STATUS "")
+message (STATUS "Install:")
+message (STATUS "  Install prefix    :" "${CMAKE_INSTALL_PREFIX}")
+message (STATUS "")
+message (STATUS "************************* Options ***************************")
+message (STATUS "Options:")
+message (STATUS "  Use the Draft API (default = yes):")
+message (STATUS "  -DENABLE-DRAFTS=[yes|no]")
+message (STATUS "")
+message (STATUS "*************************************************************")
+message (STATUS "Configuration complete! Now procced with:")
+message (STATUS "  'make'                compile the project")
+message (STATUS "  'make test'           run the project's selftest")
+message (STATUS "  'make install'        install the project to ${CMAKE_INSTALL_PREFIX}")
+message (STATUS "")
+message (STATUS "Further options are:")
+message (STATUS "  'ctest -T memcheck'   run the project's selftest with")
+message (STATUS "                        valgrind to check for memory leaks")
+message (STATUS "")
 
 $(project.GENERATED_WARNING_HEADER:)
 .
@@ -306,6 +387,8 @@ if (NOT MSVC)
         pkg_check_modules(PC_$(USE.PROJECT) "$(use.libname)")
     endif (NOT PC_$(USE.PROJECT)_FOUND)
     if (PC_$(USE.PROJECT)_FOUND)
+        # add CFLAGS from pkg-config file, e.g. draft api.
+        add_definitions(${PC_$(USE.PROJECT)_CFLAGS} ${PC_$(USE.PROJECT)_CFLAGS_OTHER})
         # some libraries install the headers is a subdirectory of the include dir
         # returned by pkg-config, so use a wildcard match to improve chances of finding
         # headers and SOs.
@@ -339,4 +422,67 @@ mark_as_advanced(
 
 $(project.GENERATED_WARNING_HEADER:)
 .endfor
+.close
+.
+.# CI testing for using cmake
+.directory.create ('builds/cmake')
+.output "builds/cmake/ci_build.sh"
+#!/usr/bin/env bash
+set -ex
+
+mkdir tmp
+BUILD_PREFIX=$PWD/tmp
+
+CONFIG_OPTS=()
+CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("CPPFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("CXXFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("LDFLAGS=-L${BUILD_PREFIX}/lib")
+CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
+CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
+CONFIG_OPTS+=("--with-docs=no")
+CONFIG_OPTS+=("--quiet")
+
+CMAKE_OPTS=()
+CMAKE_OPTS+=("-DCMAKE_INSTALL_PREFIX:PATH=${BUILD_PREFIX}")
+CMAKE_OPTS+=("-DCMAKE_PREFIX_PATH:PATH=${BUILD_PREFIX}")
+CMAKE_OPTS+=("-DCMAKE_LIBRARY_PATH:PATH=${BUILD_PREFIX}/lib")
+CMAKE_OPTS+=("-DCMAKE_INCLUDE_PATH:PATH=${BUILD_PREFIX}/include")
+
+# Clone and build dependencies
+.for use where defined (use.tarball)
+wget $(use.tarball)
+tar -xzf \$(basename "$(use.tarball)")
+cd \$(basename "$(use.tarball)" .tar.gz)
+\./configure "${CONFIG_OPTS[@]}"
+make -j4
+make install
+cd ..
+.endfor
+.for use where defined (use.repository)
+.   if defined (use.release)
+git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+.   else
+git clone --quiet --depth 1 $(use.repository) $(use.project)
+.   endif
+cd $(use.project)
+git --no-pager log --oneline -n1
+if [ -e autogen.sh ]; then
+    ./autogen.sh 2> /dev/null
+fi
+if [ -e buildconf ]; then
+    ./buildconf 2> /dev/null
+fi
+\./configure "${CONFIG_OPTS[@]}"
+make -j4
+make install
+cd ..
+.endfor
+
+# Build and check this project
+cd ../..
+PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .
+make all VERBOSE=1 -j4
+ctest -V
+make install
 .endmacro
