@@ -166,6 +166,7 @@
     <bin name = "zproject_redhat.gsl" />
     <bin name = "zproject_ruby.gsl" />
     <bin name = "zproject_travis.gsl" />
+    <bin name = "zproject_vagrant.gsl" />
     <bin name = "zproject_vs2008.gsl" />
     <bin name = "zproject_vs20xx.gsl" />
     <bin name = "zproject_vs20xx_props.gsl" />
