@@ -323,8 +323,13 @@ function resolve_c_class (class)
         # By convention these sibling methods prepend a 'v' to the method name.
         # This information might be used by the various language bindings.
         method.has_va_list_sibling = 0
-        if count (my.class.method, m.name = "v" + method.name, m)
-            method.has_va_list_sibling = 1
+        if count (method.argument, argument.variadic ?= "1")
+            for my.class.method as m
+                if m.name = "v" + method.name \
+                &  count (m.argument, argument.type = "va_list")
+                    method.has_va_list_sibling = 1
+                endif
+            endfor
         endif
     endfor
 
