@@ -26,3 +26,6 @@ install_manifest.txt
 
 # CLion / PyCharm
 .idea
+
+# editor backups
+*~
