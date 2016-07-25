@@ -97,6 +97,9 @@ This package contains development files.
 %{_libdir}/pkgconfig/$(project.libname).pc
 %{_mandir}/man3/*
 %{_mandir}/man7/*
+.   if count (class, defined (class.api))
+%{_datarootdir}/zproject/$(project.name)/*
+.   endif
 .endif
 
 %prep
