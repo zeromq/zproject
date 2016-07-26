@@ -1,0 +1,92 @@
+#   Generate Open Build Servcie recipes for project
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+register_target ("obs", "service for Open Build Service")
+
+.macro target_obs
+.if defined (project.repository)
+.directory.create ('packaging/obs')
+.output "packaging/obs/_service"
+<services>
+  <service name="tar_scm">
+    <param name="url">$(project.repository)</param>
+    <param name="scm">git</param>
+    <!--<param name="version">git</param>-->
+    <!-- extract redhat packaging -->
+    <param name="extract">packaging/redhat/$(project.name).spec</param>
+    <param name="changesgenerate">enable</param>
+  </service>
+
+  <!-- extract debian packaging -->
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/$(string.replace (project.name, "_|-"):lower).dsc.obs</param>
+    <param name="outfilename">$(string.replace (project.name, "_|-"):lower).dsc</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+  	<param name="files">*/packaging/debian/changelog</param>
+    <param name="outfilename">debian.changelog</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/compat</param>
+    <param name="outfilename">debian.compat</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/control</param>
+    <param name="outfilename">debian.control</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/copyright</param>
+    <param name="outfilename">debian.copyright</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/$(string.replace (project.name, "_|-"):lower).install</param>
+    <param name="outfilename">debian.$(string.replace (project.name, "_|-"):lower).install</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/format</param>
+    <param name="outfilename">debian.format</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install</param>
+    <param name="outfilename">debian.$(string.replace (project.libname, "_|-"))$(project->version.major).install</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/$(string.replace (project.libname, "_|-"))-dev.install</param>
+    <param name="outfilename">debian.$(string.replace (project.libname, "_|-"))-dev.install</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/rules</param>
+    <param name="outfilename">debian.rules</param>
+  </service>
+
+  <service name="recompress" mode="buildtime">
+    <param name="file">$(string.replace (project.name, "_|-"):lower)-*.tar</param>
+    <param name="compression">gz</param>
+  </service>
+
+  <service name="set_version" mode="buildtime">
+    <param name="basename">$(string.replace (project.name, "_|-"):lower)</param>
+  </service>
+</services>
+.close
+.endif
+.endmacro
