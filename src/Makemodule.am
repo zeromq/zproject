@@ -33,6 +33,7 @@ myproject_SCRIPTS = \
     zproject_mingw32.gsl \
     zproject_nodejs.gsl \
     zproject_nuget.gsl \
+    zproject_obs.gsl \
     zproject_python.gsl \
     zproject_python_cffi.gsl \
     zproject_qml.gsl \

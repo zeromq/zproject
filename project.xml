@@ -159,6 +159,7 @@
     <bin name = "zproject_mingw32.gsl" />
     <bin name = "zproject_nodejs.gsl" />
     <bin name = "zproject_nuget.gsl" />
+    <bin name = "zproject_obs.gsl" />
     <bin name = "zproject_python.gsl" />
     <bin name = "zproject_python_cffi.gsl" />
     <bin name = "zproject_qml.gsl" />
