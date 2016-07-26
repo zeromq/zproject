@@ -158,4 +158,31 @@ usr/lib/*/pkgconfig/$(project.libname).pc
 usr/share/man/man3/*
 usr/share/man/man7/*
 .endif
+.output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).dsc.obs")
+Format: 3.0 (quilt)
+Binary: $(project.name)
+Source: $(project.name)
+Version: $(->version.major).$(->version.minor).$(->version.patch)
+Maintainer: $(project.name) Developers <$(project.email)>
+Architecture: any
+Build-Depends: debhelper (>= 9),
+    pkg-config,
+    dh-autoreconf,
+.for project.use
+.if defined(use.debian_name)
+    $(use.debian_name),
+.elsif regexp.match("^lib", use.libname)
+    $(string.replace (use.libname, "_|-"))-dev,
+.else
+    lib$(string.replace (use.libname, "_|-"))-dev,
+.endif
+.endfor
+    dh-autoreconf,
+    systemd,
+    dh-systemd
+Build-Depends-Indep: asciidoc,
+                     xmlto
+
+Files:
+ 7697688bf65a35bc33ae2db51ebb0e3b 818110 $(string.replace (project.name, "_|-"):lower).tar.gz
 .endmacro
