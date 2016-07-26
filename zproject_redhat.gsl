@@ -38,7 +38,6 @@ BuildRequires:  ghostscript
 BuildRequires:  asciidoc
 BuildRequires:  automake
 BuildRequires:  autoconf
-BuildRequires:  ghostscript-core
 BuildRequires:  libtool
 BuildRequires:  pkgconfig
 BuildRequires:  systemd-devel
