@@ -31,7 +31,10 @@ License:        $(project.license?"MIT")
 URL:            $(project.url?"http://example.com/")
 Source0:        %{name}-%{version}.tar.gz
 Group:          System/Libraries
-BuildRequires:  ghostscript-core
+# Note: ghostscript is required by graphviz which is required by
+#       asciidoc. On Fedora 24 the ghostscript dependencies cannot
+#       be resolved automatically. Thus add working dependency here!
+BuildRequires:  ghostscript
 BuildRequires:  asciidoc
 BuildRequires:  automake
 BuildRequires:  autoconf
