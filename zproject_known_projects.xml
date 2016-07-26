@@ -31,7 +31,7 @@
         </use>
     -->
 
-    <use project = "libzmq" prefix = "zmq" debian_name = "libzmq5-dev" redhat_name = "zeromq-devel"
+    <use project = "libzmq" prefix = "zmq" debian_name = "libzmq3-dev" redhat_name = "zeromq-devel"
         repository = "https://github.com/zeromq/libzmq"
         test = "zmq_init" />
 
