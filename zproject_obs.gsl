@@ -1,4 +1,4 @@
-#   Generate Open Build Servcie recipes for project
+#   Generate Open Build Service recipes for project
 #
 #   This is a code generator built using the iMatix GSL code generation
 #   language. See https://github.com/imatix/gsl for details.
@@ -20,7 +20,7 @@ register_target ("obs", "service for Open Build Service")
   <service name="tar_scm">
     <param name="url">$(project.repository)</param>
     <param name="scm">git</param>
-    <!--<param name="version">git</param>-->
+    <param name="versionformat">@PARENT_TAG@+git%cd</param>
     <!-- extract redhat packaging -->
     <param name="extract">packaging/redhat/$(project.name).spec</param>
     <param name="changesgenerate">enable</param>
@@ -52,16 +52,19 @@ register_target ("obs", "service for Open Build Service")
     <param name="files">*/packaging/debian/copyright</param>
     <param name="outfilename">debian.copyright</param>
   </service>
+.   if project.has_main
   <service name="extract_file">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/$(string.replace (project.name, "_|-"):lower).install</param>
     <param name="outfilename">debian.$(string.replace (project.name, "_|-"):lower).install</param>
   </service>
+.   endif
   <service name="extract_file">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/format</param>
     <param name="outfilename">debian.format</param>
   </service>
+.   if project.exports_classes
   <service name="extract_file">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install</param>
@@ -72,6 +75,7 @@ register_target ("obs", "service for Open Build Service")
     <param name="files">*/packaging/debian/$(string.replace (project.libname, "_|-"))-dev.install</param>
     <param name="outfilename">debian.$(string.replace (project.libname, "_|-"))-dev.install</param>
   </service>
+.   endif
   <service name="extract_file">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/rules</param>
