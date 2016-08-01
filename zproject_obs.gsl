@@ -88,11 +88,11 @@ register_target ("obs", "service for Open Build Service")
     <param name="outfilename">debian.rules</param>
   </service>
 
-  <service name="set_version" mode="buildtime">
+  <service name="set_version">
     <param name="basename">$(string.replace (project.name, "_|-"):lower)</param>
   </service>
 
-  <service name="recompress" mode="buildtime">
+  <service name="recompress">
     <param name="file">$(string.replace (project.name, "_|-"):lower)-*.tar</param>
     <param name="compression">gz</param>
   </service>
