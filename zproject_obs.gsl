@@ -22,8 +22,14 @@ register_target ("obs", "service for Open Build Service")
     <param name="scm">git</param>
     <param name="versionformat">@PARENT_TAG@+git%cd</param>
     <!-- extract redhat packaging -->
-    <param name="extract">packaging/redhat/$(project.name).spec</param>
     <param name="changesgenerate">enable</param>
+  </service>
+
+  <!-- extract redhat packaging -->
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/redhat/$(project.name).spec</param>
+    <param name="outfilename">$(project.name).spec</param>
   </service>
 
   <!-- extract debian packaging -->
