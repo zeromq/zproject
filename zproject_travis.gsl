@@ -102,7 +102,7 @@ if [ "$BUILD_TYPE" == "default" ]; then
     make install
     cd ..
 .   endfor
-.   for use where defined (use.repository)
+.   for use where defined (use.repository) & ! defined (use.tarball)
 .      if defined (use.release)
     git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
 .      else
