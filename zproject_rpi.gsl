@@ -119,6 +119,143 @@ popd
 $(project.GENERATED_WARNING_HEADER:)
 .close
 .chmod_x ("builds/rpi/build.sh")
+.output "builds/rpi/build_image.sh"
+#!/usr/bin/env bash
+$(project.GENERATED_WARNING_HEADER:)
+
+# Cross compile this project and its dependencies
+\./build.sh
+
+# Get the latest Raspbian image and enlarge it so there is enough space to
+# install to it.
+sudo ./prepare_img.sh
+
+# Sync with image
+sudo rsync -avz --no-p --no-g --chmod=ugo=rwX tmp/ raspbian-root/usr
+sudo proot -Q qemu-arm -B -r raspbian-root -b raspbian-boot:/boot sudo ldconfig
+
+# Umount image
+sync; sudo umount ./raspbian-boot ./raspbian-root
+# Make sure all allocated loop devices are free'd
+for i in {0..7};
+do
+    sudo sudo dmsetup clear loop${i}p1 &&
+    sudo sudo dmsetup clear loop${i}p2 &&
+    sudo sudo dmsetup remove loop${i}p1 &&
+    sudo sudo dmsetup remove loop${i}p2 &&
+    sudo sudo losetup -d /dev/loop$i
+done
+$(project.GENERATED_WARNING_HEADER:)
+.close
+.chmod_x ("builds/rpi/build_image.sh")
+.output("builds/rpi/prepare_img.sh")
+#!/usr/bin/env bash
+$(project.GENERATED_WARNING_HEADER:)
+
+if [ ! -f $PWD/raspbian_lite_latest.zip ]; then
+    wget --connect-timeout=10 https://downloads.raspberrypi.org/raspbian_lite_latest -O raspbian_lite_latest.zip
+fi
+
+RASPBIAN_IMG=\$(unzip -Z1 raspbian_lite_latest.zip)
+if [ ! -f $PWD/$RASPBIAN_IMG ]; then
+    unzip raspbian_lite_latest.zip
+fi
+
+if [ ! -f $PWD/raspbian_$(project.name:c).img ]; then
+
+# Allocate disk space for extended image
+truncate -s 1536M raspbian_$(project.name:c).img
+
+# Begin partitioning disk image.
+# Creating two partitions:
+# BOOT = 100 MB
+# ROOT = 1536 MB
+fdisk raspbian_$(project.name).img <<EOF
+o
+n
+p
+1
+
++100M
+
+t
+c
+n
+p
+2
+
+
+w
+EOF
+
+# Create a loop device and mount the extended image's partitions
+export LOOPDEV_EX="\$(losetup --show --find raspbian_$(project.name).img)"
+
+# Use sudo kpartx to create partitions in /dev/mapper
+kpartx -av $LOOPDEV_EX
+dmsetup --noudevsync mknodes
+
+# Create partition names to mount
+export BOOTPARTION_EX=\$(echo $LOOPDEV_EX | sed 's|'/dev'/|'/dev/mapper/'|')p1
+export ROOTPARTION_EX=\$(echo $LOOPDEV_EX | sed 's|'/dev'/|'/dev/mapper/'|')p2
+
+# Create file systems for the partitions
+mkfs.vfat $BOOTPARTION_EX
+mkfs.ext4 $ROOTPARTION_EX
+
+# Create a loop device and mount the original image's partitions
+export LOOPDEV_ORIG="\$(losetup --show --find $RASPBIAN_IMG)"
+
+# Use sudo kpartx to create partitions in /dev/mapper
+kpartx -av $LOOPDEV_ORIG
+dmsetup --noudevsync mknodes
+
+# Create partition names to mount
+export BOOTPARTION_ORIG=\$(echo $LOOPDEV_ORIG | sed 's|'/dev'/|'/dev/mapper/'|')p1
+export ROOTPARTION_ORIG=\$(echo $LOOPDEV_ORIG | sed 's|'/dev'/|'/dev/mapper/'|')p2
+
+# Copy data from original image to extended image
+dd if=$BOOTPARTION_ORIG of=$BOOTPARTION_EX bs=64K conv=noerror,sync
+dd if=$ROOTPARTION_ORIG of=$ROOTPARTION_EX bs=64K conv=noerror,sync
+
+# Remove loop devices for original image
+dmsetup clear $BOOTPARTION_ORIG
+dmsetup clear $ROOTPARTION_ORIG
+dmsetup remove $BOOTPARTION_ORIG
+dmsetup remove $ROOTPARTION_ORIG
+losetup -d $LOOPDEV_ORIG
+fi
+
+# Try to mount extended image
+if [ -z "\$(mount|grep raspbian-boot)" ] && [ -z "\$(mount|grep raspbian-root)" ]; then
+
+    # Create a loop device and mount the disk image
+    export LOOPDEV_EX="\$(losetup --show --find ./raspbian_$(project.name).img)"
+
+    # Use sudo kpartx to create partitions in /dev/mapper
+    kpartx -av $LOOPDEV_EX
+    dmsetup --noudevsync mknodes
+
+    # Create partition names to mount
+    export BOOTPARTION_EX=\$(echo $LOOPDEV_EX | sed 's|'/dev'/|'/dev/mapper/'|')p1
+    export ROOTPARTION_EX=\$(echo $LOOPDEV_EX | sed 's|'/dev'/|'/dev/mapper/'|')p2
+
+    # Make sure mount points exist and are clean
+    mkdir -p raspbian-boot
+    mkdir -p raspbian-root
+    rm -rf raspbian-boot/*
+    rm -rf raspbian-root/*
+
+    # Mount partitions
+    mount $BOOTPARTION_EX -t vfat raspbian-boot
+    mount $ROOTPARTION_EX -t ext4 raspbian-root
+else
+    echo "Image already mounted!"
+fi
+
+$(project.GENERATED_WARNING_HEADER:)
+.close
+.chmod_x ("builds/rpi/prepare_img.sh")
 .output "builds/rpi/README.md"
 # Raspberry Pi
 
@@ -150,6 +287,19 @@ The first time you install a library onto the Raspberry Pi you'll need to run
 
     sudo ldconfig
 
+## Cross compile and install into Raspbian image
+
+This requires sudo rights. Also make sure you have `kpartx`, `qemu-user` and
+`proot` installed.
+
+To cross compile and install this project to an raspbian image run
+
+    ./build_image.sh
+
+This script will download the latest Raspbian image extend it so we can install
+software into it and finally copy the cross compiled stuff to it. Once it's done
+simple copy the image to a SD card and plug it into your Raspberry Pi.
+
 ```
 $(project.GENERATED_WARNING_HEADER:)
 ```
@@ -161,7 +311,12 @@ $(use.project)*
 .   for use where defined (use.repository) & ! defined (use.tarball)
 $(use.project)
 .   endfor
+raspbian-boot
+raspbian-root
 tmp/
 tools/
+
+*.img
+*.zip
 .close
 .endmacro
