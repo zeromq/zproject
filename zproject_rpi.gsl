@@ -1,0 +1,167 @@
+#   Generate cross compile environment for the Raspberry Pi
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+register_target ("rpi", "Raspberry Pi cross build system")
+
+.macro target_rpi
+.directory.create('builds/rpi')
+.output "builds/rpi/build.sh"
+#!/usr/bin/env bash
+$(project.GENERATED_WARNING_HEADER:)
+
+# Download cross compiler and sysroot
+if [ ! -d $PWD/tools ]; then
+    git clone --depth 1 https://github.com/raspberrypi/tools
+else
+    ( cd tools && git pull --rebase --quiet ) || exit 1
+fi
+
+# Cross build for the Raspberry Pi
+mkdir -p $PWD/tmp
+BUILD_PREFIX=$PWD/tmp
+TOOLCHAIN_HOST="arm-linux-gnueabihf"
+TOOLCHAIN_PATH="/home/ksapper/Workspace/rpi-tools/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin"
+SYSROOT=$PWD/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/arm-linux-gnueabihf/sysroot
+
+CFLAGS="--sysroot=${SYSROOT} -I${BUILD_PREFIX}/include"
+CPPFLAGS="--sysroot=${SYSROOT} -I${BUILD_PREFIX}/include"
+CXXFLAGS="--sysroot=${SYSROOT} -I${BUILD_PREFIX}/include"
+LDFLAGS="-L${BUILD_PREFIX}/lib"
+
+CONFIG_OPTS=()
+CONFIG_OPTS+=("CFLAGS=${CFLAGS}")
+CONFIG_OPTS+=("CPPFLAGS=${CPPFLAGS}")
+CONFIG_OPTS+=("CXXFLAGS=${CXXFLAGS}")
+CONFIG_OPTS+=("LDFLAGS=${LDFLAGS}")
+CONFIG_OPTS+=("PKG_CONFIG_DIR=")
+CONFIG_OPTS+=("PKG_CONFIG_LIBDIR=${SYSROOT}/usr/lib/arm-linux-gnueabihf/pkgconfig:${SYSROOT}/usr/share/pkgconfig")
+CONFIG_OPTS+=("PKG_CONFIG_SYSROOT=${SYSROOT}")
+CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
+CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
+CONFIG_OPTS+=("--host=${TOOLCHAIN_HOST}")
+CONFIG_OPTS+=("--with-docs=no")
+
+CPP="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-cpp"
+CC="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-gcc"
+CXX="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-g++"
+LD="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ld"
+AS="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-as"
+AR="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar"
+RANLIB="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ranlib"
+
+CONFIG_OPTS+=("CPP=${CPP}")
+CONFIG_OPTS+=("CC=${CC}")
+CONFIG_OPTS+=("CXX=${CXX}")
+CONFIG_OPTS+=("LD=${LD}")
+CONFIG_OPTS+=("AS=${AS}")
+CONFIG_OPTS+=("AR=${AR}")
+CONFIG_OPTS+=("RANLIB=${RANLIB}")
+
+# Clone and build dependencies
+.   for use where defined (use.tarball)
+if [ ! -e \$(basename "$(use.tarball)") ]; then
+    wget $(use.tarball)
+    tar -xzf \$(basename "$(use.tarball)")
+fi
+pushd \$(basename "$(use.tarball)" .tar.gz)
+(
+    ./configure "${CONFIG_OPTS[@]}"
+    make -j4
+    make install
+) || exit 1
+popd
+
+.   endfor
+.   for use where defined (use.repository) & ! defined (use.tarball)
+if [ ! -e $(use.project) ]; then
+.      if defined (use.release)
+    git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+.      else
+    git clone --quiet --depth 1 $(use.repository) $(use.project)
+.      endif
+fi
+pushd $(use.project)
+(
+    git --no-pager log --oneline -n1
+    if [ -e autogen.sh ]; then
+        ./autogen.sh 2> /dev/null
+    fi
+    if [ -e buildconf ]; then
+        ./buildconf 2> /dev/null
+    fi
+    ./configure "${CONFIG_OPTS[@]}"
+    make -j4
+    make install
+) || exit 1
+popd
+
+.   endfor
+
+# Cross build this project
+pushd ../..
+(
+    ./autogen.sh 2> /dev/null
+    ./configure --enable-drafts=yes "${CONFIG_OPTS[@]}"
+    make -j4
+    make install
+) || exit 1
+popd
+
+$(project.GENERATED_WARNING_HEADER:)
+.close
+.chmod_x ("builds/rpi/build.sh")
+.output "builds/rpi/README.md"
+# Raspberry Pi
+
+Cross compile environment for the Raspberry Pi (all models)
+
+## Cross compiling for Raspbian
+
+Simply run
+
+    ./build.sh
+
+Once the build script finishes everything is install at `tmp/`. You can use
+rsync to copy everything onto your Pi. At you'll have to make sure rsync is
+installed on the Raspberry Pi
+
+    sudo apt-get install rsync
+
+Next make sure your Pi user has sufficient rights to copy data to `/usr/local`.
+To force this you can use the following command to change the ownership of the
+directory accordingly.
+
+    chown -R root:users /usr/local/
+
+And finally sync your libraries to the Pi
+
+    rsync -avz tmp/ <pi-user>@<pi-ip>:/usr/local
+
+The first time you install a library onto the Raspberry Pi you'll need to run
+
+    sudo ldconfig
+
+```
+$(project.GENERATED_WARNING_HEADER:)
+```
+.close
+.output "builds/rpi/.gitignore"
+.   for use where defined (use.tarball)
+$(use.project)*
+.   endfor
+.   for use where defined (use.repository) & ! defined (use.tarball)
+$(use.project)
+.   endfor
+tmp/
+tools/
+.close
+.endmacro

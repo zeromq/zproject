@@ -165,6 +165,7 @@
     <bin name = "zproject_qml.gsl" />
     <bin name = "zproject_qt.gsl" />
     <bin name = "zproject_redhat.gsl" />
+    <bin name = "zproject_rpi.gsl" />
     <bin name = "zproject_ruby.gsl" />
     <bin name = "zproject_travis.gsl" />
     <bin name = "zproject_vagrant.gsl" />
