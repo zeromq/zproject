@@ -29,7 +29,7 @@ fi
 mkdir -p $PWD/tmp
 BUILD_PREFIX=$PWD/tmp
 TOOLCHAIN_HOST="arm-linux-gnueabihf"
-TOOLCHAIN_PATH="/home/ksapper/Workspace/rpi-tools/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin"
+TOOLCHAIN_PATH="${PWD}/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin"
 SYSROOT=$PWD/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/arm-linux-gnueabihf/sysroot
 
 CFLAGS="--sysroot=${SYSROOT} -I${BUILD_PREFIX}/include"
