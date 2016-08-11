@@ -104,8 +104,15 @@ if !file.exists (".gitignore")
     ># Python build directory
     >build/
     >
+    ># Qt
+    >*pro.user
+    >moc_*
+    >build-*
+    >bindings/qt/selftest/selftest
+    >
     ># Temporary files
     >*.swp
+    >*.bak
     >*~
 endif
 if !file.exists (".gitattributes")
