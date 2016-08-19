@@ -133,6 +133,10 @@
         </option>
     </target>
 
+    <target name = "obs" />
+    <target name = "debian" />
+    <target name = "redhat" />
+
     <!-- In order loaded by zproject.gsl -->
     <bin name = "zproject.gsl" />
     <bin name = "zproject_projects.gsl" />
