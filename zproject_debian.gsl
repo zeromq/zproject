@@ -47,7 +47,6 @@ Build-Depends: debhelper (>= 9),
     lib$(string.replace (use.libname, "_|-"))-dev,
 .endif
 .endfor
-    systemd,
     dh-systemd
 Build-Depends-Indep: asciidoc,
                      xmlto
@@ -176,7 +175,6 @@ Build-Depends: debhelper (>= 9),
     lib$(string.replace (use.libname, "_|-"))-dev,
 .endif
 .endfor
-    systemd,
     dh-systemd
 Build-Depends-Indep: asciidoc,
                      xmlto
