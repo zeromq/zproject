@@ -78,7 +78,7 @@ Description: development files for $(project.name)
  This package contains development files for $(project.name): $(project.description)
 .endif
 
-.if project.has_main
+.if project.has_main | count(project.bin) > 0
 Package: $(string.replace (project.name, "_|-"):lower)
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
@@ -91,9 +91,9 @@ Architecture: any
 Section: debug
 Priority: extra
 Depends:
-.if project.has_main
+.if project.has_main | count(project.bin) > 0
     $(string.replace (project.name, "_|-"):lower) (= ${binary:Version}),
-.else
+.elsif project.exports_classes
     $(string.replace (project.libname, "_|-"))$(project->version.major) (= ${binary:Version}),
 .endif
     ${misc:Depends}
@@ -132,12 +132,14 @@ override_dh_auto_configure:
 	dh $@ --with autoreconf
 .endif
 
-.if project.has_main
+.if project.has_main | count(project.bin) > 0
 .   output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).install")
 .# generate binary names
 .   for project.main where scope = "public"
+.       if project.has_main
 usr/bin/$(main.name)
 usr/share/man/man1/$(main.name).1
+.       endif
 .       if file.exists ("src/$(main.name).cfg.example")
 etc/$(project.name)/$(main.name).cfg.example
 .       endif
