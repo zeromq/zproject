@@ -23,6 +23,9 @@ register_target ("redhat", "Packaging for RedHat")
 .   endfor
 #
 
+.   if !has_main & !project.exports_classes
+%global debug_package %{nil}
+.   endif
 Name:           $(project.name)
 Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)
 Release:        1
