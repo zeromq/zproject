@@ -34,7 +34,11 @@
     email := The email address where to reach you (optional)
     repository := git repository holding project (optional)
 -->
-<project script = "zproject.gsl" name = "zproject">
+<project script = "zproject.gsl" name = "zproject"
+    email = "zeromq-dev@lists.zeromq.org"
+    license = "MPLv2"
+    url = "https://github.com/zeromq/zproject"
+    repository = "https://github.com/zeromq/zproject">
 
     <!--
         Includes are processed first, so XML in included files will be
