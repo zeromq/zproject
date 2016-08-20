@@ -131,7 +131,7 @@ make install DESTDIR=%{buildroot} %{?_smp_mflags}
 find %{buildroot} -name '*.a' | xargs rm -f
 find %{buildroot} -name '*.la' | xargs rm -f
 
-.if has_main
+.if has_main | count(project.bin) > 0
 %files
 %defattr(-,root,root)
 .if file.exists ('README.md')
