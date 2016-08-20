@@ -23,6 +23,9 @@ register_target ("redhat", "Packaging for RedHat")
 .   endfor
 #
 
+.   if !has_main & !project.exports_classes
+%global debug_package %{nil}
+.   endif
 Name:           $(project.name)
 Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)
 Release:        1
@@ -99,8 +102,13 @@ This package contains development files.
 %{_includedir}/*
 %{_libdir}/$(project.libname).so
 %{_libdir}/pkgconfig/$(project.libname).pc
+.   discover_manpages(project)
+.   if man3 ?<> ""
 %{_mandir}/man3/*
+.   endif
+.   if man7 ?<> ""
 %{_mandir}/man7/*
+.   endif
 .   if count (class, defined (class.api))
 %{_datadir}/zproject/
 %{_datadir}/zproject/$(project.name)/
@@ -126,7 +134,7 @@ make install DESTDIR=%{buildroot} %{?_smp_mflags}
 find %{buildroot} -name '*.a' | xargs rm -f
 find %{buildroot} -name '*.la' | xargs rm -f
 
-.if has_main
+.if has_main | count(project.bin) > 0
 %files
 %defattr(-,root,root)
 .if file.exists ('README.md')
@@ -144,7 +152,9 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .# generate binary names
 .for project.main where scope = "public"
 %{_bindir}/$(main.name)
+.   if man1 ?<> ""
 %{_mandir}/man1/$(main.name)*
+.   endif
 .if file.exists ("src/$(main.name).cfg.example")
 %{_sysconfdir}/$(project.name)/$(main.name).cfg.example
 .endif

@@ -132,13 +132,16 @@ override_dh_auto_configure:
 	dh $@ --with autoreconf
 .endif
 
+.discover_manpages(project)
 .if project.has_main | count(project.bin) > 0
 .   output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).install")
 .# generate binary names
 .   for project.main where scope = "public"
 .       if project.has_main
 usr/bin/$(main.name)
+.          if man1 ?<> ""
 usr/share/man/man1/$(main.name).1
+.          endif
 .       endif
 .       if file.exists ("src/$(main.name).cfg.example")
 etc/$(project.name)/$(main.name).cfg.example
@@ -161,8 +164,12 @@ usr/lib/*/$(project.libname).so.*
 usr/include/*
 usr/lib/*/$(project.libname).so
 usr/lib/*/pkgconfig/$(project.libname).pc
+.   if man3 ?<> ""
 usr/share/man/man3/*
+.   endif
+.   if man7 ?<> ""
 usr/share/man/man7/*
+.   endif
 .endif
 .output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).dsc.obs")
 Format: 3.0 (quilt)

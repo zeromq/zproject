@@ -1129,27 +1129,30 @@ generate_manpage ($name, $outp);
 .chmod_x ("doc/mkman")
 .endmacro
 
+.function discover_manpages (project)
+.   man7 = "$(my.project.name:c).7"
+.   man3 = ""
+.   for my.project.class where scope = "public"
+.      man3 += " $(name:c).3"
+.      if class.name = my.project.name
+.          man7 = ""
+.      endif
+.   endfor
+.   man1 = ""
+.   for my.project.main where scope = "public"
+.      man1 += " $(name).1"
+.      if "$(main.name)" = "$(my.project.name)"
+.          man7 = ""
+.      endif
+.   endfor
+.endfunction
 .macro generate_man_pages
 .output "doc/Makefile.am"
 $(project.GENERATED_WARNING_HEADER:)
-.project.manpage = "$(project.name:c).7"
-.man3 = ""
-.for project.class where scope = "public"
-.   man3 += " $(name:c).3"
-.   if class.name = project.name
-.       project.manpage = ""
-.   endif
-.endfor
-.man1 = ""
-.for project.main where scope = "public"
-.   man1 += " $(name).1"
-.   if "$(main.name)" = "$(project.name)"
-.       project.manpage = ""
-.   endif
-.endfor
+.discover_manpages(project)
 MAN1 =$(man1)
 MAN3 =$(man3)
-MAN7 = $(project.manpage)
+MAN7 = $(man7)
 MAN_DOC = $\(MAN1) $\(MAN3) $\(MAN7)
 
 MAN_TXT = $\(MAN1:%.1=%.txt)
