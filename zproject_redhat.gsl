@@ -99,8 +99,13 @@ This package contains development files.
 %{_includedir}/*
 %{_libdir}/$(project.libname).so
 %{_libdir}/pkgconfig/$(project.libname).pc
+.   discover_manpages(project)
+.   if man3 ?<> ""
 %{_mandir}/man3/*
+.   endif
+.   if man7 ?<> ""
 %{_mandir}/man7/*
+.   endif
 .   if count (class, defined (class.api))
 %{_datadir}/zproject/
 %{_datadir}/zproject/$(project.name)/
@@ -144,7 +149,9 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .# generate binary names
 .for project.main where scope = "public"
 %{_bindir}/$(main.name)
+.   if man1 ?<> ""
 %{_mandir}/man1/$(main.name)*
+.   endif
 .if file.exists ("src/$(main.name).cfg.example")
 %{_sysconfdir}/$(project.name)/$(main.name).cfg.example
 .endif
