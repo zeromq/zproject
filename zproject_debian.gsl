@@ -47,7 +47,9 @@ Build-Depends: debhelper (>= 9),
     lib$(string.replace (use.libname, "_|-"))-dev,
 .endif
 .endfor
-    dh-systemd
+.if project.has_main & project->main.service ?= 1
+    dh-systemd,
+.endif
 Build-Depends-Indep: asciidoc,
                      xmlto
 
@@ -120,11 +122,15 @@ override_dh_strip:
 override_dh_auto_test:
 	echo "Skipped for now"
 
+%:
+.if project.has_main & project->main.service ?= 1
+	dh $@ --with autoreconf,systemd
+
 override_dh_auto_configure:
 	dh_auto_configure -- --with-systemd-units
-
-%:
-	dh $@ --with autoreconf,systemd
+.else
+	dh $@ --with autoreconf
+.endif
 
 .if project.has_main
 .   output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).install")
@@ -175,7 +181,9 @@ Build-Depends: debhelper (>= 9),
     lib$(string.replace (use.libname, "_|-"))-dev,
 .endif
 .endfor
-    dh-systemd
+.if project.has_main & project->main.service ?= 1
+    dh-systemd,
+.endif
 Build-Depends-Indep: asciidoc,
                      xmlto
 

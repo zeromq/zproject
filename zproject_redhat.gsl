@@ -40,7 +40,9 @@ BuildRequires:  automake
 BuildRequires:  autoconf
 BuildRequires:  libtool
 BuildRequires:  pkgconfig
+.if project.has_main & project->main.service ?= 1
 BuildRequires:  systemd-devel
+.endif
 BuildRequires:  xmlto
 .if project.use_cxx
 BuildRequires:  gcc-c++
@@ -110,7 +112,11 @@ This package contains development files.
 
 %build
 sh autogen.sh
+.if project.has_main & project->main.service ?= 1
 %{configure} --with-systemd-units
+.else
+%{configure}
+.endif
 make %{_smp_mflags}
 
 %install
