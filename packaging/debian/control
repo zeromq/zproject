@@ -1,0 +1,39 @@
+#
+#    zproject - Project
+#
+#    Copyright (c) the Contributors as noted in the AUTHORS file.       
+#    This file is part of CZMQ, the high-level C binding for 0MQ:       
+#    http://czmq.zeromq.org.                                            
+#                                                                       
+#    This Source Code Form is subject to the terms of the Mozilla Public
+#    License, v. 2.0. If a copy of the MPL was not distributed with this
+#    file, You can obtain one at http://mozilla.org/MPL/2.0/.           
+
+Source:         zproject
+Section:        net
+Priority:       optional
+Maintainer:     zproject Developers <zeromq-dev@lists.zeromq.org>
+Standards-Version: 3.9.7
+Build-Depends: debhelper (>= 9),
+    pkg-config,
+    dh-autoreconf,
+Build-Depends-Indep: asciidoc,
+                     xmlto
+
+
+Package: zproject
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: project
+ Main package for zproject: project
+
+Package: zproject-dbg
+Architecture: any
+Section: debug
+Priority: extra
+Depends:
+    zproject (= ${binary:Version}),
+    ${misc:Depends}
+Description: debugging symbols for zproject
+ This package contains the debugging symbols for zproject : project.
+

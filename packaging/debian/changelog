@@ -1,0 +1,5 @@
+zproject (1.1.0) UNRELEASED; urgency=low
+
+  * Initial packaging.
+
+ -- zproject Developers <zeromq-dev@lists.zeromq.org>  Wed, 31 Dec 2014 00:00:00 +0000

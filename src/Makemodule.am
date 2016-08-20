@@ -10,8 +10,8 @@ program_libs += -lstdc++ -lm
 endif
 
 # Install data into /usr/local/bin
-myprojectdir = @bindir@
-myproject_SCRIPTS = \
+zprojectdir = @bindir@
+zproject_SCRIPTS = \
     zproject.gsl \
     zproject_projects.gsl \
     zproject_class_api.gsl \
@@ -52,45 +52,45 @@ myproject_SCRIPTS = \
 
 	cd $(srcdir); gsl -target:- project.xml
 
-check-local: src/myproject_selftest
-	$(LIBTOOL) --mode=execute $(builddir)/src/myproject_selftest
+check-local: src/zproject_selftest
+	$(LIBTOOL) --mode=execute $(builddir)/src/zproject_selftest
 
-check-verbose: src/myproject_selftest
-	$(LIBTOOL) --mode=execute $(builddir)/src/myproject_selftest -v
+check-verbose: src/zproject_selftest
+	$(LIBTOOL) --mode=execute $(builddir)/src/zproject_selftest -v
 
 # Run the selftest binary under valgrind to check for memory leaks
-memcheck: src/myproject_selftest
+memcheck: src/zproject_selftest
 	$(LIBTOOL) --mode=execute valgrind --tool=memcheck \
 		--leak-check=full --show-reachable=yes --error-exitcode=1 \
 		--suppressions=$(srcdir)/src/.valgrind.supp \
-		$(builddir)/src/myproject_selftest
+		$(builddir)/src/zproject_selftest
 
 # Run the selftest binary under valgrind to check for performance leaks
-callcheck: src/myproject_selftest
+callcheck: src/zproject_selftest
 	$(LIBTOOL) --mode=execute valgrind --tool=callgrind \
-		$(builddir)/src/myproject_selftest
+		$(builddir)/src/zproject_selftest
 
 # Run the selftest binary under gdb for debugging
-debug: src/myproject_selftest
+debug: src/zproject_selftest
 	$(LIBTOOL) --mode=execute gdb -q \
-		$(builddir)/src/myproject_selftest
+		$(builddir)/src/zproject_selftest
 
 # Run the selftest binary with verbose switch for tracing
-animate: src/myproject_selftest
-	$(LIBTOOL) --mode=execute $(builddir)/src/myproject_selftest -v
+animate: src/zproject_selftest
+	$(LIBTOOL) --mode=execute $(builddir)/src/zproject_selftest -v
 
 if WITH_GCOV
-coverage: src/myproject_selftest
+coverage: src/zproject_selftest
 	@echo "called configure --with-gcov"
 	lcov --base-directory . --directory . --zerocounters -q
 	$(MAKE) check
 	lcov --base-directory . --directory . --capture -o coverage.info
 	lcov --remove coverage.info "/usr*" -o coverage.info
-	lcov --remove coverage.info "myproject_selftest.c" -o coverage.info
+	lcov --remove coverage.info "zproject_selftest.c" -o coverage.info
 	$(RM) -rf coverage/*
-	genhtml -o coverage/ -t "myproject test coverage" --num-spaces 4 coverage.info
+	genhtml -o coverage/ -t "zproject test coverage" --num-spaces 4 coverage.info
 else
-coverage: src/myproject_selftest
+coverage: src/zproject_selftest
 	@echo "call make clean && configure --with-gcov to enable code coverage"
 	@exit 1
 endif
