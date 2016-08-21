@@ -157,6 +157,7 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .   endif
 .if file.exists ("src/$(main.name).cfg.example")
 %{_sysconfdir}/$(project.name)/$(main.name).cfg.example
+.etc_exists = 1
 .endif
 .endfor
 .for project.bin
@@ -166,7 +167,11 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .for project.main where main.service ?= 1
 %config(noreplace) %{_sysconfdir}/$(project.name)/$(main.name).cfg
 %{_prefix}/lib/systemd/system/$(main.name).service
+.etc_exists = 1
 .endfor
+.if etc_exists ?= 1
+%dir %{_sysconfdir}/$(project.name)
+.endif
 .endif
 
 %changelog
