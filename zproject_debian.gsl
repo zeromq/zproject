@@ -157,7 +157,7 @@ usr/bin/$(bin.name)
 .# generate service file names
 .   for project.main where main.service ?= 1
 etc/$(project.name)/$(main.name).cfg
-usr/lib/systemd/system/$(main.name).service
+lib/systemd/system/$(main.name).service
 .   endfor
 .endif
 
