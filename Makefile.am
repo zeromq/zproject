@@ -29,7 +29,7 @@ EXTRA_DIST = \
     README.txt \
     README.md \
     CONTRIBUTING.md \
-    src/myproject_classes.h
+    src/zproject_classes.h
 
 include $(srcdir)/src/Makemodule.am
 

@@ -7,7 +7,7 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8)
-project(myproject)
+project(zproject)
 enable_language(C)
 enable_testing()
 
@@ -21,7 +21,7 @@ SET(CMAKE_C_FLAGS_RELEASE "-O3")
 ########################################################################
 OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" ON)
 IF (ENABLE_DRAFTS)
-    ADD_DEFINITIONS (-DMYPROJECT_BUILD_DRAFT_API)
+    ADD_DEFINITIONS (-DZPROJECT_BUILD_DRAFT_API)
 ENDIF (ENABLE_DRAFTS)
 
 ########################################################################
@@ -79,11 +79,11 @@ set(OPTIONAL_LIBRARIES)
 ########################################################################
 # includes
 ########################################################################
-set (myproject_headers
+set (zproject_headers
 )
 
-source_group ("Header Files" FILES ${myproject_headers})
-install(FILES ${myproject_headers} DESTINATION include)
+source_group ("Header Files" FILES ${zproject_headers})
+install(FILES ${zproject_headers} DESTINATION include)
 
 ########################################################################
 # executables
@@ -108,7 +108,7 @@ set(TEST_CLASSES
 foreach(TEST_CLASS ${TEST_CLASSES})
     add_test(
         NAME ${TEST_CLASS}
-        COMMAND myproject_selftest --continue --verbose --test ${TEST_CLASS}
+        COMMAND zproject_selftest --continue --verbose --test ${TEST_CLASS}
     )
     set_tests_properties(
         ${TEST_CLASS}
@@ -132,9 +132,9 @@ set(cmake_generated ${CMAKE_BINARY_DIR}/CMakeCache.txt
                     ${CMAKE_BINARY_DIR}/Testing
                     ${CMAKE_BINARY_DIR}/compile_commands.json
                     ${CMAKE_BINARY_DIR}/src/platform.h
-                    ${CMAKE_BINARY_DIR}/src/libmyproject.pc
-                    ${CMAKE_BINARY_DIR}/src/libmyproject.so
-                    ${CMAKE_BINARY_DIR}/src/myproject_selftest
+                    ${CMAKE_BINARY_DIR}/src/libzproject.pc
+                    ${CMAKE_BINARY_DIR}/src/libzproject.so
+                    ${CMAKE_BINARY_DIR}/src/zproject_selftest
 )
 
 add_custom_command(
