@@ -13,6 +13,9 @@
 register_target ("redhat", "Packaging for RedHat")
 
 .macro target_redhat
+.for project.main where main.service ?= 1
+.   systemd = 1
+.endfor
 .directory.create ('packaging/redhat')
 .output "packaging/redhat/$(project.name).spec"
 #
@@ -43,8 +46,10 @@ BuildRequires:  automake
 BuildRequires:  autoconf
 BuildRequires:  libtool
 BuildRequires:  pkgconfig
-.if project.has_main & project->main.service ?= 1
+.if systemd ?= 1
 BuildRequires:  systemd-devel
+BuildRequires:  systemd
+%{?systemd_requires}
 .endif
 BuildRequires:  xmlto
 .if project.use_cxx
@@ -120,7 +125,7 @@ This package contains development files.
 
 %build
 sh autogen.sh
-.if project.has_main & project->main.service ?= 1
+.if systemd ?= 1
 %{configure} --with-systemd-units
 .else
 %{configure}
@@ -157,6 +162,7 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .   endif
 .if file.exists ("src/$(main.name).cfg.example")
 %{_sysconfdir}/$(project.name)/$(main.name).cfg.example
+.etc_exists = 1
 .endif
 .endfor
 .for project.bin
@@ -165,8 +171,34 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .# generate service file names
 .for project.main where main.service ?= 1
 %config(noreplace) %{_sysconfdir}/$(project.name)/$(main.name).cfg
-%{_prefix}/lib/systemd/system/$(main.name).service
+/usr/lib/systemd/system/$(main.name).service
+.etc_exists = 1
 .endfor
+.if etc_exists ?= 1
+%dir %{_sysconfdir}/$(project.name)
+.endif
+.if systemd ?= 1
+%if 0%{?suse_version} > 1315
+%post
+%systemd_post\
+.   for project.main where main.service ?= 1
+ $(main.name).service\
+.   endfor
+
+%preun
+%systemd_preun\
+.   for project.main where main.service ?= 1
+ $(main.name).service\
+.   endfor
+
+%postun
+%systemd_postun_with_restart\
+.   for project.main where main.service ?= 1
+ $(main.name).service\
+.   endfor
+
+%endif
+.endif
 .endif
 
 %changelog

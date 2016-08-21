@@ -13,6 +13,9 @@
 register_target ("debian", "packaging for Debian")
 
 .macro target_debian
+.for project.main where main.service ?= 1
+.   systemd = 1
+.endfor
 .directory.create ('packaging/debian')
 .output "packaging/debian/changelog"
 $(project.name:lower) ($(->version.major).$(->version.minor).$(->version.patch)) UNRELEASED; urgency=low
@@ -47,7 +50,8 @@ Build-Depends: debhelper (>= 9),
     lib$(string.replace (use.libname, "_|-"))-dev,
 .endif
 .endfor
-.if project.has_main & project->main.service ?= 1
+.if systemd ?= 1
+    systemd,
     dh-systemd,
 .endif
 Build-Depends-Indep: asciidoc,
@@ -123,7 +127,7 @@ override_dh_auto_test:
 	echo "Skipped for now"
 
 %:
-.if project.has_main & project->main.service ?= 1
+.if systemd ?= 1
 	dh $@ --with autoreconf,systemd
 
 override_dh_auto_configure:
@@ -153,7 +157,7 @@ usr/bin/$(bin.name)
 .# generate service file names
 .   for project.main where main.service ?= 1
 etc/$(project.name)/$(main.name).cfg
-usr/lib/systemd/system/$(main.name).service
+lib/systemd/system/$(main.name).service
 .   endfor
 .endif
 
@@ -190,7 +194,8 @@ Build-Depends: debhelper (>= 9),
     lib$(string.replace (use.libname, "_|-"))-dev,
 .endif
 .endfor
-.if project.has_main & project->main.service ?= 1
+.if systemd ?= 1
+    systemd,
     dh-systemd,
 .endif
 Build-Depends-Indep: asciidoc,

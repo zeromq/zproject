@@ -58,7 +58,7 @@ register_target ("obs", "service for Open Build Service")
     <param name="files">*/packaging/debian/copyright</param>
     <param name="outfilename">debian.copyright</param>
   </service>
-.   if project.has_main
+.   if project.has_main | count(project.bin) > 0
   <service name="extract_file">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/$(string.replace (project.name, "_|-"):lower).install</param>

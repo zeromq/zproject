@@ -441,19 +441,39 @@ AS_IF([test "$have_ld_version_script" = "yes"],
 .endif
 
 # enable specific system integration features
+.for project.main where main.service ?= 1
+.   systemd = 1
+.endfor
+.if systemd ?= 1
 AC_ARG_WITH([systemd-units],
     AS_HELP_STRING([--with-systemd-units],
     [Build and install with systemd units integration [default=no]]),
     [with_systemd_units=$withval],
     [with_systemd_units=no])
 
-AM_CONDITIONAL([WITH_SYSTEMD_UNITS], [test x$with_systemd_units != xno])
+PKG_PROG_PKG_CONFIG
+AC_ARG_WITH([systemdsystemunitdir],
+     [AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files])],,
+     [with_systemdsystemunitdir=auto])
+AS_IF([test "x$with_systemdsystemunitdir" = "xyes" -o "x$with_systemdsystemunitdir" = "xauto"], [
+     def_systemdsystemunitdir=\$($PKG_CONFIG --variable=systemdsystemunitdir systemd)
+
+     AS_IF([test "x$def_systemdsystemunitdir" = "x"],
+   [AS_IF([test "x$with_systemdsystemunitdir" = "xyes"],
+    [AC_MSG_ERROR([systemd support requested but pkg-config unable to query systemd package])])
+    with_systemdsystemunitdir=no],
+   [with_systemdsystemunitdir="$def_systemdsystemunitdir"])])
+AS_IF([test "x$with_systemdsystemunitdir" != "xno"],
+      [AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])])
+
+AM_CONDITIONAL([WITH_SYSTEMD_UNITS], [test "x$with_systemdsystemunitdir" != "xno" -a x$with_systemd_units != xno])
 
 AM_COND_IF([WITH_SYSTEMD_UNITS],
     [AC_DEFINE(WITH_SYSTEMD_UNITS, 1, [systemd units are going to be installed])
     AC_SUBST(WITH_SYSTEMD_UNITS)],
     [])
 
+.endif
 .if project.stable
 if test "x$cross_compiling" = "xyes"; then
     #   Enable draft by default when cross-compiling
@@ -509,6 +529,7 @@ AC_CONFIG_FILES([Makefile
                 ])
 .endif
 
+.if systemd ?= 1
 AM_COND_IF([WITH_SYSTEMD_UNITS],
     [AC_CONFIG_FILES([
 .   for project.main where main.service ?= 1
@@ -517,6 +538,7 @@ AM_COND_IF([WITH_SYSTEMD_UNITS],
     ])],
     [])
 
+.endif
 
 AC_OUTPUT
 
@@ -598,6 +620,11 @@ $(project.GENERATED_WARNING_HEADER:)
 .macro generate_automake_files
 .output "Makefile.am"
 $(project.GENERATED_WARNING_HEADER:)
+.if systemd ?= 1
+
+DISTCHECK_CONFIGURE_FLAGS = \\
+  --with-systemdsystemunitdir=$$dc_install_base/\$(systemdsystemunitdir)
+.endif
 
 ACLOCAL_AMFLAGS = -I config
 
@@ -772,6 +799,12 @@ endif
 src_$(project.libname)_la_LIBADD = ${project_libs}
 
 .endif
+.if systemd ?= 1
+if WITH_SYSTEMD_UNITS
+systemdsystemunit_DATA =
+endif #WITH_SYSTEMD_UNITS
+
+.endif
 .for project.main
 if ENABLE_$(NAME:c)
 .   if main.test ?= 1
@@ -791,8 +824,7 @@ src_$(name:c)_SOURCES = $(main.source)
 src_$(main.name:c)_config_DATA = src/$(main.name).cfg
 src_$(main.name:c)_configdir = \$(sysconfdir)/$(project.name)
 if WITH_SYSTEMD_UNITS
-src_$(main.name:c)_servicedir = @prefix@/lib/systemd/system
-src_$(main.name:c)_service_DATA = src/$(main.name).service
+systemdsystemunit_DATA += src/$(main.name).service
 endif #WITH_SYSTEMD_UNITS
 .   endif
 endif #ENABLE_$(NAME:c)
@@ -1166,7 +1198,7 @@ dist_man_MANS = $\(MAN_DOC)
 endif
 
 if BUILD_DOC
-MAINTAINERCLEANFILES = $\(MAN_DOC)
+DISTCLEANFILES = $\(MAN_DOC)
 
 dist-hook : $\(MAN_DOC)
 
