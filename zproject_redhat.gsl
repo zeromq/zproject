@@ -48,6 +48,8 @@ BuildRequires:  libtool
 BuildRequires:  pkgconfig
 .if systemd ?= 1
 BuildRequires:  systemd-devel
+BuildRequires:  systemd
+%{?systemd_requires}
 .endif
 BuildRequires:  xmlto
 .if project.use_cxx
@@ -174,6 +176,28 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .endfor
 .if etc_exists ?= 1
 %dir %{_sysconfdir}/$(project.name)
+.endif
+.if systemd ?= 1
+%if 0%{?suse_version} > 1315
+%post
+%systemd_post\
+.   for project.main where main.service ?= 1
+ $(main.name).service\
+.   endfor
+
+%preun
+%systemd_preun\
+.   for project.main where main.service ?= 1
+ $(main.name).service\
+.   endfor
+
+%postun
+%systemd_postun_with_restart\
+.   for project.main where main.service ?= 1
+ $(main.name).service\
+.   endfor
+
+%endif
 .endif
 .endif
 
