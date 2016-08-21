@@ -441,6 +441,10 @@ AS_IF([test "$have_ld_version_script" = "yes"],
 .endif
 
 # enable specific system integration features
+.for project.main where main.service ?= 1
+.   systemd = 1
+.endfor
+.if systemd ?= 1
 AC_ARG_WITH([systemd-units],
     AS_HELP_STRING([--with-systemd-units],
     [Build and install with systemd units integration [default=no]]),
@@ -454,6 +458,7 @@ AM_COND_IF([WITH_SYSTEMD_UNITS],
     AC_SUBST(WITH_SYSTEMD_UNITS)],
     [])
 
+.endif
 .if project.stable
 if test "x$cross_compiling" = "xyes"; then
     #   Enable draft by default when cross-compiling
@@ -509,6 +514,7 @@ AC_CONFIG_FILES([Makefile
                 ])
 .endif
 
+.if systemd ?= 1
 AM_COND_IF([WITH_SYSTEMD_UNITS],
     [AC_CONFIG_FILES([
 .   for project.main where main.service ?= 1
@@ -517,6 +523,7 @@ AM_COND_IF([WITH_SYSTEMD_UNITS],
     ])],
     [])
 
+.endif
 
 AC_OUTPUT
 
