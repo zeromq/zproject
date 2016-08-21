@@ -13,6 +13,9 @@
 register_target ("redhat", "Packaging for RedHat")
 
 .macro target_redhat
+.for project.main where main.service ?= 1
+.   systemd = 1
+.endfor
 .directory.create ('packaging/redhat')
 .output "packaging/redhat/$(project.name).spec"
 #
@@ -43,7 +46,7 @@ BuildRequires:  automake
 BuildRequires:  autoconf
 BuildRequires:  libtool
 BuildRequires:  pkgconfig
-.if project.has_main & project->main.service ?= 1
+.if systemd ?= 1
 BuildRequires:  systemd-devel
 .endif
 BuildRequires:  xmlto
@@ -120,7 +123,7 @@ This package contains development files.
 
 %build
 sh autogen.sh
-.if project.has_main & project->main.service ?= 1
+.if systemd ?= 1
 %{configure} --with-systemd-units
 .else
 %{configure}
