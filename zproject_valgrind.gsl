@@ -34,4 +34,14 @@ if !file.exists ("src/.valgrind.supp")
     >   fun:__libc_freeres
     >   ...
     >}
+    >{
+    >   <glibc_eh_alloc__see_bug_66339>
+    >   Memcheck:Leak
+    >   match-leak-kinds: reachable
+    >   fun:malloc
+    >   fun:pool
+    >   fun:__static_initialization_and_destruction_0
+    >   fun:_GLOBAL__sub_I_eh_alloc.cc
+    >   ...
+    >}
 endif
