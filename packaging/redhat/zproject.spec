@@ -29,6 +29,7 @@ BuildRequires:  autoconf
 BuildRequires:  libtool
 BuildRequires:  pkgconfig
 BuildRequires:  xmlto
+BuildRequires:  generator-scripting-language
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
