@@ -137,6 +137,7 @@ PREVIOUS_CFLAGS="${CFLAGS}"
 PREVIOUS_LIBS="${LIBS}"
 
 .for use
+. if use.libname ?<> ""
 
 was_$(use.project:c)_check_lib_detected=no
 
@@ -200,6 +201,12 @@ if test "x$was_$(use.project:c)_check_lib_detected" = "xno"; then
     CFLAGS="${$(use.project:c)_CFLAGS} ${CFLAGS}"
     LIBS="${$(use.project:c)_LIBS} ${LIBS}"
 fi
+. else
+AC_CHECK_PROG(HAVE_$(USE.PROJECT:C), $(use.project:c), yes)
+if test x"$HAVE_$(USE.PROJECT:C)" != x"yes" ; then
+    AC_MSG_ERROR([Cannot find $(use.project)])
+fi
+. endif
 .endfor
 
 .# Restore user supplied flags
@@ -638,7 +645,7 @@ AM_CXXFLAGS = \\
 .endif
 
 AM_CPPFLAGS = \\
-.for use
+.for use where use.libname ?<> ""
     \${$(use.project:c)_CFLAGS} \\
 .endfor
 .if project.use_cxx
@@ -647,7 +654,7 @@ AM_CPPFLAGS = \\
     -I\$(srcdir)/include
 
 .libs = ""
-.for use
+.for use where use.libname ?<> ""
 .   libs += " \${$(use.project:c)_LIBS}"
 .endfor
 project_libs =$(libs:)

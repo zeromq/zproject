@@ -109,11 +109,13 @@ find_package($(use.project) REQUIRED)
 find_package($(use.project))
 .endif
 IF ($(USE.PROJECT)_FOUND)
+.if use.libname ?<> ""
     include_directories(${$(USE.PROJECT)_INCLUDE_DIRS})
     list(APPEND MORE_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
 .if use.optional = 1
     add_definitions(-DHAVE_$(USE.LIBNAME))
     list(APPEND OPTIONAL_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
+.endif
 .endif
 .   if defined (use.description)
     set_feature_info($(use.project) "$(use.description:)")
@@ -380,6 +382,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .output "Find$(use.project:c).cmake"
 $(project.GENERATED_WARNING_HEADER:)
 
+.   if use.libname ?<> ""
 if (NOT MSVC)
     include(FindPkgConfig)
     pkg_check_modules(PC_$(USE.PROJECT) "$(use.libname)")
@@ -420,6 +423,23 @@ mark_as_advanced(
     $(USE.PROJECT)_LIBRARIES $(USE.PROJECT)_INCLUDE_DIRS
 )
 
+.   else
+find_program (
+    $(USE.PROJECT)_BIN
+    $(use.project)
+)
+
+include(FindPackageHandleStandardArgs)
+
+find_package_handle_standard_args(
+    $(USE.PROJECT)
+    REQUIRED_VARS $(USE.PROJECT)_BIN
+)
+mark_as_advanced(
+    $(USE.PROJECT)_FOUND
+)
+
+.   endif
 $(project.GENERATED_WARNING_HEADER:)
 .endfor
 .close
