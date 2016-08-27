@@ -21,6 +21,19 @@ CMAKE_OPTS+=("-DCMAKE_LIBRARY_PATH:PATH=${BUILD_PREFIX}/lib")
 CMAKE_OPTS+=("-DCMAKE_INCLUDE_PATH:PATH=${BUILD_PREFIX}/include")
 
 # Clone and build dependencies
+git clone --quiet --depth 1 https://github.com/imagix/gsl gsl
+cd gsl
+git --no-pager log --oneline -n1
+if [ -e autogen.sh ]; then
+    ./autogen.sh 2> /dev/null
+fi
+if [ -e buildconf ]; then
+    ./buildconf 2> /dev/null
+fi
+./configure "${CONFIG_OPTS[@]}"
+make -j4
+make install
+cd ..
 
 # Build and check this project
 cd ../..
