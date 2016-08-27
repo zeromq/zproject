@@ -77,6 +77,15 @@ list(APPEND CMAKE_MODULE_PATH "${SOURCE_DIR}")
 set(OPTIONAL_LIBRARIES)
 
 ########################################################################
+# GSL dependency
+########################################################################
+find_package(gsl REQUIRED)
+IF (GSL_FOUND)
+ELSE (GSL_FOUND)
+    message( FATAL_ERROR "gsl not found." )
+ENDIF (GSL_FOUND)
+
+########################################################################
 # includes
 ########################################################################
 set (zproject_headers
