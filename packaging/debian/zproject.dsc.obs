@@ -7,6 +7,7 @@ Architecture: any
 Build-Depends: debhelper (>= 9),
     pkg-config,
     dh-autoreconf,
+    generator-scripting-language,
 Build-Depends-Indep: asciidoc,
                      xmlto
 
