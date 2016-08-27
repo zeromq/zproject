@@ -65,6 +65,8 @@
     <use project = "mysecondlib" tarball = "http://mysecondlib.org/mysecondlib-1.2.3.tar.gz" />
     -->
 
+    <use project = "gsl" />
+
     <!-- Header Files
          name := The name the header file to include without file ending
     <header name = "myproject_prelude" />

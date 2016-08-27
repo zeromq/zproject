@@ -56,6 +56,12 @@
         <use project = "czmq" />
     </use>
 
+    <use project = "gsl" libname = ""
+        repository = "https://github.com/imagix/gsl"
+        debian_name = "generator-scripting-language"
+        redhat_name = "generator-scripting-language">
+    </use>
+
     <!-- Edgenet Projects -->
 
     <use project = "drops" libname = "libdrops"

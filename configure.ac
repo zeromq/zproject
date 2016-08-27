@@ -71,6 +71,10 @@ fi
 PREVIOUS_CFLAGS="${CFLAGS}"
 PREVIOUS_LIBS="${LIBS}"
 
+AC_CHECK_PROG(HAVE_GSL, gsl, yes)
+if test x"$HAVE_GSL" != x"yes" ; then
+    AC_MSG_ERROR([Cannot find gsl])
+fi
 
 CFLAGS="${PREVIOUS_CFLAGS}"
 LIBS="${PREVIOUS_LIBS}"
