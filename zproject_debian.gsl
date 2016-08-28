@@ -136,6 +136,7 @@ override_dh_auto_configure:
 	dh $@ --with autoreconf
 .endif
 
+.chmod_x ("packaging/debian/rules")
 .discover_manpages(project)
 .if project.has_main | count(project.bin) > 0
 .   output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).install")
