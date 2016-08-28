@@ -26,6 +26,16 @@ register_target ("redhat", "Packaging for RedHat")
 .   endfor
 #
 
+# To build with draft APIs, use "--with drafts" in rpmbuild for local builds or add
+#   Macros:
+#   %_with_drafts 1
+# at the BOTTOM of the OBS prjconf
+%bcond_with drafts
+%if %{with drafts}
+%define DRAFTS yes
+%else
+%define DRAFTS no
+%endif
 .   if !has_main & !project.exports_classes
 %global debug_package %{nil}
 .   endif
@@ -126,9 +136,9 @@ This package contains development files.
 %build
 sh autogen.sh
 .if systemd ?= 1
-%{configure} --with-systemd-units
+%{configure} --enable-drafts=%{DRAFTS} --with-systemd-units
 .else
-%{configure}
+%{configure} --enable-drafts=%{DRAFTS}
 .endif
 make %{_smp_mflags}
 
