@@ -370,7 +370,12 @@ $(c_callback_typedef (callback_type))
 .           if ->return.fresh
 //  Caller owns return value and must destroy it when done.
 .           endif
-$(PROJECT.PREFIX)_EXPORT $(c_method_signature (method):);
+$(PROJECT.PREFIX)_EXPORT $(c_method_signature (method):)\
+.           if defined(method.format_index)
+ CHECK_PRINTF ($(method.format_index));
+.           else
+;
+.           endif
 .       endif
 .   endfor
 .endfor
@@ -408,13 +413,23 @@ $(c_callback_typedef (callback_type))
 .   for class.constructor where draft = my.draft
 .       method_state_comment (state)
 //  $(constructor.description:no,block)
-$(PROJECT.PREFIX)_EXPORT $(c_method_signature (constructor):);
+$(PROJECT.PREFIX)_EXPORT $(c_method_signature (constructor):)\
+.       if defined(constructor.format_index)
+ CHECK_PRINTF ($(constructor.format_index));
+.       else
+;
+.       endif
 
 .   endfor
 .   for class.destructor where draft = my.draft
 .       method_state_comment (state)
 //  $(destructor.description:no,block)
-$(PROJECT.PREFIX)_EXPORT $(c_method_signature (destructor):);
+$(PROJECT.PREFIX)_EXPORT $(c_method_signature (destructor):)\
+.       if defined(destructor.format_index)
+ CHECK_PRINTF ($(destructor.format_index));
+.       else
+;
+.       endif
 
 .   endfor
 .   for class.actor where draft = my.draft
@@ -429,7 +444,12 @@ $(PROJECT.PREFIX)_EXPORT void
 .       if method->return.fresh
 //  Caller owns return value and must destroy it when done.
 .       endif
-$(PROJECT.PREFIX)_EXPORT $(c_method_signature (method):);
+$(PROJECT.PREFIX)_EXPORT $(c_method_signature (method):)\
+.       if defined(method.format_index)
+ CHECK_PRINTF ($(method.format_index));
+.       else
+;
+.       endif
 
 .   endfor
 .endmacro
@@ -514,14 +534,6 @@ $(HEADER_FILE_PREFIX:)\
 .   if count (class., count.draft ?= 1)
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
-.for class.method where defined (format_index)
-.   if first ()
-//  @ignore
-.   endif
-$(PROJECT.PREFIX)_EXPORT $(c_method_signature (method):) CHECK_PRINTF ($(format_index));
-.   if last ()
-.   endif
-.endfor
 //  @end
 $(HEADER_FILE_SUFFIX:)\
 .       endtemplate
