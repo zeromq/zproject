@@ -168,7 +168,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" Optimization="0" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.LINKNAME)_EXPORTS;_WIN32;WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" MinimalRebuild="false" BasicRuntimeChecks="3" RuntimeLibrary="3" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="1" />
+      <Tool Name="VCCLCompilerTool" Optimization="0" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="$(PROJECT.PREFIX)_EXPORTS;_WIN32;WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" MinimalRebuild="false" BasicRuntimeChecks="3" RuntimeLibrary="3" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="1" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="_DEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
@@ -187,7 +187,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" TargetEnvironment="3" />
-      <Tool Name="VCCLCompilerTool" Optimization="0" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.LINKNAME)_EXPORTS;_WIN32;WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" MinimalRebuild="false" BasicRuntimeChecks="3" RuntimeLibrary="3" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="1" />
+      <Tool Name="VCCLCompilerTool" Optimization="0" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="$(PROJECT.PREFIX)_EXPORTS;_WIN32;WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" MinimalRebuild="false" BasicRuntimeChecks="3" RuntimeLibrary="3" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="1" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="_DEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
@@ -206,7 +206,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.LINKNAME)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
+      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="$(PROJECT.PREFIX)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="NDEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
@@ -225,7 +225,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" TargetEnvironment="3" />
-      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.LINKNAME)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
+      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="$(PROJECT.PREFIX)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="NDEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
@@ -244,7 +244,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.LINKNAME)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
+      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="$(PROJECT.PREFIX)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="NDEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />
@@ -263,7 +263,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" TargetEnvironment="3" />
-      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="LIB$(PROJECT.LINKNAME)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
+      <Tool Name="VCCLCompilerTool" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="..\\..\\..\\..\\include;..\\..\\..\\..\\..\\libzmq\\include" PreprocessorDefinitions="$(PROJECT.PREFIX)_EXPORTS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;BASE_THREADSAFE" StringPooling="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="./$(project.name:c).pch" AssemblerListingLocation="./" ObjectFile="./" ProgramDataBaseFileName="./" WarningLevel="3" SuppressStartupBanner="true" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="NDEBUG" Culture="2060" />
       <Tool Name="VCPreLinkEventTool" />

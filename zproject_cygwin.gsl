@@ -22,7 +22,7 @@ CC=gcc
 PREFIX=/usr/local
 INCDIR=-I$\(PREFIX)/include -I.
 LIBDIR=-L$\(PREFIX)/lib
-CFLAGS=-Wall -Os -g -D$(PROJECT.LIBNAME)_EXPORTS $\(INCDIR)
+CFLAGS=-Wall -Os -g -D$(PROJECT.PREFIX)_EXPORTS $\(INCDIR)
 
 OBJS =\
 .for class
