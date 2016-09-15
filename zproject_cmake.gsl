@@ -194,7 +194,7 @@ if (NOT DEFINED BUILD_SHARED_LIBS)
 endif()
 add_library($(project.linkname) ${$(project.linkname)_sources})
 set_target_properties($(project.linkname)
-    PROPERTIES DEFINE_SYMBOL "$(PROJECT.LIBNAME)_EXPORTS"
+    PROPERTIES DEFINE_SYMBOL "$(PROJECT.PREFIX)_EXPORTS"
 )
 set_target_properties($(project.linkname)
     PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${SOURCE_DIR}/src"
