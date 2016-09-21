@@ -43,44 +43,44 @@ function resolve_ruby_container (container)
     sanitize_ruby_container_name(my.container)
 
     # Defaults
-    my.container.ruby_ffi_type = "pointer"
+    my.container.ruby_ffi_type = ":pointer"
     my.container.ruby_doc_type = "::FFI::Pointer, #to_ptr"
 
     # All C types should be transformed to a type name recognized by FFI.
     # To handle more C types, add support for them here.
     if my.container.variadic
         my.container.ruby_doc_type = "Array<Object>"
-        my.container.ruby_ffi_type = "varargs"
+        my.container.ruby_ffi_type = ":varargs"
     elsif my.container.c_type = "void"
         my.container.ruby_doc_type = "void"
-        my.container.ruby_ffi_type = "void"
+        my.container.ruby_ffi_type = ":void"
     elsif my.container.c_type = "size_t"
         my.container.ruby_doc_type = "Integer, #to_int, #to_i"
-        my.container.ruby_ffi_type = "size_t"
+        my.container.ruby_ffi_type = ":size_t"
         my.container.coerce_to_c = "Integer($(my.container.ruby_name:))"
     elsif my.container.c_type = "int"
         my.container.ruby_doc_type = "Integer, #to_int, #to_i"
-        my.container.ruby_ffi_type = "int"
+        my.container.ruby_ffi_type = ":int"
         my.container.coerce_to_c = "Integer($(my.container.ruby_name:))"
     elsif regexp.match ("^(uint[0-9]+)_t$", my.container.c_type, match)
         my.container.ruby_doc_type = "Integer, #to_int, #to_i"
-        my.container.ruby_ffi_type = match
+        my.container.ruby_ffi_type = ":$(match:)"
         my.container.coerce_to_c = "Integer($(my.container.ruby_name:))"
     elsif my.container.c_type = "float"
         my.container.ruby_doc_type = "Float, #to_f"
-        my.container.ruby_ffi_type = "float"
+        my.container.ruby_ffi_type = ":float"
         my.container.coerce_to_c = "Float($(my.container.ruby_name:))"
     elsif my.container.c_type = "double"
         my.container.ruby_doc_type = "Float, #to_f"
-        my.container.ruby_ffi_type = "double"
+        my.container.ruby_ffi_type = ":double"
         my.container.coerce_to_c = "Float($(my.container.ruby_name:))"
     elsif my.container.c_type = "bool"
         my.container.ruby_doc_type = "Boolean"
-        my.container.ruby_ffi_type = "bool"
+        my.container.ruby_ffi_type = ":bool"
         my.container.coerce_to_c = "!(0==$(my.container.ruby_name:)||!$(my.container.ruby_name:)) # boolean"
     elsif my.container.c_type = "const char *"
         my.container.ruby_doc_type = "String, #to_s, nil"
-        my.container.ruby_ffi_type = "string"
+        my.container.ruby_ffi_type = ":string"
     elsif my.container.c_type = "char *"
         if my.container.fresh
             my.container.ruby_doc_return_type = "::FFI::AutoPointer"
@@ -90,8 +90,11 @@ function resolve_ruby_container (container)
         endif
     elsif my.container.c_type = "byte"
         my.container.ruby_doc_type = "Integer, #to_int, #to_i"
-        my.container.ruby_ffi_type = "char"
+        my.container.ruby_ffi_type = ":char"
         my.container.coerce_to_c = "Integer($(my.container.ruby_name:))"
+    elsif my.container.c_type = "SOCKET"
+        my.container.ruby_doc_type = "Integer or FFI::Pointer"
+        my.container.ruby_ffi_type = "(::FFI::Platform.unix? ? :int : :uint64_t)" # support for Unix & Win64
     elsif count (project.class, defined (class.RubyName) & (my.container.type = class.c_name))
         for project.class where (defined (class.RubyName) & (my.container.type = class.c_name))
             if my.container.by_reference
@@ -132,12 +135,12 @@ function ruby_ffi_attach_definition(method)
         endif
     endif
     for my.method.argument
-        my.attach_definition += ":$(argument.ruby_ffi_type)"
+        my.attach_definition += "$(argument.ruby_ffi_type:)"
         if !last ()
             my.attach_definition += ", "
         endif
     endfor
-    my.attach_definition += "], :$(method->return.ruby_ffi_type), **opts"
+    my.attach_definition += "], $(method->return.ruby_ffi_type:), **opts"
     return my.attach_definition
 endfunction
 
@@ -454,9 +457,9 @@ module $(project.RubyName:)
       #   it may be garbage collected while C still holds the pointer,
       #   potentially resulting in a segmentation fault.
       def self.$(callback_type.name)
-        ::FFI::Function.new :$(callback_type->return.ruby_ffi_type), [\
+        ::FFI::Function.new $(callback_type->return.ruby_ffi_type:), [\
 .   for callback_type.argument
-:$(argument.ruby_ffi_type)\
+$(argument.ruby_ffi_type:)\
 .       if !last ()
 , \
 .       endif
