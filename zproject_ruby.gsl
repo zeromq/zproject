@@ -283,7 +283,8 @@ module $(project.RubyName:)
     begin
       lib_name = '$(project.libname)'
       lib_dirs = ['/usr/local/lib', '/opt/local/lib', '/usr/lib64']
-      lib_dirs = [*ENV['LIBCZMQ_PATH'].split(':'), *lib_dirs] if ENV['LIBCZMQ_PATH']
+      env_name = "#{lib_name.upcase}_PATH"
+      lib_dirs = [*ENV[env_name].split(':'), *lib_dirs] if ENV[env_name]
       lib_paths = lib_dirs.map { |path| "#{path}/#{lib_name}.#{::FFI::Platform::LIBSUFFIX}" }
       ffi_lib lib_paths + [lib_name]
       @available = true
