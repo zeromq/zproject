@@ -132,6 +132,9 @@ else
     AM_CONDITIONAL(WITH_GCOV, false)
 fi
 
+# Will be used to add flags to pkg-config useful when apps want to statically link
+PKGCFG_LIBS_PRIVATE=""
+
 .# Archive user supplied flags
 PREVIOUS_CFLAGS="${CFLAGS}"
 PREVIOUS_LIBS="${LIBS}"
@@ -146,6 +149,7 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)],
 .  if optional
         AC_DEFINE(HAVE_$(USE.LIBNAME), 1, [The $(use.libname) library is to be used])
 .  endif
+        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $$(use.project:c)_LIBS"
     ],
     [
 .  if use.min_version = '0.0.0'
@@ -182,6 +186,7 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)],
                 AC_SUBST([$(use.project:c)_CFLAGS],[${$(use.project:c)_synthetic_cflags}])
                 AC_SUBST([$(use.project:c)_LIBS],[${$(use.project:c)_synthetic_libs}])
                 was_$(use.project:c)_check_lib_detected=yes
+                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -l$(use.linkname)"
 .       if optional
                 AC_DEFINE(HAVE_$(USE.LIBNAME), 1, [The $(use.libname) library is to be used])
             ],
@@ -212,6 +217,8 @@ fi
 .# Restore user supplied flags
 CFLAGS="${PREVIOUS_CFLAGS}"
 LIBS="${PREVIOUS_LIBS}"
+
+AC_SUBST(pkg_config_libs_private, $PKGCFG_LIBS_PRIVATE)
 
 # Platform specific checks
 $(project.name:c)_on_mingw32="no"
@@ -987,6 +994,7 @@ $(use.libname)\
 
 Libs: -L${libdir} -l$(project.linkname)
 Cflags: -I${includedir} @pkg_config_defines@
+Libs.private: @pkg_config_libs_private@
 
 $(project.GENERATED_WARNING_HEADER:)
 .endmacro
