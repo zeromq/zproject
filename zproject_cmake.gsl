@@ -29,6 +29,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 # Select flags
 SET(CMAKE_C_FLAGS_RELEASE "-O3")
 
+# Will be used to add flags to pkg-config useful when apps want to statically link
+set(pkg_config_libs_private "")
+
 ########################################################################
 # options
 ########################################################################
@@ -117,6 +120,7 @@ IF ($(USE.PROJECT)_FOUND)
 .if use.libname ?<> ""
     include_directories(${$(USE.PROJECT)_INCLUDE_DIRS})
     list(APPEND MORE_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
+    set(pkg_config_libs_private "${pkg_config_libs_private} -l$(use.linkname)")
 .if use.optional = 1
     add_definitions(-DHAVE_$(USE.LIBNAME))
     list(APPEND OPTIONAL_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
