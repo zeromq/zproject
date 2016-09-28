@@ -17,12 +17,34 @@ register_target ("rpi", "Raspberry Pi cross build system")
 .output "builds/rpi/build.sh"
 #!/usr/bin/env bash
 $(project.GENERATED_WARNING_HEADER:)
+# Parse parameters
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -i|--incremental)
+        INCREMENTAL=0
+        ;;
+        -u|--update)
+        UPDATE=0
+        ;;
+        *)
+                # unknown option
+        ;;
+    esac
+    shift # past argument or value
+done
+
+if [ $INCREMENTAL ] && [ $UPDATE ]; then
+    echo Error: Incremental and update are exclusiv!
+    exit -1
+fi
 
 # Download cross compiler and sysroot
 if [ ! -d $PWD/tools ]; then
     git clone --depth 1 https://github.com/raspberrypi/tools
-else
-    ( cd tools && git pull --rebase --quiet ) || exit 1
+fi
+if [ $UPDATE ]; then
+    ( cd tools && git pull --rebase ) || exit 1
 fi
 
 # Cross build for the Raspberry Pi
@@ -66,45 +88,50 @@ CONFIG_OPTS+=("AS=${AS}")
 CONFIG_OPTS+=("AR=${AR}")
 CONFIG_OPTS+=("RANLIB=${RANLIB}")
 
-# Clone and build dependencies
+if [ ! $INCREMENTAL ]; then
+    # Clone and build dependencies
 .   for use where defined (use.tarball)
-if [ ! -e \$(basename "$(use.tarball)") ]; then
-    wget $(use.tarball)
-    tar -xzf \$(basename "$(use.tarball)")
-fi
-pushd \$(basename "$(use.tarball)" .tar.gz)
-(
-    ./configure "${CONFIG_OPTS[@]}"
-    make -j4
-    make install
-) || exit 1
-popd
+    if [ ! -e \$(basename "$(use.tarball)") ]; then
+        wget $(use.tarball)
+        tar -xzf \$(basename "$(use.tarball)")
+    fi
+    pushd \$(basename "$(use.tarball)" .tar.gz)
+    (
+        ./configure "${CONFIG_OPTS[@]}"
+        make -j4
+        make install
+    ) || exit 1
+    popd
 
 .   endfor
 .   for use where defined (use.repository) & ! defined (use.tarball)
-if [ ! -e $(use.project) ]; then
+    if [ ! -e $(use.project) ]; then
 .      if defined (use.release)
-    git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+        git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
 .      else
-    git clone --quiet --depth 1 $(use.repository) $(use.project)
+        git clone --quiet --depth 1 $(use.repository) $(use.project)
 .      endif
-fi
-pushd $(use.project)
-(
-    git --no-pager log --oneline -n1
-    if [ -e autogen.sh ]; then
-        ./autogen.sh 2> /dev/null
     fi
-    if [ -e buildconf ]; then
-        ./buildconf 2> /dev/null
-    fi
-    ./configure "${CONFIG_OPTS[@]}"
-    make -j4
-    make install
-) || exit 1
-popd
+    pushd $(use.project)
+    (
+        if [ $UPDATE ]; then
+            git pull --rebase
+        fi
+        git --no-pager log --oneline -n1
+        if [ -e autogen.sh ]; then
+            ./autogen.sh 2> /dev/null
+        fi
+        if [ -e buildconf ]; then
+            ./buildconf 2> /dev/null
+        fi
+        ./configure "${CONFIG_OPTS[@]}"
+        make -j4
+        make install
+    ) || exit 1
+    popd
 
 .   endfor
+fi
 
 # Cross build this project
 pushd ../..
@@ -286,6 +313,19 @@ And finally sync your libraries to the Pi
 The first time you install a library onto the Raspberry Pi you'll need to run
 
     sudo ldconfig
+
+During development running the build script with all dependencies just to test
+a minor change is overkill. To run an incremental build use the option
+`-i|--incremental` which will only build this project.
+
+    ./build.sh --incremental
+
+Once in a while you might want to update the dependencies. You can do this by
+adding the option `-u|--update`.
+
+    ./build.sh --update
+
+Note that incremental and update are exclusiv options.
 
 ## Cross compile and install to Raspbian image
 
