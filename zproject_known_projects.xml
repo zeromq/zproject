@@ -86,7 +86,7 @@
         test = "sodium_init" />
 
     <use project = "libcurl"
-        repository = "https://github.com/bagder/curl"
+        repository = "https://github.com/curl/curl"
         test = "curl_easy_init"
         header = "curl/curl.h" />
 
