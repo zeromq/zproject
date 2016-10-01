@@ -29,7 +29,19 @@ libffi-dev
 # only execute this next line if interested in updating the man pages as well (adds to build time):
 # sudo apt-get install -y asciidoc
 
-.for use where !optional
+.for use where !optional & defined (use.tarball)
+cd /home/vagrant
+wget $(use.tarball)
+tar -xzf \$(basename "$(use.tarball)")
+rm \$(basename "$(use.tarball)")
+cd /home/vagrant/\$(basename "$(use.tarball)" .tar.gz)
+\./configure
+make
+make install
+ldconfig
+
+.endfor
+.for use where !optional & !defined (use.tarball)
 cd /home/vagrant
 git clone --quiet $(use.repository).git
 cd /home/vagrant/$(use.project)
