@@ -16,6 +16,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 # Select flags
 SET(CMAKE_C_FLAGS_RELEASE "-O3")
 
+# Will be used to add flags to pkg-config useful when apps want to statically link
+set(pkg_config_libs_private "")
+
 ########################################################################
 # options
 ########################################################################
