@@ -26,7 +26,19 @@ RUN chmod 0440 /etc/sudoers.d/zmq
 
 USER zmq
 
-.for use where !optional
+.for use where !optional & defined (use.tarball)
+WORKDIR /home/zmq
+RUN wget $(use.tarball)
+RUN tar -xzf \$(basename "$(use.tarball)")
+RUN rm \$(basename "$(use.tarball)")
+WORKDIR /home/zmq/\$(basename "$(use.tarball)" .tar.gz)
+RUN ./configure --quiet --without-docs
+RUN make
+RUN sudo make install
+RUN sudo ldconfig
+
+.endfor
+.for use where !optional & !defined (use.tarball)
 WORKDIR /home/zmq
 RUN git clone --quiet $(use.repository).git
 WORKDIR /home/zmq/$(use.project)
