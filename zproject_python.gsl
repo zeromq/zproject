@@ -297,7 +297,13 @@ function generate_binding
     >        if sys.platform == 'darwin':
     >            lib = cdll.LoadLibrary('$(project.libname).$(project->version.major).dylib')
     >        else:
-    >            lib = cdll.LoadLibrary("$(project.libname).so.$(project->version.major)")
+    >            try:
+    >                lib = cdll.LoadLibrary("$(project.libname).so.$(project->version.major)")
+    >            except OSError:
+    >                try:
+    >                    lib = cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), "$(project.libname).so"))
+    >                except OSError:
+    >                    lib = cdll.LoadLibrary(os.path.join('.', "$(project.libname).so"))
     >    elif os.name == 'nt':
     >        lib = cdll.LoadLibrary('$(project.libname).dll')
     >except OSError:
