@@ -290,27 +290,34 @@ function generate_binding
     endif
 
     ># $(project.name:c)
+    >lib = None
     >try:
-    >    # If LD_LIBRARY_PATH or your OSs equivalent is set, this is the only way to
-    >    # load the library.  If we use find_library below, we get the wrong result.
-    >    if os.name == 'posix':
-    >        if sys.platform == 'darwin':
-    >            lib = cdll.LoadLibrary('$(project.libname).$(project->version.major).dylib')
-    >        else:
-    >            try:
+    >    t = os.getcwd()
+    >    p = os.path.join(os.path.dirname(__file__), '..')
+    >    os.chdir(p)
+    >
+    >    from $(project.name) import $(project.libname)
+    >    lib = CDLL($(project.libname).__file__)
+    >    os.chdir(t)
+    >except ImportError:
+    >    pass
+    >
+    >if not lib:
+    >    try:
+    >        # If LD_LIBRARY_PATH or your OSs equivalent is set, this is the only way to
+    >        # load the library.  If we use find_library below, we get the wrong result.
+    >        if os.name == 'posix':
+    >            if sys.platform == 'darwin':
+    >                lib = cdll.LoadLibrary('$(project.libname).$(project->version.major).dylib')
+    >            else:
     >                lib = cdll.LoadLibrary("$(project.libname).so.$(project->version.major)")
-    >            except OSError:
-    >                try:
-    >                    lib = cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), "$(project.libname).so"))
-    >                except OSError:
-    >                    lib = cdll.LoadLibrary(os.path.join('.', "$(project.libname).so"))
-    >    elif os.name == 'nt':
-    >        lib = cdll.LoadLibrary('$(project.libname).dll')
-    >except OSError:
-    >    libpath = find_library("$(project.name)")
-    >    if not libpath:
-    >        raise ImportError("Unable to find $(project.libname)")
-    >    lib = cdll.LoadLibrary(libpath)
+    >        elif os.name == 'nt':
+    >            lib = cdll.LoadLibrary('$(project.libname).dll')
+    >    except OSError:
+    >        libpath = find_library("$(project.name)")
+    >        if not libpath:
+    >            raise ImportError("Unable to find $(project.libname)")
+    >        lib = cdll.LoadLibrary(libpath)
     >
 
     for project->python_types.type
