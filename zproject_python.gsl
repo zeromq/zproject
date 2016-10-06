@@ -292,7 +292,10 @@ function generate_binding
     ># $(project.name:c)
     >lib = None
     >try:
-    >    t = os.getcwd()  # get the current dir, temp store it
+    >    # check to see if the shared object was embedded locally, attempt to load it
+    >    # if not, try to load it using the default system paths...
+    >    # we need to use os.chdir instead of trying to modify $LD_LIBRARY_PATH and reloading the interpreter
+    >    t = os.getcwd()
     >    p = os.path.join(os.path.dirname(__file__), '..')  # find the path to our $project_ctypes.py
     >    os.chdir(p)  # change directories briefly
     >
