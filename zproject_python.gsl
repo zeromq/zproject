@@ -292,13 +292,13 @@ function generate_binding
     ># $(project.name:c)
     >lib = None
     >try:
-    >    t = os.getcwd()
-    >    p = os.path.join(os.path.dirname(__file__), '..')
-    >    os.chdir(p)
+    >    t = os.getcwd()  # get the current dir, temp store it
+    >    p = os.path.join(os.path.dirname(__file__), '..')  # find the path to our $project_ctypes.py
+    >    os.chdir(p)  # change directories briefly
     >
-    >    from $(project.name) import $(project.libname)
-    >    lib = CDLL($(project.libname).__file__)
-    >    os.chdir(t)
+    >    from $(project.name) import $(project.libname)  # attempt to import the shared lib if it exists
+    >    lib = CDLL($(project.libname).__file__)  # if it exists try to load the shared lib
+    >    os.chdir(t)  # switch back to orig dir
     >except ImportError:
     >    pass
     >
