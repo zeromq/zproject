@@ -144,6 +144,23 @@ function ruby_ffi_attach_definition(method)
     return my.attach_definition
 endfunction
 
+
+# Ruby code that warns about unavailable function and creates a placeholder
+# function that just raises NotImplementedError with a helpful message.
+.macro ruby_unimplemented_method_definition(method)
+        if $VERBOSE || $DEBUG
+          warn "The $(method.STATE) function $(class.c_name:)_$(method.name:c)()" +
+            " is not provided by the installed $(project.name:) library."
+        end
+        def self.$(class.c_name:)_$(method.c_name:)(*)
+.       if method.state = 'draft'
+          raise NotImplementedError, "compile $(project.name:) with --enable-drafts"
+.       else
+          raise NotImplementedError, "update your code or downgrade the $(project.name:) library"
+.       endif
+        end
+.endmacro
+
 # Returns the Ruby method call without arguments,
 # like: ::MyProject::FFI.my_class_my_method
 function ruby_method_call_without_arguments(method)
@@ -302,42 +319,33 @@ module $(project.RubyName:)
 .for class where defined (class.api) & class.private = "0"
 
 .for constructor as method
-.  if method.state = 'draft'
-      begin # DRAFT method
+.  if method.state = 'draft' | method.state = 'deprecated'
+      begin # $(method.STATE) method
         $(ruby_ffi_attach_definition (method))
       rescue ::FFI::NotFoundError
-        if $VERBOSE || $DEBUG
-          warn "The function $(class.c_name)_$(method.name:c)() can't be used through " +
-               "this Ruby binding because it's not available."
-        end
+.       ruby_unimplemented_method_definition (method)
       end
 .  else
       $(ruby_ffi_attach_definition (method))
 .  endif
 .endfor
 .for destructor as method
-.  if method.state = 'draft'
-      begin # DRAFT method
+.  if method.state = 'draft' | method.state = 'deprecated'
+      begin # $(method.STATE) method
         $(ruby_ffi_attach_definition (method))
       rescue ::FFI::NotFoundError
-        if $VERBOSE || $DEBUG
-          warn "The function $(class.c_name)_$(method.name:c)() can't be used through " +
-               "this Ruby binding because it's not available."
-        end
+.       ruby_unimplemented_method_definition (method)
       end
 .  else
       $(ruby_ffi_attach_definition (method))
 .  endif
 .endfor
 .for method
-.  if method.state = 'draft'
-      begin # DRAFT method
+.  if method.state = 'draft' | method.state = 'deprecated'
+      begin # $(method.STATE) method
         $(ruby_ffi_attach_definition (method))
       rescue ::FFI::NotFoundError
-        if $VERBOSE || $DEBUG
-          warn "The function $(class.c_name)_$(method.name:c)() can't be used through " +
-               "this Ruby binding because it's not available."
-        end
+.       ruby_unimplemented_method_definition (method)
       end
 .  else
       $(ruby_ffi_attach_definition (method))
