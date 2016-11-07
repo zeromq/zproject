@@ -286,15 +286,15 @@ if(UNIX)
 endif()
 
 set(TEST_CLASSES
-.for class where !draft
+.for class where !draft & private ?<> 1
     $(name:c)
 .endfor
 )
 
-.if count (class, draft)
+.if count (class, draft & private ?<> 1)
 IF (ENABLE_DRAFTS)
     list (APPEND TEST_CLASSES
-.   for class where draft
+.   for class where draft & private ?<> 1
     $(name:c)
 .   endfor
     )
