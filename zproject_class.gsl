@@ -193,10 +193,10 @@ typedef struct {
 
 static test_item_t
 all_tests [] = {
-.for class where !draft & selftest
+.for class where !draft & selftest & private ?<> 1
     { "$(class.c_name)", $(class.c_name)_test },
 .endfor
-.for class where draft & selftest
+.for class where draft & selftest & private ?<> 1
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
