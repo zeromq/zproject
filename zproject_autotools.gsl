@@ -682,6 +682,9 @@ EXTRA_DIST = \\
 .for use
     Find$(use.project:c).cmake \\
 .endfor
+.if file.exists ("src/CMakeLists-local.txt")
+    src/CMakeLists-local.txt \\
+.endif
 .for extra
     src/$(extra.name) \\
 .endfor
