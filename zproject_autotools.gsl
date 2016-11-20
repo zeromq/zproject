@@ -1244,6 +1244,7 @@ $(name).txt:
 .endfor
 clean:
 \trm -f *.1 *.3 *.7
+doc:
 .for project.class where scope = "public"
 \t./mkman $(name:c)
 .endfor
