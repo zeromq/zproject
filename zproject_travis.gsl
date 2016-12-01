@@ -224,7 +224,7 @@ set -e
 if [ "$BUILD_TYPE" == "default" ]; then
     # Tell travis to deploy all files in dist
     mkdir dist
-    export $(PROJECT.NAME)_DEPLOYMENT=dist/*
+    export $(PROJECT.NAME:c)_DEPLOYMENT=dist/*
     # Move archives to dist
     mv *.tar.gz dist
     mv *.zip dist
@@ -236,9 +236,9 @@ if [ "$BUILD_TYPE" == "default" ]; then
 elif [ "$BUILD_TYPE" == "bindings" ] && [ "$BINDING" == "jni" ]; then
     ( cd bindings/jni && TERM=dumb PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./gradlew clean bintrayUpload )
     cp bindings/jni/android/$(project.name:c)-android.jar $(project.name:c)-android-$(->version.major).$(->version.minor).$(->version.patch).jar
-    export $(PROJECT.NAME)_DEPLOYMENT=$(project.name:c)-android-$(->version.major).$(->version.minor).$(->version.patch).jar
+    export $(PROJECT.NAME:c)_DEPLOYMENT=$(project.name:c)-android-$(->version.major).$(->version.minor).$(->version.patch).jar
 else
-    export $(PROJECT.NAME)_DEPLOYMENT=""
+    export $(PROJECT.NAME:c)_DEPLOYMENT=""
 fi
 .close
 .chmod_x ("ci_deploy.sh")
