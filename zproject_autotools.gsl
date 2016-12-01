@@ -251,7 +251,7 @@ else
     if test "x$$(project.name:c)_have_asciidoc" = "xno" -o "x$$(project.name:c)_have_xmlto" = "xno"; then
         $(project.name:c)_build_doc="no"
         # Tarballs built with 'make dist' ship with prebuilt documentation.
-        if ! test -f doc/$(project.name:c).7; then
+        if ! test -f doc/$(project.name).7; then
             $(project.name:c)_install_man="no"
             AC_MSG_WARN([You are building an unreleased version of $(PROJECT.NAME) and asciidoc or xmlto are not installed.])
             AC_MSG_WARN([Documentation will not be built and manual pages will not be installed.])
@@ -1308,15 +1308,15 @@ template::[header-declarations]
 </refentry>
 endif::backend-docbook[]
 endif::doctype-manpage[]
-.if !file.exists ("doc/$(project.name:c).txt")
-.output "doc/$(project.name:c).txt"
+.if !file.exists ("doc/$(project.name).txt")
+.output "doc/$(project.name).txt"
 Name(7)
 =======
 
 
 NAME
 ----
-$(project.name:c) - $(project.description:)
+$(project.name) - $(project.description:)
 
 
 SYNOPSIS
