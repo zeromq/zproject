@@ -21,6 +21,9 @@ CTestTestfile.cmake
 cmake_install.cmake
 install_manifest.txt
 
+# Repositories downloaded by CI integration scripts
+*.git/
+
 # vagrant
 .vagrant
 

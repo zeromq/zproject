@@ -106,8 +106,8 @@ To understand step by step what zproject can do for you, read chapter 3 of [@hin
 zproject uses the universal code generator called GSL to process its XML inputs and create its outputs. Before you start you'll need to install GSL (https://github.com/imatix/gsl) on your system.
 
 ```sh
-git clone https://github.com/imatix/gsl.git
-cd gsl/src
+git clone https://github.com/imatix/gsl.git gsl.git
+cd gsl.git/src
 make
 make install
 ```
@@ -120,8 +120,8 @@ GSL must be able to find the zproject resources on your system. Therefore you'll
 The following will install the zproject files to `/usr/local/bin`.
 
 ```sh
-git clone https://github.com/zeromq/zproject.git
-cd zproject
+git clone https://github.com/zeromq/zproject.git zproject.git
+cd zproject.git
 ./autogen.sh
 ./configure
 make
@@ -555,11 +555,11 @@ if [ "$BUILD_TYPE" == "default" ]; then
 
     ( ./autogen.sh && ./configure --prefix="${BUILD_PREFIX}" && make && make install ) || exit 1
 
-    git clone --depth 1 https://github.com/imatix/gsl gsl
-    ( cd gsl/src && make -j4 && DESTDIR=${BUILD_PREFIX} make install ) || exit 1
+    git clone --depth 1 https://github.com/imatix/gsl gsl.git
+    ( cd gsl.git/src && make -j4 && DESTDIR=${BUILD_PREFIX} make install ) || exit 1
 
-    git clone --depth 1 https://github.com/zeromq/czmq czmq
-    ( cd czmq && PATH=$PATH:${BUILD_PREFIX}/bin gsl -target:* project.xml ) || exit 1
+    git clone --depth 1 https://github.com/zeromq/czmq czmq.git
+    ( cd czmq.git && PATH=$PATH:${BUILD_PREFIX}/bin gsl -target:* project.xml ) || exit 1
 else
     pushd "./builds/${BUILD_TYPE}" && REPO_DIR="$(dirs -l +1)" ./ci_build.sh
 fi
@@ -884,7 +884,7 @@ In order to use it, you must install zproject itself and then pycparser. For mos
 virtualenv/venv mkapi
 source mkapi/bin/activate
 pip install pycparser
-git clone https://github.com/eliben/pycparser.git
+git clone https://github.com/eliben/pycparser.git pycparser.git
 ```
 
 Then from root directory of your project (for example czmq), type following
