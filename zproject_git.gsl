@@ -83,6 +83,9 @@ if !file.exists (".gitignore")
     ># Repositories downloaded by CI integration scripts
     >*.git/
     >
+    ># Travis build area
+    >tmp/
+    >
     ># Valgrind files
     >callgrind*
     >vgcore*

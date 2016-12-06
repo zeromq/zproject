@@ -24,6 +24,9 @@ install_manifest.txt
 # Repositories downloaded by CI integration scripts
 *.git/
 
+# Travis build area
+tmp/
+
 # vagrant
 .vagrant
 
