@@ -431,7 +431,7 @@ zproject's `use` element defines project dependencies. Model is described in `zp
 
     <use project = "czmq" libname = "libczmq"
         repository = "https://github.com/zeromq/czmq"
-        test = "zctx_test">
+        test = "zhashx_test">
         <use project = "libzmq" />
     </use>
 
