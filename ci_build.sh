@@ -14,5 +14,9 @@ if [ "$BUILD_TYPE" == "default" ]; then
     git clone --depth 1 https://github.com/zeromq/czmq czmq.git
     ( cd czmq.git && PATH=$PATH:${BUILD_PREFIX}/bin gsl -target:* project.xml ) || exit 1
 else
-    pushd "./builds/${BUILD_TYPE}" && REPO_DIR="$(dirs -l +1)" ./ci_build.sh
+    pushd "./builds/${BUILD_TYPE}" && REPO_DIR="$(dirs -l +1)" ./ci_build.sh || exit 1
 fi
+
+echo "=== Are GitIgnores good after making zproject '$BUILD_TYPE'? (should have no output below)"
+git status -s || true
+echo "==="
