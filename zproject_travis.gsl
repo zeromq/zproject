@@ -79,7 +79,10 @@ set -x
 set -e
 
 if [ "$BUILD_TYPE" == "default" ]; then
-    mkdir tmp
+    if [ -d "./tmp" ]; then
+        rm -rf ./tmp
+    fi
+    mkdir -p tmp
     BUILD_PREFIX=$PWD/tmp
 
     CONFIG_OPTS=()
