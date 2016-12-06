@@ -490,11 +490,11 @@ cd ..
 .endfor
 .for use where defined (use.repository)
 .   if defined (use.release)
-git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project).git
 .   else
-git clone --quiet --depth 1 $(use.repository) $(use.project)
+git clone --quiet --depth 1 $(use.repository) $(use.project).git
 .   endif
-cd $(use.project)
+cd $(use.project).git
 git --no-pager log --oneline -n1
 if [ -e autogen.sh ]; then
     ./autogen.sh 2> /dev/null

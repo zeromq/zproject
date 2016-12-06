@@ -80,6 +80,12 @@ if !file.exists (".gitignore")
     >install_manifest.txt
     >Testing/
     >
+    ># Repositories downloaded by CI integration scripts
+    >*.git/
+    >
+    ># Travis build area
+    >tmp/
+    >
     ># Valgrind files
     >callgrind*
     >vgcore*

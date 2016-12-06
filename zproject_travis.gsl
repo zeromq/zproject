@@ -104,11 +104,11 @@ if [ "$BUILD_TYPE" == "default" ]; then
 .   endfor
 .   for use where defined (use.repository) & ! defined (use.tarball)
 .      if defined (use.release)
-    git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+    git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project).git
 .      else
-    git clone --quiet --depth 1 $(use.repository) $(use.project)
+    git clone --quiet --depth 1 $(use.repository) $(use.project).git
 .      endif
-    cd $(use.project)
+    cd $(use.project).git
     git --no-pager log --oneline -n1
     if [ -e autogen.sh ]; then
         ./autogen.sh 2> /dev/null
@@ -125,8 +125,18 @@ if [ "$BUILD_TYPE" == "default" ]; then
     # Build and check this project
     ./autogen.sh 2> /dev/null
     ./configure --enable-drafts=yes "${CONFIG_OPTS[@]}"
+    make VERBOSE=1 all
+
+    echo "=== Are GitIgnores good after 'make all' with drafts? (should have no output below)"
+    git status -s || true
+    echo "==="
+
     export DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=yes ${CONFIG_OPTS[@]}"
-    make VERBOSE=1 distcheck
+    make VERBOSE=1 DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" distcheck
+
+    echo "=== Are GitIgnores good after 'make distcheck' with drafts? (should have no output below)"
+    git status -s || true
+    echo "==="
 
     # Build and check this project without DRAFT APIs
     make distclean
@@ -136,8 +146,13 @@ if [ "$BUILD_TYPE" == "default" ]; then
         ./autogen.sh 2> /dev/null
         ./configure --enable-drafts=no "${CONFIG_OPTS[@]}"
         export DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no ${CONFIG_OPTS[@]}" &&
-        make VERBOSE=1 distcheck
+        make VERBOSE=1 DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" distcheck
     ) || exit 1
+
+    echo "=== Are GitIgnores good after 'make distcheck' without drafts? (should have no output below)"
+    git status -s || true
+    echo "==="
+
 elif [ "$BUILD_TYPE" == "bindings" ]; then
     pushd "./bindings/${BINDING}" && ./ci_build.sh
 else
@@ -152,18 +167,18 @@ set -ex
 
 cd $REPO_DIR/..
 .for project.use where !optional & defined (use.repository)
-git clone --quiet --depth 1 $(use.repository) $(use.project)
+git clone --quiet --depth 1 $(use.repository) $(use.project).git
 .endfor
 cd -
 
 cd $REPO_DIR/..
-git clone --quiet --depth 1 https://github.com/zeromq/zproject
-cd zproject
+git clone --quiet --depth 1 https://github.com/zeromq/zproject zproject.git
+cd zproject.git
 export PATH=$PATH:`pwd`
 
 cd $REPO_DIR/..
-git clone https://github.com/imatix/gsl.git
-cd gsl/src
+git clone https://github.com/imatix/gsl.git gsl.git
+cd gsl.git/src
 make
 export PATH=$PATH:`pwd`
 
@@ -278,11 +293,11 @@ cd ..
 .endfor
 .for use where defined (use.repository)
 . if defined (use.release)
-git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project).git
 . else
-git clone --quiet --depth 1 $(use.repository) $(use.project)
+git clone --quiet --depth 1 $(use.repository) $(use.project).git
 . endif
-cd $(use.project)
+cd $(use.project).git
 git --no-pager log --oneline -n1
 if [ -e autogen.sh ]; then
     ./autogen.sh 2> /dev/null
