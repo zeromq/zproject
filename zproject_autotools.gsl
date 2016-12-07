@@ -632,6 +632,36 @@ echo
 AX_SUMMARIZE_ENV
 AX_SUMMARIZE_CONFIG
 $(project.GENERATED_WARNING_HEADER:)
+.output "src/.gitignore"
+$(project.GENERATED_WARNING_HEADER:)
+
+# Ignore files generated from .in templates
+.if count (class) + count (ac_config)  > 0
+.   if count (class) > 0
+# + pkgconfig:
+$(project.libname).pc
+.   endif
+# + main->extra sources (if any):
+.   for project.main where defined (main->extra)
+.       for extra where extra.cond ?<> "with_systemd_units"
+$(extra.name)
+.       endfor
+.   endfor
+.endif
+
+# + config files for mains (if any):
+.for project.main where main.service ?= 1
+$(main.name).cfg
+.endfor
+
+.if systemd ?= 1
+# + systemd service unit for daemons (if any):
+.   for project.main where main.service ?= 1
+$(main.name).service
+.   endfor
+.endif
+
+$(project.GENERATED_WARNING_HEADER:)
 .endmacro
 
 
