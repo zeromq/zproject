@@ -1043,7 +1043,7 @@ sub pull {
         while (<SOURCE>) {
             if (/$tag/) {
                 while (<SOURCE>) {
-                    last if /\\@discuss/ || /\\@end/ || /\\@ignore/;
+                    last if /\\@discuss/ || /\\@end/ || /\\@ignore/ || /\\@header/;
                     $_ = "    $_" if ($opts eq "code");
                     s/^    // if ($opts eq "left");
                     $_ = "    $_" if ($opts eq "test");
@@ -1126,6 +1126,7 @@ SYNOPSIS
 --------
 ----
 pull $header\\@interface
+pull $source\\@interface,left
 ----
 
 DESCRIPTION
