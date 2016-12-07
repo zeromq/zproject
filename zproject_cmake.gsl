@@ -514,4 +514,6 @@ PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .
 make all VERBOSE=1 -j4
 ctest -V
 make install
+.close
+.chmod_x ("builds/cmake/ci_build.sh")
 .endmacro
