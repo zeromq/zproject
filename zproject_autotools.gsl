@@ -1066,6 +1066,7 @@ $(project.GENERATED_WARNING_HEADER:)
 #   with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 use File::Basename;
+use Cwd;
 
 sub pull {
     local ($_) = @_;
@@ -1075,7 +1076,7 @@ sub pull {
         $opts = $4;
         $text = "";
         $ext = (fileparse("$file", qr/[^.]*/))[2];
-        die "Can't read $file: $!"
+        die "Can't read '$file': $!"
             unless open (SOURCE, $file);
 
         while (<SOURCE>) {
@@ -1094,7 +1095,7 @@ sub pull {
         # Add code fences for markdown highlighting
         $text = "```$ext\\n$text```\\n" if (length $text) and ($opts eq "code" or $opts eq "test");
 
-        $text = "Please add $tag section in $file.\\n" unless $text;
+        $text = "Please add '$tag' section in '$file'.\\n" unless $text;
         return $text;
     }
     else {
@@ -1103,33 +1104,37 @@ sub pull {
 }
 
 sub generate_manpage {
-    local ($name) = @_;
-    $name = $1 if $name =~ /(\\w+)\\.\\w+/;
-    $outp = $2 if $outp =~ /(\w+)\.\w+/;
+    local ($name, $outp, $rootsrcdir) = @_;
+    $name = $1 if $name =~ /(\\w+)\\.\\w+/; # Chop off extensions
+    $outp = $1 if $outp =~ /^(.+)\\.[^\\.\\/]+$/;
+    $outp_basename = $outp;
+    $outp_basename = $2 if $outp =~ /^(.*\\/)?(\\w+)$/;
 
+    printf "D: generate_manpage() got name='$name' outp='$outp' outp_basename='$outp_basename' rootsrcdir='$rootsrcdir'\\n";
     #   Check if we're making the man page for a main program, or a class
 
     $cat = 0;           #   Unknown category
-    exit unless open (MAKEFILE, "Makefile");
+    die "Can't open '" . cwd() . "/Makefile'"
+        unless open (MAKEFILE, "Makefile");
     while (<MAKEFILE>) {
-        if (/MAN1.*$outp\\.1/) {
+        if (/MAN1.*$outp_basename\\.1/) {
 .if project.use_cxx
-            $source = "../src/$name.cc";
-            $header = "../src/$name.cc";
+            $source = "$rootsrcdir/src/$name.cc";
+            $header = "$rootsrcdir/src/$name.cc";
 .else
-            $source = "../src/$name.c";
-            $header = "../src/$name.c";
+            $source = "$rootsrcdir/src/$name.c";
+            $header = "$rootsrcdir/src/$name.c";
 .endif
             $cat = 1;
             last;
         }
         elsif (/MAN3.*$name\\.3/) {
 .if project.use_cxx
-            $source = "../src/$name.cc";
+            $source = "$rootsrcdir/src/$name.cc";
 .else
-            $source = "../src/$name.c";
+            $source = "$rootsrcdir/src/$name.c";
 .endif
-            $header = "../include/$name.h";
+            $header = "$rootsrcdir/include/$name.h";
             $cat = 3;
             last;
         }
@@ -1138,7 +1143,8 @@ sub generate_manpage {
 
     #   Look for class title in 2nd line of source
     #   If there's no class file, leave hand-written man page alone
-    exit unless open (SOURCE, $source);
+    die "Can't open '$source'"
+        unless open (SOURCE, $source);
     $_ = <SOURCE>;
     $_ = <SOURCE>;
     $title = "no title found";
@@ -1146,10 +1152,10 @@ sub generate_manpage {
     close (SOURCE);
 
     #   Open output file
-    die "Can't create $outp.txt: $!"
+    die "Can't create '$outp.txt': $!"
         unless open (OUTPUT, ">$outp.txt");
 
-    printf "Generating $outp.txt...\\n";
+    printf "Generating '$outp.txt' from '$source'...\\n";
     $underline = "=" x (length ($name) + 3);
 
     $template = <<"END";
@@ -1158,7 +1164,7 @@ $underline
 
 NAME
 ----
-$outp - $title
+$outp_basename - $title
 
 SYNOPSIS
 --------
@@ -1194,10 +1200,10 @@ END
 
     #   Generate a simple text documentation for README.txt
     close OUTPUT;
-    printf "Generating $outp.doc...\\n";
-    die "Can't create $outp.doc: $!"
+    printf "Generating '$outp.doc' from '$source'...\\n";
+    die "Can't create '$outp.doc': $!"
         unless open (OUTPUT, ">$outp.doc");
-    print OUTPUT "#### $outp - $title\\n\\n";
+    print OUTPUT "#### $outp_basename - $title\\n\\n";
     print OUTPUT pull ("$source\\@header,left");
     print OUTPUT "\\n";
     print OUTPUT pull ("$source\\@discuss,left");
@@ -1213,10 +1219,15 @@ END
 $name = shift (@ARGV);
 $outp = shift (@ARGV);
 if (!$outp) {
-    $outp=$name
+    $outp=$name;
+}
+$rootsrcdir = shift (@ARGV);
+if (!$rootsrcdir) {
+    $rootsrcdir="..";
 }
 
-generate_manpage ($name, $outp);
+printf "D: got name='$name' outp='$outp' rootsrcdir='$rootsrcdir' from the start\\n";
+generate_manpage ($name, $outp, $rootsrcdir);
 .close
 .chmod_x ("doc/mkman")
 .endmacro
@@ -1249,22 +1260,29 @@ MAN3 =$(man3)
 MAN7 = $(man7)
 MAN_DOC = $\(MAN1) $\(MAN3) $\(MAN7)
 
-MAN_TXT = $\(MAN1:%.1=%.txt)
-MAN_TXT += $\(MAN3:%.3=%.txt)
-MAN_TXT += $\(MAN7:%.7=%.txt)
+# Assumption: the .7 pages only cover the project and are maintained manually
+MAN_TXT = $\(MAN7:%.7=%.txt)
 
-EXTRA_DIST = asciidoc.conf $\(MAN_TXT)
+EXTRA_DIST = asciidoc.conf mkman
 
 if INSTALL_MAN
 dist_man_MANS = $\(MAN_DOC)
 endif
 
 if BUILD_DOC
+MAN_TXT += $\(MAN1:%.1=%.txt)
+MAN_TXT += $\(MAN3:%.3=%.txt)
+
 DISTCLEANFILES = $\(MAN_DOC)
 
 dist-hook : $\(MAN_DOC)
 
 SUFFIXES=.txt .xml .1 .3 .7
+
+$\(builddir)/$(project.name).txt: $\(srcdir)/$(project.name).txt
+	if [ "$\@" != "$\<" ] || [ ! -s "$\@" ] ; then \\
+		cp "$\<" "$\@" || exit ; \\
+	fi
 
 \.txt.xml:
 \tasciidoc -d manpage -b docbook -f $\(srcdir)/asciidoc.conf \\
@@ -1277,29 +1295,38 @@ SUFFIXES=.txt .xml .1 .3 .7
 \txmlto man $<
 
 GENERATED_DOCS =
+\.txt.doc:
+# No-op, docs and texts are generated by mkman in one shot - just
+# make a dependency that can not parallelize and break stuff
+
 .for project.class where scope = "public"
 GENERATED_DOCS += $(name:c).txt $(name:c).doc
 .   if file.exists ("src/$(name:c).cc")
-$(name:c).txt $(name:c).doc: ../src/$(name:c).cc
+$(name:c).txt: $\(srcdir)/../src/$(name:c).cc
 .   else
-$(name:c).txt $(name:c).doc: ../src/$(name:c).c
+$(name:c).txt: $\(srcdir)/../src/$(name:c).c
 .   endif
-\t./mkman $(name:c)
+\t$\(srcdir)/mkman $(name:c) $\(builddir)/$(name) $\(srcdir)/..
+
 .endfor
 .for project.main where scope = "public"
 GENERATED_DOCS += $(name).txt $(name).doc
 .   if file.exists ("src/$(name:c).cc")
-$(name).txt $(name).doc: ../src/$(name).cc
+$(name).txt: $\(srcdir)/../src/$(name).cc
 .   else
-$(name).txt $(name).doc: ../src/$(name).c
+$(name).txt: $\(srcdir)/../src/$(name).c
 .   endif
-\t./mkman $(name:c) $(name)
+\t$\(srcdir)/mkman $(name:c) $\(builddir)/$(name) $\(srcdir)/..
+
 .endfor
+
 clean:
 \trm -f *.1 *.3 *.7 $\(GENERATED_DOCS)
 doc: $\(GENERATED_DOCS)
 
 endif
+
+EXTRA_DIST += $\(MAN_TXT)
 $(project.GENERATED_WARNING_HEADER:)
 .output "doc/.gitignore"
 $(project.GENERATED_WARNING_HEADER:)
