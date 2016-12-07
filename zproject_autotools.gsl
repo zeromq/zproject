@@ -797,6 +797,9 @@ src_$(project.libname)_la_SOURCES = \\
 .   else
     src/$(name:c).c \\
 .   endif
+.   if file.exists ("src/$(name:c)_engine.inc")
+    src/$(name:c)_engine.inc \\
+.   endif
 .endfor
 .for extra
     src/$(name) \\
@@ -811,6 +814,9 @@ src_$(project.libname)_la_SOURCES += \\
     src/$(name:c).cc$(last ()?? "\n"? " \\")
 .       else
     src/$(name:c).c$(last ()?? "\n"? " \\")
+.       endif
+.       if file.exists ("src/$(name:c)_engine.inc")
+    src/$(name:c)_engine.inc$(last ()?? "\n"? " \\")
 .       endif
 .   endfor
 endif
