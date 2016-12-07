@@ -49,6 +49,8 @@ addons:
   apt:
     packages:
     - git
+    - asciidoc
+    - xmlto
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils valgrind ; fi
@@ -190,12 +192,12 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     git reset --hard HEAD
     (
         ./autogen.sh 2> /dev/null
-        ./configure --enable-drafts=no "${CONFIG_OPTS[@]}"
+        ./configure --enable-drafts=no "${CONFIG_OPTS[@]}" --with-docs=yes
         make VERBOSE=1 all || exit $?
         if [ "$BUILD_TYPE" == "default-Werror" ] ; then
             echo "NOTE: Skipping distcheck for BUILD_TYPE='$BUILD_TYPE'" >&2
         else
-            export DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no ${CONFIG_OPTS[@]}" && \
+            export DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no ${CONFIG_OPTS[@]} --with-docs=yes" && \
             make VERBOSE=1 DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" distcheck || exit $?
         fi
     ) || exit 1
