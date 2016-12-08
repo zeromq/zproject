@@ -38,5 +38,10 @@ tmp/
 # CLion / PyCharm
 .idea
 
+# MSVC build directories
+obj/
+bin/
+*.tlog
+
 # editor backups
 *~

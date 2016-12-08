@@ -115,6 +115,11 @@ if !file.exists (".gitignore")
     ># Python build directory
     >build/
     >
+    ># MSVC build directories
+    >obj/
+    >bin/
+    >*.tlog
+    >
     ># Qt
     >*pro.user
     >moc_*
@@ -124,11 +129,18 @@ if !file.exists (".gitignore")
     ># Temporary files
     >*.swp
     >*.bak
+    >.test*
+    >
+    ># editor backups
     >*~
+else
+    echo "NOT regenerating an existing .gitignore file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 endif
 if !file.exists (".gitattributes")
     echo "Generating initial .gitattributes file"
     output ".gitattributes"
     ># disables auto CRLF conversion for all files; create the file correctly and it will be allright
     >* -text
+else
+    echo "NOT regenerating an existing .gitattributes file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 endif
