@@ -115,6 +115,11 @@ if !file.exists (".gitignore")
     ># Python build directory
     >build/
     >
+    ># MSVC build directories
+    >obj/
+    >bin/
+    >*.tlog
+    >
     ># Qt
     >*pro.user
     >moc_*
@@ -124,6 +129,9 @@ if !file.exists (".gitignore")
     ># Temporary files
     >*.swp
     >*.bak
+    >.test*
+    >
+    ># editor backups
     >*~
 endif
 if !file.exists (".gitattributes")
