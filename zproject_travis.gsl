@@ -254,6 +254,7 @@ export PATH=$PATH:`pwd`
         echo "zproject generated new files!"
         exit 1
     fi
+    exit 0
 }
 .close
 .chmod_x ("builds/check_zproject/ci_build.sh")
