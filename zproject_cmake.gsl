@@ -517,6 +517,10 @@ time make all VERBOSE=1 -j4
 time ctest -V
 time make install
 echo "`date`: Builds completed without fatal errors!"
+
+echo "=== Are GitIgnores good after making zproject '$BUILD_TYPE'? (should have no output below)"
+git status -s || true
+echo "==="
 .close
 .chmod_x ("builds/cmake/ci_build.sh")
 .endmacro

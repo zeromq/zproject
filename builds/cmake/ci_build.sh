@@ -50,3 +50,7 @@ time git clone --depth 1 https://github.com/zeromq/czmq.git czmq.git
   PATH=$PATH:${BUILD_PREFIX}/bin time ${BUILD_PREFIX}/bin/gsl -target:* project.xml \
 ) || exit 1
 echo "`date`: Builds completed without fatal errors!"
+
+echo "=== Are GitIgnores good after making zproject '$BUILD_TYPE'? (should have no output below)"
+git status -s || true
+echo "==="
