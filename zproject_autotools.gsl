@@ -811,13 +811,15 @@ if ENABLE_DRAFTS
 src_$(project.libname)_la_SOURCES += \\
 .   for class where draft
 .       if file.exists ("src/$(name:c).cc")
-    src/$(name:c).cc$(last ()?? "\n"? " \\")
+    src/$(name:c).cc\
 .       else
-    src/$(name:c).c$(last ()?? "\n"? " \\")
+    src/$(name:c).c\
 .       endif
 .       if file.exists ("src/$(name:c)_engine.inc")
-    src/$(name:c)_engine.inc$(last ()?? "\n"? " \\")
+ \\
+    src/$(name:c)_engine.inc\
 .       endif
+$(last ()?? "\n"? " \\")
 .   endfor
 endif
 
