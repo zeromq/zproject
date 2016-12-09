@@ -32,23 +32,23 @@
     -->
 
     <use project = "libzmq" prefix = "zmq" debian_name = "libzmq3-dev" redhat_name = "zeromq-devel"
-        repository = "https://github.com/zeromq/libzmq"
+        repository = "https://github.com/zeromq/libzmq.git"
         test = "zmq_init" />
 
     <use project = "czmq" libname = "libczmq"
-        repository = "https://github.com/zeromq/czmq"
+        repository = "https://github.com/zeromq/czmq.git"
         test = "zhashx_test">
         <use project = "libzmq" />
     </use>
 
     <use project = "zyre" libname = "libzyre"
-        repository = "https://github.com/zeromq/zyre"
+        repository = "https://github.com/zeromq/zyre.git"
         test = "zyre_test">
         <use project = "czmq" />
     </use>
 
     <use project = "malamute" libname = "libmlm"
-        repository = "https://github.com/zeromq/malamute"
+        repository = "https://github.com/zeromq/malamute.git"
         header = "malamute.h"
         prefix = "mlm"
         test = "mlm_server_test">
@@ -57,7 +57,7 @@
     </use>
 
     <use project = "gsl" libname = ""
-        repository = "https://github.com/imagix/gsl"
+        repository = "https://github.com/imatix/gsl.git"
         debian_name = "generator-scripting-language"
         redhat_name = "generator-scripting-language">
     </use>
@@ -65,14 +65,14 @@
     <!-- Edgenet Projects -->
 
     <use project = "drops" libname = "libdrops"
-        repository = "https://github.com/edgenet/drops"
+        repository = "https://github.com/edgenet/drops.git"
         test = "drops_test">
         <use project = "czmq" />
         <use project = "zyre" />
     </use>
 
     <use project = "hydra" libname = "libhydra"
-        repository = "https://github.com/edgenet/hydra"
+        repository = "https://github.com/edgenet/hydra.git"
         test = "hydra_server_test">
         <use project = "czmq" />
     </use>
@@ -81,29 +81,29 @@
         (If you're unsure of where a project belongs, add it here) -->
 
     <use project = "libsodium" prefix = "sodium"
-        repository = "https://github.com/jedisct1/libsodium"
+        repository = "https://github.com/jedisct1/libsodium.git"
         release = "stable"
         test = "sodium_init" />
 
     <use project = "libcurl"
-        repository = "https://github.com/curl/curl"
+        repository = "https://github.com/curl/curl.git"
         test = "curl_easy_init"
         header = "curl/curl.h" />
 
     <use project = "editline"
-        repository = "https://github.com/troglobit/editline"
+        repository = "https://github.com/troglobit/editline.git"
         test = "readline" />
 
     <use project = "fuse"
-        repository = "http://git.code.sf.net/p/fuse/fuse"
+        repository = "http://git.code.sf.net/p/fuse/fuse.git"
         test = "fuse_main" />
 
     <use project = "jansson"
-        repository = "https://github.com/akheron/jansson"
+        repository = "https://github.com/akheron/jansson.git"
         test = "json_object" />
 
     <use project = "jemalloc"
-        repository = "https://github.com/jemalloc/jemalloc"
+        repository = "https://github.com/jemalloc/jemalloc.git"
         test = "malloc"
         header = "jemalloc/jemalloc.h" />
 
