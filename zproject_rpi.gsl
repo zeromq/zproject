@@ -97,9 +97,9 @@ if [ ! $INCREMENTAL ]; then
     fi
     pushd \$(basename "$(use.tarball)" .tar.gz)
     (
-        ./configure "${CONFIG_OPTS[@]}"
-        make -j4
-        make install
+        time ./configure "${CONFIG_OPTS[@]}"
+        time make -j4
+        time make install
     ) || exit 1
     popd
 
@@ -107,26 +107,26 @@ if [ ! $INCREMENTAL ]; then
 .   for use where defined (use.repository) & ! defined (use.tarball)
     if [ ! -e $(use.project).git ]; then
 .      if defined (use.release)
-        git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project).git
+        time git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project).git
 .      else
-        git clone --quiet --depth 1 $(use.repository) $(use.project).git
+        time git clone --quiet --depth 1 $(use.repository) $(use.project).git
 .      endif
     fi
     pushd $(use.project).git
     (
         if [ $UPDATE ]; then
-            git pull --rebase
+            time git pull --rebase
         fi
         git --no-pager log --oneline -n1
         if [ -e autogen.sh ]; then
-            ./autogen.sh 2> /dev/null
+            time ./autogen.sh 2> /dev/null
         fi
         if [ -e buildconf ]; then
-            ./buildconf 2> /dev/null
+            time ./buildconf 2> /dev/null
         fi
-        ./configure "${CONFIG_OPTS[@]}"
-        make -j4
-        make install
+        time ./configure "${CONFIG_OPTS[@]}"
+        time make -j4
+        time make install
     ) || exit 1
     popd
 
@@ -136,10 +136,10 @@ fi
 # Cross build this project
 pushd ../..
 (
-    ./autogen.sh 2> /dev/null
-    ./configure --enable-drafts=yes "${CONFIG_OPTS[@]}"
-    make -j4
-    make install
+    time ./autogen.sh 2> /dev/null
+    time ./configure --enable-drafts=yes "${CONFIG_OPTS[@]}"
+    time make -j4
+    time make install
 ) || exit 1
 popd
 

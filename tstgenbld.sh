@@ -115,10 +115,10 @@ echo Building zproject
 phase=building
 (
     cd ../zproject &&
-    ./autogen.sh &&
-    ./configure &&
-    make &&
-    make install &&
+    time ./autogen.sh &&
+    time ./configure &&
+    time make &&
+    time make install &&
     exit $?
 ) > ${BUILD_PREFIX}/zproject_${phase}.err 2>&1 && mv ${BUILD_PREFIX}/zproject_${phase}.err ${BUILD_PREFIX}/zproject_${phase}.ok
 loglogs
@@ -143,8 +143,8 @@ echo Building gsl
 phase=building
 (
     cd ${GITPROJECTS}/gsl.git/src &&
-    make -j4 &&
-    DESTDIR=${BUILD_PREFIX} make install &&
+    time make -j4 &&
+    DESTDIR=${BUILD_PREFIX} time make install &&
     exit $?
 ) > ${BUILD_PREFIX}/gsl_${phase}.err 2>&1 &&
     mv ${BUILD_PREFIX}/gsl_${phase}.err ${BUILD_PREFIX}/gsl_${phase}.ok
@@ -177,8 +177,8 @@ phase=autogen-config
 for project in libsodium libzmq czmq malamute zyre; do
     (
         cd ${GITPROJECTS}/$project.git &&
-        ./autogen.sh &&
-        ./configure --prefix=${BUILD_PREFIX} &&
+        time ./autogen.sh &&
+        time ./configure --prefix=${BUILD_PREFIX} &&
         exit $?
     ) > ${BUILD_PREFIX}/${project}_${phase}.err 2>&1 &&
         mv ${BUILD_PREFIX}/${project}_${phase}.err  ${BUILD_PREFIX}/${project}_${phase}.ok
@@ -189,7 +189,7 @@ phase=make
 for project in libsodium libzmq czmq malamute zyre; do
     (
         cd ${GITPROJECTS}/$project.git &&
-        make &&
+        time make &&
         exit $?
     ) > ${BUILD_PREFIX}/${project}_${phase}.err 2>&1 &&
         mv ${BUILD_PREFIX}/${project}_${phase}.err  ${BUILD_PREFIX}/${project}_${phase}.ok
@@ -200,7 +200,7 @@ phase=make-install
 for project in libsodium libzmq czmq malamute zyre; do
     (
         cd ${GITPROJECTS}/$project.git &&
-        DESTDIR=${BUILD_PREFIX} make install &&
+        DESTDIR=${BUILD_PREFIX} time make install &&
         exit $?
     ) > ${BUILD_PREFIX}/${project}_${phase}.err 2>&1 &&
         mv ${BUILD_PREFIX}/${project}_${phase}.err  ${BUILD_PREFIX}/${project}_${phase}.ok
@@ -213,7 +213,7 @@ phase=make-check
 for project in libzmq czmq malamute zyre; do
     (
         cd ${GITPROJECTS}/$project.git &&
-        DESTDIR=${BUILD_PREFIX} PATH=${BUILD_PREFIX}/bin:$PATH make check &&
+        DESTDIR=${BUILD_PREFIX} PATH=${BUILD_PREFIX}/bin:$PATH time make check &&
         exit $?
     ) > ${BUILD_PREFIX}/${project}_${phase}.err 2>&1 &&
         mv ${BUILD_PREFIX}/${project}_${phase}.err  ${BUILD_PREFIX}/${project}_${phase}.ok
