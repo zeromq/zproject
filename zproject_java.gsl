@@ -608,35 +608,36 @@ CONFIG_OPTS+=("--quiet")
 pushd ../../..
 
 # Clone and build dependencies
+echo "`date`: Starting build of dependencies (if any)..."
 .   for use where defined (use.tarball)
 wget $(use.tarball)
 tar -xzf \$(basename "$(use.tarball)")
 cd \$(basename "$(use.tarball)" .tar.gz)
-\./configure "${CONFIG_OPTS[@]}"
-make -j4
-make install
+time ./configure "${CONFIG_OPTS[@]}"
+time make -j4
+time make install
 cd ..
 .   endfor
 .   for use where defined (use.repository)
 .      if defined (use.release)
-git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+time git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
 .      else
-git clone --quiet --depth 1 $(use.repository) $(use.project)
+time git clone --quiet --depth 1 $(use.repository) $(use.project)
 .      endif
 cd $(use.project)
 git --no-pager log --oneline -n1
 if [ -e autogen.sh ]; then
-    ./autogen.sh 2> /dev/null
+    time ./autogen.sh 2> /dev/null
 fi
 if [ -e buildconf ]; then
-    ./buildconf 2> /dev/null
+    time ./buildconf 2> /dev/null
 fi
-\./configure "${CONFIG_OPTS[@]}"
-make -j4
-make install
+time ./configure "${CONFIG_OPTS[@]}"
+time make -j4
+time make install
 .       if count (project->dependencies.class, class.project = use.project) > 0
 # Build jni dependency
-( cd bindings/jni && TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig ./gradlew publishToMavenLocal )
+( cd bindings/jni && TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig time ./gradlew publishToMavenLocal )
 .       endif
 cd ..
 
@@ -644,15 +645,18 @@ cd ..
 popd
 pushd ../..
 
-\./autogen.sh 2> /dev/null
-\./configure "${CONFIG_OPTS[@]}"
-make -j4
-make install
+echo "`date`: Starting build of currently tested project..."
+time ./autogen.sh 2> /dev/null
+time ./configure "${CONFIG_OPTS[@]}"
+time make -j4
+time make install
+echo "`date`: Build completed without fatal errors!"
 
 popd
 
-TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig ./gradlew build jar
-TERM=dumb ./gradlew clean
+
+TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig time ./gradlew build jar
+TERM=dumb time ./gradlew clean
 
 ########################################################################
 #  Build and check the jni android binding
@@ -666,7 +670,7 @@ popd
 
 pushd android
 
-TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig ./build.sh
+TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig time ./build.sh
 
 popd
 .close

@@ -79,10 +79,10 @@ fi
 
     export LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
 
-    (cd "${cache}/$(project.name)" && ./autogen.sh 2> /dev/null \\
-        && ./configure --quiet "${ANDROID_BUILD_OPTS[@]}" --without-docs \\
-        && make -j 4 \\
-        && make install) || exit 1
+    (cd "${cache}/$(project.name)" && time ./autogen.sh 2> /dev/null \\
+        && time ./configure --quiet "${ANDROID_BUILD_OPTS[@]}" --without-docs \\
+        && time make -j 4 \\
+        && time make install) || exit 1
 }
 
 ##

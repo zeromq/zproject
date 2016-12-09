@@ -26,37 +26,40 @@ RUN chmod 0440 /etc/sudoers.d/zmq
 
 USER zmq
 
+RUN echo "`date`: Starting build of dependencies (if any)..."
 .for use where !optional & defined (use.tarball)
 WORKDIR /home/zmq
 RUN wget $(use.tarball)
 RUN tar -xzf \$(basename "$(use.tarball)")
 RUN rm \$(basename "$(use.tarball)")
 WORKDIR /home/zmq/\$(basename "$(use.tarball)" .tar.gz)
-RUN ./configure --quiet --without-docs
-RUN make
-RUN sudo make install
-RUN sudo ldconfig
+RUN time ./configure --quiet --without-docs
+RUN time make
+RUN time sudo make install
+RUN time sudo ldconfig
 
 .endfor
 .for use where !optional & !defined (use.tarball)
 WORKDIR /home/zmq
-RUN git clone --quiet $(use.repository) $(use.project).git
+RUN time git clone --quiet $(use.repository) $(use.project).git
 WORKDIR /home/zmq/$(use.project).git
-RUN ./autogen.sh 2> /dev/null
-RUN ./configure --quiet --without-docs
+RUN time ./autogen.sh 2> /dev/null
+RUN time ./configure --quiet --without-docs
 RUN make
-RUN sudo make install
-RUN sudo ldconfig
+RUN time sudo make install
+RUN time sudo ldconfig
 
 .endfor
 WORKDIR /home/zmq
-RUN git clone --quiet git://github.com/zeromq/$(project.name:c).git $(project.name:c).git
+RUN echo "`date`: Starting build of currently tested project..."
+RUN time git clone --quiet git://github.com/zeromq/$(project.name:c).git $(project.name:c).git
 WORKDIR /home/zmq/$(project.name:c) $(project.name:c).git
-RUN ./autogen.sh 2> /dev/null
-RUN ./configure --quiet --without-docs
-RUN make
-RUN sudo make install
-RUN sudo ldconfig
+RUN time ./autogen.sh 2> /dev/null
+RUN time ./configure --quiet --without-docs
+RUN time make
+RUN time sudo make install
+RUN time sudo ldconfig
+RUN echo "`date`: Builds completed without fatal errors!"
 .if file.exists ("Dockerfile.in")
 
 $(file.slurp ("Dockerfile.in"))

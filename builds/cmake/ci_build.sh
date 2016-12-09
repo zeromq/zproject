@@ -21,23 +21,32 @@ CMAKE_OPTS+=("-DCMAKE_LIBRARY_PATH:PATH=${BUILD_PREFIX}/lib")
 CMAKE_OPTS+=("-DCMAKE_INCLUDE_PATH:PATH=${BUILD_PREFIX}/include")
 
 # Clone and build dependencies
-git clone --quiet --depth 1 https://github.com/imagix/gsl gsl.git
+echo "`date`: Starting build of dependencies: gsl..."
+time git clone --quiet --depth 1 https://github.com/imatix/gsl.git gsl.git
 cd gsl.git
 git --no-pager log --oneline -n1
 if [ -e autogen.sh ]; then
-    ./autogen.sh 2> /dev/null
+    time ./autogen.sh 2> /dev/null
 fi
 if [ -e buildconf ]; then
-    ./buildconf 2> /dev/null
+    time ./buildconf 2> /dev/null
 fi
-./configure "${CONFIG_OPTS[@]}"
-make -j4
-make install
+time ./configure "${CONFIG_OPTS[@]}"
+time make -j4
+time make install
 cd ..
 
 # Build and check this project
 cd ../..
-PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .
-make all VERBOSE=1 -j4
-ctest -V
-make install
+echo "`date`: Starting build of currently tested zproject..."
+PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig time cmake "${CMAKE_OPTS[@]}" .
+time make all VERBOSE=1 -j4
+time ctest -V
+time make install
+
+echo "`date`: Starting test of zproject (and gsl) by reconfiguring czmq..."
+time git clone --depth 1 https://github.com/zeromq/czmq.git czmq.git
+( cd czmq.git && \
+  PATH=$PATH:${BUILD_PREFIX}/bin time ${BUILD_PREFIX}/bin/gsl -target:* project.xml \
+) || exit 1
+echo "`date`: Builds completed without fatal errors!"
