@@ -43,7 +43,7 @@ ldconfig
 .endfor
 .for use where !optional & !defined (use.tarball)
 cd /home/vagrant
-git clone --quiet $(use.repository).git $(use.project).git
+git clone --quiet $(use.repository) $(use.project).git
 cd /home/vagrant/$(use.project).git
 \./autogen.sh
 \./configure

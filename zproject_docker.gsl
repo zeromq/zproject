@@ -40,7 +40,7 @@ RUN sudo ldconfig
 .endfor
 .for use where !optional & !defined (use.tarball)
 WORKDIR /home/zmq
-RUN git clone --quiet $(use.repository).git $(use.project).git
+RUN git clone --quiet $(use.repository) $(use.project).git
 WORKDIR /home/zmq/$(use.project).git
 RUN ./autogen.sh 2> /dev/null
 RUN ./configure --quiet --without-docs
