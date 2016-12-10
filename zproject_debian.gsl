@@ -219,6 +219,7 @@ Build-Depends: debhelper (>= 9),
 .endif
 .endfor
 .if systemd ?= 1
+    systemd,
     dh-systemd,
 .endif
 Build-Depends-Indep: asciidoc,
