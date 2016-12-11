@@ -372,6 +372,37 @@ function resolve_c_class (class)
     endfor
 endfunction
 
+#   Parse a path looking for a class and resolve it if found
+#
+function parse_directory (path, class)
+    dir = directory.open (my.path)?
+    if defined (dir)
+        for dir.directory
+            api_file = directory.path + directory.name + "/api/"  + "$(my.class:c).xml"
+            if resolved = 0 & file.exists (api_file)
+                dependency = XML.load_file (api_file)
+                dependency.api_dir = directory.path + directory.name + "/api/"
+                dependency.resolved = 0
+                dependency.project = directory.name
+                resolve_c_class (dependency)
+                move dependency to project->dependencies
+                resolved = 1
+                echo "Importing $(api_file)"
+            endif
+            api_file = directory.path + directory.name + "/api/"  + "$(my.class:c).api"
+            if resolved = 0 & file.exists (api_file)
+                dependency = XML.load_file (api_file)
+                dependency.api_dir = directory.path + directory.name + "/api/"
+                dependency.resolved = 0
+                dependency.project = directory.name
+                resolve_c_class (dependency)
+                move dependency to project->dependencies
+                resolved = 1
+                echo "Importing $(api_file)"
+            endif
+        endfor
+    endif
+endfunction
 
 #   Resolve all dependent data types for one container and load their API file
 #   if it exists.
@@ -381,59 +412,15 @@ function resolve_container_dependencies (class_name, container)
     & count (project.class, class.c_name = my.container.type) = 0 \
     & count (project->dependencies.class, class.c_name = my.container.type) = 0
         resolved = 0
-        # Search the installation directory for the dependency
-        install_dir = directory.open ("/usr/local/share/zproject")?
-        if defined (install_dir)
-            for install_dir.directory
-                api_file = directory.path + directory.name + "/"  + "$(my.container.type:c).xml"
-                if resolved = 0 & file.exists (api_file)
-                    dependency = XML.load_file (api_file)
-                    dependency.api_dir = directory.path + directory.name + "/"
-                    dependency.resolved = 0
-                    dependency.project = directory.name
-                    resolve_c_class (dependency)
-                    move dependency to project->dependencies
-                    resolved = 1
-                endif
-                api_file = directory.path + directory.name + "/"  + "$(my.container.type:c).api"
-                if resolved = 0 & file.exists (api_file)
-                    dependency = XML.load_file (api_file)
-                    dependency.api_dir = directory.path + directory.name + "/"
-                    dependency.resolved = 0
-                    dependency.project = directory.name
-                    resolve_c_class (dependency)
-                    move dependency to project->dependencies
-                    resolved = 1
-                endif
-            endfor
+        # Search the workspace directory for the dependency
+        parse_directory ("..", my.container.type)
+        if !resolved
+            # Search the installation directory for the dependency
+            parse_directory ("/usr/local/share/zproject", my.container.type)
         endif
         if !resolved
-            # Search the workspace directory for the dependency
-            workspace_dir = directory.open ("..")?
-            if defined (workspace_dir)
-                for workspace_dir.directory
-                    api_file = directory.path + directory.name + "/api/"  + "$(my.container.type:c).xml"
-                    if resolved = 0 & file.exists (api_file)
-                        dependency = XML.load_file (api_file)
-                        dependency.api_dir = directory.path + directory.name + "/api/"
-                        dependency.resolved = 0
-                        dependency.project = directory.name
-                        resolve_c_class (dependency)
-                        move dependency to project->dependencies
-                        resolved = 1
-                    endif
-                    api_file = directory.path + directory.name + "/api/"  + "$(my.container.type:c).api"
-                    if resolved = 0 & file.exists (api_file)
-                        dependency = XML.load_file (api_file)
-                        dependency.api_dir = directory.path + directory.name + "/api/"
-                        dependency.resolved = 0
-                        dependency.project = directory.name
-                        resolve_c_class (dependency)
-                        move dependency to project->dependencies
-                        resolved = 1
-                    endif
-                endfor
-            endif
+            # Search the system installation directory for the dependency
+            parse_directory ("/usr/share/zproject", my.container.type)
         endif
         if !resolved
             echo "W: in $(class.name): '" + my.container.type +"' does not resolve to a class"
