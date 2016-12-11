@@ -394,6 +394,7 @@ function resolve_container_dependencies (class_name, container)
                     resolve_c_class (dependency)
                     move dependency to project->dependencies
                     resolved = 1
+                    echo "Importing $(api_file)"
                 endif
                 api_file = directory.path + directory.name + "/api/"  + "$(my.container.type:c).api"
                 if resolved = 0 & file.exists (api_file)
@@ -404,6 +405,7 @@ function resolve_container_dependencies (class_name, container)
                     resolve_c_class (dependency)
                     move dependency to project->dependencies
                     resolved = 1
+                    echo "Importing $(api_file)"
                 endif
             endfor
         endif
@@ -421,6 +423,7 @@ function resolve_container_dependencies (class_name, container)
                         resolve_c_class (dependency)
                         move dependency to project->dependencies
                         resolved = 1
+                        echo "Importing $(api_file)"
                     endif
                     api_file = directory.path + directory.name + "/"  + "$(my.container.type:c).api"
                     if resolved = 0 & file.exists (api_file)
@@ -431,6 +434,7 @@ function resolve_container_dependencies (class_name, container)
                         resolve_c_class (dependency)
                         move dependency to project->dependencies
                         resolved = 1
+                        echo "Importing $(api_file)"
                     endif
                 endfor
             endif
@@ -449,6 +453,7 @@ function resolve_container_dependencies (class_name, container)
                         resolve_c_class (dependency)
                         move dependency to project->dependencies
                         resolved = 1
+                        echo "Importing $(api_file)"
                     endif
                     api_file = directory.path + directory.name + "/"  + "$(my.container.type:c).api"
                     if resolved = 0 & file.exists (api_file)
@@ -459,6 +464,7 @@ function resolve_container_dependencies (class_name, container)
                         resolve_c_class (dependency)
                         move dependency to project->dependencies
                         resolved = 1
+                        echo "Importing $(api_file)"
                     endif
                 endfor
             endif
