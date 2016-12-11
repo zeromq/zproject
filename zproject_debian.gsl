@@ -194,6 +194,9 @@ usr/lib/*/$(project.libname).so.*
 usr/include/*
 usr/lib/*/$(project.libname).so
 usr/lib/*/pkgconfig/$(project.libname).pc
+.   if count (class, defined (class.api))
+usr/share/zproject
+.   endif
 .   if man3 ?<> ""
 usr/share/man/man3/*
 .   endif
