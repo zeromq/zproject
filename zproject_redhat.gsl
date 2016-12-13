@@ -80,11 +80,10 @@ $(project.name) $(project.description).
 .if project.exports_classes
 %package -n $(project.libname)$(project->version.major)
 Group:          System/Libraries
-Summary:        $(project.description)
+Summary:        $(project.description) shared library
 
 %description -n $(project.libname)$(project->version.major)
-$(project.name) $(project.description).
-This package contains shared library.
+This package contains shared library for $(project.name): $(project.description)
 
 %post -n $(project.libname)$(project->version.major) -p /sbin/ldconfig
 %postun -n $(project.libname)$(project->version.major) -p /sbin/ldconfig
@@ -109,8 +108,8 @@ Requires:       $(use.project)-devel
 .endfor
 
 %description devel
-$(project.name) $(project.description).
-This package contains development files.
+$(project.description) development tools
+This package contains development files for $(project.name): $(project.description)
 
 %files devel
 %defattr(-,root,root)
