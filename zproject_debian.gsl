@@ -62,7 +62,7 @@ Build-Depends-Indep: asciidoc,
 Package: $(string.replace (project.libname, "_|-"))$(project->version.major)
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: $(project.name)
+Description: $(project.description) shared library
  This package contains shared library for $(project.name): $(project.description)
 
 Package: $(string.replace (project.libname, "_|-"))-dev
@@ -79,7 +79,7 @@ Depends:
 .endif
 .endfor
     $(string.replace (project.libname, "_|-"))$(project->version.major) (= ${binary:Version})
-Description: development files for $(project.name)
+Description: $(project.description) development tools
  This package contains development files for $(project.name): $(project.description)
 .endif
 
@@ -102,7 +102,7 @@ Depends:
     $(string.replace (project.libname, "_|-"))$(project->version.major) (= ${binary:Version}),
 .endif
     ${misc:Depends}
-Description: debugging symbols for $(project.name)
+Description: $(project.description) debugging symbols
  This package contains the debugging symbols for $(project.name) : $(project.description).
 
 .output "packaging/debian/copyright"
