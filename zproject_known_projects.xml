@@ -128,9 +128,13 @@
         header = "json-c/json.h"
         test = "json_object_to_json_string" />
 
+    <use project = "libfastjson"
+        header = "libfastjson/json.h"
+        test = "json_object_to_json_string" />
+
     <use project = "lognorm"
         test = "ln_initCtx">
-        <use project = "json-c" />
+        <use project = "libfastjson" />
     </use>
 
     <use project = "systemd"
