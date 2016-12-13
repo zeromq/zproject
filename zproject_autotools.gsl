@@ -1235,7 +1235,7 @@ generate_manpage ($name, $outp, $rootsrcdir);
 .endmacro
 
 .function discover_manpages (project)
-.   man7 = "$(my.project.name:c).7"
+.   man7 = "$(my.project.name).7"
 .   man3 = ""
 .   for my.project.class where scope = "public"
 .      man3 += " $(name:c).3"
@@ -1288,7 +1288,7 @@ $\(builddir)/$(project.name).txt: $\(srcdir)/$(project.name).txt
 
 \.txt.xml:
 \tasciidoc -d manpage -b docbook -f $\(srcdir)/asciidoc.conf \\
-        -a$(project.name:c)_version=@PACKAGE_VERSION@ -o$@ $<
+        -a$(project.name)_version=@PACKAGE_VERSION@ -o$@ $<
 \.xml.1:
 \txmlto man $<
 \.xml.3:
