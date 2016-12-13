@@ -35,6 +35,6 @@ Priority: extra
 Depends:
     zproject (= ${binary:Version}),
     ${misc:Depends}
-Description: debugging symbols for zproject
+Description: project debugging symbols
  This package contains the debugging symbols for zproject : project.
 
