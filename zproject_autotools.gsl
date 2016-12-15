@@ -1109,7 +1109,7 @@ sub generate_manpage {
     local ($name, $outp, $rootsrcdir) = @_;
     $name = $1 if $name =~ /(\\w+)\\.\\w+/; # Chop off extensions
     $outp = $1 if $outp =~ /^(.+)\\.[^\\.\\/]+$/;
-    $outp_basename = $outp;
+    $outp_basename = $basename (outp);
     $outp_basename = $2 if $outp =~ /^(.*\\/)?(\\w+)$/;
 
     if ($ENV{"V"} == "1") {
@@ -1316,9 +1316,9 @@ $(name:c).txt: $\(top_srcdir)/src/$(name:c).c
 .for project.main where scope = "public"
 GENERATED_DOCS += $(name).txt $(name).doc
 .   if file.exists ("src/$(name:c).cc")
-$(name).txt: $\(top_srcdir)/src/$(name).cc
+$(name).txt: $\(top_srcdir)/src/$(name:c).cc
 .   else
-$(name).txt: $\(top_srcdir)/src/$(name).c
+$(name).txt: $\(top_srcdir)/src/$(name:c).c
 .   endif
 \t$\(srcdir)/mkman $(name:c) $\(builddir)/$(name) $\(srcdir)/..
 
