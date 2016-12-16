@@ -175,7 +175,9 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     git status -s || true
     echo "==="
 
-.   if defined (travis_distcheck)
+.   if travis_distcheck ?= 0
+    make check
+.   else
     if [ "$BUILD_TYPE" == "default-Werror" ] ; then
         echo "NOTE: Skipping distcheck for BUILD_TYPE='$BUILD_TYPE'" >&2
     else
@@ -189,8 +191,6 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
 
     # Build and check this project without DRAFT APIs
     make distclean
-.   else
-    make check
 .   endif
 
     git clean -f
@@ -199,15 +199,15 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
         ./autogen.sh 2> /dev/null
         ./configure --enable-drafts=no "${CONFIG_OPTS[@]}" --with-docs=yes
         make VERBOSE=1 all || exit $?
-.   if defined (travis_distcheck)
+.   if travis_distcheck ?= 0
+        make check
+.   else
         if [ "$BUILD_TYPE" == "default-Werror" ] ; then
             echo "NOTE: Skipping distcheck for BUILD_TYPE='$BUILD_TYPE'" >&2
         else
             export DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no ${CONFIG_OPTS[@]} --with-docs=yes" && \\
             make VERBOSE=1 DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" distcheck || exit $?
         fi
-.   else
-        make check
 .   endif
     ) || exit 1
 
