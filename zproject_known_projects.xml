@@ -149,4 +149,13 @@
          test = "protobuf_c_version"
          header = "protobuf-c/protobuf-c.h"/>
 
+    <!-- 42ITY project https://github.com/42ity https://42ity.org -->
+    <use project = "fty-proto" libname = "libfty_proto" header="ftyproto.h"
+        repository = "https://github.com/42ity/fty-proto"
+        test = "fty_proto_test">
+        <use project = "libzmq"/>
+        <use project = "czmq"/>
+        <use project = "malamute"/>
+    </use>
+
 </known_projects>
