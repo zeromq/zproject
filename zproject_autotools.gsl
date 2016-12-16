@@ -892,8 +892,7 @@ endif #ENABLE_$(NAME:c)
 .for bin
 .   if first ()
 # Install data into /usr/local/bin
-$(project.name:c)dir = @bindir@
-$(project.name:c)_SCRIPTS = \\
+dist_bin_SCRIPTS = \\
 .   endif
     $(bin.name)$(last ()?? "\n"? " \\")
 .endfor
