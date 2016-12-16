@@ -18,6 +18,7 @@
         redhat              Packaging for RedHat
         ruby                Ruby binding
         travis              Travis CI scripts
+            <option name="distcheck" value="1" /> will enable run of make distcheck instead of make check
         vs2008              Microsoft Visual Studio 2008
         vs2010              Microsoft Visual Studio 2010
         vs2012              Microsoft Visual Studio 2012
