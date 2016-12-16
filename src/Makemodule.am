@@ -10,8 +10,7 @@ program_libs += -lstdc++ -lm
 endif
 
 # Install data into /usr/local/bin
-zprojectdir = @bindir@
-zproject_SCRIPTS = \
+dist_bin_SCRIPTS = \
     zproject.gsl \
     zproject_projects.gsl \
     zproject_class_api.gsl \
