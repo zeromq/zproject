@@ -422,6 +422,7 @@ zproject's `use` element defines project dependencies. Model is described in `zp
             optional = "1"              default = "0"
             debian_name = "libzmq5-dev" default = lib<name>-dev
             redhat_name = "zeromq-devel" default = <name>-devel
+            builddir = "src/"           default = "."
         </use>
     -->
 
