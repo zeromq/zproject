@@ -152,8 +152,8 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
 .      else
     git clone --quiet --depth 1 $(use.repository) $(use.project).git
 .      endif
-    BASE_PWD=$(pwd)
-.       if defined (use.subdir)
+    BASE_PWD=${PWD}
+.       if defined (use.builddir)
     cd $(use.project).git/$(use.builddir)
 .       else
     cd $(use.project).git
