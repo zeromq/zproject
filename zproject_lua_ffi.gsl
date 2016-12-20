@@ -1,0 +1,133 @@
+#   Generate minimal Lua language bindings that use CFFI.
+#
+#   These are not meant to be idiomatic, but to provide a minimal platform
+#   of FFI function bindings on which to base idiomatic Lua code.
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+register_target ("lua_ffi", "Lua FFI binding")
+
+#   Target provides name space isolation for its functions
+function target_lua_ffi
+
+function register_type (struct, pointer)
+    if count(project->lua_types.type, type.name = my.struct) = 0
+        new project->lua_types.type
+            type.name = my.struct
+            type.pointer = my.pointer
+        endnew
+    endif
+endfunction
+
+function resolve_container (container)
+    if my.container.variadic
+    elsif my.container.type = "nothing"
+    elsif my.container.type = "anything" | my.container.type = "sockish"
+    elsif my.container.type = "boolean"
+    elsif my.container.type = "byte"
+    elsif my.container.type = "integer" | my.container.type = "file_size" | my.container.type = "time"
+    elsif my.container.type = "number"
+    elsif my.container.type = "size"
+    elsif my.container.type = "real"
+    elsif my.container.type = "buffer"
+    elsif my.container.type = "FILE"
+    elsif my.container.type = "string" | my.container.type = "format"
+    elsif my.container.callback
+    else
+        register_type ("$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
+    endif
+endfunction
+
+function resolve_method (method)
+    my.method.python_name = "$(my.method.name:c)"
+    if regexp.match ("^(is|from)$", my.method.python_name) # matches keyword
+        my.method.python_name += "_"
+    endif
+    for my.method.argument where !argument.variadic
+        resolve_container (argument)
+    endfor
+    for my.method.return as ret
+        resolve_container (ret)
+    endfor
+endfunction
+
+function resolve_class (class)
+    register_type("$(class.c_name)_t", "$(class.c_name)_p")
+    for my.class.callback_type as method
+        resolve_method (method)
+    endfor
+    for my.class.constructor as method
+        resolve_method (method)
+    endfor
+    for my.class.destructor as method
+        resolve_method (method)
+    endfor
+    for my.class.method
+        resolve_method (method)
+    endfor
+endfunction
+
+function generate_binding
+    directory.create ("bindings/lua_ffi")
+    output "bindings/lua_ffi/$(project.name:c)_ffi.lua"
+    >$(project.GENERATED_WARNING_HEADER_FOR_LUA:)
+    >
+    >$(project.name:c)_ffi = {}
+    >$(project.name:c)_ffi.ffi = require ("ffi")
+    >
+    >$(project.name:c)_ffi.ffi.cdef [[
+    for project->lua_types.type as t
+        >typedef struct _$(t.name:c) $(t.name:c);
+    endfor
+    for class where defined (class.api) & class.private = "0"
+        for class.callback_type
+            >// $(callback_type.description:no,block)
+            >$(c_callback_typedef (callback_type):)
+            >
+        endfor
+    endfor
+    for class where defined (class.api) & class.private = "0"
+        >// CLASS: $(class.name)
+        for class. as f
+            if class(f) = "XML item" & (name(f) = 'constructor' | name(f) = 'destructor')
+                >// $(f.description:no,block)
+                >$(c_method_signature (f):);
+                >
+            endif
+        endfor
+        for class.actor
+            >// $(actor.description:no,block)
+            >$(PROJECT.PREFIX)_EXPORT void
+            >   $(actor.name:c) (zsock_t *pipe, void *args);
+            >
+        endfor
+        for class.method
+            >// $(method.description:no,block)
+            >$(c_method_signature (method):);
+            >
+        endfor
+    endfor
+    >]]
+    >
+    >$(project.name:c)_ffi.$(prefix) = $(project.name:c)_ffi.ffi.load ("$(project.libname)")
+    >return $(project.name:c)_ffi
+endfunction
+
+    if count (class, defined (class.api) & class.private = "0")
+        # Container for UDTs used by this module
+        new lua_types
+        endnew
+        for class where defined (class.api) & class.private = "0"
+            resolve_class (class)
+        endfor
+        generate_binding ()
+    endif
+endfunction
