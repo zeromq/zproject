@@ -16,6 +16,7 @@ usr/bin/zproject_gyp.gsl
 usr/bin/zproject_java.gsl
 usr/bin/zproject_java_lib.gsl
 usr/bin/zproject_java_msvc.gsl
+usr/bin/zproject_lua_ffi.gsl
 usr/bin/zproject_mingw32.gsl
 usr/bin/zproject_nodejs.gsl
 usr/bin/zproject_nuget.gsl

@@ -83,6 +83,7 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/zproject_java.gsl
 %{_bindir}/zproject_java_lib.gsl
 %{_bindir}/zproject_java_msvc.gsl
+%{_bindir}/zproject_lua_ffi.gsl
 %{_bindir}/zproject_mingw32.gsl
 %{_bindir}/zproject_nodejs.gsl
 %{_bindir}/zproject_nuget.gsl
