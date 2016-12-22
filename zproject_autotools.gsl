@@ -398,6 +398,15 @@ AM_CONDITIONAL(ON_GNU, test "x$$(project.name:c)_on_gnu" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$$(project.name:c)_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$$(project.name:c)_build_doc" = "xyes")
 
+AC_ARG_ENABLE([dist_cmakefiles],
+    AS_HELP_STRING([--enable-dist_cmakefiles],
+        [Distribute CMakeLists.txt and related files [default depends: on if present]]),
+    [enable_dist_cmakefiles=$enableval],
+    [AC_MSG_CHECKING([for presence of CMake recipes])
+     AC_CHECK_FILE($srcdir/CMakeLists.txt, [enable_dist_cmakefiles=yes], [enable_dist_cmakefiles=no])
+     AC_MSG_RESULT([$enable_dist_cmakefiles])])
+AM_CONDITIONAL(ENABLE_DIST_CMAKEFILES, test "x$enable_dist_cmakefiles" = "xyes")
+
 .for project.main
 # Check for $(name) intent
 AC_ARG_ENABLE([$(name)],
@@ -708,15 +717,20 @@ noinst_PROGRAMS =
 check_PROGRAMS =
 noinst_LTLIBRARIES =
 TESTS =
+EXTRA_DIST =
 
-EXTRA_DIST = \\
-    CMakeLists.txt \\
+if ENABLE_DIST_CMAKEFILES
+EXTRA_DIST += \\
 .for use
     Find$(use.project:c).cmake \\
 .endfor
 .if file.exists ("src/CMakeLists-local.txt")
     src/CMakeLists-local.txt \\
 .endif
+    CMakeLists.txt
+endif
+
+EXTRA_DIST += \\
 .for extra
     src/$(extra.name) \\
 .endfor
