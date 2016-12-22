@@ -83,7 +83,7 @@ $(project.GENERATED_WARNING_HEADER)
 set -x
 set -e
 
-if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; then
+if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ "$BUILD_TYPE" == "valgrind" ]; then
     LANG=C
     LC_ALL=C
     export LANG LC_ALL
@@ -295,6 +295,11 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     CONFIG_OPTS+=("${CONFIG_OPT_WERROR}")
     ./autogen.sh 2> /dev/null
     ./configure --enable-drafts=yes "${CONFIG_OPTS[@]}"
+    if [ "$BUILD_TYPE" == "valgrind" ] ; then
+        # Build and check this project
+        make VERBOSE=1 memcheck
+        exit $?
+    fi
     make VERBOSE=1 all
 
     echo "=== Are GitIgnores good after 'make all' with drafts? (should have no output below)"
@@ -447,69 +452,4 @@ else
 fi
 .close
 .chmod_x ("ci_deploy.sh")
-.
-.directory.create ("builds/valgrind")
-.output "builds/valgrind/ci_build.sh"
-#!/usr/bin/env bash
-
-$(project.GENERATED_WARNING_HEADER)
-
-set -x
-
-cd ../..
-
-mkdir tmp
-BUILD_PREFIX=$PWD/tmp
-
-CONFIG_OPTS=()
-CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include")
-CONFIG_OPTS+=("CPPFLAGS=-I${BUILD_PREFIX}/include")
-CONFIG_OPTS+=("CXXFLAGS=-I${BUILD_PREFIX}/include")
-CONFIG_OPTS+=("LDFLAGS=-L${BUILD_PREFIX}/lib")
-CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
-CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
-CONFIG_OPTS+=("--with-docs=no")
-CONFIG_OPTS+=("--quiet")
-
-# Clone and build dependencies
-.for use where defined (use.tarball)
-wget $(use.tarball)
-tar -xzf \$(basename "$(use.tarball)")
-cd \$(basename "$(use.tarball)" .tar.gz)
-\./configure "${CONFIG_OPTS[@]}"
-make -j4
-make install
-cd ..
-.endfor
-.for use where defined (use.repository)
-. if defined (use.release)
-git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project).git
-. else
-git clone --quiet --depth 1 $(use.repository) $(use.project).git
-. endif
-BASE_PWD=${PWD}
-. if defined (use.builddir)
-cd $(use.project).git/$(use.builddir)
-. else
-cd $(use.project).git
-. endif
-git --no-pager log --oneline -n1
-if [ -e autogen.sh ]; then
-    ./autogen.sh 2> /dev/null
-fi
-if [ -e buildconf ]; then
-    ./buildconf 2> /dev/null
-fi
-\./configure "${CONFIG_OPTS[@]}"
-make -j4
-make install
-cd "${BASE_PWD}"
-.endfor
-
-# Build and check this project
-\./autogen.sh 2> /dev/null
-\./configure --enable-drafts=yes "${CONFIG_OPTS[@]}"
-make VERBOSE=1 memcheck || exit 1
-.close
-.chmod_x ("builds/valgrind/ci_build.sh")
 .endmacro
