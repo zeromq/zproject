@@ -258,6 +258,15 @@ AM_CONDITIONAL(ON_GNU, test "x$zproject_on_gnu" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$zproject_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$zproject_build_doc" = "xyes")
 
+AC_ARG_ENABLE([dist_cmakefiles],
+    AS_HELP_STRING([--enable-dist_cmakefiles],
+        [Distribute CMakeLists.txt and related files [default depends: on if present]]),
+    [enable_dist_cmakefiles=$enableval],
+    [AC_MSG_CHECKING([for presence of CMake recipes])
+     AC_CHECK_FILE($srcdir/CMakeLists.txt, [enable_dist_cmakefiles=yes], [enable_dist_cmakefiles=no])
+     AC_MSG_RESULT([$enable_dist_cmakefiles])])
+AM_CONDITIONAL(ENABLE_DIST_CMAKEFILES, test "x$enable_dist_cmakefiles" = "xyes")
+
 # Checks for library functions.
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset getifaddrs)
