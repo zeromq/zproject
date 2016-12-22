@@ -19,6 +19,8 @@ register_target ("travis", "Travis CI scripts")
 # Travis CI script
 language: c
 
+cache: ccache
+
 os:
 - linux
 
@@ -92,6 +94,21 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     mkdir -p tmp
     BUILD_PREFIX=$PWD/tmp
 
+    PATH="`echo "$PATH" | sed -e 's,^/usr/lib/ccache/?:,,' -e 's,:/usr/lib/ccache/?:,,' -e 's,:/usr/lib/ccache/?$,,' -e 's,^/usr/lib/ccache/?$,,'2`"
+    CCACHE_PATH="$PATH"
+    CCACHE_DIR="${HOME}/.ccache"
+    export CCACHE_PATH CCACHE_DIR PATH
+    HAVE_CCACHE=no
+    if which ccache && ls -la /usr/lib/ccache ; then
+        HAVE_CCACHE=yes
+    fi
+
+    if [ "$HAVE_CCACHE" = yes ] && [ -d "$CCACHE_DIR" ]; then
+        echo "CCache stats before build:"
+        ccache -s || true
+    fi
+    mkdir -p "${HOME}/.ccache"
+
     CONFIG_OPTS=()
     COMMON_CFLAGS=""
     EXTRA_CFLAGS=""
@@ -154,6 +171,57 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     CONFIG_OPTS+=("--with-docs=no")
     CONFIG_OPTS+=("--quiet")
 
+    if [ "$HAVE_CCACHE" = yes ] && [ "${COMPILER_FAMILY}" = GCC ]; then
+        PATH="/usr/lib/ccache:$PATH"
+        export PATH
+        if [ -n "$CC" ] && [ -x "/usr/lib/ccache/`basename "$CC"`" ]; then
+            case "$CC" in
+                *ccache*) ;;
+                */*) DIR_CC="`dirname "$CC"`" && [ -n "$DIR_CC" ] && DIR_CC="`cd "$DIR_CC" && pwd `" && [ -n "$DIR_CC" ] && [ -d "$DIR_CC" ] || DIR_CC=""
+                    [ -z "$CCACHE_PATH" ] && CCACHE_PATH="$DIR_CC" || \
+                    if echo "$CCACHE_PATH" | egrep '(^'"$DIR_CC"':.*|^'"$DIR_CC"'$|:'"$DIR_CC"':|:'"$DIR_CC"'$)' ; then
+                        CCACHE_PATH="$DIR_CC:$CCACHE_PATH"
+                    fi
+                    ;;
+            esac
+            CC="/usr/lib/ccache/`basename "$CC"`"
+        else
+            : # CC="ccache $CC"
+        fi
+        if [ -n "$CXX" ] && [ -x "/usr/lib/ccache/`basename "$CXX"`" ]; then
+            case "$CXX" in
+                *ccache*) ;;
+                */*) DIR_CXX="`dirname "$CXX"`" && [ -n "$DIR_CXX" ] && DIR_CXX="`cd "$DIR_CXX" && pwd `" && [ -n "$DIR_CXX" ] && [ -d "$DIR_CXX" ] || DIR_CXX=""
+                    [ -z "$CCACHE_PATH" ] && CCACHE_PATH="$DIR_CXX" || \
+                    if echo "$CCACHE_PATH" | egrep '(^'"$DIR_CXX"':.*|^'"$DIR_CXX"'$|:'"$DIR_CXX"':|:'"$DIR_CXX"'$)' ; then
+                        CCACHE_PATH="$DIR_CXX:$CCACHE_PATH"
+                    fi
+                    ;;
+            esac
+            CXX="/usr/lib/ccache/`basename "$CXX"`"
+        else
+            : # CXX="ccache $CXX"
+        fi
+        if [ -n "$CPP" ] && [ -x "/usr/lib/ccache/`basename "$CPP"`" ]; then
+            case "$CPP" in
+                *ccache*) ;;
+                */*) DIR_CPP="`dirname "$CPP"`" && [ -n "$DIR_CPP" ] && DIR_CPP="`cd "$DIR_CPP" && pwd `" && [ -n "$DIR_CPP" ] && [ -d "$DIR_CPP" ] || DIR_CPP=""
+                    [ -z "$CCACHE_PATH" ] && CCACHE_PATH="$DIR_CPP" || \
+                    if echo "$CCACHE_PATH" | egrep '(^'"$DIR_CPP"':.*|^'"$DIR_CPP"'$|:'"$DIR_CPP"':|:'"$DIR_CPP"'$)' ; then
+                        CCACHE_PATH="$DIR_CPP:$CCACHE_PATH"
+                    fi
+                    ;;
+            esac
+            CPP="/usr/lib/ccache/`basename "$CPP"`"
+        else
+            : # CPP="ccache $CPP"
+        fi
+
+        CONFIG_OPTS+=("CC=${CC}")
+        CONFIG_OPTS+=("CXX=${CXX}")
+        CONFIG_OPTS+=("CPP=${CPP}")
+    fi
+
     # Clone and build dependencies
 .   for use where defined (use.tarball)
     wget $(use.tarball)
@@ -162,6 +230,8 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
 .       if defined (use.builddir)
     cd ./$(use.builddir)
 .       endif
+    CCACHE_BASEDIR=${PWD}
+    export CCACHE_BASEDIR
     if [ -e autogen.sh ]; then
         ./autogen.sh 2> /dev/null
     fi
@@ -193,6 +263,8 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
 .       else
     cd $(use.project).git
 .       endif
+    CCACHE_BASEDIR=${PWD}
+    export CCACHE_BASEDIR
     git --no-pager log --oneline -n1
     if [ -e autogen.sh ]; then
         ./autogen.sh 2> /dev/null
@@ -215,6 +287,8 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
 .   endfor
 
     # Build and check this project; note that zprojects always have an autogen.sh
+    CCACHE_BASEDIR=${PWD}
+    export CCACHE_BASEDIR
     ./autogen.sh 2> /dev/null
     ./configure --enable-drafts=yes "${CONFIG_OPTS[@]}"
     make VERBOSE=1 all
@@ -262,6 +336,11 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     echo "=== Are GitIgnores good after 'make distcheck' without drafts? (should have no output below)"
     git status -s || true
     echo "==="
+
+    if [ "$HAVE_CCACHE" = yes ]; then
+        echo "CCache stats after build:"
+        ccache -s
+    fi
 
 elif [ "$BUILD_TYPE" == "bindings" ]; then
     pushd "./bindings/${BINDING}" && ./ci_build.sh
