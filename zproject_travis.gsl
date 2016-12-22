@@ -152,19 +152,19 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
         case "${COMPILER_FAMILY}" in
             GCC)
                 echo "NOTE: Enabling ${COMPILER_FAMILY} compiler pedantic error-checking flags for BUILD_TYPE='$BUILD_TYPE'" >&2
-                COMMON_CFLAGS="-Wall -Werror"
-                EXTRA_CFLAGS="-std=c99"
-                EXTRA_CPPFLAGS=""
-                EXTRA_CXXFLAGS="-std=c++99"
+                CONFIG_OPTS+=("--enable-Werror=yes")
                 ;;
             *)
                 echo "WARNING: Current compiler is not GCC, not enabling pedantic error-checking flags for BUILD_TYPE='$BUILD_TYPE'" >&2
                 ;;
         esac
+    else
+        CONFIG_OPTS+=("--enable-Werror=no")
     fi
-    CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include ${COMMON_CFLAGS} ${EXTRA_CFLAGS}")
-    CONFIG_OPTS+=("CPPFLAGS=-I${BUILD_PREFIX}/include ${COMMON_CFLAGS} ${EXTRA_CPPFLAGS}")
-    CONFIG_OPTS+=("CXXFLAGS=-I${BUILD_PREFIX}/include ${COMMON_CFLAGS} ${EXTRA_CXXFLAGS}")
+
+    CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include")
+    CONFIG_OPTS+=("CPPFLAGS=-I${BUILD_PREFIX}/include")
+    CONFIG_OPTS+=("CXXFLAGS=-I${BUILD_PREFIX}/include")
     CONFIG_OPTS+=("LDFLAGS=-L${BUILD_PREFIX}/lib")
     CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
     CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
