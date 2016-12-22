@@ -148,18 +148,19 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
         fi
     fi
 
+    CONFIG_OPT_WERROR="--enable-Werror=no"
     if [ "$BUILD_TYPE" == "default-Werror" ] ; then
         case "${COMPILER_FAMILY}" in
             GCC)
                 echo "NOTE: Enabling ${COMPILER_FAMILY} compiler pedantic error-checking flags for BUILD_TYPE='$BUILD_TYPE'" >&2
+                CONFIG_OPT_WERROR="--enable-Werror=yes"
                 CONFIG_OPTS+=("--enable-Werror=yes")
                 ;;
             *)
-                echo "WARNING: Current compiler is not GCC, not enabling pedantic error-checking flags for BUILD_TYPE='$BUILD_TYPE'" >&2
+                echo "WARNING: Current compiler is not GCC, might not enable pedantic error-checking flags for BUILD_TYPE='$BUILD_TYPE'" >&2
+                CONFIG_OPT_WERROR="--enable-Werror=auto"
                 ;;
         esac
-    else
-        CONFIG_OPTS+=("--enable-Werror=no")
     fi
 
     CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include")
@@ -289,6 +290,9 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     # Build and check this project; note that zprojects always have an autogen.sh
     CCACHE_BASEDIR=${PWD}
     export CCACHE_BASEDIR
+    # Only use --enable-Werror on projects that are expected to have it
+    # (and it is not our duty to check prerequisite projects anyway)
+    CONFIG_OPTS+=("${CONFIG_OPT_WERROR}")
     ./autogen.sh 2> /dev/null
     ./configure --enable-drafts=yes "${CONFIG_OPTS[@]}"
     make VERBOSE=1 all
