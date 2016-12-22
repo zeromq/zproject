@@ -390,7 +390,11 @@ git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project).g
 . else
 git clone --quiet --depth 1 $(use.repository) $(use.project).git
 . endif
+. if defined (use.builddir)
+cd $(use.project).git/$(use.builddir)
+. else
 cd $(use.project).git
+. endif
 git --no-pager log --oneline -n1
 if [ -e autogen.sh ]; then
     ./autogen.sh 2> /dev/null
