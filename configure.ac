@@ -292,6 +292,33 @@ else
     AC_SUBST(pkg_config_defines, "")
 fi
 
+AC_ARG_ENABLE([Werror],
+    AS_HELP_STRING([--enable-Werror],
+        [Add -Wall -Werror to GCC/GXX arguments [default=no; default=auto if nothing specified]]),
+    [AS_IF([test -n "$enableval"], [enable_Werror=$enableval], [enable_Werror=auto])],
+    [enable_Werror=no])
+
+AS_IF([test "x$enable_Werror" = "xyes" || test "x$enable_Werror" = "xauto"],
+    [AS_IF([test -n "$CC" && "$CC" --version 2>&1 | grep 'Free Software Foundation' > /dev/null],
+        [AC_MSG_NOTICE([Enabling pedantic errors for GNU C])
+         CFLAGS="$CFLAGS -Wall -Werror"],
+        [AC_MSG_NOTICE([Not enabling pedantic errors: compiler not supported by this recipe (not GNU C)])
+         AS_IF([test "x$enable_Werror" = "xyes"], [AC_MSG_ERROR([--enable-Werror=yes was requested and can not be satisfied])])
+        ])
+     AS_IF([test -n "$CXX" && "$CXX" --version 2>&1 | grep 'Free Software Foundation' > /dev/null],
+        [AC_MSG_NOTICE([Enabling pedantic errors for GNU C++])
+         CXXFLAGS="$CXXFLAGS -Wall -Werror"],
+        [AC_MSG_NOTICE([Not enabling pedantic errors: compiler not supported by this recipe (not GNU C++)])
+         AS_IF([test "x$enable_Werror" = "xyes"], [AC_MSG_ERROR([--enable-Werror=yes was requested and can not be satisfied])])
+        ])
+     AS_IF([test -n "$CPP" && "$CPP" --version 2>&1 | grep 'Free Software Foundation' > /dev/null],
+        [AC_MSG_NOTICE([Enabling pedantic errors for GNU CPP preprocessor])
+         CPPFLAGS="$CPPFLAGS -Wall -Werror"],
+        [AC_MSG_NOTICE([Not enabling pedantic errors: preprocessor not supported by this recipe (not GNU CPP)])
+         AS_IF([test "x$enable_Werror" = "xyes"], [AC_MSG_ERROR([--enable-Werror=yes was requested and can not be satisfied])])
+        ])
+])
+
 # Specify output files
 AC_CONFIG_FILES([Makefile
                 ])
