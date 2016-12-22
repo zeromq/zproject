@@ -342,7 +342,7 @@ echo
 echo '##########################################################################'
 
 echo
-echo Configure complete! Now procced with:
+echo Configure complete! Now proceed with:
 echo "    - 'make'               compile the project"
 echo "    - 'make check'         run the project's selftest"
 echo "    - 'make install'       install the project to $prefix"
