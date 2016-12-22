@@ -83,6 +83,19 @@ function generate_binding
     >$(project.name:c)_ffi = {}
     >$(project.name:c)_ffi.ffi = require ("ffi")
     >
+    >-- typedefs simulating C standard library
+    >-- see https://github.com/eliben/pycparser/blob/master/utils/fake_libc_include/_fake_defines.h
+    >$(project.name:c)_ffi.ffi.cdef [[
+    >typedef struct __FILE FILE;
+    >typedef int time_t;
+    >typedef int off_t;
+    >]]
+    >
+    >-- czmq_prelude.h
+    >$(project.name:c)_ffi.ffi.cdef [[
+    >typedef unsigned char byte;
+    >typedef int SOCKET;
+    >]]
     >$(project.name:c)_ffi.ffi.cdef [[
     for project->lua_types.type as t
         >typedef struct _$(t.name:c) $(t.name:c);
