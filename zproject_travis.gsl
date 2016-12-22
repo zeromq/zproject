@@ -314,10 +314,10 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
         git status -s || true
         echo "==="
     fi
+.   endif
 
     # Build and check this project without DRAFT APIs
     make distclean
-.   endif
 
     git clean -f
     git reset --hard HEAD
