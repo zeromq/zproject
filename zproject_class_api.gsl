@@ -374,14 +374,14 @@ endfunction
 
 #   Parse a path looking for a class and resolve it if found
 #
-function parse_directory (path, class)
+function parse_directory (path, api_subdir, class)
     dir = directory.open (my.path)?
     if defined (dir)
         for dir.directory
-            api_file = directory.path + directory.name + "/api/"  + "$(my.class:c).xml"
+            api_file = directory.path + directory.name + my.api_subdir  + "$(my.class:c).xml"
             if resolved = 0 & file.exists (api_file)
                 dependency = XML.load_file (api_file)
-                dependency.api_dir = directory.path + directory.name + "/api/"
+                dependency.api_dir = directory.path + directory.name + my.api_subdir
                 dependency.resolved = 0
                 dependency.project = directory.name
                 resolve_c_class (dependency)
@@ -389,10 +389,10 @@ function parse_directory (path, class)
                 resolved = 1
                 echo "Importing $(api_file)"
             endif
-            api_file = directory.path + directory.name + "/api/"  + "$(my.class:c).api"
+            api_file = directory.path + directory.name + my.api_subdir  + "$(my.class:c).api"
             if resolved = 0 & file.exists (api_file)
                 dependency = XML.load_file (api_file)
-                dependency.api_dir = directory.path + directory.name + "/api/"
+                dependency.api_dir = directory.path + directory.name + my.api_subdir
                 dependency.resolved = 0
                 dependency.project = directory.name
                 resolve_c_class (dependency)
@@ -413,14 +413,14 @@ function resolve_container_dependencies (class_name, container)
     & count (project->dependencies.class, class.c_name = my.container.type) = 0
         resolved = 0
         # Search the workspace directory for the dependency
-        parse_directory ("..", my.container.type)
+        parse_directory ("..", "/api/", my.container.type)
         if !resolved
             # Search the installation directory for the dependency
-            parse_directory ("/usr/local/share/zproject", my.container.type)
+            parse_directory ("/usr/local/share/zproject", "/", my.container.type)
         endif
         if !resolved
             # Search the system installation directory for the dependency
-            parse_directory ("/usr/share/zproject", my.container.type)
+            parse_directory ("/usr/share/zproject", "/", my.container.type)
         endif
         if !resolved
             echo "W: in $(class.name): '" + my.container.type +"' does not resolve to a class"
