@@ -50,7 +50,6 @@ matrix:
 addons:
   apt:
     packages:
-    - git
     - asciidoc
     - xmlto
 
