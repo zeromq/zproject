@@ -48,11 +48,22 @@ matrix:
         - valgrind
 
 addons:
+  sources:
+  - sourceline: 'deb http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_12.04/ ./'
+    key_url: 'http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_12.04/Release.key'
   apt:
     packages:
-    - git
     - asciidoc
     - xmlto
+.      for use
+.         if defined (use.debian_name)
+    - $(use.debian_name)
+.         elsif defined (use.libname)
+    - $(use.libname)-dev
+.         else
+    - $(use.project)-dev
+.         endif
+.      endfor
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils valgrind ; fi
@@ -225,66 +236,84 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
 
     # Clone and build dependencies
 .   for use where defined (use.tarball)
-    wget $(use.tarball)
-    tar -xzf \$(basename "$(use.tarball)")
-    cd \$(basename "$(use.tarball)" .tar.gz)
+.      if defined (use.debian_name)
+    if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
+.      elsif defined (use.libname)
+    if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)-dev >/dev/null 2>&1) || \\
+.      else
+    if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
+.      endif
+           (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
+        wget $(use.tarball)
+        tar -xzf \$(basename "$(use.tarball)")
+        cd \$(basename "$(use.tarball)" .tar.gz)
 .       if defined (use.builddir)
-    cd ./$(use.builddir)
+        cd ./$(use.builddir)
 .       endif
-    CCACHE_BASEDIR=${PWD}
-    export CCACHE_BASEDIR
-    if [ -e autogen.sh ]; then
-        ./autogen.sh 2> /dev/null
+        CCACHE_BASEDIR=${PWD}
+        export CCACHE_BASEDIR
+        if [ -e autogen.sh ]; then
+            ./autogen.sh 2> /dev/null
+        fi
+        if [ -e buildconf ]; then
+            ./buildconf 2> /dev/null
+        fi
+        if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
+            libtoolize --copy --force && \\
+            aclocal -I . && \\
+            autoheader && \\
+            automake --add-missing --copy && \\
+            autoconf || \\
+            autoreconf -fiv
+        fi
+        ./configure "${CONFIG_OPTS[@]}"
+        make -j4
+        make install
+        cd ..
     fi
-    if [ -e buildconf ]; then
-        ./buildconf 2> /dev/null
-    fi
-    if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
-        libtoolize --copy --force && \\
-        aclocal -I . && \\
-        autoheader && \\
-        automake --add-missing --copy && \\
-        autoconf || \\
-        autoreconf -fiv
-    fi
-    ./configure "${CONFIG_OPTS[@]}"
-    make -j4
-    make install
-    cd ..
 .   endfor
 .   for use where defined (use.repository) & ! defined (use.tarball)
-.      if defined (use.release)
-    git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project).git
+.      if defined (use.debian_name)
+    if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
+.      elsif defined (use.libname)
+    if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)-dev >/dev/null 2>&1) || \\
 .      else
-    git clone --quiet --depth 1 $(use.repository) $(use.project).git
+    if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
 .      endif
-    BASE_PWD=${PWD}
+           (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
+.      if defined (use.release)
+        git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project).git
+.      else
+        git clone --quiet --depth 1 $(use.repository) $(use.project).git
+.      endif
+        BASE_PWD=${PWD}
 .       if defined (use.builddir)
-    cd $(use.project).git/$(use.builddir)
+        cd $(use.project).git/$(use.builddir)
 .       else
-    cd $(use.project).git
+        cd $(use.project).git
 .       endif
-    CCACHE_BASEDIR=${PWD}
-    export CCACHE_BASEDIR
-    git --no-pager log --oneline -n1
-    if [ -e autogen.sh ]; then
-        ./autogen.sh 2> /dev/null
+        CCACHE_BASEDIR=${PWD}
+        export CCACHE_BASEDIR
+        git --no-pager log --oneline -n1
+        if [ -e autogen.sh ]; then
+            ./autogen.sh 2> /dev/null
+        fi
+        if [ -e buildconf ]; then
+            ./buildconf 2> /dev/null
+        fi
+        if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
+            libtoolize --copy --force && \\
+            aclocal -I . && \\
+            autoheader && \\
+            automake --add-missing --copy && \\
+            autoconf || \\
+            autoreconf -fiv
+        fi
+        ./configure "${CONFIG_OPTS[@]}"
+        make -j4
+        make install
+        cd "${BASE_PWD}"
     fi
-    if [ -e buildconf ]; then
-        ./buildconf 2> /dev/null
-    fi
-    if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
-        libtoolize --copy --force && \\
-        aclocal -I . && \\
-        autoheader && \\
-        automake --add-missing --copy && \\
-        autoconf || \\
-        autoreconf -fiv
-    fi
-    ./configure "${CONFIG_OPTS[@]}"
-    make -j4
-    make install
-    cd "${BASE_PWD}"
 .   endfor
 
     # Build and check this project; note that zprojects always have an autogen.sh
