@@ -130,19 +130,19 @@ echo Projects will be cloned to here "${PWD}"
 #read -p "Press ENTER to continue: "
 
 # get required but not generated projects for zeromq stack
-test -d gsl.git       || git clone --depth 1 https://github.com/${IMATIX}/gsl             gsl.git
-test -d libsodium.git || git clone -b stable https://github.com/${JEDISCT1}/libsodium     libsodium.git
-test -d libzmq.git    || git clone --depth 1 https://github.com/${ZEROMQ}/libzmq          libzmq.git
+test -d gsl       || git clone --depth 1 https://github.com/${IMATIX}/gsl             gsl
+test -d libsodium || git clone -b stable https://github.com/${JEDISCT1}/libsodium     libsodium
+test -d libzmq    || git clone --depth 1 https://github.com/${ZEROMQ}/libzmq          libzmq
 # get required projects for zeromq stack
-test -d czmq.git      || git clone --depth 1 https://github.com/${ZEROMQ}/czmq            czmq.git
-test -d malamute.git  || git clone --depth 1 https://github.com/${ZEROMQ}/malamute        malamute.git
-test -d zyre.git      || git clone --depth 1 https://github.com/${ZEROMQ}/zyre            zyre.git
+test -d czmq      || git clone --depth 1 https://github.com/${ZEROMQ}/czmq            czmq
+test -d malamute  || git clone --depth 1 https://github.com/${ZEROMQ}/malamute        malamute
+test -d zyre      || git clone --depth 1 https://github.com/${ZEROMQ}/zyre            zyre
 
 # build gsl (the generator)
 echo Building gsl
 phase=building
 (
-    cd ${GITPROJECTS}/gsl.git/src &&
+    cd ${GITPROJECTS}/gsl/src &&
     make -j4 &&
     DESTDIR=${BUILD_PREFIX} make install &&
     exit $?
@@ -156,7 +156,7 @@ echo Regenerating projects
 phase=gsl-generation
 for project in czmq malamute zyre; do
     (
-        cd ${GITPROJECTS}/$project.git &&
+        cd ${GITPROJECTS}/$project &&
         ${BUILD_PREFIX}/bin/gsl project.xml &&
         exit $?
     ) > ${BUILD_PREFIX}/${project}_${phase}.err 2>&1 && test 0 -eq $? &&
@@ -176,7 +176,7 @@ echo Building zeromq stack components
 phase=autogen-config
 for project in libsodium libzmq czmq malamute zyre; do
     (
-        cd ${GITPROJECTS}/$project.git &&
+        cd ${GITPROJECTS}/$project &&
         ./autogen.sh &&
         ./configure --prefix=${BUILD_PREFIX} &&
         exit $?
@@ -188,7 +188,7 @@ loglogs
 phase=make
 for project in libsodium libzmq czmq malamute zyre; do
     (
-        cd ${GITPROJECTS}/$project.git &&
+        cd ${GITPROJECTS}/$project &&
         make &&
         exit $?
     ) > ${BUILD_PREFIX}/${project}_${phase}.err 2>&1 &&
@@ -199,7 +199,7 @@ loglogs
 phase=make-install
 for project in libsodium libzmq czmq malamute zyre; do
     (
-        cd ${GITPROJECTS}/$project.git &&
+        cd ${GITPROJECTS}/$project &&
         DESTDIR=${BUILD_PREFIX} make install &&
         exit $?
     ) > ${BUILD_PREFIX}/${project}_${phase}.err 2>&1 &&
@@ -212,7 +212,7 @@ echo Running tests
 phase=make-check
 for project in libzmq czmq malamute zyre; do
     (
-        cd ${GITPROJECTS}/$project.git &&
+        cd ${GITPROJECTS}/$project &&
         DESTDIR=${BUILD_PREFIX} PATH=${BUILD_PREFIX}/bin:$PATH make check &&
         exit $?
     ) > ${BUILD_PREFIX}/${project}_${phase}.err 2>&1 &&

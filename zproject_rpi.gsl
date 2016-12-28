@@ -105,14 +105,14 @@ if [ ! $INCREMENTAL ]; then
 
 .   endfor
 .   for use where defined (use.repository) & ! defined (use.tarball)
-    if [ ! -e $(use.project).git ]; then
+    if [ ! -e $(use.project) ]; then
 .      if defined (use.release)
-        git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project).git
+        git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
 .      else
-        git clone --quiet --depth 1 $(use.repository) $(use.project).git
+        git clone --quiet --depth 1 $(use.repository) $(use.project)
 .      endif
     fi
-    pushd $(use.project).git
+    pushd $(use.project)
     (
         if [ $UPDATE ]; then
             git pull --rebase

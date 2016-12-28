@@ -282,15 +282,15 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
 .      endif
            (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
 .      if defined (use.release)
-        git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project).git
+        git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
 .      else
-        git clone --quiet --depth 1 $(use.repository) $(use.project).git
+        git clone --quiet --depth 1 $(use.repository) $(use.project)
 .      endif
         BASE_PWD=${PWD}
 .       if defined (use.builddir)
-        cd $(use.project).git/$(use.builddir)
+        cd $(use.project)/$(use.builddir)
 .       else
-        cd $(use.project).git
+        cd $(use.project)
 .       endif
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
@@ -390,18 +390,18 @@ set -ex
 
 cd $REPO_DIR/..
 .for project.use where !optional & defined (use.repository)
-git clone --quiet --depth 1 $(use.repository) $(use.project).git
+git clone --quiet --depth 1 $(use.repository) $(use.project)
 .endfor
 cd -
 
 cd $REPO_DIR/..
-git clone --quiet --depth 1 https://github.com/zeromq/zproject zproject.git
-cd zproject.git
+git clone --quiet --depth 1 https://github.com/zeromq/zproject zproject
+cd zproject
 export PATH=$PATH:`pwd`
 
 cd $REPO_DIR/..
-git clone https://github.com/imatix/gsl.git gsl.git
-cd gsl.git/src
+git clone https://github.com/imatix/gsl.git gsl
+cd gsl/src
 make
 export PATH=$PATH:`pwd`
 

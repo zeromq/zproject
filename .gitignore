@@ -27,7 +27,8 @@ zproject-1.1.0.tar.gz
 zproject-1.1.0.zip
 
 # Repositories downloaded by CI integration scripts
-*.git/
+gsl/
+czmq/
 
 # Travis build area
 tmp/
