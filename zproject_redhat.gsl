@@ -73,6 +73,17 @@ BuildRequires:  $(use.project)-devel
 .endif
 .endfor
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+.if project.has_main | count(project.bin) > 0
+.for project.use where use.type ?= "runtime"
+.if defined(use.debian_name)
+Requires: $(use.debian_name)
+.elsif regexp.match("^lib", use.libname)
+Requires: $(string.replace (use.libname, "_|-"))
+.else
+Requires: $(string.replace (use.project, "_|-"))
+.endif
+.endfor
+.endif
 
 %description
 $(project.name) $(project.description).
