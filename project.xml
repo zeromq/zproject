@@ -60,13 +60,17 @@
         You need not specify subdependencies if they are implied.
         Dependencies that support the autotools build system are automatically
         build by travis ci if you supply a git repository or a tarball URI.
+        Set type to "runtime" to have the packages install-depend on it rather
+        than build-depend (default type is "build").
+        The travis ci will use the installed packages when building instead of
+        rebuilding if available.
     <use project = "zyre" min_major= "1" min_minor = "1" min_patch = "0" />
     <use project = "uuid" optional= "1" implied = "1" />
     <use project = "myfirstlib" repository = "http://myfirstlib.org/myfirstlib.git" />
     <use project = "mysecondlib" tarball = "http://mysecondlib.org/mysecondlib-1.2.3.tar.gz" />
     -->
 
-    <use project = "gsl" />
+    <use project = "gsl" type = "runtime" />
 
     <!-- Header Files
          name := The name the header file to include without file ending

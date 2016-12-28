@@ -41,6 +41,7 @@ BuildRequires:  pkgconfig
 BuildRequires:  xmlto
 BuildRequires:  generator-scripting-language
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+Requires: generator-scripting-language
 
 %description
 zproject project.

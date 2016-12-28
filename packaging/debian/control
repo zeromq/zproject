@@ -24,7 +24,8 @@ Build-Depends-Indep: asciidoc,
 
 Package: zproject
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends},
+    generator-scripting-language,
 Description: project
  Main package for zproject: project
 

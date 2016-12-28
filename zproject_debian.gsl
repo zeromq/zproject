@@ -86,7 +86,16 @@ Description: $(project.description) development tools
 .if project.has_main | count(project.bin) > 0
 Package: $(string.replace (project.name, "_|-"):lower)
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends},
+.for project.use where use.type ?= "runtime"
+.if defined(use.debian_name)
+    $(use.debian_name),
+.elsif regexp.match("^lib", use.libname)
+    $(string.replace (use.libname, "_|-")),
+.else
+    $(string.replace (use.project, "_|-")),
+.endif
+.endfor
 Description: $(project.description)
  Main package for $(project.name): $(project.description)
 .endif
