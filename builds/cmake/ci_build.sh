@@ -21,8 +21,8 @@ CMAKE_OPTS+=("-DCMAKE_LIBRARY_PATH:PATH=${BUILD_PREFIX}/lib")
 CMAKE_OPTS+=("-DCMAKE_INCLUDE_PATH:PATH=${BUILD_PREFIX}/include")
 
 # Clone and build dependencies
-git clone --quiet --depth 1 https://github.com/imatix/gsl.git gsl.git
-cd gsl.git
+git clone --quiet --depth 1 https://github.com/imatix/gsl.git gsl
+cd gsl
 git --no-pager log --oneline -n1
 if [ -e autogen.sh ]; then
     ./autogen.sh 2> /dev/null

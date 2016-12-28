@@ -6,8 +6,8 @@ if [ "$BUILD_TYPE" == "default" ]; then
     mkdir tmp
     BUILD_PREFIX=$PWD/tmp
 
-    git clone --depth 1 https://github.com/imatix/gsl.git gsl.git
-    ( cd gsl.git/src && \
+    git clone --depth 1 https://github.com/imatix/gsl.git gsl
+    ( cd gsl/src && \
       make -j4 && \
       DESTDIR=${BUILD_PREFIX} make install \
     ) || exit 1
@@ -18,8 +18,8 @@ if [ "$BUILD_TYPE" == "default" ]; then
       make install \
     ) || exit 1
 
-    git clone --depth 1 https://github.com/zeromq/czmq.git czmq.git
-    ( cd czmq.git && \
+    git clone --depth 1 https://github.com/zeromq/czmq.git czmq
+    ( cd czmq && \
       PATH=$PATH:${BUILD_PREFIX}/bin gsl -target:* project.xml \
     ) || exit 1
 else
