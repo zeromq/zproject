@@ -428,6 +428,7 @@ export PATH=$PATH:`pwd`
 }
 .close
 .chmod_x ("builds/check_zproject/ci_build.sh")
+.if count (model)
 .directory.create ("builds/check_zproto")
 .output "builds/check_zproto/ci_build.sh"
 #!/usr/bin/env bash
@@ -451,6 +452,7 @@ if [[ \$(git status -s api) ]]; then
 fi
 .close
 .chmod_x ("builds/check_zproto/ci_build.sh")
+.endif
 .
 .output "ci_deploy.sh"
 #!/usr/bin/env bash
