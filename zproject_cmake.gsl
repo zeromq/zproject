@@ -480,40 +480,58 @@ CMAKE_OPTS+=("-DCMAKE_INCLUDE_PATH:PATH=${BUILD_PREFIX}/include")
 
 # Clone and build dependencies
 .for use where defined (use.tarball)
-wget $(use.tarball)
-tar -xzf \$(basename "$(use.tarball)")
-cd \$(basename "$(use.tarball)" .tar.gz)
-\./configure "${CONFIG_OPTS[@]}"
-make -j4
-make install
-cd ..
+.   if defined (use.debian_name)
+if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
+.   elsif defined (use.libname)
+if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)-dev >/dev/null 2>&1) || \\
+.   else
+if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
+.   endif
+       (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
+    wget $(use.tarball)
+    tar -xzf \$(basename "$(use.tarball)")
+    cd \$(basename "$(use.tarball)" .tar.gz)
+    \./configure "${CONFIG_OPTS[@]}"
+    make -j4
+    make install
+    cd ..
+fi
 .endfor
 .for use where defined (use.repository)
-.   if defined (use.release)
-git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+.   if defined (use.debian_name)
+if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
+.   elsif defined (use.libname)
+if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)-dev >/dev/null 2>&1) || \\
 .   else
-git clone --quiet --depth 1 $(use.repository) $(use.project)
+if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
 .   endif
-cd $(use.project)
-git --no-pager log --oneline -n1
-if [ -e autogen.sh ]; then
-    ./autogen.sh 2> /dev/null
+       (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
+.   if defined (use.release)
+    git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+.   else
+    git clone --quiet --depth 1 $(use.repository) $(use.project)
+.   endif
+    cd $(use.project)
+    git --no-pager log --oneline -n1
+    if [ -e autogen.sh ]; then
+        ./autogen.sh 2> /dev/null
+    fi
+    if [ -e buildconf ]; then
+        ./buildconf 2> /dev/null
+    fi
+    if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
+        libtoolize --copy --force && \\
+        aclocal -I . && \\
+        autoheader && \\
+        automake --add-missing --copy && \\
+        autoconf || \\
+        autoreconf -fiv
+    fi
+    \./configure "${CONFIG_OPTS[@]}"
+    make -j4
+    make install
+    cd ..
 fi
-if [ -e buildconf ]; then
-    ./buildconf 2> /dev/null
-fi
-if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
-    libtoolize --copy --force && \\
-    aclocal -I . && \\
-    autoheader && \\
-    automake --add-missing --copy && \\
-    autoconf || \\
-    autoreconf -fiv
-fi
-\./configure "${CONFIG_OPTS[@]}"
-make -j4
-make install
-cd ..
 .endfor
 
 # Build and check this project
