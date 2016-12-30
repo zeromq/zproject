@@ -94,7 +94,7 @@ function resolve_ruby_container (container)
         my.container.coerce_to_c = "Integer($(my.container.ruby_name:))"
     elsif my.container.c_type = "SOCKET"
         my.container.ruby_doc_type = "Integer or FFI::Pointer"
-        my.container.ruby_ffi_type = "(::FFI::Platform.unix? ? :int : :uint64_t)" # support for Unix & Win64
+        my.container.ruby_ffi_type = "(::FFI::Platform.unix? ? :int : :uint64)" # support for Unix & Win64
     elsif count (project.class, defined (class.RubyName) & (my.container.type = class.c_name))
         for project.class where (defined (class.RubyName) & (my.container.type = class.c_name))
             if my.container.by_reference
