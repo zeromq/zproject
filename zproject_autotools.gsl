@@ -87,12 +87,20 @@ AC_SUBST(PACKAGE_VERSION)
 #
 # Libtool -version-info (ABI version)
 #
-# Currently 2.0.1 ("stable"). Don't change this unless you
+.if defined (project->abi)
+# Currently $(project->abi.current):$(project->abi.revision):$(project->abi.age) ("stable"). Don't change this unless you
+.else
+# Currently 0:0:0 ("stable"). Don't change this unless you
+.endif
 # know exactly what you're doing and have read and understand
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 #
 # $(project.libname) -version-info
-LTVER="$(project->version.major):$(project->version.minor):0"
+.if defined (project->abi)
+LTVER="$(project->abi.current):$(project->abi.revision):$(project->abi.age)"
+.else
+LTVER="0:0:0"
+.endif
 AC_SUBST(LTVER)
 
 # Capture c flags
