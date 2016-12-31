@@ -21,37 +21,37 @@
 
 **<a href="#toc2-158">Configuration</a>**
 
-**<a href="#toc2-357">Project dependencies</a>**
+**<a href="#toc2-370">Project dependencies</a>**
 
-**<a href="#toc2-527">Sample Usage</a>**
+**<a href="#toc2-540">Sample Usage</a>**
 
-**<a href="#toc2-573">Sample API model</a>**
-*  <a href="#toc3-787">Supported API Model Attributes</a>
-*  <a href="#toc3-819">API Types</a>
-*  <a href="#toc3-862">Tips</a>
-*  <a href="#toc3-879">Generate API model from C header files</a>
-&emsp;<a href="#toc4-901">Known caveats</a>
+**<a href="#toc2-586">Sample API model</a>**
+*  <a href="#toc3-800">Supported API Model Attributes</a>
+*  <a href="#toc3-832">API Types</a>
+*  <a href="#toc3-875">Tips</a>
+*  <a href="#toc3-892">Generate API model from C header files</a>
+&emsp;<a href="#toc4-914">Known caveats</a>
 
-**<a href="#toc2-906">Language Binding Notes</a>**
-*  <a href="#toc3-909">Java Language Binding</a>
+**<a href="#toc2-919">Language Binding Notes</a>**
+*  <a href="#toc3-922">Java Language Binding</a>
 
-**<a href="#toc2-917">Draft API Support</a>**
+**<a href="#toc2-930">Draft API Support</a>**
 
-**<a href="#toc2-949">Targets</a>**
+**<a href="#toc2-962">Targets</a>**
 
-**<a href="#toc2-975">Removal</a>**
-*  <a href="#toc3-978">autotools</a>
+**<a href="#toc2-988">Removal</a>**
+*  <a href="#toc3-991">autotools</a>
 
-**<a href="#toc2-985">Notes for Writing Language Targets</a>**
-*  <a href="#toc3-1005">Schema/Architecture Overview</a>
-*  <a href="#toc3-1024">Informal Summary</a>
-*  <a href="#toc3-1029">Semantic Attributes</a>
-*  <a href="#toc3-1064">Target Scopes</a>
-*  <a href="#toc3-1069">Target Options</a>
+**<a href="#toc2-998">Notes for Writing Language Targets</a>**
+*  <a href="#toc3-1018">Schema/Architecture Overview</a>
+*  <a href="#toc3-1037">Informal Summary</a>
+*  <a href="#toc3-1042">Semantic Attributes</a>
+*  <a href="#toc3-1077">Target Scopes</a>
+*  <a href="#toc3-1082">Target Options</a>
 
-**<a href="#toc2-1097">Ownership and License</a>**
-*  <a href="#toc3-1106">Hints to Contributors</a>
-*  <a href="#toc3-1115">This Document</a>
+**<a href="#toc2-1110">Ownership and License</a>**
+*  <a href="#toc3-1119">Hints to Contributors</a>
+*  <a href="#toc3-1128">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -262,19 +262,32 @@ zproject's `project.xml` contains an extensive description of the available conf
     <version major = "1" minor = "1" patch = "0" />
 
     <!--
+        Current libtool ABI version of your project's shared library.
+        Start at 0:0:0 and see:
+        http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+        for details on how/when to increment it.
+        If not defined 0:0:0 will be used.
+    <abi current = "0" revision = "0" age = "0" />
+    -->
+
+    <!--
         Specify which other projects this depends on.
         These projects must be known by zproject, and the list of
         known projects is maintained in the zproject_known_projects.xml model.
         You need not specify subdependencies if they are implied.
         Dependencies that support the autotools build system are automatically
         build by travis ci if you supply a git repository or a tarball URI.
+        Set type to "runtime" to have the packages install-depend on it rather
+        than build-depend (default type is "build").
+        The travis ci will use the installed packages when building instead of
+        rebuilding if available.
     <use project = "zyre" min_major= "1" min_minor = "1" min_patch = "0" />
     <use project = "uuid" optional= "1" implied = "1" />
     <use project = "myfirstlib" repository = "http://myfirstlib.org/myfirstlib.git" />
     <use project = "mysecondlib" tarball = "http://mysecondlib.org/mysecondlib-1.2.3.tar.gz" />
     -->
 
-    <use project = "gsl" />
+    <use project = "gsl" type = "runtime" />
 
     <!-- Header Files
          name := The name the header file to include without file ending
@@ -399,7 +412,7 @@ zproject's `project.xml` contains an extensive description of the available conf
 </project>
 ```
 
-<A name="toc2-357" title="Project dependencies" />
+<A name="toc2-370" title="Project dependencies" />
 ## Project dependencies
 
 zproject's `use` element defines project dependencies. Model is described in `zproject_known_projects.xml` file
@@ -569,7 +582,7 @@ zproject's `use` element defines project dependencies. Model is described in `zp
 ```
 
 
-<A name="toc2-527" title="Sample Usage" />
+<A name="toc2-540" title="Sample Usage" />
 ## Sample Usage
 
 Here is an example how to use gsl to generate the necessary files for the target project CZMQ.
@@ -585,8 +598,8 @@ if [ "$BUILD_TYPE" == "default" ]; then
     mkdir tmp
     BUILD_PREFIX=$PWD/tmp
 
-    git clone --depth 1 https://github.com/imatix/gsl.git gsl.git
-    ( cd gsl.git/src && \
+    git clone --depth 1 https://github.com/imatix/gsl.git gsl
+    ( cd gsl/src && \
       make -j4 && \
       DESTDIR=${BUILD_PREFIX} make install \
     ) || exit 1
@@ -597,8 +610,8 @@ if [ "$BUILD_TYPE" == "default" ]; then
       make install \
     ) || exit 1
 
-    git clone --depth 1 https://github.com/zeromq/czmq.git czmq.git
-    ( cd czmq.git && \
+    git clone --depth 1 https://github.com/zeromq/czmq.git czmq
+    ( cd czmq && \
       PATH=$PATH:${BUILD_PREFIX}/bin gsl -target:* project.xml \
     ) || exit 1
 else
@@ -615,7 +628,7 @@ Note: This file is the continuous integration file for this project (zproject/ci
 
 When the script completes, you could check in the modified files in CZMQ subtree which now have been regenerated using czmq/project.xml.
 
-<A name="toc2-573" title="Sample API model" />
+<A name="toc2-586" title="Sample API model" />
 ## Sample API model
 
 The zproject scripts can also optionally generate the `@interface` in your class headers from an API model, in addition to a host of language bindings.  To opt-in to this behavior, just make a model to the `api` directory of your project.  For example, if your `project.xml` contains `<class name = "myclass"/>`, you could create the following `api/myclass.api` file:
@@ -829,7 +842,7 @@ MYPROJECT_EXPORT void
 //  @end
 ```
 
-<A name="toc3-787" title="Supported API Model Attributes" />
+<A name="toc3-800" title="Supported API Model Attributes" />
 ### Supported API Model Attributes
 
 The following attributes are supported for methods:
@@ -861,7 +874,7 @@ The following attributes are supported for arguments:
 
 - `polymorphic` - indicates that the passed class instance is a `sockish` type. For an example see CZMQ's zsock class.
 
-<A name="toc3-819" title="API Types" />
+<A name="toc3-832" title="API Types" />
 ### API Types
 
 This is an incomplete list of API types:
@@ -904,7 +917,7 @@ This is an incomplete list of API types:
 
 * Names of classes, e.g. zmsg.
 
-<A name="toc3-862" title="Tips" />
+<A name="toc3-875" title="Tips" />
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
@@ -921,7 +934,7 @@ You can save a snapshot of the entire resolved project model using this syntax:
 gsl -save:1 project.xml
 ```
 
-<A name="toc3-879" title="Generate API model from C header files" />
+<A name="toc3-892" title="Generate API model from C header files" />
 ### Generate API model from C header files
 
 Writing API model for bigger project with a lot of classes can be tedious job. There mkapi.py, which automates most of the task.
@@ -943,15 +956,15 @@ Note you *must* use top-level include as pycparser fails if it does not know any
 
 The tool might expect `-DWITH_DRAFTS` parameter if the class is not marked as a stable.
 
-<A name="toc4-901" title="Known caveats" />
+<A name="toc4-914" title="Known caveats" />
 #### Known caveats
 
 The tool can't distinguish methods which allocates new object. It does print a comment about adding fresh = "1" attribute to each method, which return non const pointer. However the final assigment must be done manually.
 
-<A name="toc2-906" title="Language Binding Notes" />
+<A name="toc2-919" title="Language Binding Notes" />
 ## Language Binding Notes
 
-<A name="toc3-909" title="Java Language Binding" />
+<A name="toc3-922" title="Java Language Binding" />
 ### Java Language Binding
 
 * Skips methods that it cannot handle properly.
@@ -959,7 +972,7 @@ The tool can't distinguish methods which allocates new object. It does print a c
 * To build, you need gradle (or equivalent). Run 'gradle build jar' in the bindings/jni directory.
 * To install, run 'gradle install'. This puts the files into $HOME/.m2/repository.
 
-<A name="toc2-917" title="Draft API Support" />
+<A name="toc2-930" title="Draft API Support" />
 ## Draft API Support
 
 zproject lets you mark classes and methods as 'draft' so that they are not installed by default in stable builds. This lets you deliver draft APIs to your users, and change them later.
@@ -991,7 +1004,7 @@ The allowed states are:
 
 Using autotools or CMake, you can specify --with-drafts to enable draft APIs, and --without-drafts to disable them. By default, drafts are built and installed when you work in a git repository (if the directory ".git" is present), and otherwise they are not. That means, if you build from a tarball, drafts are disabled by default.
 
-<A name="toc2-949" title="Targets" />
+<A name="toc2-962" title="Targets" />
 ## Targets
 
 Each target produces scripts and code for a specific build system, platform, or language binding.
@@ -1017,17 +1030,17 @@ To request all targets in your project.xml file:
 
     <target name = "*" />
 
-<A name="toc2-975" title="Removal" />
+<A name="toc2-988" title="Removal" />
 ## Removal
 
-<A name="toc3-978" title="autotools" />
+<A name="toc3-991" title="autotools" />
 ### autotools
 
 ```sh
 make uninstall
 ```
 
-<A name="toc2-985" title="Notes for Writing Language Targets" />
+<A name="toc2-998" title="Notes for Writing Language Targets" />
 ## Notes for Writing Language Targets
 
 This is the general form of a target:
@@ -1047,7 +1060,7 @@ function target_somename
 endfunction
 ```
 
-<A name="toc3-1005" title="Schema/Architecture Overview" />
+<A name="toc3-1018" title="Schema/Architecture Overview" />
 ### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
@@ -1066,12 +1079,12 @@ endfunction
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-<A name="toc3-1024" title="Informal Summary" />
+<A name="toc3-1037" title="Informal Summary" />
 ### Informal Summary
 
 A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
 
-<A name="toc3-1029" title="Semantic Attributes" />
+<A name="toc3-1042" title="Semantic Attributes" />
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
@@ -1106,12 +1119,12 @@ container.va_start     # string - that holds the argment name for va_start ()
 container.optional     # 0/1 (default: 0), up to binding generator to use
 ```
 
-<A name="toc3-1064" title="Target Scopes" />
+<A name="toc3-1077" title="Target Scopes" />
 ### Target Scopes
 
 Each target works in its own copy of 'project'. It can therefore modify and extend 'project' as wanted, without affecting other targets.
 
-<A name="toc3-1069" title="Target Options" />
+<A name="toc3-1082" title="Target Options" />
 ### Target Options
 
 A target can accept options via project.xml like this:
@@ -1139,7 +1152,7 @@ project.nuget_dependency.name = "libzmq_vc120"
 project.nuget_dependency.value = "4.2.0.0"
 ```
 
-<A name="toc2-1097" title="Ownership and License" />
+<A name="toc2-1110" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -1148,7 +1161,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-1106" title="Hints to Contributors" />
+<A name="toc3-1119" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -1157,7 +1170,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-1115" title="This Document" />
+<A name="toc3-1128" title="This Document" />
 ### This Document
 
 _This documentation was generated from zproject/README.txt using [Gitdown](https://github.com/zeromq/gitdown)_
