@@ -208,6 +208,13 @@ set_target_properties($(project.linkname)
 set_target_properties($(project.linkname)
     PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${SOURCE_DIR}/src"
 )
+set_target_properties ($(project.linkname)
+.if defined (project->abi)
+    PROPERTIES SOVERSION "$(project->abi.current - project->abi.age).$(project->abi.age).$(project->abi.revision)"
+.else
+    PROPERTIES SOVERSION "0.0.0"
+.endif
+)
 target_link_libraries($(project.linkname)
     ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES}
 )
