@@ -88,18 +88,23 @@ Requires: $(string.replace (use.project, "_|-"))
 %description
 $(project.name) $(project.description).
 
+.if defined (project->abi)
+.   my.abi_ver = project->abi.current - project->abi.age
+.else
+.   my.abi_ver = 0
+.endif
 .if project.exports_classes
-%package -n $(project.libname)$(project->version.major)
+%package -n $(project.libname)$(my.abi_ver)
 Group:          System/Libraries
 Summary:        $(project.description) shared library
 
-%description -n $(project.libname)$(project->version.major)
+%description -n $(project.libname)$(my.abi_ver)
 This package contains shared library for $(project.name): $(project.description)
 
-%post -n $(project.libname)$(project->version.major) -p /sbin/ldconfig
-%postun -n $(project.libname)$(project->version.major) -p /sbin/ldconfig
+%post -n $(project.libname)$(my.abi_ver) -p /sbin/ldconfig
+%postun -n $(project.libname)$(my.abi_ver) -p /sbin/ldconfig
 
-%files -n $(project.libname)$(project->version.major)
+%files -n $(project.libname)$(my.abi_ver)
 %defattr(-,root,root)
 .if file.exists ('COPYING')
 %doc COPYING
@@ -109,7 +114,7 @@ This package contains shared library for $(project.name): $(project.description)
 %package devel
 Summary:        $(project.description)
 Group:          System/Libraries
-Requires:       $(project.libname)$(project->version.major) = %{version}
+Requires:       $(project.libname)$(my.abi_ver) = %{version}
 .for project.use
 .if defined(use.redhat_name)
 Requires:       $(use.redhat_name)
