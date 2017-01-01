@@ -200,7 +200,11 @@ lib/systemd/system/$(main.name).service
 .endif
 
 .if project.exports_classes
-.   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
+.if defined (project->abi)
+.   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->abi.current - project->abi.age).install")
+.else
+.   output ("packaging/debian/$(string.replace (project.libname, "_|-"))0.install")
+.endif
 usr/lib/*/$(project.libname).so.*
 .   output ("packaging/debian/$(string.replace (project.libname, "_|-"))-dev.install")
 usr/include/*
