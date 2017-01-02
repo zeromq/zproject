@@ -24,7 +24,10 @@ CMAKE_OPTS+=("-DCMAKE_INCLUDE_PATH:PATH=${BUILD_PREFIX}/include")
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scripting-language >/dev/null 2>&1) || \
        (command -v brew >/dev/null 2>&1 && brew ls --versions gsl >/dev/null 2>&1)); then
     git clone --quiet --depth 1 https://github.com/imatix/gsl.git gsl
+    BASE_PWD=${PWD}
     cd gsl
+    CCACHE_BASEDIR=${PWD}
+    export CCACHE_BASEDIR
     git --no-pager log --oneline -n1
     if [ -e autogen.sh ]; then
         ./autogen.sh 2> /dev/null
@@ -43,11 +46,13 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scri
     ./configure "${CONFIG_OPTS[@]}"
     make -j4
     make install
-    cd ..
+    cd "${BASE_PWD}"
 fi
 
 # Build and check this project
 cd ../..
+CCACHE_BASEDIR=${PWD}
+export CCACHE_BASEDIR
 PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .
 make all VERBOSE=1 -j4
 ctest -V
