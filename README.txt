@@ -156,7 +156,8 @@ zproject's `project.xml` contains an extensive description of the available conf
 
 ## Project dependencies
 
-zproject's `use` element defines project dependencies. Model is described in `zproject_known_projects.xml` file
+zproject's `use` element defines project dependencies.
+Model is described in `zproject_known_projects.xml` file:
 
 ```xml
 .pull zproject_known_projects.xml
