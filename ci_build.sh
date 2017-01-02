@@ -4,26 +4,30 @@ set -e
 
 if [ "$BUILD_TYPE" == "default" ]; then
     mkdir tmp
-    BUILD_PREFIX=$PWD/tmp
+    BUILD_PREFIX="$PWD/tmp"
 
     if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scripting-language >/dev/null 2>&1) || \
            (command -v brew >/dev/null 2>&1 && brew ls --versions gsl >/dev/null 2>&1)); then
         git clone --depth 1 https://github.com/imatix/gsl.git gsl
         ( cd gsl/src && \
           make -j4 && \
-          DESTDIR=${BUILD_PREFIX} make install \
+          DESTDIR="${BUILD_PREFIX}" make install \
         ) || exit 1
     fi
 
     ( ./autogen.sh && \
-      PATH=$PATH:${BUILD_PREFIX}/bin ./configure --prefix="${BUILD_PREFIX}" && \
+      PATH="${BUILD_PREFIX}/bin:$PATH" && export PATH && \
+      ./configure --prefix="${BUILD_PREFIX}" && \
       make && \
       make install \
     ) || exit 1
 
+    # Verify new zproject by regenerating CZMQ without (syntax/runtime) errors
+    # Make sure to prefer use of just-built and locally installed copy of gsl
     git clone --depth 1 https://github.com/zeromq/czmq.git czmq
-    ( cd czmq && \
-      PATH=$PATH:${BUILD_PREFIX}/bin gsl -target:* project.xml \
+    ( PATH="${BUILD_PREFIX}/bin:$PATH"; export PATH; \
+      cd czmq && \
+      gsl -target:* project.xml \
     ) || exit 1
 else
     pushd "./builds/${BUILD_TYPE}" && \
