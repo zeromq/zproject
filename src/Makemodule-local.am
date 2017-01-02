@@ -1,0 +1,18 @@
+# Integration recipes for "zproject_selftest" are defined below.
+# This voodoo may cause some "circular reference" warnings for in-tree builds,
+# but should facilitate passing of out-of-tree builds and "make distcheck"
+
+EXTRA_DIST += \
+    src/zproject_selftest
+$(abs_builddir)/src/zproject_selftest: $(abs_srcdir)/src/zproject_selftest
+	cp -pf $< $@ && chmod +x $@
+
+src/zproject_selftest: $(abs_builddir)/src/zproject_selftest
+
+check-local: $(abs_builddir)/src/zproject_selftest
+check-TESTS: $(abs_builddir)/src/zproject_selftest
+
+clean-local:
+	if test "$(abs_builddir)" != "$(abs_srcdir)" ; then \
+		rm -f $(abs_builddir)/src/zproject_selftest || true ; \
+	fi

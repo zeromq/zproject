@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+#
+# This script is a placeholder for zproject's own standard assumption
+# that the delivered classes produce a $(classname)_selftest binary
+# which is then called as part of "make (dist)check" tests. Its mere
+# presence (oh, and functionality) allows zproject itself to pass such
+# automated tests.
+#
+# Note: as of initial commit, the stress was on making the tests pass
+# at all (distributability etc.) - so far this does not test that e.g.
+# regeneration of the project does not change file contents, like CI
+# test scripts do. This is a TODO for the future, takers welcome ;)
+#
+
+if [ "$SKIP_ZPROJECT_SELFTEST" = yes ]; then
+    echo "NOTE: We are inside a distcheck already, skipping $0" >&2
+    exit 0
+fi
+
+set -e
+set -x
+
+# For a self-test, we do a distcheck.
+# This requires a clean but configurable source directory.
+cd "`dirname "$0"`/.." || exit $?
+ABS_SRC_DIR="`pwd`"
+# Make sure we can find gsl et al
+[ -n "${BUILD_PREFIX}" ] || BUILD_PREFIX="${ABS_SRC_DIR}"
+export BUILD_PREFIX
+if [ -d "${BUILD_PREFIX}/bin" ]; then
+    PATH="${BUILD_PREFIX}/bin:$PATH"
+fi
+PATH="$PATH:/usr/local/bin"
+export PATH
+
+if [ -s Makefile ]; then
+    make clean -k || true
+    make distclean -k || true
+fi
+./autogen.sh
+
+if [ -d "tmp" ]; then
+    # Distcheck target directory is read-only, we can't even nuke it easily
+    chmod -R u+rwX tmp
+fi
+rm -rf tmp
+mkdir -p tmp/src
+cd tmp || exit $
+
+cp -pf ../configure .
+cp -pf "${ABS_SRC_DIR}/src/zproject_selftest" ./src/
+#./autogen.sh
+#./configure --srcdir="$ABS_SRC_DIR"
+../configure
+
+make
+
+SKIP_ZPROJECT_SELFTEST=yes
+export SKIP_ZPROJECT_SELFTEST
+DISTCHECK_CONFIGURE_FLAGS="--srcdir=$ABS_SRC_DIR"
+export DISTCHECK_CONFIGURE_FLAGS
+make distcheck
