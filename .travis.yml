@@ -5,9 +5,15 @@ cache: ccache
 
 sudo: false
 
+# Set CI_TIME=true to enable build-step profiling in Travis
+# Set CI_TRACE=true to enable shell script tracing in Travis
 env:
-- BUILD_TYPE=default
-- BUILD_TYPE=check_zproject
+  global:
+    - CI_TIME=true
+    - CI_TRACE=false
+  matrix:
+    - BUILD_TYPE=default
+    - BUILD_TYPE=check_zproject
 
 services:
 - docker

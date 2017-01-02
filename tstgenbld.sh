@@ -32,7 +32,7 @@
 # Usage:
 #   $ tstgenbld.sh [clean] [> results.log]
 #
-#     - if clean argument is present, the scrip will clean any git
+#     - if clean argument is present, the script will clean any git
 #       repository clones and exit.
 #     - Clean does not apply to zproject itself, only to other
 #       repositories used in the process such as gsl, libsodium, libzmq,
@@ -45,9 +45,26 @@
 #       (Linux and Windows).
 #
 
+# Set this to enable verbose profiling
+[ -n "${CI_TIME-}" ] || CI_TIME=""
+case "$CI_TIME" in
+    [Yy][Ee][Ss]|[Oo][Nn]|[Tt][Rr][Uu][Ee])
+        CI_TIME="time -p " ;;
+    [Nn][Oo]|[Oo][Ff][Ff]|[Ff][Aa][Ll][Ss][Ee])
+        CI_TIME="" ;;
+esac
+
+# Set this to enable verbose tracing
+[ -n "${CI_TRACE-}" ] || CI_TRACE="no"
 # set next line to "-o xtrace" if debugging
 # note that to simplify such tracing, some loops below explicitly "exit $?"
 XTRACE="+o xtrace"
+case "$CI_TRACE" in
+    [Nn][Oo]|[Oo][Ff][Ff]|[Ff][Aa][Ll][Ss][Ee])
+        XTRACE="+o xtrace" ;;
+    [Yy][Ee][Ss]|[Oo][Nn]|[Tt][Rr][Uu][Ee])
+        XTRACE="-o xtrace" ;;
+esac
 set ${XTRACE}
 
 export STARTDATE="`date`"
@@ -117,10 +134,10 @@ echo "Building zproject"
 phase=building
 (
     cd ../zproject && \
-    ./autogen.sh && \
-    ./configure && \
-    make && \
-    make install
+    $CI_TIME ./autogen.sh && \
+    $CI_TIME ./configure && \
+    $CI_TIME make && \
+    $CI_TIME make install
     exit $?
 ) > ${BUILD_PREFIX}/zproject_${phase}.err 2>&1 && \
     mv -f ${BUILD_PREFIX}/zproject_${phase}.err ${BUILD_PREFIX}/zproject_${phase}.ok
@@ -146,8 +163,8 @@ echo "Building gsl"
 phase=building
 (
     cd ${GITPROJECTS}/gsl/src && \
-    make -j4 && \
-    DESTDIR=${BUILD_PREFIX} make install
+    $CI_TIME make -j4 && \
+    DESTDIR=${BUILD_PREFIX} $CI_TIME make install
     exit $?
 ) > ${BUILD_PREFIX}/gsl_${phase}.err 2>&1 && \
     mv -f ${BUILD_PREFIX}/gsl_${phase}.err ${BUILD_PREFIX}/gsl_${phase}.ok
@@ -181,8 +198,8 @@ for project in libsodium libzmq czmq malamute zyre; do
     (
         echo "Configuring projects: $project"
         cd ${GITPROJECTS}/$project && \
-        ./autogen.sh && \
-        ./configure --prefix=${BUILD_PREFIX}
+        $CI_TIME ./autogen.sh && \
+        $CI_TIME ./configure --prefix=${BUILD_PREFIX}
         exit $?
     ) > ${BUILD_PREFIX}/${project}_${phase}.err 2>&1 && \
         mv -f ${BUILD_PREFIX}/${project}_${phase}.err ${BUILD_PREFIX}/${project}_${phase}.ok
@@ -194,7 +211,7 @@ for project in libsodium libzmq czmq malamute zyre; do
     (
         echo "Building projects: $project"
         cd ${GITPROJECTS}/$project && \
-        make
+        $CI_TIME make
         exit $?
     ) > ${BUILD_PREFIX}/${project}_${phase}.err 2>&1 && \
         mv -f ${BUILD_PREFIX}/${project}_${phase}.err ${BUILD_PREFIX}/${project}_${phase}.ok
@@ -206,7 +223,7 @@ for project in libsodium libzmq czmq malamute zyre; do
     (
         echo "Installing projects: $project"
         cd ${GITPROJECTS}/$project && \
-        DESTDIR=${BUILD_PREFIX} make install
+        DESTDIR=${BUILD_PREFIX} $CI_TIME make install
         exit $?
     ) > ${BUILD_PREFIX}/${project}_${phase}.err 2>&1 && \
         mv -f ${BUILD_PREFIX}/${project}_${phase}.err ${BUILD_PREFIX}/${project}_${phase}.ok
@@ -220,7 +237,7 @@ for project in libzmq czmq malamute zyre; do
     (
         echo "Checking projects: $project"
         cd ${GITPROJECTS}/$project && \
-        DESTDIR=${BUILD_PREFIX} PATH=${BUILD_PREFIX}/bin:$PATH make check
+        DESTDIR=${BUILD_PREFIX} PATH=${BUILD_PREFIX}/bin:$PATH $CI_TIME make check
         exit $?
     ) > ${BUILD_PREFIX}/${project}_${phase}.err 2>&1 && \
         mv -f ${BUILD_PREFIX}/${project}_${phase}.err ${BUILD_PREFIX}/${project}_${phase}.ok
