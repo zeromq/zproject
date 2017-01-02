@@ -7,8 +7,25 @@
 # Optionally speeds up the compilation steps using ccache (stashed).
 #
 
-set -x
 set -e
+
+# Set this to enable verbose profiling
+[ -n "${CI_TIME-}" ] || CI_TIME=""
+case "$CI_TIME" in
+    [Yy][Ee][Ss]|[Oo][Nn]|[Tt][Rr][Uu][Ee])
+        CI_TIME="time -p " ;;
+    [Nn][Oo]|[Oo][Ff][Ff]|[Ff][Aa][Ll][Ss][Ee])
+        CI_TIME="" ;;
+esac
+
+# Set this to enable verbose tracing
+[ -n "${CI_TRACE-}" ] || CI_TRACE="no"
+case "$CI_TRACE" in
+    [Nn][Oo]|[Oo][Ff][Ff]|[Ff][Aa][Ll][Ss][Ee])
+        set +x ;;
+    [Yy][Ee][Ss]|[Oo][Nn]|[Tt][Rr][Uu][Ee])
+        set -x ;;
+esac
 
 if [ "$BUILD_TYPE" == "default" ]; then
     mkdir tmp
@@ -21,40 +38,44 @@ if [ "$BUILD_TYPE" == "default" ]; then
 
     if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scripting-language >/dev/null 2>&1) || \
            (command -v brew >/dev/null 2>&1 && brew ls --versions gsl >/dev/null 2>&1)); then
-        git clone --depth 1 https://github.com/imatix/gsl.git gsl
+        [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies: gsl..."
+        $CI_TIME git clone --depth 1 https://github.com/imatix/gsl.git gsl
         ( cd gsl/src && \
           CCACHE_BASEDIR=${PWD} && \
           export CCACHE_BASEDIR && \
-          make -j4 && \
-          DESTDIR="${BUILD_PREFIX}" make install \
+          $CI_TIME make -j4 && \
+          DESTDIR="${BUILD_PREFIX}" $CI_TIME make install \
         ) || exit 1
     fi
 
-    ( ./autogen.sh && \
+    [ -z "$CI_TIME" ] || echo "`date`: Starting build of zproject..."
+    ( $CI_TIME ./autogen.sh && \
       PATH="${BUILD_PREFIX}/bin:$PATH" && export PATH && \
       CCACHE_BASEDIR=${PWD} && \
       export CCACHE_BASEDIR && \
-      ./configure --prefix="${BUILD_PREFIX}" && \
-      make && \
-      make install \
+      $CI_TIME ./configure --prefix="${BUILD_PREFIX}" && \
+      $CI_TIME make && \
+      $CI_TIME make install \
     ) || exit 1
 
     # Verify new zproject by regenerating CZMQ without (syntax/runtime) errors
     # Make sure to prefer use of just-built and locally installed copy of gsl
-    git clone --depth 1 https://github.com/zeromq/czmq.git czmq
+    [ -z "$CI_TIME" ] || echo "`date`: Starting test of zproject (and gsl) by reconfiguring czmq..."
+    $CI_TIME git clone --depth 1 https://github.com/zeromq/czmq.git czmq
     ( PATH="${BUILD_PREFIX}/bin:$PATH"; export PATH; \
       cd czmq && \
       CCACHE_BASEDIR=${PWD} && \
       export CCACHE_BASEDIR && \
-      gsl -target:* project.xml \
+      $CI_TIME gsl -target:* project.xml \
     ) || exit 1
+    [ -z "$CI_TIME" ] || echo "`date`: Builds completed without fatal errors!"
 
     echo "=== How well did ccache help on this platform?"
     ccache -s 2>/dev/null || true
     echo "==="
 else
     pushd "./builds/${BUILD_TYPE}" && \
-    REPO_DIR="$(dirs -l +1)" ./ci_build.sh \
+    REPO_DIR="$(dirs -l +1)" $CI_TIME ./ci_build.sh \
     || exit 1
 fi
 
