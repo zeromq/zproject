@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+
+#
+# This script is used by travis ci to test updates for zproject itself:
+# it builds a latest GSL, then zproject, and tests it by regenerating
+# a stable consumer project (CZMQ) which is expected to pass well.
+#
+
 set -x
 set -e
 
