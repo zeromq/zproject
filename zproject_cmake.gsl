@@ -495,16 +495,36 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
 .   endif
        (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
+    BASE_PWD=${PWD}
     wget $(use.tarball)
     tar -xzf \$(basename "$(use.tarball)")
     cd \$(basename "$(use.tarball)" .tar.gz)
-    \./configure "${CONFIG_OPTS[@]}"
+.   if defined (use.builddir)
+    cd ./$(use.builddir)
+.   endif
+    CCACHE_BASEDIR=${PWD}
+    export CCACHE_BASEDIR
+    if [ -e autogen.sh ]; then
+        ./autogen.sh 2> /dev/null
+    fi
+    if [ -e buildconf ]; then
+        ./buildconf 2> /dev/null
+    fi
+    if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
+        libtoolize --copy --force && \\
+        aclocal -I . && \\
+        autoheader && \\
+        automake --add-missing --copy && \\
+        autoconf || \\
+        autoreconf -fiv
+    fi
+    ./configure "${CONFIG_OPTS[@]}"
     make -j4
     make install
-    cd ..
+    cd "${BASE_PWD}"
 fi
 .endfor
-.for use where defined (use.repository)
+.for use where defined (use.repository) & ! defined (use.tarball)
 .   if defined (use.debian_name)
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
 .   elsif defined (use.libname)
@@ -518,7 +538,14 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)
 .   else
     git clone --quiet --depth 1 $(use.repository) $(use.project)
 .   endif
+    BASE_PWD=${PWD}
+.   if defined (use.builddir)
+    cd $(use.project)/$(use.builddir)
+.   else
     cd $(use.project)
+.   endif
+    CCACHE_BASEDIR=${PWD}
+    export CCACHE_BASEDIR
     git --no-pager log --oneline -n1
     if [ -e autogen.sh ]; then
         ./autogen.sh 2> /dev/null
@@ -537,12 +564,14 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)
     \./configure "${CONFIG_OPTS[@]}"
     make -j4
     make install
-    cd ..
+    cd "${BASE_PWD}"
 fi
 .endfor
 
 # Build and check this project
 cd ../..
+CCACHE_BASEDIR=${PWD}
+export CCACHE_BASEDIR
 PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .
 make all VERBOSE=1 -j4
 ctest -V
