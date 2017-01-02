@@ -1,13 +1,15 @@
 # Travis CI script
 language: c
 
+cache: ccache
+
 sudo: false
 
 env:
 - BUILD_TYPE=default
 - BUILD_TYPE=check_zproject
 
-services: 
+services:
 - docker
 
 addons:

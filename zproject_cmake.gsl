@@ -564,7 +564,7 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)
         autoconf || \\
         autoreconf -fiv
     fi
-    \./configure "${CONFIG_OPTS[@]}"
+    ./configure "${CONFIG_OPTS[@]}"
     make -j4
     make install
     cd "${BASE_PWD}"
