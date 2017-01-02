@@ -12,8 +12,11 @@ services:
 
 addons:
   apt:
+    sources:
+    - sourceline: 'deb http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_12.04/ ./'
+      key_url: 'http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_12.04/Release.key'
     packages:
-    - libpcre3-dev
+    - generator-scripting-language
 
 script:
 - ./ci_build.sh
