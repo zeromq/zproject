@@ -68,7 +68,7 @@
         known projects is maintained in the zproject_known_projects.xml model.
         You need not specify subdependencies if they are implied.
         Dependencies that support the autotools build system are automatically
-        build by travis ci if you supply a git repository or a tarball URI.
+        built by travis ci if you supply a git repository or a tarball URI.
         Set type to "runtime" to have the packages install-depend on it rather
         than build-depend (default type is "build").
         The travis ci will use the installed packages when building instead of

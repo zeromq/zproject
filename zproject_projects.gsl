@@ -12,7 +12,7 @@
 
 function resolve_project_dependency (use)
     my.known_projects = XML.load_file ("zproject_known_projects.xml")
-    
+
     # Use known values to fill in gaps if it is a known project
     for my.known_projects.use as known where known.project = my.use.project
         my.use.repository  ?= known.repository?
@@ -23,7 +23,7 @@ function resolve_project_dependency (use)
         my.use.libname     ?= known.libname?
         my.use.release     ?= known.release?
         my.use.debian_name ?= known.debian_name?
-        # The spec_name is only transitional - I assume it wasn't widelly used
+        # The spec_name is only transitional - I assume it wasn't widely used
         # maybe trigger a warning if used?
         my.use.redhat_name ?= known.spec_name?
         my.use.redhat_name ?= known.redhat_name?
@@ -35,7 +35,7 @@ function resolve_project_dependency (use)
             endif
         endfor
     endfor
-    
+
     # Use reasonable fallback values to fill in any remaining gaps
     my.use.prefix ?= my.use.project
     my.use.linkname ?= my.use.prefix
@@ -50,10 +50,10 @@ function resolve_project_dependency (use)
     if !defined (my.use.test)
         echo "Project $(my.use.project) needs a 'test' attribute"
     endif
-    
+
     # Calculate all non-model values from model values
     my.use.min_version = "$(min_major).$(min_minor).$(min_patch)"
-    
+
     # Copy all dependencies implied by this one into the project
     for my.use.use as implied_use
         if !count (project.use, use.project = implied_use.project)

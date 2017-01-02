@@ -276,7 +276,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         known projects is maintained in the zproject_known_projects.xml model.
         You need not specify subdependencies if they are implied.
         Dependencies that support the autotools build system are automatically
-        build by travis ci if you supply a git repository or a tarball URI.
+        built by travis ci if you supply a git repository or a tarball URI.
         Set type to "runtime" to have the packages install-depend on it rather
         than build-depend (default type is "build").
         The travis ci will use the installed packages when building instead of
@@ -415,7 +415,8 @@ zproject's `project.xml` contains an extensive description of the available conf
 <A name="toc2-370" title="Project dependencies" />
 ## Project dependencies
 
-zproject's `use` element defines project dependencies. Model is described in `zproject_known_projects.xml` file
+zproject's `use` element defines project dependencies.
+Model is described in `zproject_known_projects.xml` file:
 
 ```xml
 <known_projects>
