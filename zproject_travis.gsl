@@ -244,6 +244,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
     if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
 .      endif
            (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
+        BASE_PWD=${PWD}
         wget $(use.tarball)
         tar -xzf \$(basename "$(use.tarball)")
         cd \$(basename "$(use.tarball)" .tar.gz)
@@ -269,7 +270,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         ./configure "${CONFIG_OPTS[@]}"
         make -j4
         make install
-        cd ..
+        cd "${BASE_PWD}"
     fi
 .   endfor
 .   for use where defined (use.repository) & ! defined (use.tarball)
