@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
+# NOTE: This script is not standalone, it is included from project root
+# ci_build.sh script, which sets some envvars (like REPO_DIR below).
+[ -n "${REPO_DIR-}" ] || exit 1
+
 # Set this to enable verbose profiling
 [ -n "${CI_TIME-}" ] || CI_TIME=""
 case "$CI_TIME" in
