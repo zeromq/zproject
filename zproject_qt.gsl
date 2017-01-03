@@ -491,6 +491,8 @@ $(project.GENERATED_WARNING_HEADER:)
 .  output "bindings/qt/config.pri"
 $(PROJECT.QTNAME)_LIBRARY = yes
 .  close
+.else
+.   echo "NOT regenerating an existing bindings/qt/config.pri file; but you probably should not care"
 .endif
 .###############################################################################
 .#                                                                             #

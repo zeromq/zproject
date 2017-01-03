@@ -33,11 +33,16 @@ $(use.project)/
 .output "$(topdir)/.prebuildrc"
 prebuild[] = 4.2.4
 prebuild[] = 5.6.0
+.else
+.   echo "NOT regenerating an existing $(topdir)/.prebuildrc file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .endif
 .if !file.exists ("$(topdir)/index.js")
 .output "$(topdir)/index.js"
 /*
     $(project.name:) exported constants and other initializations
+
+    This is a skeleton created by zproject.
+    You can add hand-written code here.
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -48,6 +53,8 @@ module.exports = {
     $(PROJECT.PREFIX)_WHATEVER: 1
 }
 
+.else
+.   echo "NOT regenerating an existing $(topdir)/index.js boilerplate file; but you probably should not care (unless your licenses changed)"
 .endif
 .output "$(topdir)/build.sh"
 #! /bin/bash

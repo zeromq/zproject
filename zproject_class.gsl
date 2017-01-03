@@ -36,6 +36,8 @@
 //  Add your own public definitions here, if you need them
 
 #endif
+.else
+.   echo "NOT regenerating an existing include/$(project.header) skeleton file; but you probably should not care"
 .endif
 .output "include/$(project.prefix)_library.h"
 /*  =========================================================================
