@@ -266,9 +266,12 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         CONFIG_OPTS+=("CPP=${CPP}")
     fi
 
-    # Clone and build dependencies
+    # Clone and build dependencies, if not yet installed to Travis env as DEBs
+    # or MacOS packages; other OSes are not currently supported by Travis cloud
     [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
-.   for use where defined (use.tarball)
+.   for use
+
+    # Start of recipe for dependency: $(use.project)
 .      if defined (use.debian_name)
     if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
 .      elsif defined (use.libname)
@@ -277,58 +280,35 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
     if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
 .      endif
            (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
+        echo ""
+.       if ! defined (use.repository) & ! defined (use.tarball)
+        echo "WARNING: Can not build prerequisite '$(use.project)'" >&2
+        echo "because neither tarball nor repository sources are known for it," >&2
+        echo "and it was not isntalled as a package; this may cause the test to fail!" >&2
+.       else
         BASE_PWD=${PWD}
+.           if defined (use.tarball)
+        echo "`date`: INFO: Building prerequisite '$(use.project)' from tarball..." >&2
         $CI_TIME wget $(use.tarball)
         tar -xzf \$(basename "$(use.tarball)")
         cd \$(basename "$(use.tarball)" .tar.gz)
-.       if defined (use.builddir)
-        cd ./$(use.builddir)
-.       endif
-        CCACHE_BASEDIR=${PWD}
-        export CCACHE_BASEDIR
-        if [ -e autogen.sh ]; then
-            $CI_TIME ./autogen.sh 2> /dev/null
-        fi
-        if [ -e buildconf ]; then
-            $CI_TIME ./buildconf 2> /dev/null
-        fi
-        if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
-            $CI_TIME libtoolize --copy --force && \\
-            $CI_TIME aclocal -I . && \\
-            $CI_TIME autoheader && \\
-            $CI_TIME automake --add-missing --copy && \\
-            $CI_TIME autoconf || \\
-            $CI_TIME autoreconf -fiv
-        fi
-        $CI_TIME ./configure "${CONFIG_OPTS[@]}"
-        $CI_TIME make -j4
-        $CI_TIME make install
-        cd "${BASE_PWD}"
-    fi
-.   endfor
-.   for use where defined (use.repository) & ! defined (use.tarball)
-.      if defined (use.debian_name)
-    if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
-.      elsif defined (use.libname)
-    if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)-dev >/dev/null 2>&1) || \\
-.      else
-    if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
-.      endif
-           (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
-.      if defined (use.release)
+.           elsif defined (use.repository)
+        echo "`date`: INFO: Building prerequisite '$(use.project)' from Git repository..." >&2
+.               if defined (use.release)
         $CI_TIME git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
-.      else
+.               else
         $CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
-.      endif
-        BASE_PWD=${PWD}
-.       if defined (use.builddir)
-        cd $(use.project)/$(use.builddir)
-.       else
+.               endif
         cd $(use.project)
-.       endif
+.           endif
+.           if defined (use.builddir)
+        cd ./$(use.builddir)
+.           endif
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
+.           if defined (use.repository) & ! defined (use.tarball)
         git --no-pager log --oneline -n1
+.           endif
         if [ -e autogen.sh ]; then
             $CI_TIME ./autogen.sh 2> /dev/null
         fi
@@ -347,11 +327,13 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         $CI_TIME make -j4
         $CI_TIME make install
         cd "${BASE_PWD}"
+.       endif
     fi
 .   endfor
 
     # Build and check this project; note that zprojects always have an autogen.sh
-    [ -z "$CI_TIME" ] || echo "`date`: Starting build of currently tested project with DRAFT APIs..."
+    echo ""
+    echo "`date`: INFO: Starting build of currently tested project with DRAFT APIs..."
     CCACHE_BASEDIR=${PWD}
     export CCACHE_BASEDIR
     # Only use --enable-Werror on projects that are expected to have it
@@ -384,7 +366,8 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
 .   endif
 
     # Build and check this project without DRAFT APIs
-    [ -z "$CI_TIME" ] || echo "`date`: Starting build of currently tested project without DRAFT APIs..."
+    echo ""
+    echo "`date`: INFO: Starting build of currently tested project without DRAFT APIs..."
     make distclean
 
     git clean -f
@@ -425,7 +408,11 @@ fi
 #!/usr/bin/env bash
 set -ex
 
-cd $REPO_DIR/..
+# NOTE: This script is not standalone, it is included from project root
+# ci_build.sh script, which sets some envvars (like REPO_DIR below).
+[ -n "${REPO_DIR-}" ] || exit 1
+
+cd "$REPO_DIR/.."
 .for project.use where !optional & defined (use.repository)
 git clone --quiet --depth 1 $(use.repository) $(use.project)
 .endfor
@@ -433,26 +420,27 @@ cd -
 
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list zproject >/dev/null 2>&1) || \\
        (command -v brew >/dev/null 2>&1 && brew ls --versions zproject >/dev/null 2>&1)); then
-    cd $REPO_DIR/..
+    cd "$REPO_DIR/.."
     git clone --quiet --depth 1 https://github.com/zeromq/zproject zproject
     cd zproject
-    export PATH=$PATH:`pwd`
+    PATH="`pwd`:$PATH"
 fi
 
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scripting-language >/dev/null 2>&1) || \\
        (command -v brew >/dev/null 2>&1 && brew ls --versions gsl >/dev/null 2>&1)); then
-    cd $REPO_DIR/..
+    cd "$REPO_DIR/.."
     git clone https://github.com/imatix/gsl.git gsl
     cd gsl/src
     make
-    export PATH=$PATH:`pwd`
+    PATH="`pwd`:$PATH"
 fi
+export PATH
 
 # As we will overwrite this script file make sure bash loads the
 # next lines into memory before executing
 # http://stackoverflow.com/questions/21096478/overwrite-executing-bash-script-files
 {
-    cd $REPO_DIR
+    cd "$REPO_DIR"
     gsl project.xml
 
     # keep an eye on git version used by CI
@@ -476,6 +464,10 @@ fi
 .output "builds/check_zproto/ci_build.sh"
 #!/usr/bin/env bash
 set -ex
+
+# NOTE: This script is not standalone, it is included from project root
+# ci_build.sh script, which sets some envvars (like REPO_DIR below).
+[ -n "${REPO_DIR-}" ] || exit 1
 
 .for model
 docker run -e GSL_BUILD_DIR=/code/src -v "$REPO_DIR":/code zeromqorg/zproto -zproject:1 -q $(name).xml
