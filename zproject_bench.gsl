@@ -153,6 +153,8 @@ int main (void)
 
     return 0;
 }
+.else
+.   echo "NOT regenerating an existing bench/$(bench.name).c skeleton file; but you probably should not care"
 .endif
 .endmacro
 

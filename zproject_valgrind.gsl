@@ -44,4 +44,6 @@ if !file.exists ("src/.valgrind.supp")
     >   fun:_GLOBAL__sub_I_eh_alloc.cc
     >   ...
     >}
+else
+    echo "NOT regenerating an existing src/.valgrind.supp file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 endif

@@ -1040,15 +1040,22 @@ $(project.GENERATED_WARNING_HEADER:)
 .if !file.exists ("src/$(main.name).cfg.in")
 .       output "src/$(main.name).cfg.in"
 #   $(main.name) configuration
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
 
 server
     timeout = 10000     #   Client connection timeout, msec
     background = 0      #   Run as background process
     workdir = .         #   Working directory for daemon
     verbose = 0         #   Do verbose logging of activity?
+.else
+.   echo "NOT regenerating an existing src/$(main.name).cfg.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .endif
 .if !file.exists ("src/$(main.name).service.in")
 .   output "src/$(main.name).service.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
 [Unit]
 Description=$(main.name) service
 After=network.target
@@ -1060,6 +1067,8 @@ ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name).cfg
 
 [Install]
 WantedBy=multi-user.target
+.else
+.   echo "NOT regenerating an existing src/$(main.name).service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .endif
 .endfor
 .close
@@ -1483,10 +1492,15 @@ cc ['flags'] 'files' -l$(project.linkname) ['libraries']
 DESCRIPTION
 -----------
 
+This is a skeleton created by zproject.
+You should add hand-written text here.
+
 Classes
 ~~~~~~~
 
 Something.
+.else
+.   echo "NOT regenerating an existing doc/$(project.name).txt boilerplate file; but you probably should not care"
 .endif
 .endmacro
 

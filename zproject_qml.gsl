@@ -379,18 +379,23 @@ TestCase {
     verify(true)
   }
 }
-
+.else
+.   echo "NOT regenerating an existing bindings/qml/test/tst_$(project.QmlName).qml file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .endif
 .#
 .if !file.exists ("bindings/qml/.gitignore")
 .output "bindings/qml/.gitignore"
 build/
+.else
+.   echo "NOT regenerating an existing bindings/qml/.gitignore skeleton file; but you probably should not care"
 .endif
 .#
 .if !file.exists ("bindings/qml/src/qmldir")
 .output "bindings/qml/src/qmldir"
 module $(project.QmlName:)
 plugin $(project.qml_soname:)
+.else
+.   echo "NOT regenerating an existing bindings/qml/src/qmldir skeleton file; but you probably should not care"
 .endif
 .#
 .output "bindings/qml/$(project.qml_soname:)_bindings.pro"

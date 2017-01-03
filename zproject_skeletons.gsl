@@ -63,6 +63,8 @@ int main (int argc, char *argv [])
     return 0;
 }
 .   close
+. else
+.   echo "NOT regenerating an existing $(main.source) skeleton file; but you probably should not care"
 . endif
 .endmacro
 
@@ -130,6 +132,8 @@ $(PROJECT.PREFIX)_EXPORT void
 
 #endif
 .   close
+. else
+.   echo "NOT regenerating an existing $(actor.header) skeleton file; but you probably should not care"
 . endif
 .endmacro
 
@@ -306,6 +310,8 @@ $(actor.name:c)_test (bool verbose)
 }
 .   endif
 .   close
+. else
+.   echo "NOT regenerating an existing $(actor.source) skeleton file; but you probably should not care"
 . endif
 .endmacro
 
@@ -364,6 +370,8 @@ $(PROJECT.PREFIX)_EXPORT void
 
 #endif
 .   close
+. else
+.   echo "NOT regenerating an existing $(class.header) skeleton file; but you probably should not care"
 . endif
 .endmacro
 
@@ -444,5 +452,7 @@ $(class.c_name)_test (bool verbose)
 }
 .   endif
 .   close
+. else
+.   echo "NOT regenerating an existing $(class.source) skeleton file; but you probably should not care"
 . endif
 .endmacro

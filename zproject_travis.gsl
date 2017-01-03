@@ -17,6 +17,9 @@ register_target ("travis", "Travis CI scripts")
 .   echo "Generating skeleton .travis.yml script"
 .   output ".travis.yml"
 # Travis CI script
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
 language: c
 
 cache: ccache
@@ -92,6 +95,8 @@ deploy:
     tags: true
     condition: $TRAVIS_OS_NAME =~ (linux) && $BUILD_TYPE =~ (default)
 .   close
+.else
+.   echo "NOT regenerating an existing .travis.yml file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .endif
 .
 .output "ci_build.sh"

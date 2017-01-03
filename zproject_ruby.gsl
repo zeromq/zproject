@@ -601,6 +601,8 @@ task :default => :test
 # Run tests.
 RSpec::Core::RakeTask.new :test do |c|
 end
+.else
+.   echo "NOT regenerating an existing bindings/ruby/Rakefile file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .endif
 .#
 .directory.create ("bindings/ruby/spec")
@@ -614,6 +616,8 @@ RSpec.configure do |c|
   c.expect_with(:rspec) { |c| c.syntax = [:should, :expect] }
   c.mock_with(:rspec)   { |c| c.syntax = [:should, :expect] }
 end
+.else
+.   echo "NOT regenerating an existing bindings/ruby/spec/spec_helper.rb file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .endif
 .#
 .output "bindings/ruby/spec/ffi_spec.rb"
