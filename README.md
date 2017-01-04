@@ -22,44 +22,30 @@
 &emsp;<a href="#toc4-568">Target Scopes</a>
 *  <a href="#toc3-573">Modifying generated files in an already existent project</a>
 
-**<a href="#toc2-600">Sample Usage</a>**
+**<a href="#toc2-600">API models</a>**
+*  <a href="#toc3-607">Sample API model</a>
+*  <a href="#toc3-827">Supported API Model Attributes</a>
+*  <a href="#toc3-859">API Types</a>
+*  <a href="#toc3-902">Tips</a>
+*  <a href="#toc3-919">Generate API model from C header files</a>
+&emsp;<a href="#toc4-941">Known caveats</a>
 
-**<a href="#toc1-611">This script is used by travis ci to test updates for zproject itself:</a>**
+**<a href="#toc2-946">Language Binding Notes</a>**
+*  <a href="#toc3-949">Java Language Binding</a>
 
-**<a href="#toc1-613">it builds a latest GSL, then zproject, and tests it by regenerating</a>**
+**<a href="#toc2-957">Draft API Support</a>**
 
-**<a href="#toc1-615">a stable consumer project (CZMQ) which is expected to pass well.</a>**
+**<a href="#toc2-989">Removal</a>**
+*  <a href="#toc3-992">autotools</a>
 
-**<a href="#toc1-617">Optionally speeds up the compilation steps using ccache (stashed).</a>**
+**<a href="#toc2-999">Notes for Writing Language Targets</a>**
+*  <a href="#toc3-1019">Schema/Architecture Overview</a>
+*  <a href="#toc3-1038">Informal Summary</a>
+*  <a href="#toc3-1043">Semantic Attributes</a>
 
-**<a href="#toc1-623">Set this to enable verbose profiling</a>**
-
-**<a href="#toc1-633">Set this to enable verbose tracing</a>**
-
-**<a href="#toc2-703">API models</a>**
-*  <a href="#toc3-710">Sample API model</a>
-*  <a href="#toc3-930">Supported API Model Attributes</a>
-*  <a href="#toc3-962">API Types</a>
-*  <a href="#toc3-1005">Tips</a>
-*  <a href="#toc3-1022">Generate API model from C header files</a>
-&emsp;<a href="#toc4-1044">Known caveats</a>
-
-**<a href="#toc2-1049">Language Binding Notes</a>**
-*  <a href="#toc3-1052">Java Language Binding</a>
-
-**<a href="#toc2-1060">Draft API Support</a>**
-
-**<a href="#toc2-1092">Removal</a>**
-*  <a href="#toc3-1095">autotools</a>
-
-**<a href="#toc2-1102">Notes for Writing Language Targets</a>**
-*  <a href="#toc3-1122">Schema/Architecture Overview</a>
-*  <a href="#toc3-1141">Informal Summary</a>
-*  <a href="#toc3-1146">Semantic Attributes</a>
-
-**<a href="#toc2-1181">Ownership and License</a>**
-*  <a href="#toc3-1190">Hints to Contributors</a>
-*  <a href="#toc3-1199">This Document</a>
+**<a href="#toc2-1078">Ownership and License</a>**
+*  <a href="#toc3-1087">Hints to Contributors</a>
+*  <a href="#toc3-1096">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -650,117 +636,14 @@ If that happens, you need to follow these steps to make the modifications and th
 4. Be aware that many files in the regenerated projects will change.
 5. This also means you will need to commit changes on zproject (your mods) and in czmq, malamute, zyre (the regenerated files with your mods). From git documentation, it seems like the command "git add -uv" could help to find out what files were actually modified from all the files that were regenerated. Supposedly this will only add the ones that were actually modified, but you should double check them. Make sure to double check even line termination (or use a comparisson tool that flags those differences). Windows specific files should have (CR+LF) termination, while Linux specific should have (LF) only termination. Best is to look for ".terminator=" examples in existing .GSL files.
 
-<A name="toc2-600" title="Sample Usage" />
-## Sample Usage
-
-Here is an example how to use gsl to generate the necessary files for the target project CZMQ.
-First modify CZMQ's project.xml or any of the included files referenced in project.xml.
-Second, regenerate the files. Even though CZMQ is the target project where you want the files generated, you need to build ZPROJECT and have GSL installed (or build it on the fly as in this sample).
-
-```sh
-#!/usr/bin/env bash
-
-#
-<A name="toc1-611" title="This script is used by travis ci to test updates for zproject itself:" />
-# This script is used by travis ci to test updates for zproject itself:
-<A name="toc1-613" title="it builds a latest GSL, then zproject, and tests it by regenerating" />
-# it builds a latest GSL, then zproject, and tests it by regenerating
-<A name="toc1-615" title="a stable consumer project (CZMQ) which is expected to pass well." />
-# a stable consumer project (CZMQ) which is expected to pass well.
-<A name="toc1-617" title="Optionally speeds up the compilation steps using ccache (stashed)." />
-# Optionally speeds up the compilation steps using ccache (stashed).
-#
-
-set -e
-
-<A name="toc1-623" title="Set this to enable verbose profiling" />
-# Set this to enable verbose profiling
-[ -n "${CI_TIME-}" ] || CI_TIME=""
-case "$CI_TIME" in
-    [Yy][Ee][Ss]|[Oo][Nn]|[Tt][Rr][Uu][Ee])
-        CI_TIME="time -p " ;;
-    [Nn][Oo]|[Oo][Ff][Ff]|[Ff][Aa][Ll][Ss][Ee])
-        CI_TIME="" ;;
-esac
-
-<A name="toc1-633" title="Set this to enable verbose tracing" />
-# Set this to enable verbose tracing
-[ -n "${CI_TRACE-}" ] || CI_TRACE="no"
-case "$CI_TRACE" in
-    [Nn][Oo]|[Oo][Ff][Ff]|[Ff][Aa][Ll][Ss][Ee])
-        set +x ;;
-    [Yy][Ee][Ss]|[Oo][Nn]|[Tt][Rr][Uu][Ee])
-        set -x ;;
-esac
-
-if [ "$BUILD_TYPE" == "default" ]; then
-    mkdir tmp
-    BUILD_PREFIX="$PWD/tmp"
-
-    CCACHE_PATH="$PATH"
-    CCACHE_DIR="${HOME}/.ccache"
-    export CCACHE_PATH CCACHE_DIR
-    # ccache -s 2>/dev/null || true
-
-    if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scripting-language >/dev/null 2>&1) || \
-           (command -v brew >/dev/null 2>&1 && brew ls --versions gsl >/dev/null 2>&1)); then
-        [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies: gsl..."
-        $CI_TIME git clone --depth 1 https://github.com/imatix/gsl.git gsl
-        ( cd gsl/src && \
-          CCACHE_BASEDIR=${PWD} && \
-          export CCACHE_BASEDIR && \
-          $CI_TIME make -j4 && \
-          DESTDIR="${BUILD_PREFIX}" $CI_TIME make install \
-        ) || exit 1
-    fi
-
-    [ -z "$CI_TIME" ] || echo "`date`: Starting build of zproject..."
-    ( $CI_TIME ./autogen.sh && \
-      PATH="${BUILD_PREFIX}/bin:$PATH" && export PATH && \
-      CCACHE_BASEDIR=${PWD} && \
-      export CCACHE_BASEDIR && \
-      $CI_TIME ./configure --prefix="${BUILD_PREFIX}" && \
-      $CI_TIME make && \
-      $CI_TIME make install \
-    ) || exit 1
-
-    # Verify new zproject by regenerating CZMQ without (syntax/runtime) errors
-    # Make sure to prefer use of just-built and locally installed copy of gsl
-    [ -z "$CI_TIME" ] || echo "`date`: Starting test of zproject (and gsl) by reconfiguring czmq..."
-    $CI_TIME git clone --depth 1 https://github.com/zeromq/czmq.git czmq
-    ( PATH="${BUILD_PREFIX}/bin:$PATH"; export PATH; \
-      cd czmq && \
-      CCACHE_BASEDIR=${PWD} && \
-      export CCACHE_BASEDIR && \
-      $CI_TIME gsl -target:* project.xml \
-    ) || exit 1
-    [ -z "$CI_TIME" ] || echo "`date`: Builds completed without fatal errors!"
-
-    echo "=== How well did ccache help on this platform?"
-    ccache -s 2>/dev/null || true
-    echo "==="
-else
-    pushd "./builds/${BUILD_TYPE}" && \
-    REPO_DIR="$(dirs -l +1)" $CI_TIME ./ci_build.sh \
-    || exit 1
-fi
-
-echo "=== Are GitIgnores good after making zproject '$BUILD_TYPE'? (should have no output below)"
-git status -s || true
-echo "==="
-```
-Note: This file is the continuous integration file for this project (zproject/ci_build.sh).
-
-When the script completes, you could check in the modified files in CZMQ subtree which now have been regenerated using czmq/project.xml.
-
-<A name="toc2-703" title="API models" />
+<A name="toc2-600" title="API models" />
 ## API models
 
 Using an API model zproject can generate the `@interface` section your class
 headers. Further it allows zproject to generate various language bindings on top
 of your CLASS project.
 
-<A name="toc3-710" title="Sample API model" />
+<A name="toc3-607" title="Sample API model" />
 ### Sample API model
 
 All API models are placed into the `api` directory which resides in the root
@@ -980,7 +863,7 @@ MYPROJECT_EXPORT void
 //  @end
 ```
 
-<A name="toc3-930" title="Supported API Model Attributes" />
+<A name="toc3-827" title="Supported API Model Attributes" />
 ### Supported API Model Attributes
 
 The following attributes are supported for methods:
@@ -1012,7 +895,7 @@ The following attributes are supported for arguments:
 
 - `polymorphic` - indicates that the passed class instance is a `sockish` type. For an example see CZMQ's zsock class.
 
-<A name="toc3-962" title="API Types" />
+<A name="toc3-859" title="API Types" />
 ### API Types
 
 This is an incomplete list of API types:
@@ -1055,7 +938,7 @@ This is an incomplete list of API types:
 
 * Names of classes, e.g. zmsg.
 
-<A name="toc3-1005" title="Tips" />
+<A name="toc3-902" title="Tips" />
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
@@ -1072,7 +955,7 @@ You can save a snapshot of the entire resolved project model using this syntax:
 gsl -save:1 project.xml
 ```
 
-<A name="toc3-1022" title="Generate API model from C header files" />
+<A name="toc3-919" title="Generate API model from C header files" />
 ### Generate API model from C header files
 
 Writing API model for bigger project with a lot of classes can be tedious job. There mkapi.py, which automates most of the task.
@@ -1094,15 +977,15 @@ Note you *must* use top-level include as pycparser fails if it does not know any
 
 The tool might expect `-DWITH_DRAFTS` parameter if the class is not marked as a stable.
 
-<A name="toc4-1044" title="Known caveats" />
+<A name="toc4-941" title="Known caveats" />
 #### Known caveats
 
 The tool can't distinguish methods which allocates new object. It does print a comment about adding fresh = "1" attribute to each method, which return non const pointer. However the final assigment must be done manually.
 
-<A name="toc2-1049" title="Language Binding Notes" />
+<A name="toc2-946" title="Language Binding Notes" />
 ## Language Binding Notes
 
-<A name="toc3-1052" title="Java Language Binding" />
+<A name="toc3-949" title="Java Language Binding" />
 ### Java Language Binding
 
 * Skips methods that it cannot handle properly.
@@ -1110,7 +993,7 @@ The tool can't distinguish methods which allocates new object. It does print a c
 * To build, you need gradle (or equivalent). Run 'gradle build jar' in the bindings/jni directory.
 * To install, run 'gradle install'. This puts the files into $HOME/.m2/repository.
 
-<A name="toc2-1060" title="Draft API Support" />
+<A name="toc2-957" title="Draft API Support" />
 ## Draft API Support
 
 zproject lets you mark classes and methods as 'draft' so that they are not installed by default in stable builds. This lets you deliver draft APIs to your users, and change them later.
@@ -1142,17 +1025,17 @@ The allowed states are:
 
 Using autotools or CMake, you can specify --with-drafts to enable draft APIs, and --without-drafts to disable them. By default, drafts are built and installed when you work in a git repository (if the directory ".git" is present), and otherwise they are not. That means, if you build from a tarball, drafts are disabled by default.
 
-<A name="toc2-1092" title="Removal" />
+<A name="toc2-989" title="Removal" />
 ## Removal
 
-<A name="toc3-1095" title="autotools" />
+<A name="toc3-992" title="autotools" />
 ### autotools
 
 ```sh
 make uninstall
 ```
 
-<A name="toc2-1102" title="Notes for Writing Language Targets" />
+<A name="toc2-999" title="Notes for Writing Language Targets" />
 ## Notes for Writing Language Targets
 
 This is the general form of a target:
@@ -1172,7 +1055,7 @@ function target_somename
 endfunction
 ```
 
-<A name="toc3-1122" title="Schema/Architecture Overview" />
+<A name="toc3-1019" title="Schema/Architecture Overview" />
 ### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
@@ -1191,12 +1074,12 @@ endfunction
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-<A name="toc3-1141" title="Informal Summary" />
+<A name="toc3-1038" title="Informal Summary" />
 ### Informal Summary
 
 A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
 
-<A name="toc3-1146" title="Semantic Attributes" />
+<A name="toc3-1043" title="Semantic Attributes" />
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
@@ -1231,7 +1114,7 @@ container.va_start     # string - that holds the argment name for va_start ()
 container.optional     # 0/1 (default: 0), up to binding generator to use
 ```
 
-<A name="toc2-1181" title="Ownership and License" />
+<A name="toc2-1078" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -1240,7 +1123,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-1190" title="Hints to Contributors" />
+<A name="toc3-1087" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -1249,7 +1132,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-1199" title="This Document" />
+<A name="toc3-1096" title="This Document" />
 ### This Document
 
 _This documentation was generated from zproject/README.txt using [Gitdown](https://github.com/zeromq/gitdown)_

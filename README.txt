@@ -221,19 +221,6 @@ If that happens, you need to follow these steps to make the modifications and th
 4. Be aware that many files in the regenerated projects will change.
 5. This also means you will need to commit changes on zproject (your mods) and in czmq, malamute, zyre (the regenerated files with your mods). From git documentation, it seems like the command "git add -uv" could help to find out what files were actually modified from all the files that were regenerated. Supposedly this will only add the ones that were actually modified, but you should double check them. Make sure to double check even line termination (or use a comparisson tool that flags those differences). Windows specific files should have (CR+LF) termination, while Linux specific should have (LF) only termination. Best is to look for ".terminator=" examples in existing .GSL files.
 
-## Sample Usage
-
-Here is an example how to use gsl to generate the necessary files for the target project CZMQ.
-First modify CZMQ's project.xml or any of the included files referenced in project.xml.
-Second, regenerate the files. Even though CZMQ is the target project where you want the files generated, you need to build ZPROJECT and have GSL installed (or build it on the fly as in this sample).
-
-```sh
-.pull ci_build.sh
-```
-Note: This file is the continuous integration file for this project (zproject/ci_build.sh).
-
-When the script completes, you could check in the modified files in CZMQ subtree which now have been regenerated using czmq/project.xml.
-
 ## API models
 
 Using an API model zproject can generate the `@interface` section your class
