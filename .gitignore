@@ -1,48 +1,125 @@
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+save.xml
+# Object files
+*.o
+*.so
+*.ko
+*.pyc
+
+# Libraries
+*.lib
+*.a
+*.la
+*.pc
+*.dll.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so.*
+*.dylib
+*.lo
+
+# Executables
+src/zproject_selftest
+*.exe
+*.out
+*.app
+core
+
+ # Distcheck workspace and archives
+zproject-1.1.0/
+zproject-1.1.0.tar.gz
+zproject-1.1.0.zip
+
+# Man pages
+doc/*.1
+doc/*.3
+doc/*.7
+
+# autoconf files
+.deps
+.libs
+*.log
+*.trs
 Makefile
 Makefile.in
+!builds/openwrt/Makefile
 aclocal.m4
 autom4te.cache/
 config.log
 config.status
 config/
-src/
-!src/Makemodule.am
-doc/
 configure
 libtool
-*.log
-*.gz
-*.zip
-*.la
-*.swp
+src/platform.h
+src/platform.h.in
+src/platform.h.in~
+src/stamp-h1
+src/test-suite.log
+src/.dirstamp
+
+# CMake cache
 CMakeCache.txt
 CMakeFiles/
 CTestTestfile.cmake
 cmake_install.cmake
+compile_commands.json
+DartConfiguration.tcl
 install_manifest.txt
-
-# Distcheck workspace and archives
-zproject-1.1.0/
-zproject-1.1.0.tar.gz
-zproject-1.1.0.zip
+Testing/
 
 # Repositories downloaded by CI integration scripts
 gsl/
-czmq/
 
 # Travis build area
 tmp/
 
-# vagrant
+# Valgrind files
+callgrind*
+vgcore*
+
+# Vagrant files
 .vagrant
 
 # CLion / PyCharm
 .idea
 
+# GYP files
+project.Makefile
+*.target.mk
+out/
+
+# Android build results
+builds/android/prefix
+
+# Android - generated directories
+src/app/bin/
+src/app/gen/
+src/app/obj/
+src/app/local.properties
+
+# Android -dependencies
+src/app/jni/output
+
+# Python build directory
+build/
+
 # MSVC build directories
 obj/
 bin/
 *.tlog
+
+# Qt
+*pro.user
+moc_*
+build-*
+bindings/qt/selftest/selftest
+
+# Temporary files
+*.swp
+*.bak
+.test*
 
 # editor backups
 *~
