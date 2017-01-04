@@ -1218,7 +1218,7 @@ sub generate_manpage {
     if (! open (SOURCE, $source)) {
         # Support mixed-source projects (named C in config,
         # but having both .c and .cc files in reality)
-        printf "Can't open C '$source', retry for C++\n";
+        printf "Can't open C '$source', retry for C++\\n";
         if ($header == $source) {
             $header .= "c";
         }
