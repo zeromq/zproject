@@ -1,6 +1,6 @@
 
-<A name="toc1-3" title="zproject - Class Project Generator" />
-# zproject - Class Project Generator
+<A name="toc1-3" title="zproject - CLASS Project Generator" />
+# zproject - CLASS Project Generator
 
 <A name="toc2-6" title="Contents" />
 ## Contents
@@ -11,47 +11,41 @@
 
 **<a href="#toc2-50">Tutorial</a>**
 
-**<a href="#toc2-55">Installation</a>**
-*  <a href="#toc3-58">Requirements</a>
-*  <a href="#toc3-70">Getting started</a>
+**<a href="#toc2-57">Installation</a>**
 
-**<a href="#toc2-94">Tips for modifying generated files in an already existent project</a>**
+**<a href="#toc2-92">Getting started</a>**
+*  <a href="#toc3-95">Setup your project environment</a>
+*  <a href="#toc3-132">Configuration</a>
+*  <a href="#toc3-344">Project dependencies</a>
+*  <a href="#toc3-514">Targets</a>
+&emsp;<a href="#toc4-540">Target Options</a>
+&emsp;<a href="#toc4-568">Target Scopes</a>
+*  <a href="#toc3-573">Modifying generated files in an already existent project</a>
 
-**<a href="#toc2-121">Setup your project environment</a>**
+**<a href="#toc2-600">API models</a>**
+*  <a href="#toc3-607">Sample API model</a>
+*  <a href="#toc3-827">Supported API Model Attributes</a>
+*  <a href="#toc3-859">API Types</a>
+*  <a href="#toc3-902">Tips</a>
+*  <a href="#toc3-919">Generate API model from C header files</a>
+&emsp;<a href="#toc4-941">Known caveats</a>
 
-**<a href="#toc2-158">Configuration</a>**
+**<a href="#toc2-946">Language Binding Notes</a>**
+*  <a href="#toc3-949">Java Language Binding</a>
 
-**<a href="#toc2-370">Project dependencies</a>**
+**<a href="#toc2-957">Draft API Support</a>**
 
-**<a href="#toc2-540">Sample Usage</a>**
+**<a href="#toc2-989">Removal</a>**
+*  <a href="#toc3-992">autotools</a>
 
-**<a href="#toc2-586">Sample API model</a>**
-*  <a href="#toc3-800">Supported API Model Attributes</a>
-*  <a href="#toc3-832">API Types</a>
-*  <a href="#toc3-875">Tips</a>
-*  <a href="#toc3-892">Generate API model from C header files</a>
-&emsp;<a href="#toc4-914">Known caveats</a>
+**<a href="#toc2-999">Notes for Writing Language Targets</a>**
+*  <a href="#toc3-1019">Schema/Architecture Overview</a>
+*  <a href="#toc3-1038">Informal Summary</a>
+*  <a href="#toc3-1043">Semantic Attributes</a>
 
-**<a href="#toc2-919">Language Binding Notes</a>**
-*  <a href="#toc3-922">Java Language Binding</a>
-
-**<a href="#toc2-930">Draft API Support</a>**
-
-**<a href="#toc2-962">Targets</a>**
-
-**<a href="#toc2-988">Removal</a>**
-*  <a href="#toc3-991">autotools</a>
-
-**<a href="#toc2-998">Notes for Writing Language Targets</a>**
-*  <a href="#toc3-1018">Schema/Architecture Overview</a>
-*  <a href="#toc3-1037">Informal Summary</a>
-*  <a href="#toc3-1042">Semantic Attributes</a>
-*  <a href="#toc3-1077">Target Scopes</a>
-*  <a href="#toc3-1082">Target Options</a>
-
-**<a href="#toc2-1110">Ownership and License</a>**
-*  <a href="#toc3-1119">Hints to Contributors</a>
-*  <a href="#toc3-1128">This Document</a>
+**<a href="#toc2-1078">Ownership and License</a>**
+*  <a href="#toc3-1087">Hints to Contributors</a>
+*  <a href="#toc3-1096">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -65,7 +59,7 @@ zproject grew out of the work that has been done to automatically generate the b
 
 zproject has these primary goals:
 
-* generate files for cross-platform build environments.
+* generate cross-platform build environments.
 * generate CLASS ([ZeroMQ RFC/21](http://rfc.zeromq.org/spec:21)) compliant header and source skeletons for new classes.
 * generate a public header file for your library so it can be easily included by others.
 * generate stubs for man page documentation which uses the comment based approach from CZMQ.
@@ -95,15 +89,16 @@ The language bindings are minimal, meant to be wrapped in a handwritten idiomati
 <A name="toc2-50" title="Tutorial" />
 ## Tutorial
 
-To understand step by step what zproject can do for you, read chapter 3 of [@hintjens](https://github.com/hintjens) book [Scalable C](https://hintjens.gitbooks.io/scalable-c/content/chapter3.html). Note that the book is still work in progress!
+To understand step by step what zproject can do for you, read chapter 3 of
+[@hintjens](https://github.com/hintjens) book [Scalable C](https://booksbyus.gitbooks.io/scalable-c/content/chapter3.html). Note that
+the book is still work in progress!
 
-<A name="toc2-55" title="Installation" />
+<A name="toc2-57" title="Installation" />
 ## Installation
 
-<A name="toc3-58" title="Requirements" />
-### Requirements
-
-zproject uses the universal code generator called GSL to process its XML inputs and create its outputs. Before you start you'll need to install GSL (https://github.com/imatix/gsl) on your system.
+zproject uses the universal code generator called GSL to process its XML inputs
+and create its outputs. Before you start you'll need to install GSL
+(https://github.com/imatix/gsl) on your system.
 
 ```sh
 git clone https://github.com/imatix/gsl.git
@@ -112,12 +107,9 @@ make
 make install
 ```
 
-<A name="toc3-70" title="Getting started" />
-### Getting started
-
-GSL must be able to find the zproject resources on your system. Therefore you'll need to install them.
-
-The following will install the zproject files to `/usr/local/bin`.
+GSL must be able to find the zproject resources on your system. Therefore you'll
+need to install them. The following will install the zproject files to
+`/usr/local/bin`.
 
 ```sh
 git clone https://github.com/zeromq/zproject.git
@@ -136,35 +128,11 @@ sudo make install
 
 NB: If you don't have superuser rights on a system you'll have to make sure zproject's gsl scripts can be found on your PATH.
 
-<A name="toc2-94" title="Tips for modifying generated files in an already existent project" />
-## Tips for modifying generated files in an already existent project
+<A name="toc2-92" title="Getting started" />
+## Getting started
 
-You may encounter a warning in a file you want to modify like this:
-```
- ################################################################################
- #  THIS FILE IS 100% GENERATED BY ZPROJECT; DO NOT EDIT EXCEPT EXPERIMENTALLY  #
- #  Read the zproject/README.md for information about making permanent changes. #
- ################################################################################
-```
-
-If that happens, you need to follow these steps to make the modifications and then regenerate the code for czmq, malamute and zyre (all zeromq projects).
-
-1. Prior making any changes, run the script tstgenbld.sh and save its output to a log file. This  will save the state of the world by regenerating several projects, building and running tests.
-```sh   
-~/git/zproject$ ./tstgenbld.sh > ../before.log
-```
-2. Search for a specific string from the file in the zproject files (use *.*)
-3. When you find it, make the modification in that file (most likely extensions will be .XML or .GSL)
-4. Then execute these steps in a Linux machine to regenerate all files for your project. This will build, install and run tests on them again, after your changes have been made.
-```sh
-~/git/zproject$ ./tstgenbld.sh > ../after.log
-~/git/zproject$ meld ../after.log ../before.log
-```
-4. Be aware that many files in the regenerated projects will change. 
-5. This also means you will need to commit changes on zproject (your mods) and in czmq, malamute, zyre (the regenerated files with your mods). From git documentation, it seems like the command "git add -uv" could help to find out what files were actually modified from all the files that were regenerated. Supposedly this will only add the ones that were actually modified, but you should double check them. Make sure to double check even line termination (or use a comparisson tool that flags those differences). Windows specific files should have (CR+LF) termination, while Linux specific should have (LF) only termination. Best is to look for ".terminator=" examples in existing .GSL files.
-
-<A name="toc2-121" title="Setup your project environment" />
-## Setup your project environment
+<A name="toc3-95" title="Setup your project environment" />
+### Setup your project environment
 
 The easiest way to start is to create a minimal project.xml.
 
@@ -200,8 +168,8 @@ This disclaimer can be included in your project.xml and is used whenever zprojec
 <include filename = "license.xml" />
 ```
 
-<A name="toc2-158" title="Configuration" />
-## Configuration
+<A name="toc3-132" title="Configuration" />
+### Configuration
 
 zproject's `project.xml` contains an extensive description of the available configuration: The following snippet is taken from the `project.xml`:
 
@@ -412,8 +380,8 @@ zproject's `project.xml` contains an extensive description of the available conf
 </project>
 ```
 
-<A name="toc2-370" title="Project dependencies" />
-## Project dependencies
+<A name="toc3-344" title="Project dependencies" />
+### Project dependencies
 
 zproject's `use` element defines project dependencies.
 Model is described in `zproject_known_projects.xml` file:
@@ -582,57 +550,106 @@ Model is described in `zproject_known_projects.xml` file:
 </known_projects>
 ```
 
+<A name="toc3-514" title="Targets" />
+### Targets
 
-<A name="toc2-540" title="Sample Usage" />
-## Sample Usage
+Each target produces scripts and code for a specific build system, platform, or language binding.
 
-Here is an example how to use gsl to generate the necessary files for the target project CZMQ.
-First modify CZMQ's project.xml or any of the included files referenced in project.xml.
-Second, regenerate the files. Even though CZMQ is the target project where you want the files generated, you need to build ZPROJECT and have GSL installed (or build it on the fly as in this sample).
+To see a list of available targets:
 
-```sh
-#!/usr/bin/env bash
-set -x
-set -e
+    gsl -target:? project.xml
 
-if [ "$BUILD_TYPE" == "default" ]; then
-    mkdir tmp
-    BUILD_PREFIX=$PWD/tmp
+To build a specific target:
 
-    git clone --depth 1 https://github.com/imatix/gsl.git gsl
-    ( cd gsl/src && \
-      make -j4 && \
-      DESTDIR=${BUILD_PREFIX} make install \
-    ) || exit 1
+    gsl -target:android project.xml
 
-    ( ./autogen.sh && \
-      PATH=$PATH:${BUILD_PREFIX}/bin ./configure --prefix="${BUILD_PREFIX}" && \
-      make && \
-      make install \
-    ) || exit 1
+To run zproject without building any targets:
 
-    git clone --depth 1 https://github.com/zeromq/czmq.git czmq
-    ( cd czmq && \
-      PATH=$PATH:${BUILD_PREFIX}/bin gsl -target:* project.xml \
-    ) || exit 1
-else
-    pushd "./builds/${BUILD_TYPE}" && \
-    REPO_DIR="$(dirs -l +1)" ./ci_build.sh \
-    || exit 1
-fi
+    gsl -target:- project.xml
 
-echo "=== Are GitIgnores good after making zproject '$BUILD_TYPE'? (should have no output below)"
-git status -s || true
-echo "==="
+To request specific targets in your project.xml file (autotools and cmake are automatic):
+
+    <target name = "android" />
+    <target name = "java" />
+
+To request all targets in your project.xml file:
+
+    <target name = "*" />
+
+<A name="toc4-540" title="Target Options" />
+#### Target Options
+
+A target can accept options via project.xml like this:
+
 ```
-Note: This file is the continuous integration file for this project (zproject/ci_build.sh).
+<project
+    name = "..."
+    >
+    ...
+    <target name = "*" />
+    <target name = "nuget">
+        <option name = "id" value = "czmq_vc120" />
+        <option name = "dependency">
+            <item name = "libzmq_vc120" value = "4.2.0.0" />
+        </option>
+    </target>
+</project>
+```
 
-When the script completes, you could check in the modified files in CZMQ subtree which now have been regenerated using czmq/project.xml.
+This generates all targets (`name = "*"`) and then configures the `nuget` target with options. Zproject aare provided to the target handler as:
 
-<A name="toc2-586" title="Sample API model" />
-## Sample API model
+```
+project.nuget_id = "czmq_vc120"
+project.nuget_dependency.name = "libzmq_vc120"
+project.nuget_dependency.value = "4.2.0.0"
+```
 
-The zproject scripts can also optionally generate the `@interface` in your class headers from an API model, in addition to a host of language bindings.  To opt-in to this behavior, just make a model to the `api` directory of your project.  For example, if your `project.xml` contains `<class name = "myclass"/>`, you could create the following `api/myclass.api` file:
+<A name="toc4-568" title="Target Scopes" />
+#### Target Scopes
+
+Each target works in its own copy of 'project'. It can therefore modify and extend 'project' as wanted, without affecting other targets.
+
+<A name="toc3-573" title="Modifying generated files in an already existent project" />
+### Modifying generated files in an already existent project
+
+You may encounter a warning in a file you want to modify like this:
+```
+ ################################################################################
+ #  THIS FILE IS 100% GENERATED BY ZPROJECT; DO NOT EDIT EXCEPT EXPERIMENTALLY  #
+ #  Read the zproject/README.md for information about making permanent changes. #
+ ################################################################################
+```
+
+If that happens, you need to follow these steps to make the modifications and then regenerate the code for czmq, malamute and zyre (all zeromq projects).
+
+1. Prior making any changes, run the script tstgenbld.sh and save its output to a log file. This  will save the state of the world by regenerating several projects, building and running tests.
+```sh
+~/git/zproject$ ./tstgenbld.sh > ../before.log
+```
+2. Search for a specific string from the file in the zproject files (use *.*)
+3. When you find it, make the modification in that file (most likely extensions will be .XML or .GSL)
+4. Then execute these steps in a Linux machine to regenerate all files for your project. This will build, install and run tests on them again, after your changes have been made.
+```sh
+~/git/zproject$ ./tstgenbld.sh > ../after.log
+~/git/zproject$ meld ../after.log ../before.log
+```
+4. Be aware that many files in the regenerated projects will change.
+5. This also means you will need to commit changes on zproject (your mods) and in czmq, malamute, zyre (the regenerated files with your mods). From git documentation, it seems like the command "git add -uv" could help to find out what files were actually modified from all the files that were regenerated. Supposedly this will only add the ones that were actually modified, but you should double check them. Make sure to double check even line termination (or use a comparisson tool that flags those differences). Windows specific files should have (CR+LF) termination, while Linux specific should have (LF) only termination. Best is to look for ".terminator=" examples in existing .GSL files.
+
+<A name="toc2-600" title="API models" />
+## API models
+
+Using an API model zproject can generate the `@interface` section your class
+headers. Further it allows zproject to generate various language bindings on top
+of your CLASS project.
+
+<A name="toc3-607" title="Sample API model" />
+### Sample API model
+
+All API models are placed into the `api` directory which resides in the root
+directory of your project. For example, if your `project.xml` contains
+`<class name = "myclass"/>`, you could create the following `api/myclass.api`
+file:
 
 ```xml
 <class name = "myclass">
@@ -814,7 +831,10 @@ The zproject scripts can also optionally generate the `@interface` in your class
 </class>
 ```
 
-This would cause the following `@interface` to be generated inside of `include/myclass.h`.  Note that if `include/myclass.h` has other handwritten content outside of the `@interface` this content will be retained.
+This model will cause the following `@interface` to be generated inside of
+`include/myclass.h`. Note that if `include/myclass.h` has other handwritten
+content outside of the `@interface` section this content will be retained. If
+the header file does not exist zproject will create it.
 
 ```c
 //  @warning THE FOLLOWING @INTERFACE BLOCK IS AUTO-GENERATED BY ZPROJECT!
@@ -843,7 +863,7 @@ MYPROJECT_EXPORT void
 //  @end
 ```
 
-<A name="toc3-800" title="Supported API Model Attributes" />
+<A name="toc3-827" title="Supported API Model Attributes" />
 ### Supported API Model Attributes
 
 The following attributes are supported for methods:
@@ -861,13 +881,13 @@ The following attributes are supported for arguments and return values:
 
 For integer arguments you can specify one or more 'map' values, which a binding target can use to generate alternative methods. For example:
 
-'''
+```xml
 <argument name = "socket type" type = "integer">
     <map name = "PAIR" value = "ZMQ_PAIR" />
     <map name = "PUB"  value = "ZMQ_PUB" />
     <map name = "SUB"  value = "ZMQ_SUB" />
 </argument>
-'''
+```
 
 The value should be a constant that the binding code has access to.
 
@@ -875,7 +895,7 @@ The following attributes are supported for arguments:
 
 - `polymorphic` - indicates that the passed class instance is a `sockish` type. For an example see CZMQ's zsock class.
 
-<A name="toc3-832" title="API Types" />
+<A name="toc3-859" title="API Types" />
 ### API Types
 
 This is an incomplete list of API types:
@@ -918,7 +938,7 @@ This is an incomplete list of API types:
 
 * Names of classes, e.g. zmsg.
 
-<A name="toc3-875" title="Tips" />
+<A name="toc3-902" title="Tips" />
 ### Tips
 
 At any time, you can examine a resolved model as an XML string with all of its children and attributes using the appropriate GSL functions:
@@ -935,7 +955,7 @@ You can save a snapshot of the entire resolved project model using this syntax:
 gsl -save:1 project.xml
 ```
 
-<A name="toc3-892" title="Generate API model from C header files" />
+<A name="toc3-919" title="Generate API model from C header files" />
 ### Generate API model from C header files
 
 Writing API model for bigger project with a lot of classes can be tedious job. There mkapi.py, which automates most of the task.
@@ -957,15 +977,15 @@ Note you *must* use top-level include as pycparser fails if it does not know any
 
 The tool might expect `-DWITH_DRAFTS` parameter if the class is not marked as a stable.
 
-<A name="toc4-914" title="Known caveats" />
+<A name="toc4-941" title="Known caveats" />
 #### Known caveats
 
 The tool can't distinguish methods which allocates new object. It does print a comment about adding fresh = "1" attribute to each method, which return non const pointer. However the final assigment must be done manually.
 
-<A name="toc2-919" title="Language Binding Notes" />
+<A name="toc2-946" title="Language Binding Notes" />
 ## Language Binding Notes
 
-<A name="toc3-922" title="Java Language Binding" />
+<A name="toc3-949" title="Java Language Binding" />
 ### Java Language Binding
 
 * Skips methods that it cannot handle properly.
@@ -973,7 +993,7 @@ The tool can't distinguish methods which allocates new object. It does print a c
 * To build, you need gradle (or equivalent). Run 'gradle build jar' in the bindings/jni directory.
 * To install, run 'gradle install'. This puts the files into $HOME/.m2/repository.
 
-<A name="toc2-930" title="Draft API Support" />
+<A name="toc2-957" title="Draft API Support" />
 ## Draft API Support
 
 zproject lets you mark classes and methods as 'draft' so that they are not installed by default in stable builds. This lets you deliver draft APIs to your users, and change them later.
@@ -1005,43 +1025,17 @@ The allowed states are:
 
 Using autotools or CMake, you can specify --with-drafts to enable draft APIs, and --without-drafts to disable them. By default, drafts are built and installed when you work in a git repository (if the directory ".git" is present), and otherwise they are not. That means, if you build from a tarball, drafts are disabled by default.
 
-<A name="toc2-962" title="Targets" />
-## Targets
-
-Each target produces scripts and code for a specific build system, platform, or language binding.
-
-To see a list of available targets:
-
-    gsl -target:? project.xml
-
-To build a specific target:
-
-    gsl -target:android project.xml
-
-To run zproject without building any targets:
-
-    gsl -target:- project.xml
-
-To request specific targets in your project.xml file (autotools and cmake are automatic):
-
-    <target name = "android" />
-    <target name = "java" />
-
-To request all targets in your project.xml file:
-
-    <target name = "*" />
-
-<A name="toc2-988" title="Removal" />
+<A name="toc2-989" title="Removal" />
 ## Removal
 
-<A name="toc3-991" title="autotools" />
+<A name="toc3-992" title="autotools" />
 ### autotools
 
 ```sh
 make uninstall
 ```
 
-<A name="toc2-998" title="Notes for Writing Language Targets" />
+<A name="toc2-999" title="Notes for Writing Language Targets" />
 ## Notes for Writing Language Targets
 
 This is the general form of a target:
@@ -1061,7 +1055,7 @@ function target_somename
 endfunction
 ```
 
-<A name="toc3-1018" title="Schema/Architecture Overview" />
+<A name="toc3-1019" title="Schema/Architecture Overview" />
 ### Schema/Architecture Overview
 
 * All `class`es SHALL be in the project model (`project.xml`).
@@ -1080,12 +1074,12 @@ endfunction
 * Each language binding generator MAY assign values to language-specific implementation attributes of entities.
 * Each language binding generator SHOULD use a unique prefix for names of language-specific implementation attributes of entities.
 
-<A name="toc3-1037" title="Informal Summary" />
+<A name="toc3-1038" title="Informal Summary" />
 ### Informal Summary
 
 A `class` is always the top-level entity in an API model, and it will be merged with the corresponding `class` entity defined in the project model. A class contains `method`s, `constructor`s, and `destructor`s (collectively, "method"s), and methods contain `argument`s and `return`s (collectively, "container"s). Each entity will contain both *semantic attributes* and *language-specific implementation attributes*.
 
-<A name="toc3-1042" title="Semantic Attributes" />
+<A name="toc3-1043" title="Semantic Attributes" />
 ### Semantic Attributes
 
 Semantic attributes describe something intrinsic about the container.
@@ -1120,40 +1114,7 @@ container.va_start     # string - that holds the argment name for va_start ()
 container.optional     # 0/1 (default: 0), up to binding generator to use
 ```
 
-<A name="toc3-1077" title="Target Scopes" />
-### Target Scopes
-
-Each target works in its own copy of 'project'. It can therefore modify and extend 'project' as wanted, without affecting other targets.
-
-<A name="toc3-1082" title="Target Options" />
-### Target Options
-
-A target can accept options via project.xml like this:
-
-```
-<project
-    name = "..."
-    >
-    ...
-    <target name = "*" />
-    <target name = "nuget">
-        <option name = "id" value = "czmq_vc120" />
-        <option name = "dependency">
-            <item name = "libzmq_vc120" value = "4.2.0.0" />
-        </option>
-    </target>
-</project>
-```
-
-This generates all targets (`name = "*"`) and then configures the `nuget` target with options. Zproject aare provided to the target handler as:
-
-```
-project.nuget_id = "czmq_vc120"
-project.nuget_dependency.name = "libzmq_vc120"
-project.nuget_dependency.value = "4.2.0.0"
-```
-
-<A name="toc2-1110" title="Ownership and License" />
+<A name="toc2-1078" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -1162,7 +1123,7 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-1119" title="Hints to Contributors" />
+<A name="toc3-1087" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -1171,7 +1132,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-1128" title="This Document" />
+<A name="toc3-1096" title="This Document" />
 ### This Document
 
 _This documentation was generated from zproject/README.txt using [Gitdown](https://github.com/zeromq/gitdown)_
