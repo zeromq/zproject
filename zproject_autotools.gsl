@@ -1209,8 +1209,19 @@ sub generate_manpage {
     }
     close MAKEFILE;
 
+    die "The Makefile defined no manpage category for $outp_basename.1 or $name.3"
+        unless ($source ne "");
+
     #   Look for class title in 2nd line of source
     #   If there's no class file, leave hand-written man page alone
+.if ! project.use_cxx
+    if (! open (SOURCE, $source)) {
+        # Support mixed-source projects (named C in config,
+        # but having both .c and .cc files in reality)
+        printf "Can't open C '$source', retry for C++\n";
+        $source .= "c"; # Retry for a *.cc filename
+    }
+.endif
     die "Can't open '$source'"
         unless open (SOURCE, $source);
     $_ = <SOURCE>;
