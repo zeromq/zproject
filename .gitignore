@@ -72,6 +72,9 @@ Testing/
 # Repositories downloaded by CI integration scripts
 gsl/
 
+# Manually tracked: the czmq source is pulled as a test target
+czmq/
+
 # Travis build area
 tmp/
 
