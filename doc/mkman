@@ -104,6 +104,8 @@ sub generate_manpage {
     }
     die "Can't open '$source'"
         unless open (SOURCE, $source);
+    # NOTE: This duplication of lines is needed for proper work:
+    $_ = <SOURCE>;
     $_ = <SOURCE>;
     $title = "no title found";
     $title = $1 if (/    \w+ - (.*)/);
