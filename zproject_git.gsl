@@ -102,6 +102,12 @@ if !file.exists (".gitignore")
     >callgrind*
     >vgcore*
     >
+    ># Vagrant files
+    >.vagrant
+    >
+    ># CLion / PyCharm
+    >.idea
+    >
     ># GYP files
     >project.Makefile
     >*.target.mk
