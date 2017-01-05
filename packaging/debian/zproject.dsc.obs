@@ -6,8 +6,9 @@ Maintainer: zproject Developers <zeromq-dev@lists.zeromq.org>
 Architecture: any
 Build-Depends: debhelper (>= 9),
     pkg-config,
-    dh-autoreconf,
     generator-scripting-language,
+    dh-autoreconf
+
 Build-Depends-Indep: asciidoc,
                      xmlto
 
