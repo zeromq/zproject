@@ -56,6 +56,9 @@ fi
 
 $(project.GENERATED_WARNING_HEADER:)
 .chmod_x ("autogen.sh")
+.if file.exists ("version.sh")
+.   echo "WARNING: Your workspace has a 'version.sh' - note that zproject no longer generates this, and its presence may confuse your builds; you may want to remove it (or bump manually for project version '$(project->version.major).$(project->version.minor).$(project->version.patch)')"
+.endif
 .output "configure.ac"
 $(project.GENERATED_WARNING_HEADER:)
 
