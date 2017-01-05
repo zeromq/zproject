@@ -428,6 +428,10 @@ Model is described in `zproject_known_projects.xml` file:
         repository = "https://github.com/zeromq/libzmq.git"
         test = "zmq_init" />
 
+    <!-- Note: if your project requires an older CZMQ (e.g. if you need
+        `release = "v3.0.2"`), you may need to `test = "zctx_test"`.
+        Also note that you can instead require particular package
+        version (as reported by pkg-config records). -->
     <use project = "czmq" libname = "libczmq"
         repository = "https://github.com/zeromq/czmq.git"
         test = "zhashx_test">
