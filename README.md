@@ -250,6 +250,10 @@ zproject's `project.xml` contains an extensive description of the available conf
         The travis ci will use the installed packages when building instead of
         rebuilding if available.
     <use project = "zyre" min_major= "1" min_minor = "1" min_patch = "0" />
+    <use project = "czmq"
+        min_major= "3" min_minor = "0" min_patch = "2"
+        next_incompatible_major = "4"
+        />
     <use project = "uuid" optional= "1" implied = "1" />
     <use project = "myfirstlib" repository = "http://myfirstlib.org/myfirstlib.git" />
     <use project = "mysecondlib" tarball = "http://mysecondlib.org/mysecondlib-1.2.3.tar.gz" />
@@ -424,6 +428,10 @@ Model is described in `zproject_known_projects.xml` file:
         repository = "https://github.com/zeromq/libzmq.git"
         test = "zmq_init" />
 
+    <!-- Note: if your project requires an older CZMQ (e.g. if you need
+        `release = "v3.0.2"`), you may need to `test = "zctx_test"`.
+        Also note that you can instead require particular package
+        version (as reported by pkg-config records). -->
     <use project = "czmq" libname = "libczmq"
         repository = "https://github.com/zeromq/czmq.git"
         test = "zhashx_test">

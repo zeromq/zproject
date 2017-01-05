@@ -45,14 +45,46 @@ function resolve_project_dependency (use)
     my.use.min_major ?= 0
     my.use.min_minor ?= 0
     my.use.min_patch ?= 0
+    # The "use" tags may also define a "max_version" (<= comparison)
+    # and/or "next_incompatible_version" (< comparison) explicitly
+    # or using the major/minor/patch scheme named values to bump
+    # partial version values compared to respective "min" fields.
+    # If not set, these limits are empty and so are not considered.
+    # If both are set, they all apply by common mathematics rules:
+    # "version >= min && <= max && < next" - so ensure the numbers
+    # make sense.
 
     # For values with no reasonable fallback, print error
     if !defined (my.use.test)
         echo "Project $(my.use.project) needs a 'test' attribute"
     endif
 
-    # Calculate all non-model values from model values
+    # Calculate all non-model values from model values (defaults
+    # to "0.0.0" if not set in project.xml:
     my.use.min_version = "$(min_major).$(min_minor).$(min_patch)"
+
+    # Note: Logic below would produce a bump in only one field, if one is
+    # passed, e.g. when min == "3.0.2" and next_incompatible_major == "4"
+    # then the next_incompatible := "4.0.2" (4.0.0 might be more reasonable
+    # but spelling out the comparisons below would be complicated - TODO
+    # later, when someone steps on this as a practical problem); same for max.
+    if !defined(my.use.max_version)
+        if defined(my.use.max_major) | defined(my.use.max_minor) | defined(my.use.max_patch)
+            my.use.max_major ?= my.use.min_major
+            my.use.max_minor ?= my.use.min_minor
+            my.use.max_patch ?= my.use.min_patch
+            my.use.max_version = "$(max_major).$(max_minor).$(max_patch)"
+        endif
+    endif
+
+    if !defined(my.use.next_incompatible_version)
+        if defined(my.use.next_incompatible_major) | defined(my.use.next_incompatible_minor) | defined(my.use.next_incompatible_patch)
+            my.use.next_incompatible_major ?= my.use.min_major
+            my.use.next_incompatible_minor ?= my.use.min_minor
+            my.use.next_incompatible_patch ?= my.use.min_patch
+            my.use.next_incompatible_version = "$(next_incompatible_major).$(next_incompatible_minor).$(next_incompatible_patch)"
+        endif
+    endif
 
     # Copy all dependencies implied by this one into the project
     for my.use.use as implied_use
