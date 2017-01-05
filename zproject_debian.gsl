@@ -55,7 +55,6 @@ Build-Depends: debhelper (>= 9),
     dh-systemd,
 .endif
     dh-autoreconf
-
 Build-Depends-Indep: asciidoc,
                      xmlto
 
@@ -244,7 +243,6 @@ Build-Depends: debhelper (>= 9),
     dh-systemd,
 .endif
     dh-autoreconf
-
 Build-Depends-Indep: asciidoc,
                      xmlto
 
