@@ -40,7 +40,6 @@ Maintainer:     $(project.name) Developers <$(project.email)>
 Standards-Version: 3.9.7
 Build-Depends: debhelper (>= 9),
     pkg-config,
-    dh-autoreconf,
 .for project.use
 .if defined(use.debian_name)
     $(use.debian_name),
@@ -54,6 +53,8 @@ Build-Depends: debhelper (>= 9),
     systemd,
     dh-systemd,
 .endif
+    dh-autoreconf
+
 Build-Depends-Indep: asciidoc,
                      xmlto
 
@@ -228,7 +229,6 @@ Maintainer: $(project.name) Developers <$(project.email)>
 Architecture: any
 Build-Depends: debhelper (>= 9),
     pkg-config,
-    dh-autoreconf,
 .for project.use
 .if defined(use.debian_name)
     $(use.debian_name),
@@ -242,6 +242,8 @@ Build-Depends: debhelper (>= 9),
     systemd,
     dh-systemd,
 .endif
+    dh-autoreconf
+
 Build-Depends-Indep: asciidoc,
                      xmlto
 
