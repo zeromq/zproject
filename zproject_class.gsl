@@ -202,11 +202,15 @@ typedef struct {
 static test_item_t
 all_tests [] = {
 .for class where !draft & selftest & private ?<> 1
+.   if first ()
+// Tests for stable public classes:
+.   endif
     { "$(class.c_name)", $(class.c_name)_test },
 .endfor
 .for class where draft & selftest & private ?<> 1
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
+// Tests for draft public classes:
 .   endif
     { "$(class.c_name)", $(class.c_name)_test },
 .   if last ()
@@ -276,9 +280,24 @@ main (int argc, char **argv)
         else
         if (streq (argv [argn], "--list")
         ||  streq (argv [argn], "-l")) {
-            puts ("Available tests:");
+            puts ("Available tests (note that only stable classes are exposed to test):");
 .for class
-            puts ("    $(class.c_name)");
+            puts ("    $(class.c_name)\\t- \
+.   if class.draft
+draft  \
+.   else
+stable \
+.   endif
+.   if class.private ?<> 1
+public  \
+.   else
+private \
+.   endif
+API; selftest is \
+.   if !class.selftest
+NOT \
+.   endif
+implemented");
 .endfor
             return 0;
         }
