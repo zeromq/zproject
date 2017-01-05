@@ -281,23 +281,14 @@ main (int argc, char **argv)
         if (streq (argv [argn], "--list")
         ||  streq (argv [argn], "-l")) {
             puts ("Available tests (note that only stable classes are exposed to test):");
-.for class
+.for class where selftest & private ?<> 1
             puts ("    $(class.c_name)\\t- \
 .   if class.draft
-draft  \
+draft\
 .   else
-stable \
+stable\
 .   endif
-.   if class.private ?<> 1
-public  \
-.   else
-private \
-.   endif
-API; selftest is \
-.   if !class.selftest
-NOT \
-.   endif
-implemented");
+");
 .endfor
             return 0;
         }
