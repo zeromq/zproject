@@ -280,7 +280,7 @@ main (int argc, char **argv)
         else
         if (streq (argv [argn], "--list")
         ||  streq (argv [argn], "-l")) {
-            puts ("Available tests (note that only stable classes are exposed to test):");
+            puts ("Available tests:");
 .for class where selftest & private ?<> 1
             puts ("    $(class.c_name)\\t- \
 .   if class.draft
