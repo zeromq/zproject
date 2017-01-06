@@ -1230,6 +1230,7 @@ sub generate_manpage {
 
     #   Check if we're making the man page for a main program, or a class
     $cat = 0;           #   Unknown category
+    $cat_text = "";
     die "Can't open '" . cwd() . "/Makefile'"
         unless open (MAKEFILE, "Makefile");
     while (<MAKEFILE>) {
@@ -1242,6 +1243,7 @@ sub generate_manpage {
             $header = "$rootsrcdir/src/$name.c";
 .endif
             $cat = 1;
+            $cat_text = "Program for ";
             last;
         }
         elsif (/MAN3.*$name\\.3/) {
@@ -1252,6 +1254,7 @@ sub generate_manpage {
 .endif
             $header = "$rootsrcdir/include/$name.h";
             $cat = 3;
+            $cat_text = "Class for ";
             last;
         }
     }
@@ -1295,7 +1298,7 @@ $underline
 
 NAME
 ----
-$outp_basename - $title
+$outp_basename - $cat_text$title
 
 SYNOPSIS
 --------
@@ -1540,7 +1543,7 @@ Name(7)
 
 NAME
 ----
-$(project.name) - $(project.description:)
+$(project.name) - Overview of $(project.description:)
 
 
 SYNOPSIS
