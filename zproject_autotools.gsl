@@ -1150,7 +1150,18 @@ $(project.GENERATED_WARNING_HEADER:)
 #
 #   mkman - Generates man pages from C source and header files.
 #
-#   Syntax: './mkman classname', in doc subdirectory.
+#   Syntax: './mkman srcname [outp rootsrcdir]'
+#   Must be executed in doc/ subdirectory under build workspace root.
+#     srcname - basename of .c or .cc source file located directly in the
+#               $rootsrcdir/src/ directory. For classes (MAN3) also implies
+#               a header (.h) file located directly in $rootsrcdir/include/.
+#     outp    - (optional) filename without extension (will be chopped if
+#               provided) of the resulting TXT and DOC files; may be a
+#               slash-separated path e.g. for out-of-tree builds (distcheck).
+#               Defaults to: "$srcname"
+#     rootsrcdir - (optional) location of project source root (may differ
+#               from build root) where to look for input source-code files.
+#               Defaults to: ".." (good for in-tree builds)
 #
 #   Copyright (c) 1996-2016 iMatix Corporation
 #
