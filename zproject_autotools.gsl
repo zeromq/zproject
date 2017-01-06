@@ -1461,7 +1461,7 @@ $(name:c).txt: $\(top_srcdir)/src/$(name:c).cc
 .   else
 $(name:c).txt: $\(top_srcdir)/src/$(name:c).c
 .   endif
-\t"$\(srcdir)/mkman" "$(name:c)" "$\(builddir)/$(name)" "$\(srcdir)/.."
+\t"$\(srcdir)/mkman" "$(name:c)" "$\(builddir)/$(name:c).txt" "$\(srcdir)/.."
 
 .endfor
 .for project.main where scope = "public"
@@ -1471,7 +1471,7 @@ $(name).txt: $\(top_srcdir)/src/$(name:c).cc
 .   else
 $(name).txt: $\(top_srcdir)/src/$(name:c).c
 .   endif
-\t"$\(srcdir)/mkman" "$(name:c)" "$\(builddir)/$(name)" "$\(srcdir)/.."
+\t"$\(srcdir)/mkman" "$(name:c)" "$\(builddir)/$(name).txt" "$\(srcdir)/.."
 
 .endfor
 
