@@ -59,7 +59,11 @@ Build-Depends-Indep: asciidoc,
                      xmlto
 
 .if project.exports_classes
-Package: $(string.replace (project.libname, "_|-"))$(project->version.major)
+.if defined (project->abi)
+Package: $(string.replace (project.libname, "_|-"))$(project->abi.current - project->abi.age)
+.else
+Package: $(string.replace (project.libname, "_|-"))0
+.endif
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: $(project.description) shared library
@@ -78,7 +82,11 @@ Depends:
     lib$(string.replace (use.libname, "_|-"))-dev,
 .endif
 .endfor
-    $(string.replace (project.libname, "_|-"))$(project->version.major) (= ${binary:Version})
+.if defined (project->abi)
+    $(string.replace (project.libname, "_|-"))$(project->abi.current - project->abi.age) (= ${binary:Version})
+.else
+    $(string.replace (project.libname, "_|-"))0 (= ${binary:Version})
+.endif
 Description: $(project.description) development tools
  This package contains development files for $(project.name): $(project.description)
 .endif
@@ -108,7 +116,11 @@ Depends:
 .if project.has_main | count(project.bin) > 0
     $(string.replace (project.name, "_|-"):lower) (= ${binary:Version}),
 .elsif project.exports_classes
-    $(string.replace (project.libname, "_|-"))$(project->version.major) (= ${binary:Version}),
+.if defined (project->abi)
+    $(string.replace (project.libname, "_|-"))$(project->abi.current - project->abi.age) (= ${binary:Version}),
+.else
+    $(string.replace (project.libname, "_|-"))0 (= ${binary:Version}),
+.endif
 .endif
     ${misc:Depends}
 Description: $(project.description) debugging symbols
@@ -203,7 +215,7 @@ lib/systemd/system/$(main.name){,@*}.{service,*}
 .if defined (project->abi)
 .   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->abi.current - project->abi.age).install")
 .else
-.   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
+.   output ("packaging/debian/$(string.replace (project.libname, "_|-"))0.install")
 .endif
 usr/lib/*/$(project.libname).so.*
 .   output ("packaging/debian/$(string.replace (project.libname, "_|-"))-dev.install")
