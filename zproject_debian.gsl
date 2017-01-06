@@ -203,7 +203,7 @@ lib/systemd/system/$(main.name){,@*}.{service,*}
 .if defined (project->abi)
 .   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->abi.current - project->abi.age).install")
 .else
-.   output ("packaging/debian/$(string.replace (project.libname, "_|-"))0.install")
+.   output ("packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install")
 .endif
 usr/lib/*/$(project.libname).so.*
 .   output ("packaging/debian/$(string.replace (project.libname, "_|-"))-dev.install")
