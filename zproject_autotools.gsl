@@ -1164,6 +1164,7 @@ $(project.GENERATED_WARNING_HEADER:)
 #               Defaults to: ".." (good for in-tree builds)
 #
 #   Copyright (c) 1996-2016 iMatix Corporation
+#   Copyright (c) 2016-2017 zproject community
 #
 #   This is free software; you can redistribute it and/or modify it under the
 #   terms of the GNU General Public License as published by the Free Software
