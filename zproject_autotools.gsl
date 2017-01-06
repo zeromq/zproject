@@ -1393,6 +1393,9 @@ generate_manpage ($name, $outp, $rootsrcdir);
 .output "doc/Makefile.am"
 $(project.GENERATED_WARNING_HEADER:)
 .discover_manpages(project)
+# Default target
+all-local: doc
+
 # Public programs ("main" tags in project.xml), auto-regenerated:
 MAN1 =$(man1)
 # Public classes ("class" tags in project.xml), auto-regenerated:
@@ -1474,8 +1477,12 @@ $(name).txt: $\(top_srcdir)/src/$(name:c).c
 
 clean:
 \trm -f *.1 *.3 *.7 $\(GENERATED_DOCS)
+
 doc: $\(GENERATED_DOCS)
 
+else
+doc:
+	@echo "SKIPPING documentation generation and formatting (BUILD_DOC was not required and/or tools are missing)" >&2
 endif
 
 EXTRA_DIST += $\(MAN_TXT)
