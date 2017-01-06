@@ -515,6 +515,10 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
+### Ownership and License of generated sources
+
+The copyright of the output of zproject is by default property of the users. The license.xml file must be set up by the users to specify a license of their choosing.
+
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
