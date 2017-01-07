@@ -43,9 +43,10 @@
 *  <a href="#toc3-1038">Informal Summary</a>
 *  <a href="#toc3-1043">Semantic Attributes</a>
 
-**<a href="#toc2-1078">Ownership and License</a>**
-*  <a href="#toc3-1087">Hints to Contributors</a>
-*  <a href="#toc3-1096">This Document</a>
+**<a href="#toc2-1086">Ownership and License</a>**
+*  <a href="#toc3-1095">Ownership and License of generated sources</a>
+*  <a href="#toc3-1100">Hints to Contributors</a>
+*  <a href="#toc3-1109">This Document</a>
 
 <A name="toc2-11" title="Overview" />
 ## Overview
@@ -1122,7 +1123,7 @@ container.va_start     # string - that holds the argment name for va_start ()
 container.optional     # 0/1 (default: 0), up to binding generator to use
 ```
 
-<A name="toc2-1078" title="Ownership and License" />
+<A name="toc2-1086" title="Ownership and License" />
 ## Ownership and License
 
 The contributors are listed in AUTHORS. This project uses the MPL v2 license, see LICENSE.
@@ -1131,7 +1132,12 @@ zproject uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zero
 
 To report an issue, use the [zproject issue tracker](https://github.com/zeromq/zproject/issues) at github.com.
 
-<A name="toc3-1087" title="Hints to Contributors" />
+<A name="toc3-1095" title="Ownership and License of generated sources" />
+### Ownership and License of generated sources
+
+The copyright of the output of zproject is by default property of the users. The license.xml file must be set up by the users to specify a license of their choosing.
+
+<A name="toc3-1100" title="Hints to Contributors" />
 ### Hints to Contributors
 
 Make sure that the project model hides all details of backend scripts. For example don't make a user enter a header file because autoconf needs it.
@@ -1140,7 +1146,7 @@ Do read your code after you write it and ask, "Can I make this simpler?" We do u
 
 Before opening a pull request read our [contribution guidelines](https://github.com/zeromq/zproject/blob/master/CONTRIBUTING.md). Thanks!
 
-<A name="toc3-1096" title="This Document" />
+<A name="toc3-1109" title="This Document" />
 ### This Document
 
 _This documentation was generated from zproject/README.txt using [Gitdown](https://github.com/zeromq/gitdown)_
