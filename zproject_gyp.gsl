@@ -181,6 +181,11 @@ $(project.GENERATED_WARNING_HEADER:)
 .   endfor
         '../../include/$(project.prefix)_library.h',
         '../../src/$(project.prefix)_selftest.c',
+.   if project.use_cxx
+        '../../src/$(project.prefix)_private_selftest.cc',
+.   else
+        '../../src/$(project.prefix)_private_selftest.c',
+.   endif
         '../../src/$(project.prefix)_classes.h'
       ],
       'dependencies': [
