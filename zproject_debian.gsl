@@ -54,9 +54,8 @@ Build-Depends: debhelper (>= 9),
     systemd,
     dh-systemd,
 .endif
+    asciidoc-base | asciidoc, xmlto,
     dh-autoreconf
-Build-Depends-Indep: asciidoc-base | asciidoc,
-                     xmlto
 
 .if project.exports_classes
 .if defined (project->abi)
@@ -254,9 +253,8 @@ Build-Depends: debhelper (>= 9),
     systemd,
     dh-systemd,
 .endif
+    asciidoc-base | asciidoc, xmlto,
     dh-autoreconf
-Build-Depends-Indep: asciidoc-base | asciidoc,
-                     xmlto
 
 Files:
  7697688bf65a35bc33ae2db51ebb0e3b 818110 $(string.replace (project.name, "_|-"):lower).tar.gz
