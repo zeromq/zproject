@@ -55,7 +55,7 @@ Build-Depends: debhelper (>= 9),
     dh-systemd,
 .endif
     dh-autoreconf
-Build-Depends-Indep: asciidoc,
+Build-Depends-Indep: asciidoc-base | asciidoc,
                      xmlto
 
 .if project.exports_classes
@@ -255,7 +255,7 @@ Build-Depends: debhelper (>= 9),
     dh-systemd,
 .endif
     dh-autoreconf
-Build-Depends-Indep: asciidoc,
+Build-Depends-Indep: asciidoc-base | asciidoc,
                      xmlto
 
 Files:
