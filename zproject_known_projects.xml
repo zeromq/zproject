@@ -118,6 +118,7 @@
     <use project = "uuid"
         test = "uuid_generate"
         header = "uuid/uuid.h"
+        redhat_name = "libuuid-devel"
         debian_name = "uuid-dev" />
 
     <use project = "asound"
