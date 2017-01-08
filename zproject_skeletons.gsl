@@ -348,17 +348,22 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 
 .   endif
 //  @interface
+.   if class.scope = "private"
+.      visibility = "$(PROJECT.PREFIX)_PRIVATE"
+.   else
+.      visibility = "$(PROJECT.PREFIX)_EXPORT"
+.   endif
 //  Create a new $(class.c_name)
-$(PROJECT.PREFIX)_EXPORT $(class.c_name)_t *
+$(VISIBILITY) $(class.c_name)_t *
     $(class.c_name)_new (void);
 
 //  Destroy the $(class.c_name)
-$(PROJECT.PREFIX)_EXPORT void
+$(VISIBILITY) void
     $(class.c_name)_destroy ($(class.c_name)_t **self_p);
 
 .   if class.selftest
 //  Self test of this class
-$(PROJECT.PREFIX)_EXPORT void
+$(VISIBILITY) void
     $(class.c_name)_test (bool verbose);
 .   endif
 

@@ -483,6 +483,11 @@ $(PROJECT.PREFIX)_PRIVATE void
 .       endif
 .endmacro
 .macro generate_interface (draft)
+.   if class.scope = "private"
+.      visibility = "$(PROJECT.PREFIX)_PRIVATE"
+.   else
+.      visibility = "$(PROJECT.PREFIX)_EXPORT"
+.   endif
 .   for class.constant where draft = my.draft
 #define $(CLASS.NAME:c)_$(NAME:c) $(value)  // $(constant.description:no,block)
 .   if last ()
@@ -497,7 +502,7 @@ $(c_callback_typedef (callback_type))
 .   for class.constructor where draft = my.draft
 .       method_state_comment (state)
 //  $(constructor.description:no,block)
-$(PROJECT.PREFIX)_EXPORT $(c_method_signature (constructor):)\
+$(VISIBILITY) $(c_method_signature (constructor):)\
 .       if defined(constructor.format_index)
  CHECK_PRINTF ($(constructor.format_index));
 .       else
@@ -508,7 +513,7 @@ $(PROJECT.PREFIX)_EXPORT $(c_method_signature (constructor):)\
 .   for class.destructor where draft = my.draft
 .       method_state_comment (state)
 //  $(destructor.description:no,block)
-$(PROJECT.PREFIX)_EXPORT $(c_method_signature (destructor):)\
+$(VISIBILITY) $(c_method_signature (destructor):)\
 .       if defined(destructor.format_index)
  CHECK_PRINTF ($(destructor.format_index));
 .       else
@@ -518,7 +523,7 @@ $(PROJECT.PREFIX)_EXPORT $(c_method_signature (destructor):)\
 .   endfor
 .   for class.actor where draft = my.draft
 //  $(actor.description:no,block)
-$(PROJECT.PREFIX)_EXPORT void
+$(VISIBILITY) void
     $(actor.name:c) (zsock_t *pipe, void *args);
 
 .   endfor
@@ -528,7 +533,7 @@ $(PROJECT.PREFIX)_EXPORT void
 .       if method->return.fresh
 //  Caller owns return value and must destroy it when done.
 .       endif
-$(PROJECT.PREFIX)_EXPORT $(c_method_signature (method):)\
+$(VISIBILITY) $(c_method_signature (method):)\
 .       if defined(method.format_index)
  CHECK_PRINTF ($(method.format_index));
 .       else
