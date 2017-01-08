@@ -197,6 +197,18 @@ IF (ENABLE_DRAFTS)
 ENDIF (ENABLE_DRAFTS)
 
 .endif
+.if count (class)
+IF (ENABLE_DRAFTS)
+    list (APPEND $(project.linkname)_sources
+.   if project.use_cxx
+        src/$(project.prefix)_private_selftest.cc
+.   else
+        src/$(project.prefix)_private_selftest.c
+.   endif
+    )
+ENDIF (ENABLE_DRAFTS)
+
+.endif
 source_group("Source Files" FILES ${$(project.linkname)_sources})
 if (NOT DEFINED BUILD_SHARED_LIBS)
     SET(BUILD_SHARED_LIBS ON)
@@ -309,6 +321,14 @@ IF (ENABLE_DRAFTS)
 .   for class where draft & private ?<> 1
     $(name:c)
 .   endfor
+    )
+ENDIF (ENABLE_DRAFTS)
+
+.endif
+.if count (class)
+IF (ENABLE_DRAFTS)
+    list (APPEND TEST_CLASSES
+    private_classes
     )
 ENDIF (ENABLE_DRAFTS)
 

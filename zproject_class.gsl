@@ -166,6 +166,12 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 .   endif
 .endfor
 
+#ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
+//  Self test for private classes
+$(PROJECT.PREFIX)_EXPORT void
+    $(project.prefix)_private_selftest (bool verbose);
+#endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
+
 #endif
 /*
 $(project.GENERATED_WARNING_HEADER:)
@@ -217,6 +223,9 @@ all_tests [] = {
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
 .endfor
+#ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
+    { "private_classes", $(project.prefix)_private_selftest },
+#endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
     {0, 0}          //  Sentinel
 };
 
@@ -282,7 +291,7 @@ main (int argc, char **argv)
         ||  streq (argv [argn], "-l")) {
             puts ("Available tests:");
 .for class where selftest & private ?<> 1
-            puts ("    $(class.c_name)\\t- \
+            puts ("    $(class.c_name)\\t\\t- \
 .   if class.draft
 draft\
 .   else
@@ -290,6 +299,7 @@ stable\
 .   endif
 ");
 .endfor
+            puts ("    private_classes\\t- draft");
             return 0;
         }
         else
@@ -327,6 +337,58 @@ stable\
         test_runall (verbose);
 
     return 0;
+}
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
+.#
+.#  Build the project private classes selftest module
+.#
+.if project.use_cxx
+.output "src/$(project.prefix)_private_selftest.cc"
+.else
+.output "src/$(project.prefix)_private_selftest.c"
+.endif
+/*  =========================================================================
+    $(project.prefix)_private_selftest.c - run private classes selftests
+
+    Runs all private classes selftests.
+
+    -------------------------------------------------------------------------
+.   for project.license
+    $(string.trim (license.):block                                         )
+.   endfor
+
+$(project.GENERATED_WARNING_HEADER:)
+    =========================================================================
+*/
+
+#include "$(project.prefix)_classes.h"
+
+
+//  -------------------------------------------------------------------------
+//  Run all private classes tests.
+//
+
+void
+$(project.prefix)_private_selftest (bool verbose)
+{
+.for class where !draft & selftest & private ?= 1
+.   if first ()
+// Tests for stable private classes:
+.   endif
+    $(class.c_name)_test (verbose);
+.endfor
+.for class where draft & selftest & private ?= 1
+.   if first ()
+#ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
+// Tests for draft private classes:
+.   endif
+    $(class.c_name)_test (verbose);
+.   if last ()
+#endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
+.   endif
+.endfor
 }
 /*
 $(project.GENERATED_WARNING_HEADER:)
@@ -397,6 +459,10 @@ $(PROJECT.PREFIX)_PRIVATE $(c_method_signature (method):)\
 .       endif
 .   endfor
 .endfor
+
+//  Self test for private classes
+$(PROJECT.PREFIX)_PRIVATE void
+    $(project.prefix)_private_selftest (bool verbose);
 
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 

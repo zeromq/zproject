@@ -28,6 +28,9 @@ OBJS =\
 .for class
  $(name:c).o\
 .endfor
+.if count (class)
+ $(project.prefix)_private_selftest.o
+.endif
 
 %.o: ../../src/%.c
 	$\(CC) -c -o $@ $< $\(CFLAGS)
