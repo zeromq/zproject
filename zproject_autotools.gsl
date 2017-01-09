@@ -166,7 +166,7 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)\
 ],
     [
 .  if optional
-        AC_DEFINE(HAVE_$(USE.LIBNAME), 1, [The $(use.libname) library is to be used])
+        AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The $(use.libname) library is to be used])
 .  endif
         PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $$(use.project:c)_LIBS"
     ],
@@ -212,7 +212,7 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)\
                 was_$(use.project:c)_check_lib_detected=yes
                 PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -l$(use.linkname)"
 .       if optional
-                AC_DEFINE(HAVE_$(USE.LIBNAME), 1, [The $(use.libname) library is to be used])
+                AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The $(use.libname) library is to be used])
             ],
             [])
 .       else
