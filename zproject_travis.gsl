@@ -74,9 +74,9 @@ addons:
 .                 echo "WARNING: debian_name=='' for $(use.project) - not added to .travis.yml"
 .             endif
 .         elsif defined (use.libname)
-    - $(use.libname)-dev
+    - $(string.replace (use.libname, "_|-"):lower)-dev
 .         else
-    - $(use.project)-dev
+    - $(string.replace (use.project, "_|-"))-dev
 .         endif
 .      endfor
 
