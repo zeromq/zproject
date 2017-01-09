@@ -68,7 +68,11 @@ addons:
     - xmlto
 .      for use
 .         if defined (use.debian_name)
+.             if !(use.debian_name = '')
     - $(use.debian_name)
+.             else
+.                 echo "WARNING: debian_name=='' for $(use.project) - not added to .travis.yml"
+.             endif
 .         elsif defined (use.libname)
     - $(use.libname)-dev
 .         else
@@ -272,14 +276,18 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
 .   for use
 
     # Start of recipe for dependency: $(use.project)
+    if \
 .      if defined (use.debian_name)
-    if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
+.           if !(use.debian_name = '')
+\! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
+.           endif
 .      elsif defined (use.libname)
-    if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)-dev >/dev/null 2>&1) || \\
+\! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)-dev >/dev/null 2>&1) || \\
 .      else
-    if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
+\! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
 .      endif
-           (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
+           (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1) \\
+    ; then
         echo ""
 .       if ! defined (use.repository) & ! defined (use.tarball)
         echo "WARNING: Can not build prerequisite '$(use.project)'" >&2
