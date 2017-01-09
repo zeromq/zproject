@@ -74,6 +74,7 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/zproject_class.gsl
 %{_bindir}/zproject_git.gsl
 %{_bindir}/zproject_valgrind.gsl
+%{_bindir}/zproject_install.gsl
 %{_bindir}/zproject_android.gsl
 %{_bindir}/zproject_autotools.gsl
 %{_bindir}/zproject_cmake.gsl
