@@ -432,6 +432,28 @@ Using autotools or CMake, you can specify --with-drafts to enable draft APIs, an
 make uninstall
 ```
 
+## Additional files
+Installation of third party files is a *hard* problem. It is not platform
+independent, became hard to maintain and impossible to use correctly. One of
+zproject's goals is a simplicity. There is a simple installation model
+
+### Design goals
+* KISS, less configuration options the better
+* no conditionals in the model, those SHALL be handled in background
+* each option solves a REAL problem, avoid extending it because you can
+
+### Example
+```
+    <main name = "MAIN">
+        <install type = "systemd-tmpfiles" />
+    </main>
+```
+
+This will add install information about systemd tmpfiles.d configuration files
+to autotools, packaging, and so. The resulting file
+/usr/lib/tmpfiles.d/MAIN.conf will be installed only if configure was called
+with --with-systemd-units.
+
 ## Notes for Writing Language Targets
 
 This is the general form of a target:

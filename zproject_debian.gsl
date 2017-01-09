@@ -220,6 +220,7 @@ usr/bin/$(bin.name)
 etc/$(project.name)/$(main.name).cfg
 lib/systemd/system/$(main.name){,@*}.{service,*}
 .   endfor
+.zinstall_include ("builds/zinstall/$(project.name).install")
 .endif
 
 .if project.exports_classes
