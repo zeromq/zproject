@@ -171,7 +171,12 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)\
         PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $$(use.project:c)_LIBS"
     ],
     [
-.  if use.min_version = '0.0.0' & !defined(use.max_version) & !defined(use.next_incompatible_version)
+.  if defined(use.test)
+        AC_MSG_NOTICE([Package $(use.libname) not found\
+.       if !(use.min_version = '0.0.0') | defined(use.max_version) |defined(use.next_incompatible_version)
+ with needed constraints\
+.       endif
+; falling back to defined compilability tests])
         AC_ARG_WITH([$(use.libname)],
             [
                 AS_HELP_STRING([--with-$(use.libname)],
@@ -232,7 +237,7 @@ Cannot find $(use.libname)\
 .       else
  $(use.min_version) or higher\
 .       endif
-])
+, and no compilability tests were defined either])
 .   endif
     ])
 
