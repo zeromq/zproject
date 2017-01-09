@@ -1,0 +1,52 @@
+#   Generate install files snippets for zproject
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+function zinstall_include (filename)
+    if file.exists ("$(my.filename:)")
+        input = file.open ("$(my.filename:)")
+        xline = file.read (input)
+        while defined (xline)
+            >$(string.replace (xline, "\n|"))
+            xline = file.read (input)?
+        endwhile
+    endif
+endfunction
+
+echo "###### zinstall #####"
+directory.create ("builds/zinstall")
+for project.main where defined (main->install)
+    for install
+        if install.type = "systemd-tmpfiles"
+
+            output "builds/zinstall/configure.ac"
+>AM_COND_IF([WITH_SYSTEMD_UNITS],
+>    [AC_CONFIG_FILES([
+>                 src/$(main.name).conf
+>    ])],
+>    [])
+            output "builds/zinstall/Makemodule.am"
+>if WITH_SYSTEMD_UNITS
+>$(main.name:c)_tmpfiles_ddir = /usr/lib/tmpfiles.d/
+>$(main.name:c)_tmpfiles_d_DATA = src/$(main.name).conf
+>endif #WITH_SYSTEMD_UNITS
+
+            output "builds/zinstall/$(project.name).spec"
+>%dir /usr/lib/tmpfiles.d/
+>%config /usr/lib/tmpfiles.d/$(main.name).conf
+
+            output "builds/zinstall/$(project.name).install"
+>usr/lib/tmpfiles.d/$(main.name).conf
+
+        endif #systemd-tmpfiles
+    endfor
+endfor
