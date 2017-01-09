@@ -75,8 +75,8 @@ BuildRequires:  $(use.project)-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 .if project.has_main | count(project.bin) > 0
 .for project.use where use.type ?= "runtime"
-.if defined(use.debian_name)
-Requires: $(use.debian_name)
+.if defined(use.redhat_name)
+Requires: $(use.redhat_name)
 .elsif regexp.match("^lib", use.libname)
 Requires: $(string.replace (use.libname, "_|-"))
 .else
