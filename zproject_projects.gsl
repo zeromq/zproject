@@ -41,6 +41,7 @@ function resolve_project_dependency (use)
     my.use.linkname ?= my.use.prefix
     my.use.header ?= my.use.prefix + ".h"
     my.use.libname ?= my.use.project
+    my.use.am_lib_macro ?= my.use.libname
     my.use.optional ?= 0
     my.use.min_major ?= 0
     my.use.min_minor ?= 0

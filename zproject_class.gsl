@@ -62,7 +62,9 @@ $(project.GENERATED_WARNING_HEADER:)
 //  External dependencies
 .for use where !defined (implied)
 .    if (use.optional = 1)
-#if defined (HAVE_$(USE.LIBNAME))
+.# TODO: Fix up GSL to only reference same macro once (e.g. if variants are
+.# defined for OS packages named vastly different in various distros, like lua)
+#if defined (HAVE_$(USE.AM_LIB_MACRO))
 #include <$(use.header)>
 #endif
 .    else

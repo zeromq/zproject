@@ -258,6 +258,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <use project = "uuid" optional= "1" implied = "1" />
     <use project = "myfirstlib" repository = "http://myfirstlib.org/myfirstlib.git" />
     <use project = "mysecondlib" tarball = "http://mysecondlib.org/mysecondlib-1.2.3.tar.gz" />
+    <use project = "lua-5.1" am_lib_macro = "LUA_5_1" tarball = "..." />
     -->
 
     <use project = "gsl" type = "runtime" />

@@ -42,7 +42,11 @@ Build-Depends: debhelper (>= 9),
     pkg-config,
 .for project.use
 .if defined(use.debian_name)
+.   if !(use.debian_name = '')
     $(use.debian_name),
+.   else
+.       echo "WARNING: debian_name=='' for $(use.project) - not added to packaging/debian/control"
+.   endif
 .elsif regexp.match("^lib", use.libname)
     $(string.replace (use.libname, "_|-"))-dev,
 .else
@@ -74,7 +78,11 @@ Section: libdevel
 Depends:
 .for project.use
 .if defined(use.debian_name)
+.   if !(use.debian_name = '')
     $(use.debian_name),
+.   else
+.       echo "WARNING: debian_name=='' for $(use.project) - not added to packaging/debian/control"
+.   endif
 .elsif regexp.match("^lib", use.libname)
     $(string.replace (use.libname, "_|-"))-dev,
 .else
@@ -96,7 +104,11 @@ Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 .for project.use where use.type ?= "runtime"
 .if defined(use.debian_name)
+.   if !(use.debian_name = '')
     $(use.debian_name),
+.   else
+.       echo "WARNING: debian_name=='' for $(use.project) - not added to packaging/debian/control"
+.   endif
 .elsif regexp.match("^lib", use.libname)
     $(string.replace (use.libname, "_|-")),
 .else
@@ -242,7 +254,11 @@ Build-Depends: debhelper (>= 9),
     pkg-config,
 .for project.use
 .if defined(use.debian_name)
+.   if !(use.debian_name = '')
     $(use.debian_name),
+.   else
+.       echo "WARNING: debian_name=='' for $(use.project) - not added to packaging/debian/control"
+.   endif
 .elsif regexp.match("^lib", use.libname)
     $(string.replace (use.libname, "_|-"))-dev,
 .else

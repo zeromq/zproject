@@ -67,7 +67,11 @@ BuildRequires:  gcc-c++
 .endif
 .for project.use
 .if defined(use.redhat_name)
+.   if !(use.redhat_name = '')
 BuildRequires:  $(use.redhat_name)
+.   else
+.       echo "WARNING: redhat_name=='' for $(use.project) - not added to packaging/redhat/$(project.name).spec"
+.   endif
 .else
 BuildRequires:  $(use.project)-devel
 .endif
@@ -75,8 +79,12 @@ BuildRequires:  $(use.project)-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 .if project.has_main | count(project.bin) > 0
 .for project.use where use.type ?= "runtime"
-.if defined(use.debian_name)
-Requires: $(use.debian_name)
+.if defined(use.redhat_name)
+.   if !(use.redhat_name = '')
+Requires: $(use.redhat_name)
+.   else
+.       echo "WARNING: redhat_name=='' for $(use.project) - not added to packaging/redhat/$(project.name).spec"
+.   endif
 .elsif regexp.match("^lib", use.libname)
 Requires: $(string.replace (use.libname, "_|-"))
 .else
@@ -117,7 +125,11 @@ Group:          System/Libraries
 Requires:       $(project.libname)$(my.abi_ver) = %{version}
 .for project.use
 .if defined(use.redhat_name)
+.   if !(use.redhat_name = '')
 Requires:       $(use.redhat_name)
+.   else
+.       echo "WARNING: redhat_name=='' for $(use.project) - not added to packaging/redhat/$(project.name).spec"
+.   endif
 .else
 Requires:       $(use.project)-devel
 .endif
