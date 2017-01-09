@@ -635,6 +635,8 @@ AM_COND_IF([WITH_SYSTEMD_UNITS],
 
 .endif
 
+.zinstall_include ("builds/zinstall/configure.ac")
+
 AC_OUTPUT
 
 # Print configure summary and list make options
@@ -1073,6 +1075,8 @@ coverage: src/$(project.prefix)_selftest
 \t@echo "call make clean && configure --with-gcov to enable code coverage"
 \t@exit 1
 endif
+.zinstall_include ("builds/zinstall/Makemodule.am")
+
 
 $(project.GENERATED_WARNING_HEADER:)
 .#
