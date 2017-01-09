@@ -351,6 +351,9 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_git.gsl" />
     <bin name = "zproject_valgrind.gsl" />
 
+    <!-- zinstall must run before all the targets -->
+    <bin name = "zproject_install.gsl" />
+
     <!-- Targets -->
     <bin name = "zproject_android.gsl" />
     <bin name = "zproject_autotools.gsl" />

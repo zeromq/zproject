@@ -6,6 +6,7 @@ usr/bin/zproject_bench.gsl
 usr/bin/zproject_class.gsl
 usr/bin/zproject_git.gsl
 usr/bin/zproject_valgrind.gsl
+usr/bin/zproject_install.gsl
 usr/bin/zproject_android.gsl
 usr/bin/zproject_autotools.gsl
 usr/bin/zproject_cmake.gsl
