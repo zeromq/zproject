@@ -22,7 +22,6 @@ function zinstall_include (filename)
     endif
 endfunction
 
-echo "###### zinstall #####"
 directory.create ("builds/zinstall")
 for project.main where defined (main->install)
     for install
