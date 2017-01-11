@@ -208,9 +208,6 @@ usr/bin/$(main.name)
 usr/share/man/man1/$(main.name).1
 .          endif
 .       endif
-.       if file.exists ("src/$(main.name).cfg.example")
-etc/$(project.name)/$(main.name).cfg.example
-.       endif
 .   endfor
 .   for project.bin
 usr/bin/$(bin.name)
