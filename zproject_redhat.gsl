@@ -197,10 +197,6 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .   if man1 ?<> ""
 %{_mandir}/man1/$(main.name)*
 .   endif
-.if file.exists ("src/$(main.name).cfg.example")
-%{_sysconfdir}/$(project.name)/$(main.name).cfg.example
-.etc_exists = 1
-.endif
 .endfor
 .for project.bin
 %{_bindir}/$(bin.name)
