@@ -34,10 +34,12 @@ for project.main where defined (main->install)
 >    ])],
 >    [])
             output "builds/zinstall/Makemodule.am"
+>if ENABLE_$(MAIN.NAME:c)
 >if WITH_SYSTEMD_UNITS
 >$(main.name:c)_tmpfiles_ddir = /usr/lib/tmpfiles.d/
 >$(main.name:c)_tmpfiles_d_DATA = src/$(main.name).conf
 >endif #WITH_SYSTEMD_UNITS
+>endif #$(MAIN.NAME:c)
 
             output "builds/zinstall/$(project.name).spec"
 >%dir /usr/lib/tmpfiles.d/
