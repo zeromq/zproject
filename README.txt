@@ -446,13 +446,19 @@ zproject's goals is a simplicity. There is a simple installation model
 ```
     <main name = "MAIN">
         <install type = "systemd-tmpfiles" />
+        <install type = "config" name = "MAIN-ldap-integration.cfg.example" />
     </main>
 ```
 
+**systemd-tmpfiles**
 This will add install information about systemd tmpfiles.d configuration files
 to autotools, packaging, and so. The resulting file
 /usr/lib/tmpfiles.d/MAIN.conf will be installed only if configure was called
 with --with-systemd-units.
+
+**config**
+This will install additional configuration files to
+$(sysconfdir)/$(project.name)/$(name).
 
 ## Notes for Writing Language Targets
 
