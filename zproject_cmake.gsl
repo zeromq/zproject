@@ -231,9 +231,6 @@ add_library($(project.linkname) ${$(project.linkname)_sources})
 set_target_properties($(project.linkname)
     PROPERTIES DEFINE_SYMBOL "$(PROJECT.PREFIX)_EXPORTS"
 )
-set_target_properties($(project.linkname)
-    PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${SOURCE_DIR}/src"
-)
 set_target_properties ($(project.linkname)
 .if defined (project->abi)
     PROPERTIES SOVERSION "$(project->abi.current - project->abi.age).$(project->abi.age).$(project->abi.revision)"
@@ -555,7 +552,7 @@ CMAKE_OPTS+=("-DCMAKE_INCLUDE_PATH:PATH=${BUILD_PREFIX}/include")
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
 .for use where defined (use.tarball)
 if \
-.   if defined (use.debian_name) 
+.   if defined (use.debian_name)
 .       if !(use.debian_name = '')
 \! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
 .       endif
