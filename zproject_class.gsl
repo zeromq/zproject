@@ -338,6 +338,9 @@ stable\
     else
         test_runall (verbose);
 
+#ifdef __WINDOWS__
+    zsys_shutdown();
+#endif
     return 0;
 }
 /*
@@ -552,7 +555,7 @@ $(VISIBILITY) $(c_method_signature (method):)\
 for class
     skeleton_class_header ()
     skeleton_class_source ()
-    
+
     if !defined (class.api)
         resolve_c_class (class)
     endif
