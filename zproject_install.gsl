@@ -23,17 +23,27 @@ function zinstall_include (filename)
 endfunction
 
 directory.create ("builds/zinstall")
+output "builds/zinstall/configure.ac"
+>
+output "builds/zinstall/Makemodule.am"
+>
+output "builds/zinstall/$(project.name).spec"
+>
+output "builds/zinstall/$(project.name).install"
+>
+
 for project.main where defined (main->install)
     for install
+
         if install.type = "systemd-tmpfiles"
 
-            output "builds/zinstall/configure.ac"
+            append "builds/zinstall/configure.ac"
 >AM_COND_IF([WITH_SYSTEMD_UNITS],
 >    [AC_CONFIG_FILES([
 >                 src/$(main.name).conf
 >    ])],
 >    [])
-            output "builds/zinstall/Makemodule.am"
+            append "builds/zinstall/Makemodule.am"
 >if ENABLE_$(MAIN.NAME:c)
 >if WITH_SYSTEMD_UNITS
 >$(main.name:c)_tmpfiles_ddir = /usr/lib/tmpfiles.d/
@@ -41,13 +51,29 @@ for project.main where defined (main->install)
 >endif #WITH_SYSTEMD_UNITS
 >endif #$(MAIN.NAME:c)
 
-            output "builds/zinstall/$(project.name).spec"
+            append "builds/zinstall/$(project.name).spec"
 >%dir /usr/lib/tmpfiles.d/
 >%config /usr/lib/tmpfiles.d/$(main.name).conf
 
-            output "builds/zinstall/$(project.name).install"
+            append "builds/zinstall/$(project.name).install"
 >usr/lib/tmpfiles.d/$(main.name).conf
 
-        endif #systemd-tmpfiles
+        elsif install.type = "config"
+            install.name ?= main.name + ".cfg"
+            append "builds/zinstall/configure.ac"
+>AC_CONFIG_FILES([
+>   src/$(install.name)
+>])
+            append "builds/zinstall/Makemodule.am"
+>if ENABLE_$(MAIN.NAME:c)
+>src_$(project.name:c)_config_DATA += src/$(install.name)
+>endif
+
+            append "builds/zinstall/$(project.name).spec"
+>%config (noreplace) %{sysconfdir}/$(project.name)/$(install.name)
+
+            append "builds/zinstall/$(project.name).install"
+>etc/$(project.name)/$(install.name)
+        endif #config
     endfor
 endfor
