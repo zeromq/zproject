@@ -34,6 +34,7 @@ output "builds/zinstall/$(project.name).install"
 directory.create ("builds/zinstall")
 for project.main where defined (main->install)
     for install
+
         if install.type = "systemd-tmpfiles"
 
             append "builds/zinstall/configure.ac"
@@ -57,6 +58,22 @@ for project.main where defined (main->install)
             append "builds/zinstall/$(project.name).install"
 >usr/lib/tmpfiles.d/$(main.name).conf
 
-        endif #systemd-tmpfiles
+        elsif install.type = "config"
+            install.name ?= main.name + ".cfg"
+            append "builds/zinstall/configure.ac"
+>AC_CONFIG_FILES([
+>   src/$(install.name)
+>])
+            append "builds/zinstall/Makemodule.am"
+>if ENABLE_$(MAIN.NAME:c)
+>src_$(project.name:c)_config_DATA += src/$(install.name)
+>endif
+
+            append "builds/zinstall/$(project.name).spec"
+>%config (noreplace) %{sysconfdir}/$(project.name)/$(install.name)
+
+            append "builds/zinstall/$(project.name).install"
+>etc/$(project.name)/$(install.name)
+        endif #config
     endfor
 endfor
