@@ -21,6 +21,7 @@ function resolve_project_dependency (use)
         my.use.prefix      ?= known.prefix?
         my.use.linkname    ?= known.linkname?
         my.use.libname     ?= known.libname?
+        my.use.pkgconfig   ?= known.pkgconfig?
         my.use.release     ?= known.release?
         my.use.debian_name ?= known.debian_name?
         # The spec_name is only transitional - I assume it wasn't widely used
@@ -41,6 +42,7 @@ function resolve_project_dependency (use)
     my.use.linkname ?= my.use.prefix
     my.use.header ?= my.use.prefix + ".h"
     my.use.libname ?= my.use.project
+    my.use.pkgconfig ?= my.use.libname
     my.use.am_lib_macro ?= my.use.libname
     my.use.optional ?= 0
     my.use.min_major ?= 0

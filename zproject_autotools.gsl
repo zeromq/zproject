@@ -169,7 +169,13 @@ PREVIOUS_LIBS="${LIBS}"
 .for use
 .# Far below, if the dependency search was not for a library, it will be done
 .# for a program.
-. if use.libname ?<> ""
+.# Debugging for using either a list of variants or a single name per legacy
+.# (or simpler use-case) setup. Note that despite the same apparent name for
+.# addressing, the variable and list contexts are different and separate.
+.# Far below, if the dependency search was not for a library, it will be done
+.# for a program.
+.###echo "PROJECT: $(use.project) : '$(use.libname)' '$(use.pkgconfig)' '$(count(use.pkgconfig))' '$(count(use.linkname))'"
+. if use.libname ?<> "" | use.pkgconfig ?<> "" | count(use.pkgconfig) > 0 | count(use.linkname) > 0
 
 was_$(use.project:c)_check_lib_detected=no
 
@@ -207,29 +213,91 @@ AS_IF([test x"${search_$(use.libname:c)}" = xyes], [
     PRE_SEARCH_CFLAGS="${CFLAGS}"
     PRE_SEARCH_LIBS="${LIBS}"
 
-    PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)\
+    found_pkgconfig=""
+    found_linkname=""
+. if use.pkgconfig ?<> ""
+    PKG_CHECK_MODULES([$(use.project:c)], [$(use.pkgconfig) >= $(use.min_version)\
 .  if defined(use.max_version)
- $(use.libname) <= $(use.max_version)\
+ $(use.pkgconfig) <= $(use.max_version)\
 .  endif
 .  if defined(use.next_incompatible_version)
- $(use.libname) < $(use.next_incompatible_version)\
+ $(use.pkgconfig) < $(use.next_incompatible_version)\
 .  endif
 ],
     [
 .  if optional
-        AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The optional $(use.libname) library is to be used])
+        AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The optional\
+.# At least one of these values is available, per check above
+.   if use.pkgconfig ?<> "" & use.pkgconfig ?<> use.libname
+ $(use.pkgconfig) pkg-config metadata\
+.   endif
+.   if use.libname ?<> ""
+ $(use.libname) library\
+.   endif
+ is to be used])
 .  endif
         PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $$(use.project:c)_LIBS"
         was_$(use.project:c)_check_lib_detected=pkgcfg
+        found_pkgconfig="$(use.pkgconfig)"
     ],
     [
-.  if defined(use.test)
-        AC_MSG_NOTICE([Package $(use.libname) not found\
+. endif
+.# The alternate variants can be fallbacks to main pkgconfig (if defined)
+.# or standalone (if only the list is provided)
+. if count(use.pkgconfig) > 0
+.   for use.pkgconfig as pkgconfig_variant
+        AC_MSG_NOTICE([Retry by looking at another variant of pkg-config metadata: $(pkgconfig_variant)])
+        PKG_CHECK_MODULES([$(use.project:c)], [$(pkgconfig_variant) >= $(use.min_version)\
+.     if defined(use.max_version)
+ $(pkgconfig_variant) <= $(use.max_version)\
+.     endif
+.     if defined(use.next_incompatible_version)
+ $(pkgconfig_variant) < $(use.next_incompatible_version)\
+.     endif
+],
+            [
+.     if optional
+                AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The\
+.# At least one of these values is available, per check above
+.       if use.pkgconfig ?<> "" & use.pkgconfig ?<> use.libname
+ $(pkgconfig_variant) pkg-config metadata\
+.       endif
+.       if use.libname ?<> ""
+ $(use.libname) library\
+.       endif
+ is to be used])
+.     endif
+                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $$(use.project:c)_LIBS"
+                was_$(use.project:c)_check_lib_detected=pkgcfg
+                found_pkgconfig="$(pkgconfig_variant)"
+            ],
+            [
+.   endfor
+. endif
+.# Code below is either fallback for failed pkgconfig search(es)
+.# (if string and/or list was not empty) or a standalone linkability test
+.  if defined(use.test) & use.libname ?<> "" & ( use.linkname ?<> "" | count(use.linkname) > 0 )
+.   if use.pkgconfig ?<> "" | count(use.pkgconfig) > 0
+        AC_MSG_NOTICE([Package\
+.     if ( use.pkgconfig ?<> "" & count(use.pkgconfig) > 0 ) | count(use.pkgconfig) > 1
+s\
+.     endif
+.     if use.pkgconfig ?<> ""
+ $(use.pkgconfig)\
+.     endif
+.     if count(use.pkgconfig) > 0
+.       for use.pkgconfig as pkgconfig_variant
+ $(pkgconfig_variant)\
+.       endfor
+.     endif
+ not found\
 .       if !(use.min_version = '0.0.0') | defined(use.max_version) |defined(use.next_incompatible_version)
  with needed constraints\
 .       endif
 ; falling back to defined compilability tests])
+.   endif
 
+.# TODO: loop for alternate linknames - all zproject infrastructure is here
         $(use.project:c)_synthetic_cflags=""
         $(use.project:c)_synthetic_libs="-l$(use.linkname)"
 
@@ -265,25 +333,38 @@ Header file $(use.header) was not found in default search paths])
             [
                 was_$(use.project:c)_check_lib_detected=yes
                 PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -l$(use.linkname)"
+                found_linkname="$(use.linkname)"
 .       if optional
-                AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The optional $(use.libname) library is to be used])
+                AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The optional $(use.libname) library is to be used (as -l$(use.linkname))])
             ],
             [])
 .       else
             ],
             [AC_MSG_ERROR([cannot link with -l$(use.linkname), install $(use.libname)])])
 .       endif
-.   else
+.  else
         AC_MSG_WARN([Attribute 'test' is not set on zproject dependency '$(use.project)' - please ensure it is set])
-.   endif
+.  endif
+.# if count of list of alternates is nonzero, close those fallback clauses too
+.if count(use.pkgconfig) > 0
+.  for use.pkgconfig
+        ])
+.  endfor
+.endif
+.if use.pkgconfig ?<> ""
+.# if string was empty, code above was a standalone linkability test
     ])
+.endif
+
 dnl END of PKG_CHECK_MODULES and/or direct tests for $(use.libname:c)
     AS_CASE(["x${was_$(use.project:c)_check_lib_detected}"],
         [xpkgcfg], [
+                AC_SUBST([pkgconfig_name_$(use.libname:c)],[${found_pkgconfig}])
                 CFLAGS="${$(use.project:c)_CFLAGS} ${CFLAGS}"
                 LIBS="${$(use.project:c)_LIBS} ${LIBS}"
             ],
         [xyes], [
+                AC_SUBST([pkgconfig_name_$(use.libname:c)],[${found_linkname}])
                 CFLAGS="${$(use.project:c)_synthetic_cflags} ${CFLAGS}"
                 LDFLAGS="${$(use.project:c)_synthetic_libs} ${LDFLAGS}"
                 LIBS="${$(use.project:c)_synthetic_libs} ${LIBS}"
@@ -292,23 +373,33 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for $(use.libname:c)
                 AC_SUBST([$(use.project:c)_LIBS],[${$(use.project:c)_synthetic_libs}])
             ],
         [xno], [
+                AC_SUBST([pkgconfig_name_$(use.libname:c)],[$(use.libname)])
+.# No data defined to use a linkability test, or test failed
 .   if optional
             AC_MSG_WARN([\
 .   else
             AC_MSG_ERROR([\
 .   endif
-Cannot find $(use.libname)\
-.   if defined(use.max_version) | defined(use.next_incompatible_version)
+Cannot find\
+.       if use.pkgconfig ?<> "" | count(use.pkgconfig) > 0
+ pkg-config metadata for $(use.libname)\
+.        if defined(use.max_version) | defined(use.next_incompatible_version)
  >= $(use.min_version)\
-.       if defined(use.max_version)
+.           if defined(use.max_version)
  and <= $(use.max_version)\
-.       endif
-.       if defined(use.next_incompatible_version)
+.           endif
+.           if defined(use.next_incompatible_version)
  and < $(use.next_incompatible_version)\
-.       endif
-.   else
+.           endif
+.       else
  $(use.min_version) or higher\
-.   endif
+.        endif
+.       endif
+.# NOTE: No excessive looping tests for list of names below...
+.# it is possible, but not worth the effort for cosmetics...
+.       if use.libname ?<> "" & use.pkgconfig ?<> use.libname
+ library $(use.libname)\
+.       endif
 .       if !(defined(use.test) | use.libname ?<> "")
 , and no compilability tests were defined either\
 .       endif
@@ -1211,7 +1302,7 @@ Version: @VERSION@
 .if count (use)
 Requires:\
 .   for use where use.optional = 0
-$(use.libname)\
+@pkgconfig_name_$(use.libname:c)@\
 .       if (use.min_version <> '0.0.0')
  >= $(use.min_version)\
 .       endif
