@@ -156,6 +156,37 @@ PREVIOUS_LIBS="${LIBS}"
 
 was_$(use.project:c)_check_lib_detected=no
 
+.  if optional
+search_$(use.libname:c)="no"
+.  else
+search_$(use.libname:c)="yes"
+.  endif
+
+.# TOTHINK: Should this still be libname or ...
+.# (loop over variants of libname, projname, linkname, pkgconfig?..)
+AC_ARG_WITH([$(use.libname)],
+    [
+        AS_HELP_STRING([--with-$(use.libname)],
+.# TODO: Should an explicit path win over pkgconfig?
+        [yes or no. Optionally specify $(use.libname) prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
+    ],
+    [
+        search_$(use.libname:c)="yes"
+    ],
+    [])
+AS_CASE([x"${with_$(use.libname:c)}"],
+    [xyes], [search_$(use.libname:c)="yes"],
+    [xno],  [search_$(use.libname:c)="no"])
+
+.  if !optional
+dnl We do not abort right now, because the maintainer/developer may have
+dnl something particular in mind, e.g. to build just parts of a project.
+AS_IF([test x"${search_$(use.libname:c)}" = xno],
+    [AC_MSG_WARN([Required dependency on $(use.project:c) was explicitly disabled during configuration by '--with-$(use.libname)=no'; subsequent full build of $(project.name) may fail])])
+.  endif
+
+AS_IF([test x"${search_$(use.libname:c)}" = xyes], [
+. if use.pkgconfig ?<> ""
 PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)\
 .  if defined(use.max_version)
  $(use.libname) <= $(use.max_version)\
@@ -177,21 +208,14 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)\
  with needed constraints\
 .       endif
 ; falling back to defined compilability tests])
-        AC_ARG_WITH([$(use.libname)],
-            [
-                AS_HELP_STRING([--with-$(use.libname)],
-                [Specify $(use.libname) prefix])
-            ],
-            [search_$(use.libname)="yes"],
-            [])
 
         $(use.project:c)_synthetic_cflags=""
         $(use.project:c)_synthetic_libs="-l$(use.linkname)"
 
-        if test "x$search_$(use.libname)" = "xyes"; then
-            if test -r "${with_$(use.libname)}/include/$(use.header)"; then
-                $(use.project:c)_synthetic_cflags="-I${with_$(use.libname)}/include"
-                $(use.project:c)_synthetic_libs="-L${with_$(use.libname)}/lib -l$(use.linkname)"
+        if test -n "${with_$(use.libname:c)}" && test x"${with_$(use.libname:c)}" != xyes && test x"${with_$(use.libname:c)}" != xno; then
+            if test -r "${with_$(use.libname:c)}/include/$(use.header)"; then
+                $(use.project:c)_synthetic_cflags="-I${with_$(use.libname:c)}/include"
+                $(use.project:c)_synthetic_libs="-L${with_$(use.libname:c)}/lib -l$(use.linkname)"
             else
                 AC_MSG_ERROR([${with_$(use.libname)}/include/$(use.header) not found. Please check $(use.libname) prefix])
             fi
@@ -240,6 +264,9 @@ Cannot find $(use.libname)\
 , and no compilability tests were defined either])
 .   endif
     ])
+.endif
+])
+dnl END of enabled attempts to search for $(use.libname:c)
 
 if test "x$was_$(use.project:c)_check_lib_detected" = "xno"; then
     CFLAGS="${$(use.project:c)_CFLAGS} ${CFLAGS}"
