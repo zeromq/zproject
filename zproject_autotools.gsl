@@ -188,8 +188,7 @@ AS_IF([test x"${search_$(use.libname:c)}" = xno],
 .  endif
 
 AS_IF([test x"${search_$(use.libname:c)}" = xyes], [
-. if use.pkgconfig ?<> ""
-PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)\
+    PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)\
 .  if defined(use.max_version)
  $(use.libname) <= $(use.max_version)\
 .  endif
@@ -199,9 +198,10 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)\
 ],
     [
 .  if optional
-        AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The $(use.libname) library is to be used])
+        AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The optional $(use.libname) library is to be used])
 .  endif
         PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $$(use.project:c)_LIBS"
+        was_$(use.project:c)_check_lib_detected=pkgcfg
     ],
     [
 .  if defined(use.test)
@@ -236,23 +236,13 @@ Header file ${with_$(use.libname)}/include/$(use.header) was not found. Please c
 Header file $(use.header) was not found in default search paths])
                 )
         fi
-.       if !defined(use.test)
-.           abort "test is not set on project " + use.project + " please ensure it is set"
-.       endif
-
 
         AC_CHECK_LIB([$(use.prefix)], [$(use.test:)],
             [
-                CFLAGS="${$(use.project:c)_synthetic_cflags} ${CFLAGS}"
-                LDFLAGS="${$(use.project:c)_synthetic_libs} ${LDFLAGS}"
-                LIBS="${$(use.project:c)_synthetic_libs} ${LIBS}"
-
-                AC_SUBST([$(use.project:c)_CFLAGS],[${$(use.project:c)_synthetic_cflags}])
-                AC_SUBST([$(use.project:c)_LIBS],[${$(use.project:c)_synthetic_libs}])
                 was_$(use.project:c)_check_lib_detected=yes
                 PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -l$(use.linkname)"
 .       if optional
-                AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The $(use.libname) library is to be used])
+                AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The optional $(use.libname) library is to be used])
             ],
             [])
 .       else
@@ -260,34 +250,49 @@ Header file $(use.header) was not found in default search paths])
             [AC_MSG_ERROR([cannot link with -l$(use.linkname), install $(use.libname)])])
 .       endif
 .   else
-.       if optional
-        AC_MSG_WARN([\
-.       else
-        AC_MSG_ERROR([\
-.       endif
-Cannot find $(use.libname)\
-.       if defined(use.max_version) | defined(use.next_incompatible_version)
- >= $(use.min_version)\
-.           if defined(use.max_version)
- and <= $(use.max_version)\
-.           endif
-.           if defined(use.next_incompatible_version)
- and < $(use.next_incompatible_version)\
-.           endif
-.       else
- $(use.min_version) or higher\
-.       endif
-, and no compilability tests were defined either])
+        AC_MSG_WARN([Attribute 'test' is not set on zproject dependency '$(use.project)' - please ensure it is set])
 .   endif
     ])
-.endif
+dnl END of PKG_CHECK_MODULES and/or direct tests for $(use.libname:c)
+    AS_CASE(["x${was_$(use.project:c)_check_lib_detected}"],
+        [xpkgcfg], [
+                CFLAGS="${$(use.project:c)_CFLAGS} ${CFLAGS}"
+                LIBS="${$(use.project:c)_LIBS} ${LIBS}"
+            ],
+        [xyes], [
+                CFLAGS="${$(use.project:c)_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${$(use.project:c)_synthetic_libs} ${LDFLAGS}"
+                LIBS="${$(use.project:c)_synthetic_libs} ${LIBS}"
+
+                AC_SUBST([$(use.project:c)_CFLAGS],[${$(use.project:c)_synthetic_cflags}])
+                AC_SUBST([$(use.project:c)_LIBS],[${$(use.project:c)_synthetic_libs}])
+            ],
+        [xno], [
+.   if optional
+            AC_MSG_WARN([\
+.   else
+            AC_MSG_ERROR([\
+.   endif
+Cannot find $(use.libname)\
+.   if defined(use.max_version) | defined(use.next_incompatible_version)
+ >= $(use.min_version)\
+.       if defined(use.max_version)
+ and <= $(use.max_version)\
+.       endif
+.       if defined(use.next_incompatible_version)
+ and < $(use.next_incompatible_version)\
+.       endif
+.   else
+ $(use.min_version) or higher\
+.   endif
+.       if !(defined(use.test) | use.libname ?<> "")
+, and no compilability tests were defined either\
+.       endif
+])
+    ])
 ])
 dnl END of enabled attempts to search for $(use.libname:c)
 
-if test "x$was_$(use.project:c)_check_lib_detected" = "xno"; then
-    CFLAGS="${$(use.project:c)_CFLAGS} ${CFLAGS}"
-    LIBS="${$(use.project:c)_LIBS} ${LIBS}"
-fi
 . else
 .# TODO: Extend with support for 'optional'
 .# TODO: Extend with support for '--with-...=path/to/prog' and '--without-...'
