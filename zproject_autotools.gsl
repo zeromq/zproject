@@ -217,8 +217,22 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)\
                 $(use.project:c)_synthetic_cflags="-I${with_$(use.libname:c)}/include"
                 $(use.project:c)_synthetic_libs="-L${with_$(use.libname:c)}/lib -l$(use.linkname)"
             else
-                AC_MSG_ERROR([${with_$(use.libname)}/include/$(use.header) not found. Please check $(use.libname) prefix])
+.   if optional
+            AC_MSG_WARN([\
+.   else
+            AC_MSG_ERROR([\
+.   endif
+Header file ${with_$(use.libname)}/include/$(use.header) was not found. Please check $(use.libname) prefix])
             fi
+        else
+            AC_CHECK_HEADER([$(use.header)], [],
+.   if optional
+            AC_MSG_WARN([\
+.   else
+            AC_MSG_ERROR([\
+.   endif
+Header file $(use.header) was not found in default search paths])
+                )
         fi
 .       if !defined(use.test)
 .           abort "test is not set on project " + use.project + " please ensure it is set"
