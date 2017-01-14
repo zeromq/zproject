@@ -14,7 +14,7 @@
 function zinstall_include (filename)
     if file.exists ("$(my.filename:)")
         input = file.open ("$(my.filename:)")
-        xline = file.read (input)
+        xline = file.read (input)?
         while defined (xline)
             >$(string.replace (xline, "\n|"))
             xline = file.read (input)?
@@ -24,13 +24,16 @@ endfunction
 
 directory.create ("builds/zinstall")
 output "builds/zinstall/configure.ac"
->
+close
+
 output "builds/zinstall/Makemodule.am"
->
+close
+
 output "builds/zinstall/$(project.name).spec"
->
+close
+
 output "builds/zinstall/$(project.name).install"
->
+close
 
 for project.main where defined (main->install)
     for install

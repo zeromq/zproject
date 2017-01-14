@@ -327,8 +327,6 @@ AS_IF([test "x$enable_Werror" = "xyes" || test "x$enable_Werror" = "xauto"],
 AC_CONFIG_FILES([Makefile
                 ])
 
-
-
 AC_OUTPUT
 
 # Print configure summary and list make options
