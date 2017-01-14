@@ -152,6 +152,8 @@ PREVIOUS_CFLAGS="${CFLAGS}"
 PREVIOUS_LIBS="${LIBS}"
 
 .for use
+.# Far below, if the dependency search was not for a library, it will be done
+.# for a program.
 . if use.libname ?<> ""
 
 was_$(use.project:c)_check_lib_detected=no
@@ -287,6 +289,8 @@ if test "x$was_$(use.project:c)_check_lib_detected" = "xno"; then
     LIBS="${$(use.project:c)_LIBS} ${LIBS}"
 fi
 . else
+.# TODO: Extend with support for 'optional'
+.# TODO: Extend with support for '--with-...=path/to/prog' and '--without-...'
 AC_CHECK_PROG(HAVE_$(USE.PROJECT:C), $(use.project:c), yes)
 if test x"$HAVE_$(USE.PROJECT:C)" != x"yes" ; then
     AC_MSG_ERROR([Cannot find $(use.project)])
