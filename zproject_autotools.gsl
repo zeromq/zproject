@@ -203,6 +203,10 @@ AS_IF([test x"${search_$(use.libname:c)}" = xno],
 .  endif
 
 AS_IF([test x"${search_$(use.libname:c)}" = xyes], [
+    # Archive previously detected and supplied flags
+    PRE_SEARCH_CFLAGS="${CFLAGS}"
+    PRE_SEARCH_LIBS="${LIBS}"
+
     PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)\
 .  if defined(use.max_version)
  $(use.libname) <= $(use.max_version)\
@@ -252,6 +256,11 @@ Header file $(use.header) was not found in default search paths])
                 )
         fi
 
+.# TODO: I doubt this really finds libraries in non-default paths (including
+.# our --with-... argument above); verify and perhaps set temporary LIBS and
+.# CFLAGS values with added tested location for header and library files
+.# using the PRE_SEARCH_LIBS and PRE_SEARCH_CFLAGS defined above just for
+.# such sort of use-cases.
         AC_CHECK_LIB([$(use.prefix)], [$(use.test:)],
             [
                 was_$(use.project:c)_check_lib_detected=yes
