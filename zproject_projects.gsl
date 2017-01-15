@@ -29,10 +29,39 @@ function resolve_project_dependency (use)
         my.use.redhat_name ?= known.spec_name?
         my.use.redhat_name ?= known.redhat_name?
 
+        my.use.min_major   ?= known.min_major?
+        my.use.min_minor   ?= known.min_minor?
+        my.use.min_patch   ?= known.min_patch?
+        my.use.min_version ?= known.min_version?
+
+        my.use.max_major   ?= known.max_major?
+        my.use.max_minor   ?= known.max_minor?
+        my.use.max_patch   ?= known.max_patch?
+        my.use.max_version ?= known.max_version?
+
+        my.use.next_incompatible_major   ?= known.next_incompatible_major?
+        my.use.next_incompatible_minor   ?= known.next_incompatible_minor?
+        my.use.next_incompatible_patch   ?= known.next_incompatible_patch?
+        my.use.next_incompatible_version ?= known.next_incompatible_version?
+
         # Copy known implied dependencies into this dependency
         for known.use as implied_use
             if !count (my.use.use, use.project = implied_use.project)
                 move implied_use to my.use as use
+            endif
+        endfor
+
+        # Copy known alternate pkg-config metadata and library link-names
+        # to help search for the dependencies
+        for known.pkgconfig as implied_pkgconfig
+            if !count (my.use.pkgconfig, pkgconfig = implied_pkgconfig)
+                move implied_pkgconfig to my.use as pkgconfig
+            endif
+        endfor
+
+        for known.linkname as implied_linkname
+            if !count (my.use.linkname, linkname = implied_linkname)
+                move implied_linkname to my.use as linkname
             endif
         endfor
     endfor
