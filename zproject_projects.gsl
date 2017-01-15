@@ -64,7 +64,9 @@ function resolve_project_dependency (use)
 
     # Calculate all non-model values from model values (defaults
     # to "0.0.0" if not set in project.xml:
-    my.use.min_version = "$(min_major).$(min_minor).$(min_patch)"
+    if !defined(my.use.min_version)
+        my.use.min_version = "$(min_major).$(min_minor).$(min_patch)"
+    endif
 
     # Note: Logic below would produce a bump in only one field, if one is
     # passed, e.g. when min == "3.0.2" and next_incompatible_major == "4"
