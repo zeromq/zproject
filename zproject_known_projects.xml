@@ -163,4 +163,25 @@
         <use project = "malamute"/>
     </use>
 
+    <!-- OS packagers make life hard by renaming the package, binaries and
+         even library SONAMEs - so we have to guess a bit; note that for
+         practical purposes, lua-5.2 suffices as lua-5.1 (if fixes happen
+         to be needed, they are trivial and googlable) -->
+    <use project = "lua-5.1" libname = "lua" prefix="lua"
+        optional = "0" am_lib_macro = "LUA_5_1"
+        min_major = "5" min_minor = "1" min_patch = "0"
+        debian_name="liblua5.1-0-dev" redhat_name="lua-devel"
+        test = "lua_close">
+            <linkname>lua5.2</linkname>
+            <linkname>lua52</linkname>
+            <linkname>lua5.1</linkname>
+            <linkname>lua51</linkname>
+            <linkname>lua</linkname>
+            <pkgconfig>lua5.2</pkgconfig>
+            <pkgconfig>lua52</pkgconfig>
+            <pkgconfig>lua5.1</pkgconfig>
+            <pkgconfig>lua51</pkgconfig>
+            <pkgconfig>lua</pkgconfig>
+    </use>
+
 </known_projects>
