@@ -343,10 +343,6 @@ extern "C" {
 #include "$(class.c_name)_library.h"
 
 .   endif
-.   if class.scope = "private"
-typedef struct _$(class.c_name)_t $(class.c_name)_t;
-
-.   endif
 //  @interface
 .   if class.scope = "private"
 .      visibility = "$(PROJECT.PREFIX)_PRIVATE"
