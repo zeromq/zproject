@@ -418,10 +418,17 @@ $(project.GENERATED_WARNING_HEADER:)
 //  External API
 #include "../include/$(project.header:)"
 
-//  Internal API
+//  Extra headers
 .for header where scope = "private"
 #include "$(header.name).h"
 .endfor
+
+//  Opaque class structures to allow forward references
+.for class where scope = "private"
+typedef struct _$(class.c_name)_t $(class.c_name)_t;
+.endfor
+
+//  Internal API
 .for class where scope = "private"
 #include "$(class.c_name).h"
 .endfor
