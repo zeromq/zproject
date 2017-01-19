@@ -419,11 +419,11 @@ $(project.GENERATED_WARNING_HEADER:)
 #include "../include/$(project.header:)"
 
 //  Internal API
-.for class where scope = "private"
-#include "$(class.c_name).h"
-.endfor
 .for header where scope = "private"
 #include "$(header.name).h"
+.endfor
+.for class where scope = "private"
+#include "$(class.c_name).h"
 .endfor
 
 //  *** To avoid double-definitions, only define if building without draft ***
