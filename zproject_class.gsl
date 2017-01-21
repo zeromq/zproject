@@ -333,8 +333,8 @@ stable\
     }
 
     #ifdef NDEBUG
-        printf(" !!! 'assert' macro is disabled, remove NDEBUG from your compilation definitions.\n");
-        printf(" tests will be meaningless.\n");
+        printf(" !!! 'assert' macro is disabled, remove NDEBUG from your compilation definitions.\\n");
+        printf(" tests will be meaningless.\\n");
     #endif //
 
     if (test) {
