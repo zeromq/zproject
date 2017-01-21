@@ -296,10 +296,6 @@ target_link_libraries(
 .endfor
     ${OPTIONAL_LIBRARIES}
 )
-set_target_properties(
-    $(main.name)
-    PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${SOURCE_DIR}/src"
-)
 .   if main.scope = "public"
 install(TARGETS $(main.name)
     RUNTIME DESTINATION bin
