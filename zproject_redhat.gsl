@@ -13,7 +13,7 @@
 register_target ("redhat", "Packaging for RedHat")
 
 .macro target_redhat
-.for project.main where main.service ?= 1
+.for project.main where ( defined(main.service) & main.service > 0 )
 .   systemd = 1
 .endfor
 .directory.create ('packaging/redhat')
@@ -202,12 +202,12 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/$(bin.name)
 .endfor
 .# generate service file names
-.for project.main where main.service ?= 1
+.for project.main where ( defined(main.service) & main.service > 0 )
 %config(noreplace) %{_sysconfdir}/$(project.name)/$(main.name).cfg
-.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in")
+.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in") | ( main.service ?= 1 | main.service ?= 3 )
 /usr/lib/systemd/system/$(main.name).service
 .       endif
-.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in")
+.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in") | ( main.service ?= 2 | main.service ?= 3 )
 /usr/lib/systemd/system/$(main.name)@.service
 .       endif
 .etc_exists = 1
@@ -220,33 +220,33 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %if 0%{?suse_version} > 1315
 %post
 %systemd_post\
-.   for project.main where main.service ?= 1
-.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in")
+.   for project.main where ( defined(main.service) & main.service > 0 )
+.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in") | ( main.service ?= 1 | main.service ?= 3 )
  $(main.name).service\
 .       endif
-.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in")
+.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in") | ( main.service ?= 2 | main.service ?= 3 )
  $(main.name)@.service\
 .       endif
 .   endfor
 
 %preun
 %systemd_preun\
-.   for project.main where main.service ?= 1
-.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in")
+.   for project.main where ( defined(main.service) & main.service > 0 )
+.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in") | ( main.service ?= 1 | main.service ?= 3 )
  $(main.name).service\
 .       endif
-.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in")
+.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in") | ( main.service ?= 2 | main.service ?= 3 )
  $(main.name)@.service\
 .       endif
 .   endfor
 
 %postun
 %systemd_postun_with_restart\
-.   for project.main where main.service ?= 1
-.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in")
+.   for project.main where ( defined(main.service) & main.service > 0 )
+.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in") | ( main.service ?= 1 | main.service ?= 3 )
  $(main.name).service\
 .       endif
-.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in")
+.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in") | ( main.service ?= 2 | main.service ?= 3 )
  $(main.name)@.service\
 .       endif
 .   endfor

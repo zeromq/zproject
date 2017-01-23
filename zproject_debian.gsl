@@ -13,7 +13,7 @@
 register_target ("debian", "packaging for Debian")
 
 .macro target_debian
-.for project.main where main.service ?= 1
+.for project.main where ( defined(main.service) & main.service > 0 )
 .   systemd = 1
 .endfor
 .directory.create ('packaging/debian')
@@ -213,12 +213,12 @@ usr/share/man/man1/$(main.name).1
 usr/bin/$(bin.name)
 .   endfor
 .# generate service file names
-.   for project.main where main.service ?= 1
+.   for project.main where ( defined(main.service) & main.service > 0 )
 etc/$(project.name)/$(main.name).cfg
-.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in")
+.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in") | ( main.service ?= 1 | main.service ?= 3 )
 lib/systemd/system/$(main.name).service
 .       endif
-.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in")
+.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in") | ( main.service ?= 2 | main.service ?= 3 )
 lib/systemd/system/$(main.name)@.service
 .       endif
 .   endfor

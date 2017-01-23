@@ -294,6 +294,8 @@ zproject's `project.xml` contains an extensive description of the available conf
     <main name = "progname">Exported public tool</main>
     <main name = "progname" private = "1">Internal tool</main>
     <main name = "progname" service = "1">Installed as system service</main>
+    <main name = "progname" service = "2">Installed as system service, multi-instance (@)</main>
+    <main name = "progname" service = "3">Installed as system service, both single and multi-instance (@)</main>
     -->
 
     <!--
