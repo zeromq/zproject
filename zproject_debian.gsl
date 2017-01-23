@@ -215,7 +215,12 @@ usr/bin/$(bin.name)
 .# generate service file names
 .   for project.main where main.service ?= 1
 etc/$(project.name)/$(main.name).cfg
-lib/systemd/system/$(main.name){,@*}.{service,*}
+.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in")
+lib/systemd/system/$(main.name).service
+.       endif
+.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in")
+lib/systemd/system/$(main.name)@.service
+.       endif
 .   endfor
 .zinstall_include ("builds/zinstall/$(project.name).install")
 .endif

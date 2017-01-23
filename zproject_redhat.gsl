@@ -204,7 +204,12 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .# generate service file names
 .for project.main where main.service ?= 1
 %config(noreplace) %{_sysconfdir}/$(project.name)/$(main.name).cfg
-/usr/lib/systemd/system/$(main.name){,@*}.{service,*}
+.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in")
+/usr/lib/systemd/system/$(main.name).service
+.       endif
+.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in")
+/usr/lib/systemd/system/$(main.name)@.service
+.       endif
 .etc_exists = 1
 .endfor
 .if etc_exists ?= 1
@@ -216,19 +221,34 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %post
 %systemd_post\
 .   for project.main where main.service ?= 1
- $(main.name){,@*}.{service,*}\
+.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in")
+ $(main.name).service\
+.       endif
+.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in")
+ $(main.name)@.service\
+.       endif
 .   endfor
 
 %preun
 %systemd_preun\
 .   for project.main where main.service ?= 1
- $(main.name){,@*}.{service,*}\
+.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in")
+ $(main.name).service\
+.       endif
+.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in")
+ $(main.name)@.service\
+.       endif
 .   endfor
 
 %postun
 %systemd_postun_with_restart\
 .   for project.main where main.service ?= 1
- $(main.name){,@*}.{service,*}\
+.       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in")
+ $(main.name).service\
+.       endif
+.       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in")
+ $(main.name)@.service\
+.       endif
 .   endfor
 
 %endif
