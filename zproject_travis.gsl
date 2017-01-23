@@ -331,7 +331,16 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
             $CI_TIME autoconf || \\
             $CI_TIME autoreconf -fiv
         fi
+.           if count(use.add_config_opts) > 0
+        ( # Custom additional options for $(use.project)
+.               for use.add_config_opts as add_cfgopt
+            CONFIG_OPTS+=("$(add_cfgopt)")
+.               endfor
+            $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+        )
+.           else
         $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+.           endif
         $CI_TIME make -j4
         $CI_TIME make install
         cd "${BASE_PWD}"
@@ -347,6 +356,12 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
     # Only use --enable-Werror on projects that are expected to have it
     # (and it is not our duty to check prerequisite projects anyway)
     CONFIG_OPTS+=("${CONFIG_OPT_WERROR}")
+.   if count(add_config_opts) > 0
+    # Custom additional options for this project
+.       for add_config_opts as add_cfgopt
+    CONFIG_OPTS+=("$(add_cfgopt)")
+.       endfor
+.   endif
     $CI_TIME ./autogen.sh 2> /dev/null
     $CI_TIME ./configure --enable-drafts=yes "${CONFIG_OPTS[@]}"
     if [ "$BUILD_TYPE" == "valgrind" ] ; then

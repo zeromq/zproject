@@ -582,7 +582,16 @@ if \
         $CI_TIME autoconf || \\
         $CI_TIME autoreconf -fiv
     fi
+.   if count(use.add_config_opts) > 0
+    ( # Custom additional options for $(use.project)
+.       for use.add_config_opts as add_cfgopt
+      CONFIG_OPTS+=("$(add_cfgopt)")
+.       endfor
+      $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+    )
+.   else
     $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+.   endif
     $CI_TIME make -j4
     $CI_TIME make install
     cd "${BASE_PWD}"
@@ -625,7 +634,16 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)
         $CI_TIME autoconf || \\
         $CI_TIME autoreconf -fiv
     fi
+.   if count(use.add_config_opts) > 0
+    ( # Custom additional options for $(use.project)
+.       for use.add_config_opts as add_cfgopt
+      CONFIG_OPTS+=("$(add_cfgopt)")
+.       endfor
+      $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+    )
+.   else
     $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+.   endif
     $CI_TIME make -j4
     $CI_TIME make install
     cd "${BASE_PWD}"
@@ -635,6 +653,12 @@ fi
 # Build and check this project
 cd ../..
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of currently tested project..."
+.if count(add_config_opts) > 0
+# Custom additional options for this project
+.   for add_config_opts as add_cfgopt
+CONFIG_OPTS+=("$(add_cfgopt)")
+.   endfor
+.endif
 CCACHE_BASEDIR=${PWD}
 export CCACHE_BASEDIR
 PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" .

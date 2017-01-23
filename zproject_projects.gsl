@@ -64,6 +64,13 @@ function resolve_project_dependency (use)
                 move implied_linkname to my.use as linkname
             endif
         endfor
+
+        # Copy known additional CONFIG_OPTS
+        for known.add_config_opts as implied_add_config_opts
+            if !count (my.use.add_config_opts, add_config_opts = implied_add_config_opts)
+                move implied_add_config_opts to my.use as add_config_opts
+            endif
+        endfor
     endfor
 
     # Use reasonable fallback values to fill in any remaining gaps
