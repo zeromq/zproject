@@ -668,7 +668,7 @@ AS_IF([test "$have_ld_version_script" = "yes"],
 .endif
 
 # enable specific system integration features
-.for project.main where main.service ?= 1
+.for project.main where ( defined(main.service) & main.service > 0 )
 .   systemd = 1
 .endfor
 .if systemd ?= 1
@@ -777,13 +777,13 @@ AC_CONFIG_FILES([Makefile
                  src/$(extra.name)
 .       endfor
 .   endfor
-.   for project.main where main.service ?= 1
+.   for project.main where ( defined(main.service) & main.service > 0 )
                  src/$(main.name).cfg
 .   endfor
                  ])
 .else
 AC_CONFIG_FILES([Makefile
-.   for project.main where main.service ?= 1
+.   for project.main where ( defined(main.service) & main.service > 0 )
                  src/$(main.name).cfg
 .   endfor
                 ])
@@ -792,8 +792,13 @@ AC_CONFIG_FILES([Makefile
 .if systemd ?= 1
 AM_COND_IF([WITH_SYSTEMD_UNITS],
     [AC_CONFIG_FILES([
-.   for project.main where main.service ?= 1
+.   for project.main where ( defined(main.service) & main.service > 0 )
+.       if ( main.service ?= 1 | main.service ?= 3 )
                  src/$(main.name).service
+.       endif
+.       if ( main.service ?= 2 | main.service ?= 3 )
+                 src/$(main.name)@.service
+.       endif
 .   endfor
     ])],
     [])
@@ -896,14 +901,19 @@ $(extra.name)
 .endif
 
 # + config files for mains (if any):
-.for project.main where main.service ?= 1
+.for project.main where ( defined(main.service) & main.service > 0 )
 $(main.name).cfg
 .endfor
 
 .if systemd ?= 1
 # + systemd service unit for daemons (if any):
-.   for project.main where main.service ?= 1
+.   for project.main where ( defined(main.service) & main.service > 0 )
+.       if ( main.service ?= 1 | main.service ?= 3 )
 $(main.name).service
+.       endif
+.       if ( main.service ?= 2 | main.service ?= 3 )
+$(main.name)@.service
+.       endif
 .   endfor
 .endif
 
@@ -1145,11 +1155,16 @@ src_$(main.name:c)_LDADD = ${program_libs}
 src_$(name:c)_SOURCES = $(main.source)
 .#
 .#  Systemd stuff
-.   if main.service ?= 1
+.   if ( defined(main.service) & main.service > 0 )
 src_$(main.name:c)_config_DATA = src/$(main.name).cfg
 src_$(main.name:c)_configdir = \$(sysconfdir)/$(project.name)
 if WITH_SYSTEMD_UNITS
+.       if ( main.service ?= 1 | main.service ?= 3 )
 systemdsystemunit_DATA += src/$(main.name).service
+.       endif
+.       if ( main.service ?= 2 | main.service ?= 3 )
+systemdsystemunit_DATA += src/$(main.name)@.service
+.       endif
 endif #WITH_SYSTEMD_UNITS
 .   endif
 endif #ENABLE_$(NAME:c)
@@ -1248,7 +1263,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .close
 .#
 .#  Generate infrastructure for services
-.for project.main where main.service ?= 1
+.for project.main where ( defined(main.service) & main.service > 0 )
 .if !file.exists ("src/$(main.name).cfg.in")
 .       output "src/$(main.name).cfg.in"
 #   $(main.name) configuration
@@ -1263,7 +1278,8 @@ server
 .else
 .   echo "NOT regenerating an existing src/$(main.name).cfg.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .endif
-.if !file.exists ("src/$(main.name).service.in")
+.if ( main.service ?= 1 | main.service ?= 3 )
+.  if !file.exists ("src/$(main.name).service.in")
 .   output "src/$(main.name).service.in"
 # This is a skeleton created by zproject.
 # You can add hand-written code here.
@@ -1271,16 +1287,50 @@ server
 [Unit]
 Description=$(main.name) service
 After=network.target
+# Requires=network.target
+# Conflicts=shutdown.target
+# PartOf=$(project.name).target
 
 [Service]
 Type=simple
+# User=@uid@
 Environment="prefix=@prefix@"
 ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name).cfg
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
-.else
+# WantedBy=$(project.name).target
+.  else
 .   echo "NOT regenerating an existing src/$(main.name).service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.if ( main.service ?= 2 | main.service ?= 3 )
+.  if !file.exists ("src/$(main.name)@.service.in")
+.   output "src/$(main.name)@.service.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=$(main.name) service for %I
+After=network.target
+# Requires=network.target
+# Conflicts=shutdown.target
+# PartOf=$(project.name).target
+
+[Service]
+Type=simple
+# User=@uid@
+Environment="prefix=@prefix@"
+ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name)@%i.cfg
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.  else
+.   echo "NOT regenerating an existing src/$(main.name)@.service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
 .endif
 .endfor
 .close
