@@ -28,6 +28,8 @@
             optional = "1"              default = "0"
             debian_name = "libzmq5-dev" default = lib<name>-dev
             redhat_name = "zeromq-devel" default = <name>-devel
+                <add_config_opts>--with-dep1=nuance</add_config_opts>
+                <add_config_opts>--enable-feature2</add_config_opts>
         </use>
     -->
 

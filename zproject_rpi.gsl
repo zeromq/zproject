@@ -116,7 +116,16 @@ if [ ! $INCREMENTAL ]; then
     fi
     pushd \$(basename "$(use.tarball)" .tar.gz)
     (
+.           if count(use.add_config_opts) > 0
+        ( # Custom additional options for $(use.project)
+.               for use.add_config_opts as add_cfgopt
+            CONFIG_OPTS+=("$(add_cfgopt)")
+.               endfor
+            $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+        )
+.           else
         $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+.           endif
         $CI_TIME make -j4
         $CI_TIME make install
     ) || exit 1
@@ -151,7 +160,16 @@ if [ ! $INCREMENTAL ]; then
             $CI_TIME autoconf || \\
             $CI_TIME autoreconf -fiv
         fi
+.           if count(use.add_config_opts) > 0
+        ( # Custom additional options for $(use.project)
+.               for use.add_config_opts as add_cfgopt
+            CONFIG_OPTS+=("$(add_cfgopt)")
+.               endfor
+            $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+        )
+.           else
         $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+.           endif
         $CI_TIME make -j4
         $CI_TIME make install
     ) || exit 1
@@ -163,6 +181,12 @@ fi
 # Cross build this project
 pushd ../..
 (
+.   if count(add_config_opts) > 0
+    # Custom additional options for this project
+.       for add_config_opts as add_cfgopt
+    CONFIG_OPTS+=("$(add_cfgopt)")
+.       endfor
+.   endif
     $CI_TIME ./autogen.sh 2> /dev/null
     $CI_TIME ./configure --enable-drafts=yes "${CONFIG_OPTS[@]}"
     $CI_TIME make -j4
