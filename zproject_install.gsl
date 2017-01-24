@@ -61,6 +61,8 @@ for project.main where defined (main->install)
             append "builds/zinstall/$(project.name).install"
 >usr/lib/tmpfiles.d/$(main.name).conf
 
+# TODO: consider equivalent of
+# `if !defined(main.no_config) | main.no_config ?= 0`
         elsif install.type = "config"
             install.name ?= main.name + ".cfg"
             append "builds/zinstall/configure.ac"
