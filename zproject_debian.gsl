@@ -214,7 +214,9 @@ usr/bin/$(bin.name)
 .   endfor
 .# generate service file names
 .   for project.main where ( defined(main.service) & main.service > 0 )
+.       if !defined(main.no_config) | main.no_config ?= 0
 etc/$(project.name)/$(main.name).cfg
+.       endif
 .       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in") | ( main.service ?= 1 | main.service ?= 3 )
 lib/systemd/system/$(main.name).service
 .       endif

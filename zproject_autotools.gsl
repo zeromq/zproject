@@ -777,13 +777,13 @@ AC_CONFIG_FILES([Makefile
                  src/$(extra.name)
 .       endfor
 .   endfor
-.   for project.main where ( defined(main.service) & main.service > 0 )
+.   for project.main where ( defined(main.service) & main.service > 0 & ( !defined(main.no_config) | main.no_config ?= 0 ) )
                  src/$(main.name).cfg
 .   endfor
                  ])
 .else
 AC_CONFIG_FILES([Makefile
-.   for project.main where ( defined(main.service) & main.service > 0 )
+.   for project.main where ( defined(main.service) & main.service > 0 & ( !defined(main.no_config) | main.no_config ?= 0 ) )
                  src/$(main.name).cfg
 .   endfor
                 ])
@@ -901,7 +901,7 @@ $(extra.name)
 .endif
 
 # + config files for mains (if any):
-.for project.main where ( defined(main.service) & main.service > 0 )
+.for project.main where ( defined(main.service) & main.service > 0 & ( !defined(main.no_config) | main.no_config ?= 0 ) )
 $(main.name).cfg
 .endfor
 
@@ -1156,7 +1156,10 @@ src_$(name:c)_SOURCES = $(main.source)
 .#
 .#  Systemd stuff
 .   if ( defined(main.service) & main.service > 0 )
-src_$(main.name:c)_config_DATA = src/$(main.name).cfg
+src_$(main.name:c)_config_DATA =
+.       if ( !defined(main.no_config) | main.no_config ?= 0 )
+src_$(main.name:c)_config_DATA += src/$(main.name).cfg
+.       endif
 src_$(main.name:c)_configdir = \$(sysconfdir)/$(project.name)
 if WITH_SYSTEMD_UNITS
 .       if ( main.service ?= 1 | main.service ?= 3 )
@@ -1264,7 +1267,8 @@ $(project.GENERATED_WARNING_HEADER:)
 .#
 .#  Generate infrastructure for services
 .for project.main where ( defined(main.service) & main.service > 0 )
-.if !file.exists ("src/$(main.name).cfg.in")
+.if !defined(main.no_config) | main.no_config ?= 0
+.  if !file.exists ("src/$(main.name).cfg.in")
 .       output "src/$(main.name).cfg.in"
 #   $(main.name) configuration
 # This is a skeleton created by zproject.
@@ -1275,8 +1279,9 @@ server
     background = 0      #   Run as background process
     workdir = .         #   Working directory for daemon
     verbose = 0         #   Do verbose logging of activity?
-.else
+.  else
 .   echo "NOT regenerating an existing src/$(main.name).cfg.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
 .endif
 .if ( main.service ?= 1 | main.service ?= 3 )
 .  if !file.exists ("src/$(main.name).service.in")
@@ -1295,7 +1300,11 @@ After=network.target
 Type=simple
 # User=@uid@
 Environment="prefix=@prefix@"
+.       if ( !defined(main.no_config) | main.no_config ?= 0 )
 ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name).cfg
+.       else
+ExecStart=@prefix@/bin/$(main.name)
+.       endif
 Restart=always
 
 [Install]
@@ -1322,7 +1331,11 @@ After=network.target
 Type=simple
 # User=@uid@
 Environment="prefix=@prefix@"
+.       if ( !defined(main.no_config) | main.no_config ?= 0 )
 ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name)@%i.cfg
+.       else
+ExecStart=@prefix@/bin/$(main.name) %i
+.       endif
 Restart=always
 
 [Install]
