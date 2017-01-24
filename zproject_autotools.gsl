@@ -1300,6 +1300,7 @@ After=network.target
 Type=simple
 # User=@uid@
 Environment="prefix=@prefix@"
+Environment='SYSTEMD_UNIT_FULLNAME=%n'
 .       if ( !defined(main.no_config) | main.no_config ?= 0 )
 ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name).cfg
 .       else
@@ -1331,6 +1332,7 @@ After=network.target
 Type=simple
 # User=@uid@
 Environment="prefix=@prefix@"
+Environment='SYSTEMD_UNIT_FULLNAME=%n'
 .       if ( !defined(main.no_config) | main.no_config ?= 0 )
 ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name)@%i.cfg
 .       else
