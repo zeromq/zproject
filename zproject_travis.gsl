@@ -39,7 +39,7 @@ env:
   global:
     - CI_TIME=false
     - CI_TRACE=false
-    - CI_QUIET=true
+    - CI_CONFIG_QUIET=true
   matrix:
     - BUILD_TYPE=default
     - BUILD_TYPE=default-Werror
