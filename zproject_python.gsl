@@ -94,7 +94,11 @@ function resolve_container (container)
     elsif my.container.type = "size"
         my.container.python_type = "c_size_t"
     elsif my.container.type = "real"
-        my.container.python_type = "c_float"
+        if my.container.size = "4"
+            my.container.python_type = "c_float"
+        elsif my.container.size = "8"
+            my.container.python_type = "c_double"
+        endif
     elsif my.container.type = "buffer"
 #        my.container.python_type = "POINTER(c_byte)"
         my.container.python_type = "c_void_p"

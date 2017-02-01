@@ -327,7 +327,7 @@ This is an incomplete list of API types:
 
 * "number" -- unsigned number, with 'size = "1|2|4|8"'.
 
-* "real" -- single-precision floating point. [TODO: single? why not double?]
+* "real" -- single-precision floating point with 'size = "4"' (default) or double-precision with 'size = "8"'.
 
 * "buffer" -- byte array. When passing a buffer argument, if the next argument has type 'size', the binding may fill the size automatically. To return a buffer, you should specify 'size' attribute that defines how to set the buffer size. This can be a constant, 'size = "ZUUID_LEN"', or a dot followed by method name in the same class, e.g. 'size = ".size"'.
 
