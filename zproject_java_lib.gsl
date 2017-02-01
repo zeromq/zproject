@@ -67,8 +67,13 @@ function resolve_container (container)
         endif
 
     elsif my.container.type = "real"
-        my.container.jni_java_type = "float"
-        my.container.jni_jni_type = "jfloat"
+        if my.container.size ?= "4"
+            my.container.jni_java_type = "float"
+            my.container.jni_jni_type = "jfloat"
+        elsif my.container.size ?= "8"
+            my.container.jni_java_type = "double"
+            my.container.jni_jni_type = "jdouble"
+        endif
 
     elsif my.container.type = "buffer"
         if my.container.by_reference

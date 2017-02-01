@@ -133,7 +133,9 @@
     <method name = "tutorial">
         <argument name = "void pointer" type = "anything" />
         <argument name = "standard int" type = "integer" />
-        <argument name = "standard float" type = "real" />
+        <argument name = "default float" type = "real" />
+        <argument name = "standard float" type = "real" size = "4" />
+        <argument name = "standard double" type = "real" size = "8" />
         <argument name = "standard bool" type = "boolean" />
         <argument name = "fixed size unsigned integer" type = "number" size = "4">
             Supported sizes are 1, 2, 4, and 8.

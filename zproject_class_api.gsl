@@ -93,7 +93,11 @@ function resolve_c_container (container)
     endif
 
     my.type = my.container.type
-    my.size = my.container.size? 1
+    if my.type = "real" # use different default for backwards compatibility
+        my.size = my.container.size? 4
+    else
+        my.size = my.container.size? 1
+    endif
     my.c_type = ""
     my.stars = ""
 
@@ -115,7 +119,11 @@ function resolve_c_container (container)
     elsif my.type = "size"
         my.c_type = "size_t"
     elsif my.type = "real"
-        my.c_type = "float"
+        if my.size = 4
+            my.c_type = "float"
+        elsif my.size = 8
+            my.c_type = "double"
+        endif
     elsif my.type = "number"
         if my.size = 1
             my.c_type = "uint8_t"
