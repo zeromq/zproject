@@ -176,9 +176,6 @@
     <bin name = "zproject_git.gsl" />
     <bin name = "zproject_valgrind.gsl" />
 
-    <!-- zinstall must run before all the targets -->
-    <bin name = "zproject_install.gsl" />
-
     <!-- Targets -->
     <bin name = "zproject_android.gsl" />
     <bin name = "zproject_autotools.gsl" />
@@ -202,6 +199,7 @@
     <bin name = "zproject_redhat.gsl" />
     <bin name = "zproject_rpi.gsl" />
     <bin name = "zproject_ruby.gsl" />
+    <bin name = "zproject_systemd.gsl" />
     <bin name = "zproject_travis.gsl" />
     <bin name = "zproject_vagrant.gsl" />
     <bin name = "zproject_vs2008.gsl" />

@@ -90,6 +90,19 @@ function chmod_x (filename)
     my.shell.run ()
 endfunction
 
+function register_snippet (target, name)
+    new snippet to project
+        snippet.target = my.target
+        snippet.name = my.name
+    endnew
+endfunction
+
+function insert_snippet (target)
+    for project.snippet where snippet.target = my.target
+        snippet_$(snippet.target:c)_$(snippet.name:c) ()
+    endfor
+endfunction
+
 function register_target (target, detail)
     new handler to project
         handler.target = my.target
@@ -172,9 +185,6 @@ gsl from "zproject_bench.gsl"
 gsl from "zproject_git.gsl"
 gsl from "zproject_valgrind.gsl"
 
-# zinstall must run before all the targets
-gsl from "zproject_install.gsl"
-
 #   Load all targets
 gsl from "zproject_android.gsl"
 gsl from "zproject_autotools.gsl"
@@ -197,6 +207,7 @@ gsl from "zproject_qt.gsl"
 gsl from "zproject_redhat.gsl"
 gsl from "zproject_rpi.gsl"
 gsl from "zproject_ruby.gsl"
+gsl from "zproject_systemd.gsl"
 gsl from "zproject_travis.gsl"
 gsl from "zproject_vagrant.gsl"
 gsl from "zproject_vs2008.gsl"

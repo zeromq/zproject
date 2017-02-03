@@ -1,0 +1,86 @@
+#   Generate systemd snippets and files for zproject
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+register_snippet("configure.ac", "systemd")
+function snippet_configure_ac_systemd ()
+    for project.main where defined (main->install)
+        for install
+            if install.type = "systemd-tmpfiles"
+                >AM_COND_IF([WITH_SYSTEMD_UNITS],
+                >    [AC_CONFIG_FILES([
+                >                 src/$(main.name).conf
+                >    ])],
+                >    [])
+                >
+            elsif install.type = "config"
+                >AC_CONFIG_FILES([
+                >   src/$(main.name).cfg
+                >])
+                >
+            endif
+        endfor
+    endfor
+endfunction
+
+register_snippet("Makemodule", "systemd")
+function snippet_makemodule_systemd ()
+    for project.main where defined (main->install)
+        for install
+            if install.type = "systemd-tmpfiles"
+                >if ENABLE_$(MAIN.NAME:c)
+                >if WITH_SYSTEMD_UNITS
+                >$(main.name:c)_tmpfiles_ddir = /usr/lib/tmpfiles.d/
+                >$(main.name:c)_tmpfiles_d_DATA = src/$(main.name).conf
+                >endif #WITH_SYSTEMD_UNITS
+                >endif #$(MAIN.NAME:c)
+                >
+            elsif install.type = "config"
+                >if ENABLE_$(MAIN.NAME:c)
+                >src_$(project.name:c)_config_DATA += src/$(main.name).cfg
+                >endif
+                >
+            endif
+        endfor
+    endfor
+endfunction
+
+register_snippet("redhat.spec", "systemd")
+function snippet_redhat_spec_systemd ()
+    for project.main where defined (main->install)
+        for install
+            if install.type = "systemd-tmpfiles"
+                >AM_COND_IF([WITH_SYSTEMD_UNITS],
+                >%dir /usr/lib/tmpfiles.d/
+                >%config /usr/lib/tmpfiles.d/$(main.name).conf
+                >
+            elsif install.type = "config"
+                >%config (noreplace) %{sysconfdir}/$(project.name)/$(main.name).cfg
+                >
+            endif
+        endfor
+    endfor
+endfunction
+
+register_snippet("debian.install", "systemd")
+function snippet_debian_install_systemd ()
+    for project.main where defined (main->install)
+        for install
+            if install.type = "systemd-tmpfiles"
+                >usr/lib/tmpfiles.d/$(main.name).conf
+                >
+            elsif install.type = "config"
+                >etc/$(project.name)/$(main.name).cfg
+            endif
+        endfor
+    endfor
+endfunction
