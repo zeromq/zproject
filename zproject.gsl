@@ -90,6 +90,19 @@ function chmod_x (filename)
     my.shell.run ()
 endfunction
 
+function register_snippet (target, name)
+    new snippet to project
+        snippet.target = my.target
+        snippet.name = my.name
+    endnew
+endfunction
+
+function insert_snippet (target)
+    for project.snippet where snippet.target = my.target
+        snippet_$(snippet.target:c)_$(snippet.name:c) ()
+    endfor
+endfunction
+
 function register_target (target, detail)
     new handler to project
         handler.target = my.target
