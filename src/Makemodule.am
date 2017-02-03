@@ -19,7 +19,6 @@ dist_bin_SCRIPTS = \
     zproject_class.gsl \
     zproject_git.gsl \
     zproject_valgrind.gsl \
-    zproject_install.gsl \
     zproject_android.gsl \
     zproject_autotools.gsl \
     zproject_cmake.gsl \
@@ -42,6 +41,7 @@ dist_bin_SCRIPTS = \
     zproject_redhat.gsl \
     zproject_rpi.gsl \
     zproject_ruby.gsl \
+    zproject_systemd.gsl \
     zproject_travis.gsl \
     zproject_vagrant.gsl \
     zproject_vs2008.gsl \
