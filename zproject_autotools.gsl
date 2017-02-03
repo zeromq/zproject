@@ -1214,7 +1214,7 @@ code:
 -q $(name:c).xml
 .   else
 \tcd $\(srcdir)/src; gsl -topdir:.. -zproject:1 \
-.       if count(project.class, class.name = model.name)
+.       if count(project.class, class.name = model.name & class.private)
 -private:1 \
 .       endif
 -q $(name).xml
