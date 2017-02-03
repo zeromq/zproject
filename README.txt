@@ -458,7 +458,44 @@ with --with-systemd-units.
 
 **config**
 This will install additional configuration files to
-$(sysconfdir)/$(project.name)/$(name).
+$\(sysconfdir)/$\(project.name)/$\(name).
+
+## Notes for Writing Targets
+
+### Snippets
+
+If you write a new target or extend one you might be in the situtation where you
+need to put code fragments into files which are not specific to your target. For
+example the `systemd` target has to extend files from the `autotools`, `debian`
+and `redhat` targets. In order to keep those files as maintainable as possible
+you'll include a snippet which is pull from your targets file. To include
+a snippet call:
+
+```
+    insert_snippet (target)
+```
+
+Where target is the identifier for the insertion point i.e. the filename. To
+register a snippet to be inserted simply call.
+
+```
+    register_snippet (target, name)
+```
+
+Target is must match the one in `insert_snippet` and the name identifies your
+snippet. Then you can create a function or macro with the following form
+(without the brackets):
+
+```
+    function snippet_<target>_<name>
+
+    .macro snippet_<target>_<name>
+```
+
+This function will be called by the `insert_snippet` function. You can have an
+arbitrary amount of registered snippets per insertion point which will be
+inserted in arbitrary order so don't make any assumption on the order of the
+snippets per insertion point.
 
 ## Notes for Writing Language Targets
 
