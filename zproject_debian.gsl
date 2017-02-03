@@ -224,7 +224,7 @@ lib/systemd/system/$(main.name).service
 lib/systemd/system/$(main.name)@.service
 .       endif
 .   endfor
-.zinstall_include ("builds/zinstall/$(project.name).install")
+.insert_snippet ("debian.install")
 .endif
 
 .if project.exports_classes

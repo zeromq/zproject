@@ -185,9 +185,6 @@ gsl from "zproject_bench.gsl"
 gsl from "zproject_git.gsl"
 gsl from "zproject_valgrind.gsl"
 
-# zinstall must run before all the targets
-gsl from "zproject_install.gsl"
-
 #   Load all targets
 gsl from "zproject_android.gsl"
 gsl from "zproject_autotools.gsl"
@@ -210,6 +207,7 @@ gsl from "zproject_qt.gsl"
 gsl from "zproject_redhat.gsl"
 gsl from "zproject_rpi.gsl"
 gsl from "zproject_ruby.gsl"
+gsl from "zproject_systemd.gsl"
 gsl from "zproject_travis.gsl"
 gsl from "zproject_vagrant.gsl"
 gsl from "zproject_vs2008.gsl"
