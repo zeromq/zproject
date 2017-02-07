@@ -15,10 +15,15 @@ env:
     - CI_CONFIG_QUIET=true
   matrix:
     - BUILD_TYPE=default
-    - BUILD_TYPE=check_zproject
 
-services:
-- docker
+matrix:
+  include:
+  - env: BUILD_TYPE=check_zproject
+    os: linux
+    dist: trusty
+    services: docker
+    addons:
+      apt:
 
 addons:
   apt:
