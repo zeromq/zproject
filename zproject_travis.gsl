@@ -49,11 +49,26 @@ matrix:
   - env: BUILD_TYPE=valgrind
     os: linux
     dist: trusty
-    sudo: required
     addons:
       apt:
+        sources:
+        - sourceline: 'deb http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_14.04/ ./'
+          key_url: 'http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_14.04/Release.key'
         packages:
         - valgrind
+.      for use
+.         if defined (use.debian_name)
+.             if !(use.debian_name = '')
+        - $(use.debian_name)
+.             else
+.                 echo "WARNING: debian_name=='' for $(use.project) - not added to .travis.yml"
+.             endif
+.         elsif defined (use.libname)
+        - $(string.replace (use.libname, "_|-"):lower)-dev
+.         else
+        - $(string.replace (use.project, "_|-"))-dev
+.         endif
+.      endfor
 
 addons:
   apt:
