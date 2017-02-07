@@ -1,8 +1,6 @@
 # Travis CI script
 language: c
 
-cache: ccache
-
 sudo: false
 
 # Set CI_TIME=true to enable build-step profiling in Travis
@@ -15,10 +13,15 @@ env:
     - CI_CONFIG_QUIET=true
   matrix:
     - BUILD_TYPE=default
-    - BUILD_TYPE=check_zproject
 
-services:
-- docker
+matrix:
+  include:
+  - env: BUILD_TYPE=check_zproject
+    os: linux
+    dist: trusty
+    services: docker
+    addons:
+      apt:
 
 addons:
   apt:
@@ -27,6 +30,7 @@ addons:
       key_url: 'http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_12.04/Release.key'
     packages:
     - generator-scripting-language
+    - time
 
 script:
 - ./ci_build.sh

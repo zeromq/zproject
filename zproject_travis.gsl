@@ -29,9 +29,6 @@ os:
 
 sudo: false
 
-services:
-- docker
-
 # Set CI_TIME=true to enable build-step profiling in Travis
 # Set CI_TRACE=true to enable shell script tracing in Travis
 # Set CI_CONFIG_QUIET=true to enable "configure --quiet" (only report stderr)
@@ -52,17 +49,32 @@ matrix:
   - env: BUILD_TYPE=valgrind
     os: linux
     dist: trusty
-    sudo: required
     addons:
       apt:
+        sources:
+        - sourceline: 'deb http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_14.04/ ./'
+          key_url: 'http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_14.04/Release.key'
         packages:
         - valgrind
+.      for use
+.         if defined (use.debian_name)
+.             if !(use.debian_name = '')
+        - $(use.debian_name)
+.             else
+.                 echo "WARNING: debian_name=='' for $(use.project) - not added to .travis.yml"
+.             endif
+.         elsif defined (use.libname)
+        - $(string.replace (use.libname, "_|-"):lower)-dev
+.         else
+        - $(string.replace (use.project, "_|-"))-dev
+.         endif
+.      endfor
 
 addons:
-  sources:
-  - sourceline: 'deb http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_12.04/ ./'
-    key_url: 'http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_12.04/Release.key'
   apt:
+    sources:
+    - sourceline: 'deb http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_12.04/ ./'
+      key_url: 'http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_12.04/Release.key'
     packages:
     - asciidoc
     - xmlto
@@ -81,7 +93,8 @@ addons:
 .      endfor
 
 before_install:
-- if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils valgrind ; fi
+- if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils ; fi
+- if [ $TRAVIS_OS_NAME == "osx" -a $BUILD_TYPE == "valgrind" ] ; then brew install valgrind ; fi
 
 # Hand off to generated script for each BUILD_TYPE
 script: ./ci_build.sh
