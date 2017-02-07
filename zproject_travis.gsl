@@ -29,9 +29,6 @@ os:
 
 sudo: false
 
-services:
-- docker
-
 # Set CI_TIME=true to enable build-step profiling in Travis
 # Set CI_TRACE=true to enable shell script tracing in Travis
 # Set CI_CONFIG_QUIET=true to enable "configure --quiet" (only report stderr)
