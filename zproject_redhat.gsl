@@ -151,10 +151,14 @@ This package contains development files for $(project.name): $(project.descripti
 .   if man7 ?<> ""
 %{_mandir}/man7/*
 .   endif
-.   if count (class, defined (class.api))
-%{_datadir}/zproject/
-%{_datadir}/zproject/$(project.name)/
-.   endif
+.   for class where defined (class.api)
+.       if first ()
+# Install api files into /usr/local/share/zproject
+%dir %{_datadir}/zproject/
+%dir %{_datadir}/zproject/$(project.name)
+%dir %{_datadir}/zproject/$(project.name)/*.api
+.      endif
+.   endfor
 .endif
 
 %prep
