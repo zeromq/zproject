@@ -156,7 +156,7 @@ This package contains development files for $(project.name): $(project.descripti
 # Install api files into /usr/local/share/zproject
 %dir %{_datadir}/zproject/
 %dir %{_datadir}/zproject/$(project.name)
-%dir %{_datadir}/zproject/$(project.name)/*.api
+%{_datadir}/zproject/$(project.name)/*.api
 .      endif
 .   endfor
 .endif
