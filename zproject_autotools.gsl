@@ -965,7 +965,7 @@ check_PROGRAMS =
 noinst_LTLIBRARIES =
 TESTS =
 # Prepare variables that can be populated (appended) in generated Makefiles or
-# manually maintained src/Makemodules-local.am
+# manually maintained src/Makemodule-local.am
 EXTRA_DIST =
 CLEANFILES =
 DISTCLEANFILES =
@@ -1003,9 +1003,7 @@ EXTRA_DIST += \\
     src/$(project.prefix)_classes.h
 
 include \$(srcdir)/src/Makemodule.am
-.if file.exists ("src/Makemodule-local.am")
-include \$(srcdir)/src/Makemodule-local.am # Optional project-local hook
-.endif
+sinclude \$(srcdir)/src/Makemodule-local.am # Optional project-local hook
 
 $(project.GENERATED_WARNING_HEADER:)
 .#
