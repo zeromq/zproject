@@ -136,10 +136,12 @@
         test = "json_object_to_json_string" />
 
     <use project = "libfastjson"
+        repository = "https://github.com/rsyslog/libfastjson/"
         header = "libfastjson/json.h"
         test = "json_object_to_json_string" />
 
     <use project = "lognorm"
+        repository = "https://github.com/rsyslog/liblognorm/"
         test = "ln_initCtx">
         <use project = "libfastjson" />
     </use>
