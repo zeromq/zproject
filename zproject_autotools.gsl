@@ -1267,37 +1267,35 @@ clean-local-check:
 \t\tfi; \\
 \tfi
 
-src/$(project.prefix)_selftest$\(EXEEXT): $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
-
-check-local: src/$(project.prefix)_selftest
+check-local: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute $\(builddir)/src/$(project.prefix)_selftest
 
-check-verbose: src/$(project.prefix)_selftest
+check-verbose: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute $\(builddir)/src/$(project.prefix)_selftest -v
 
 # Run the selftest binary under valgrind to check for memory leaks
-memcheck: src/$(project.prefix)_selftest
+memcheck: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute valgrind --tool=memcheck \\
 \t\t--leak-check=full --show-reachable=yes --error-exitcode=1 \\
 \t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
 \t\t$\(builddir)/src/$(project.prefix)_selftest
 
 # Run the selftest binary under valgrind to check for performance leaks
-callcheck: src/$(project.prefix)_selftest
+callcheck: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute valgrind --tool=callgrind \\
 \t\t$\(builddir)/src/$(project.prefix)_selftest
 
 # Run the selftest binary under gdb for debugging
-debug: src/$(project.prefix)_selftest
+debug: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute gdb -q \\
 \t\t$\(builddir)/src/$(project.prefix)_selftest
 
 # Run the selftest binary with verbose switch for tracing
-animate: src/$(project.prefix)_selftest
+animate: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute $\(builddir)/src/$(project.prefix)_selftest -v
 
 if WITH_GCOV
-coverage: src/$(project.prefix)_selftest
+coverage: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t@echo "you had called configure --with-gcov"
 \tlcov --base-directory . --directory . --zerocounters -q
 \t\$(MAKE) check
