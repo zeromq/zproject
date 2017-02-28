@@ -340,6 +340,7 @@ IF (ENABLE_DRAFTS)
 ENDIF (ENABLE_DRAFTS)
 
 .endif
+.# TODO: Add CMake recipe support for src/selftest-r{o,w}/ directories
 foreach(TEST_CLASS ${TEST_CLASSES})
     add_test(
         NAME ${TEST_CLASS}

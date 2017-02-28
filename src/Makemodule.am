@@ -53,6 +53,44 @@ dist_bin_SCRIPTS = \
 
 	cd $(srcdir); gsl -target:- project.xml
 
+# Directories with test fixtures optionally provided by the project,
+# and with volatile RW data possibly created by a selftest program.
+# It is up to the project authors to populate the RO directory with
+# filenames called from the selftest methods, if any. They will be
+# EXTRA_DISTed by the recipes generated with with zproject, however,
+# and copied into builddir (if different from srcdir) to simplify
+# the "distcheck" and similar tests (so selftest can use same paths).
+# Note that the RO directory must exist to fulfill EXTRA_DIST, so we
+# add a stub file that can be committed to SCM by project developers.
+# The RW directory will be automatically wiped by "make distclean".
+SELFTEST_DIR_RO = src/selftest-ro
+SELFTEST_DIR_RW = src/selftest-rw
+
+$(abs_top_builddir)/$(SELFTEST_DIR_RW):
+	mkdir -p "$@"
+
+$(abs_top_builddir)/$(SELFTEST_DIR_RO): $(abs_top_srcdir)/$(SELFTEST_DIR_RO)
+	@if test "$@" != "$<" ; then \
+		echo "    COPYDIR  $(SELFTEST_DIR_RO)"; \
+		rm -rf "$@"; \
+		cp -r "$<" "$@" ; \
+		fi
+
+CLEANFILES += $(abs_top_builddir)/$(SELFTEST_DIR_RW)/*
+EXTRA_DIST += $(SELFTEST_DIR_RO)
+
+clean-local: clean-local-check
+.PHONY: clean-local-check
+clean-local-check:
+	@if test "$(abs_top_builddir)" != "$(abs_top_srcdir)" ; then \
+		if test -d "$(abs_top_builddir)/$(SELFTEST_DIR_RO)" ; then \
+		chmod -R u+w "$(abs_top_builddir)/$(SELFTEST_DIR_RO)" ; \
+		rm -rf "$(abs_top_builddir)/$(SELFTEST_DIR_RO)" ; \
+		fi; \
+	fi
+
+src/zproject_selftest$(EXEEXT): $(abs_top_builddir)/$(SELFTEST_DIR_RW) $(abs_top_builddir)/$(SELFTEST_DIR_RO)
+
 check-local: src/zproject_selftest
 	$(LIBTOOL) --mode=execute $(builddir)/src/zproject_selftest
 
@@ -82,7 +120,7 @@ animate: src/zproject_selftest
 
 if WITH_GCOV
 coverage: src/zproject_selftest
-	@echo "called configure --with-gcov"
+	@echo "you had called configure --with-gcov"
 	lcov --base-directory . --directory . --zerocounters -q
 	$(MAKE) check
 	lcov --base-directory . --directory . --capture -o coverage.info

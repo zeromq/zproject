@@ -1231,6 +1231,44 @@ code:
 .endfor
 \tcd $\(srcdir); gsl -target:- project.xml
 
+# Directories with test fixtures optionally provided by the project,
+# and with volatile RW data possibly created by a selftest program.
+# It is up to the project authors to populate the RO directory with
+# filenames called from the selftest methods, if any. They will be
+# EXTRA_DISTed by the recipes generated with with zproject, however,
+# and copied into builddir (if different from srcdir) to simplify
+# the "distcheck" and similar tests (so selftest can use same paths).
+# Note that the RO directory must exist to fulfill EXTRA_DIST, so we
+# add a stub file that can be committed to SCM by project developers.
+# The RW directory will be automatically wiped by "make distclean".
+SELFTEST_DIR_RO = src/selftest-ro
+SELFTEST_DIR_RW = src/selftest-rw
+
+$\(abs_top_builddir)/$\(SELFTEST_DIR_RW):
+\tmkdir -p "\$@"
+
+$\(abs_top_builddir)/$\(SELFTEST_DIR_RO): $\(abs_top_srcdir)/$\(SELFTEST_DIR_RO)
+\t@if test "$@" != "$<" ; then \\
+\t\techo "  COPYDIR  $\(SELFTEST_DIR_RO)"; \\
+\t\trm -rf "$@"; \\
+\t\tcp -r "$<" "$@" ; \\
+\t\tfi
+
+CLEANFILES += $\(abs_top_builddir)/$\(SELFTEST_DIR_RW)/*
+EXTRA_DIST += $\(SELFTEST_DIR_RO)
+
+clean-local: clean-local-check
+\.PHONY: clean-local-check
+clean-local-check:
+\t@if test "$\(abs_top_builddir)" != "$\(abs_top_srcdir)" ; then \\
+\t\tif test -d "$\(abs_top_builddir)/$\(SELFTEST_DIR_RO)" ; then \\
+\t\tchmod -R u+w "$\(abs_top_builddir)/$\(SELFTEST_DIR_RO)" ; \\
+\t\trm -rf "$\(abs_top_builddir)/$\(SELFTEST_DIR_RO)" ; \\
+\t\tfi; \\
+\tfi
+
+src/$(project.prefix)_selftest$\(EXEEXT): $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
+
 check-local: src/$(project.prefix)_selftest
 \t$\(LIBTOOL) --mode=execute $\(builddir)/src/$(project.prefix)_selftest
 
@@ -1260,7 +1298,7 @@ animate: src/$(project.prefix)_selftest
 
 if WITH_GCOV
 coverage: src/$(project.prefix)_selftest
-\t@echo "called configure --with-gcov"
+\t@echo "you had called configure --with-gcov"
 \tlcov --base-directory . --directory . --zerocounters -q
 \t\$(MAKE) check
 \tlcov --base-directory . --directory . --capture -o coverage.info
@@ -1276,6 +1314,12 @@ endif
 .insert_snippet ("Makemodule")
 
 $(project.GENERATED_WARNING_HEADER:)
+.close
+.# Create something that the developer can commit as the empty selftest-ro
+.# directory, so the makefile EXTRA_DIST is always possible
+.directory.create ("src/selftest-ro")
+.output "src/selftest-ro/.gitkeep"
+.   echo "Please remember to use 'src/selftest-ro/' to store SCM-tracked selftest fixtures, and 'src/selftest-rw/' for files your selftest might create"
 .close
 .#
 .#  Generate infrastructure for services

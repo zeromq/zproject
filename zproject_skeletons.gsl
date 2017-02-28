@@ -301,6 +301,9 @@ $(actor.name:c)_test (bool verbose)
     printf (" * $(actor.name:c): ");
     //  @selftest
     //  Simple create/destroy test
+    // Note: If your selftest reads SCMed fixture data, please keep it in
+    // src/selftest-ro; if your test creates filesystem objects, please
+    // do so under src/selftest-rw.
     zactor_t *$(actor.name:c) = zactor_new ($(actor.name:c)_actor, NULL);
 
     zactor_destroy (&$(actor.name:c));
@@ -445,6 +448,9 @@ $(class.c_name)_test (bool verbose)
 
     //  @selftest
     //  Simple create/destroy test
+    // Note: If your selftest reads SCMed fixture data, please keep it in
+    // src/selftest-ro; if your test creates filesystem objects, please
+    // do so under src/selftest-rw.
     $(class.c_name)_t *self = $(class.c_name)_new ();
     assert (self);
     $(class.c_name)_destroy (&self);
