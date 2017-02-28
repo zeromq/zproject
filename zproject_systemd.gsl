@@ -59,7 +59,6 @@ function snippet_redhat_spec_systemd ()
     for project.main where defined (main->install)
         for install
             if install.type = "systemd-tmpfiles"
-                >AM_COND_IF([WITH_SYSTEMD_UNITS],
                 >%dir /usr/lib/tmpfiles.d/
                 >%config /usr/lib/tmpfiles.d/$(main.name).conf
                 >
