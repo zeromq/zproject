@@ -10,8 +10,7 @@ AM_CFLAGS = \
 
 
 AM_CPPFLAGS = \
-    -I$(srcdir)/include -I$(srcdir)/src \
-    -I$(builddir)/include -I$(builddir)/src
+    -I$(srcdir)/include
 
 project_libs =
 

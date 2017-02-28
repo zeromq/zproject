@@ -948,8 +948,7 @@ AM_CPPFLAGS = \\
 .if project.use_cxx
     -D__STDC_FORMAT_MACROS \\
 .endif
-    -I\$(srcdir)/include -I\$(srcdir)/src \\
-    -I\$(builddir)/include -I\$(builddir)/src
+    -I\$(srcdir)/include
 
 .libs = ""
 .for use where use.libname ?<> ""
