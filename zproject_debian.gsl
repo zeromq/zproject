@@ -224,6 +224,20 @@ lib/systemd/system/$(main.name).service
 lib/systemd/system/$(main.name)@.service
 .       endif
 .   endfor
+.   for project.bin where ( defined(bin.service) & bin.service > 0 )
+.       if file.exists("src/$(bin.name).service") | file.exists("src/$(bin.name).service.in") | ( bin.service ?= 1 | bin.service ?= 3 )
+/usr/lib/systemd/system/$(bin.name).service
+.       endif
+.       if file.exists("src/$(bin.name)@.service") | file.exists("src/$(bin.name)@.service.in") | ( bin.service ?= 2 | bin.service ?= 3 )
+/usr/lib/systemd/system/$(bin.name)@.service
+.       endif
+.       if file.exists("src/$(bin.name).timer") | file.exists("src/$(bin.name).timer.in") | ( bin.service ?= 1 | bin.service ?= 3 )
+/usr/lib/systemd/system/$(bin.name).timer
+.       endif
+.       if file.exists("src/$(bin.name)@.timer") | file.exists("src/$(bin.name)@.timer.in") | ( bin.service ?= 2 | bin.service ?= 3 )
+/usr/lib/systemd/system/$(bin.name)@.timer
+.       endif
+.   endfor
 .insert_snippet ("debian.install")
 .endif
 
