@@ -1003,7 +1003,7 @@ EXTRA_DIST += \\
     src/$(project.prefix)_classes.h
 
 include \$(srcdir)/src/Makemodule.am
-include \$(srcdir)/src/Makemodule-local.am # Optional project-local hook
+sinclude \$(srcdir)/src/Makemodule-local.am # Optional project-local hook
 
 $(project.GENERATED_WARNING_HEADER:)
 .#
