@@ -41,6 +41,12 @@ EXTRA_DIST += \
     CONTRIBUTING.md \
     src/zproject_classes.h
 
+# Victims of "include" are EXTRA_DISTed by autotools, however neither "-include"
+# nor "sinclude" are covered by this magic.
+if ENABLE_DIST_SRC_MAKEMODULE_LOCAL
+EXTRA_DIST += src/Makemodule-local.am
+endif
+
 include $(srcdir)/src/Makemodule.am
 sinclude $(srcdir)/src/Makemodule-local.am # Optional project-local hook
 
