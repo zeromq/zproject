@@ -1255,6 +1255,8 @@ $\(abs_top_builddir)/$\(SELFTEST_DIR_RO): $\(abs_top_srcdir)/$\(SELFTEST_DIR_RO)
 \t\tfi
 
 CLEANFILES += $\(abs_top_builddir)/$\(SELFTEST_DIR_RW)/*
+
+# Note that this syntax dists the whole directory - including subdirs (if any)
 EXTRA_DIST += $\(SELFTEST_DIR_RO)
 
 clean-local: clean-local-selftest-ro
