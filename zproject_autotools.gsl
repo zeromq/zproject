@@ -19,6 +19,11 @@ $(project.GENERATED_WARNING_HEADER:)
 
 #   Script to generate all required files from fresh git checkout.
 
+if [ ! -f src/Makemodule-local.am ] ; then
+    echo "autogen.sh: generating a dummy src/Makemodule-local.am to fulfill dependencies"
+    touch src/Makemodule-local.am
+fi
+
 # Debian and Ubuntu do not shipt libtool anymore, but OSX does not ship libtoolize.
 command -v libtoolize >/dev/null 2>&1
 if  [ $? -ne 0 ]; then
@@ -845,10 +850,6 @@ AM_COND_IF([WITH_SYSTEMD_UNITS],
 
 .endif
 .insert_snippet ("configure.ac")
-AC_MSG_CHECKING([whether to redistribute src/Makemodule-local.am])
-AC_CHECK_FILE([$srcdir/src/Makemodule-local.am], [enable_dist_SRC_MAKEMODULE_LOCAL=yes], [enable_dist_SRC_MAKEMODULE_LOCAL=no])
-AM_CONDITIONAL([ENABLE_DIST_SRC_MAKEMODULE_LOCAL], [test "x$enable_dist_SRC_MAKEMODULE_LOCAL" = "xyes"])
-AC_MSG_RESULT([$enable_dist_SRC_MAKEMODULE_LOCAL])
 
 AC_OUTPUT
 
@@ -1093,14 +1094,10 @@ EXTRA_DIST += \\
 .endif
     src/$(project.prefix)_classes.h
 
-# Victims of "include" are EXTRA_DISTed by autotools, however neither "-include"
-# nor "sinclude" are covered by this magic.
-if ENABLE_DIST_SRC_MAKEMODULE_LOCAL
-EXTRA_DIST += src/Makemodule-local.am
-endif
-
+# NOTE: this "include" syntax is not a "make" but an "autotools" keyword,
+# see https://www.gnu.org/software/automake/manual/html_node/Include.html
 include \$(srcdir)/src/Makemodule.am
-sinclude \$(srcdir)/src/Makemodule-local.am # Optional project-local hook
+include \$(srcdir)/src/Makemodule-local.am # Optional project-local hook
 
 $(project.GENERATED_WARNING_HEADER:)
 .#
