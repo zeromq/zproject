@@ -223,10 +223,12 @@ lib/systemd/system/$(main.name).service
 .       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in") | ( main.service ?= 2 | main.service ?= 3 )
 lib/systemd/system/$(main.name)@.service
 .       endif
-.       if file.exists("src/$(main.name).timer") | file.exists("src/$(main.name).timer.in") | ( main.service ?= 1 | main.service ?= 3 )
+.   endfor
+.   for project.main where ( defined(main.timer) & main.timer > 0 )
+.       if file.exists("src/$(main.name).timer") | file.exists("src/$(main.name).timer.in") | ( main.timer ?= 1 | main.timer ?= 3 )
 /usr/lib/systemd/system/$(main.name).timer
 .       endif
-.       if file.exists("src/$(main.name)@.timer") | file.exists("src/$(main.name)@.timer.in") | ( main.service ?= 2 | main.service ?= 3 )
+.       if file.exists("src/$(main.name)@.timer") | file.exists("src/$(main.name)@.timer.in") | ( main.timer ?= 2 | main.timer ?= 3 )
 /usr/lib/systemd/system/$(main.name)@.timer
 .       endif
 .   endfor
@@ -237,10 +239,12 @@ lib/systemd/system/$(bin.name).service
 .       if file.exists("src/$(bin.name)@.service") | file.exists("src/$(bin.name)@.service.in") | ( bin.service ?= 2 | bin.service ?= 3 )
 lib/systemd/system/$(bin.name)@.service
 .       endif
-.       if file.exists("src/$(bin.name).timer") | file.exists("src/$(bin.name).timer.in") | ( bin.service ?= 1 | bin.service ?= 3 )
+.   endfor
+.   for project.bin where ( defined(bin.timer) & bin.timer > 0 )
+.       if file.exists("src/$(bin.name).timer") | file.exists("src/$(bin.name).timer.in") | ( bin.timer ?= 1 | bin.timer ?= 3 )
 lib/systemd/system/$(bin.name).timer
 .       endif
-.       if file.exists("src/$(bin.name)@.timer") | file.exists("src/$(bin.name)@.timer.in") | ( bin.service ?= 2 | bin.service ?= 3 )
+.       if file.exists("src/$(bin.name)@.timer") | file.exists("src/$(bin.name)@.timer.in") | ( bin.timer ?= 2 | bin.timer ?= 3 )
 lib/systemd/system/$(bin.name)@.timer
 .       endif
 .   endfor

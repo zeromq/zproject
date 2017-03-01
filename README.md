@@ -303,6 +303,10 @@ zproject's `project.xml` contains an extensive description of the available conf
     <main name = "progname" service = "1">Installed as system service, single-instance</main>
     <main name = "progname" service = "2">Installed as system service, multi-instance (@)</main>
     <main name = "progname" service = "3">Installed as system service, both single and multi-instance (@)</main>
+    <main name = "progname" timer = "3">Installed as system timer unit, both single and multi-instance (@)</main>
+    <main name = "progname" service = "1" timer = "1">Installed with both system timer and service units, single-instance - probably the former triggers the latter occasionally</main>
+        Note that <bin> tags for secondary distributed programs (or scripts)
+        now also support the service and timer attributes with same semantics.
     -->
 
     <!--

@@ -797,14 +797,20 @@ AM_COND_IF([WITH_SYSTEMD_UNITS],
 .           if file.exists("src/$(main.name).service.in")
                  src/$(main.name).service
 .           endif
-.           if file.exists("src/$(main.name).timer.in")
-                 src/$(main.name).timer
-.           endif
 .       endif
 .       if ( main.service ?= 2 | main.service ?= 3 )
 .           if file.exists("src/$(main.name)@.service.in")
                  src/$(main.name)@.service
 .           endif
+.       endif
+.   endfor
+.   for project.main where ( defined(main.timer) & main.timer > 0 )
+.       if ( main.timer ?= 1 | main.timer ?= 3 )
+.           if file.exists("src/$(main.name).timer.in")
+                 src/$(main.name).timer
+.           endif
+.       endif
+.       if ( main.timer ?= 2 | main.timer ?= 3 )
 .           if file.exists("src/$(main.name)@.timer.in")
                  src/$(main.name)@.timer
 .          endif
@@ -815,14 +821,20 @@ AM_COND_IF([WITH_SYSTEMD_UNITS],
 .           if file.exists("src/$(bin.name).service.in")
                  src/$(bin.name).service
 .           endif
-.           if file.exists("src/$(bin.name).timer.in")
-                 src/$(bin.name).timer
-.           endif
 .       endif
 .       if ( bin.service ?= 2 | bin.service ?= 3 )
 .           if file.exists("src/$(bin.name)@.service.in")
                  src/$(bin.name)@.service
 .           endif
+.       endif
+.   endfor
+.   for project.bin where ( defined(bin.timer) & bin.timer > 0 )
+.       if ( bin.timer ?= 1 | bin.timer ?= 3 )
+.           if file.exists("src/$(bin.name).timer.in")
+                 src/$(bin.name).timer
+.           endif
+.       endif
+.       if ( bin.timer ?= 2 | bin.timer ?= 3 )
 .           if file.exists("src/$(bin.name)@.timer.in")
                  src/$(bin.name)@.timer
 .           endif
@@ -945,30 +957,50 @@ $(bin.name).cfg
 # + systemd service unit for daemons (if any):
 .   for project.main where ( defined(main.service) & main.service > 0 )
 .       if ( main.service ?= 1 | main.service ?= 3 )
+.           if file.exists("src/$(main.name).service.in")
 $(main.name).service
+.           endif
 .       endif
 .       if ( main.service ?= 2 | main.service ?= 3 )
+.           if file.exists("src/$(main.name)@.service.in")
 $(main.name)@.service
+.           endif
 .       endif
-.       if file.exists("src/$(main.name).timer.in")
+.   endfor
+.   for project.main where ( defined(main.timer) & main.timer > 0 )
+.       if ( main.timer ?= 1 | main.timer ?= 3 )
+.           if file.exists("src/$(main.name).timer.in")
 $(main.name).timer
+.           endif
 .       endif
-.       if file.exists("src/$(main.name)@.timer.in")
+.       if ( main.timer ?= 2 | main.timer ?= 3 )
+.           if file.exists("src/$(main.name)@.timer.in")
 $(main.name)@.timer
+.           endif
 .       endif
 .   endfor
 .   for project.bin where ( defined(bin.service) & bin.service > 0 )
 .       if ( bin.service ?= 1 | bin.service ?= 3 )
+.           if file.exists("src/$(bin.name).service.in")
 $(bin.name).service
+.           endif
 .       endif
 .       if ( bin.service ?= 2 | bin.service ?= 3 )
+.           if file.exists("src/$(bin.name)@.service.in")
 $(bin.name)@.service
+.           endif
 .       endif
-.       if file.exists("src/$(bin.name).timer.in")
+.   endfor
+.   for project.bin where ( defined(bin.timer) & bin.timer > 0 )
+.       if ( bin.timer ?= 1 | bin.timer ?= 3 )
+.           if file.exists("src/$(bin.name).timer.in")
 $(bin.name).timer
+.           endif
 .       endif
-.       if file.exists("src/$(bin.name)@.timer.in")
+.       if ( bin.timer ?= 2 | bin.timer ?= 3 )
+.           if file.exists("src/$(bin.name)@.timer.in")
 $(bin.name)@.timer
+.           endif
 .       endif
 .   endfor
 .endif
@@ -1231,6 +1263,12 @@ systemdsystemunit_DATA += src/$(main.name).service
 .       if ( main.service ?= 2 | main.service ?= 3 )
 systemdsystemunit_DATA += src/$(main.name)@.service
 .       endif
+.       if ( main.timer ?= 1 | main.timer ?= 3 )
+systemdsystemunit_DATA += src/$(main.name).timer
+.       endif
+.       if ( main.timer ?= 2 | main.timer ?= 3 )
+systemdsystemunit_DATA += src/$(main.name)@.timer
+.       endif
 endif #WITH_SYSTEMD_UNITS
 .   endif
 endif #ENABLE_$(NAME:c)
@@ -1379,12 +1417,17 @@ endif
 
 $(project.GENERATED_WARNING_HEADER:)
 .close
+.#
+.#
+.#
 .# Create something that the developer can commit as the empty selftest-ro
 .# directory, so the makefile EXTRA_DIST is always possible
 .directory.create ("src/selftest-ro")
 .output "src/selftest-ro/.gitkeep"
 .   echo "Please remember to use 'src/selftest-ro/' to store SCM-tracked selftest fixtures, and 'src/selftest-rw/' for files your selftest might create"
 .close
+.#
+.#
 .#
 .#  Generate infrastructure for services
 .for project.main where ( defined(main.service) & main.service > 0 )
@@ -1400,10 +1443,14 @@ server
     background = 0      #   Run as background process
     workdir = .         #   Working directory for daemon
     verbose = 0         #   Do verbose logging of activity?
+.   close
 .  else
 .   echo "NOT regenerating an existing src/$(main.name).cfg.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .  endif
 .endif
+.#
+.#
+.#
 .if ( main.service ?= 1 | main.service ?= 3 )
 .  if !file.exists ("src/$(main.name).service.in")
 .   output "src/$(main.name).service.in"
@@ -1432,6 +1479,7 @@ Restart=always
 [Install]
 WantedBy=multi-user.target
 # WantedBy=$(project.name).target
+.   close
 .  else
 .   echo "NOT regenerating an existing src/$(main.name).service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .  endif
@@ -1464,12 +1512,245 @@ Restart=always
 [Install]
 WantedBy=multi-user.target
 # WantedBy=$(project.name).target
+.   close
 .  else
 .   echo "NOT regenerating an existing src/$(main.name)@.service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .  endif
 .endif
 .endfor
-.close
+.#
+.#
+.#
+.# Prepare timer units, assuming they restart the corresponding service units
+.for project.main where ( defined(main.timer) & main.timer > 0 )
+.if ( main.timer ?= 1 | main.timer ?= 3 )
+.  if !file.exists ("src/$(main.name).timer.in")
+.   output "src/$(main.name).timer.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=Timer to regularly trigger the job done by $(main.name) service
+PartOf=timers.target
+# PartOf=multi-user.target
+# PartOf=$(project.name).target
+
+[Timer]
+# Time to wait after booting before we run first time
+OnBootSec=30
+# Regular re-runs
+OnUnitActiveSec=1min
+### Run every night
+OnCalendar=*-*-* 04:20:00
+# Run instantly if last run was skipped (e.g. system powered off)
+Persistent=true
+# Do not record last-execution times
+Persistent=false
+# Which unit to trigger (defaults to same basename):
+Unit=$(main.name).service
+
+[Install]
+WantedBy=timers.target
+# WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(main.name).timer.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.#
+.#
+.#
+.if ( main.timer ?= 2 | main.timer ?= 3 )
+.  if !file.exists ("src/$(main.name)@.timer.in")
+.   output "src/$(main.name)@.timer.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=Timer to regularly trigger the job done by $(main.name) service for %I
+PartOf=timers.target
+# PartOf=multi-user.target
+# PartOf=$(project.name).target
+
+[Timer]
+# Time to wait after booting before we run first time
+OnBootSec=30
+# Regular re-runs
+OnUnitActiveSec=1min
+### Run every night
+OnCalendar=*-*-* 04:20:00
+# Run instantly if last run was skipped (e.g. system powered off)
+Persistent=true
+# Do not record last-execution times
+Persistent=false
+# Which unit to trigger (defaults to same basename):
+Unit=$(main.name)@%i.service
+
+[Install]
+WantedBy=timers.target
+# WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(main.name)@.timer.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.endfor
+.#
+.#
+.#
+.# Generate services for non-main (accompanying bins)
+.for project.bin where ( defined(bin.service) & bin.service > 0 )
+.if ( bin.service ?= 1 | bin.service ?= 3 )
+.  if !file.exists ("src/$(bin.name).service.in")
+.   output "src/$(bin.name).service.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=$(bin.name) service
+After=network.target
+# Requires=network.target
+# Conflicts=shutdown.target
+# PartOf=$(project.name).target
+
+[Service]
+Type=simple
+# User=@uid@
+Environment="prefix=@prefix@"
+Environment='SYSTEMD_UNIT_FULLNAME=%n'
+.       if ( !defined(bin.no_config) | bin.no_config ?= 0 )
+ExecStart=@prefix@/bin/$(bin.name) @sysconfdir@/@PACKAGE@/$(bin.name).cfg
+.       else
+ExecStart=@prefix@/bin/$(bin.name)
+.       endif
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(bin.name).service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.#
+.#
+.#
+.if ( bin.service ?= 2 | bin.service ?= 3 )
+.  if !file.exists ("src/$(bin.name)@.service.in")
+.   output "src/$(bin.name)@.service.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=$(bin.name) service for %I
+After=network.target
+# Requires=network.target
+# Conflicts=shutdown.target
+# PartOf=$(project.name).target
+
+[Service]
+Type=simple
+# User=@uid@
+Environment="prefix=@prefix@"
+Environment='SYSTEMD_UNIT_FULLNAME=%n'
+.       if ( !defined(bin.no_config) | bin.no_config ?= 0 )
+ExecStart=@prefix@/bin/$(bin.name) @sysconfdir@/@PACKAGE@/$(bin.name)@%i.cfg
+.       else
+ExecStart=@prefix@/bin/$(bin.name) %i
+.       endif
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(bin.name)@.service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.endfor
+.#
+.#
+.#
+.# Prepare timer units, assuming they restart the corresponding service units
+.for project.bin where ( defined(bin.timer) & bin.timer > 0 )
+.if ( bin.timer ?= 1 | bin.timer ?= 3 )
+.  if !file.exists ("src/$(bin.name).timer.in")
+.   output "src/$(bin.name).timer.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=Timer to regularly trigger the job done by $(bin.name) service
+PartOf=timers.target
+# PartOf=multi-user.target
+# PartOf=$(project.name).target
+
+[Timer]
+# Time to wait after booting before we run first time
+OnBootSec=30
+# Regular re-runs
+OnUnitActiveSec=1min
+### Run every night
+OnCalendar=*-*-* 04:20:00
+# Run instantly if last run was skipped (e.g. system powered off)
+Persistent=true
+# Do not record last-execution times
+Persistent=false
+# Which unit to trigger (defaults to same basename):
+Unit=$(bin.name).service
+
+[Install]
+WantedBy=timers.target
+# WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(bin.name).timer.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.#
+.#
+.#
+.if ( bin.timer ?= 2 | bin.timer ?= 3 )
+.  if !file.exists ("src/$(bin.name)@.timer.in")
+.   output "src/$(bin.name)@.timer.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=Timer to regularly trigger the job done by $(bin.name) service for %I
+PartOf=timers.target
+# PartOf=multi-user.target
+# PartOf=$(project.name).target
+
+[Timer]
+# Time to wait after booting before we run first time
+OnBootSec=30
+# Regular re-runs
+OnUnitActiveSec=1min
+### Run every night
+OnCalendar=*-*-* 04:20:00
+# Run instantly if last run was skipped (e.g. system powered off)
+Persistent=true
+# Do not record last-execution times
+Persistent=false
+# Which unit to trigger (defaults to same basename):
+Unit=$(bin.name)@%i.service
+
+[Install]
+WantedBy=timers.target
+# WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(bin.name)@.timer.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.endfor
 .endmacro
 
 .macro generate_libtool_files
