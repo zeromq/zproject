@@ -794,10 +794,38 @@ AM_COND_IF([WITH_SYSTEMD_UNITS],
     [AC_CONFIG_FILES([
 .   for project.main where ( defined(main.service) & main.service > 0 )
 .       if ( main.service ?= 1 | main.service ?= 3 )
+.           if file.exists("src/$(main.name).service.in")
                  src/$(main.name).service
+.           endif
+.           if file.exists("src/$(main.name).timer.in")
+                 src/$(main.name).timer
+.           endif
 .       endif
 .       if ( main.service ?= 2 | main.service ?= 3 )
+.           if file.exists("src/$(main.name)@.service.in")
                  src/$(main.name)@.service
+.           endif
+.           if file.exists("src/$(main.name)@.timer.in")
+                 src/$(main.name)@.timer
+.          endif
+.       endif
+.   endfor
+.   for project.bin where ( defined(bin.service) & bin.service > 0 )
+.       if ( bin.service ?= 1 | bin.service ?= 3 )
+.           if file.exists("src/$(bin.name).service.in")
+                 src/$(bin.name).service
+.           endif
+.           if file.exists("src/$(bin.name).timer.in")
+                 src/$(bin.name).timer
+.           endif
+.       endif
+.       if ( bin.service ?= 2 | bin.service ?= 3 )
+.           if file.exists("src/$(bin.name)@.service.in")
+                 src/$(bin.name)@.service
+.           endif
+.           if file.exists("src/$(bin.name)@.timer.in")
+                 src/$(bin.name)@.timer
+.           endif
 .       endif
 .   endfor
     ])],
@@ -909,6 +937,9 @@ $(extra.name)
 .for project.main where ( defined(main.service) & main.service > 0 & ( !defined(main.no_config) | main.no_config ?= 0 ) )
 $(main.name).cfg
 .endfor
+.for project.bin where ( defined(bin.service) & bin.service > 0 & ( !defined(bin.no_config) | bin.no_config ?= 0 ) )
+$(bin.name).cfg
+.endfor
 
 .if systemd ?= 1
 # + systemd service unit for daemons (if any):
@@ -918,6 +949,26 @@ $(main.name).service
 .       endif
 .       if ( main.service ?= 2 | main.service ?= 3 )
 $(main.name)@.service
+.       endif
+.       if file.exists("src/$(main.name).timer.in")
+$(main.name).timer
+.       endif
+.       if file.exists("src/$(main.name)@.timer.in")
+$(main.name)@.timer
+.       endif
+.   endfor
+.   for project.bin where ( defined(bin.service) & bin.service > 0 )
+.       if ( bin.service ?= 1 | bin.service ?= 3 )
+$(bin.name).service
+.       endif
+.       if ( bin.service ?= 2 | bin.service ?= 3 )
+$(bin.name)@.service
+.       endif
+.       if file.exists("src/$(bin.name).timer.in")
+$(bin.name).timer
+.       endif
+.       if file.exists("src/$(bin.name)@.timer.in")
+$(bin.name)@.timer
 .       endif
 .   endfor
 .endif
