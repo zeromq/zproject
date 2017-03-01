@@ -223,6 +223,12 @@ lib/systemd/system/$(main.name).service
 .       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in") | ( main.service ?= 2 | main.service ?= 3 )
 lib/systemd/system/$(main.name)@.service
 .       endif
+.       if file.exists("src/$(main.name).timer") | file.exists("src/$(main.name).timer.in") | ( main.service ?= 1 | main.service ?= 3 )
+/usr/lib/systemd/system/$(main.name).timer
+.       endif
+.       if file.exists("src/$(main.name)@.timer") | file.exists("src/$(main.name)@.timer.in") | ( main.service ?= 2 | main.service ?= 3 )
+/usr/lib/systemd/system/$(main.name)@.timer
+.       endif
 .   endfor
 .   for project.bin where ( defined(bin.service) & bin.service > 0 )
 .       if file.exists("src/$(bin.name).service") | file.exists("src/$(bin.name).service.in") | ( bin.service ?= 1 | bin.service ?= 3 )
