@@ -1256,18 +1256,25 @@ src_$(main.name:c)_config_DATA =
 src_$(main.name:c)_config_DATA += src/$(main.name).cfg
 .       endif
 src_$(main.name:c)_configdir = \$(sysconfdir)/$(project.name)
+.   endif
+.   if ( defined(main.service) & main.service > 0 ) | ( defined(main.timer) & main.timer > 0 )
 if WITH_SYSTEMD_UNITS
-.       if ( main.service ?= 1 | main.service ?= 3 )
+.#  Systemd stuff for mains
+.       if ( defined(main.service) & main.service > 0 )
+.           if ( main.service ?= 1 | main.service ?= 3 )
 systemdsystemunit_DATA += src/$(main.name).service
-.       endif
-.       if ( main.service ?= 2 | main.service ?= 3 )
+.           endif
+.           if ( main.service ?= 2 | main.service ?= 3 )
 systemdsystemunit_DATA += src/$(main.name)@.service
+.           endif
 .       endif
-.       if ( main.timer ?= 1 | main.timer ?= 3 )
+.       if ( defined(main.timer) & main.timer > 0 )
+.           if ( main.timer ?= 1 | main.timer ?= 3 )
 systemdsystemunit_DATA += src/$(main.name).timer
-.       endif
-.       if ( main.timer ?= 2 | main.timer ?= 3 )
+.           endif
+.           if ( main.timer ?= 2 | main.timer ?= 3 )
 systemdsystemunit_DATA += src/$(main.name)@.timer
+.           endif
 .       endif
 endif #WITH_SYSTEMD_UNITS
 .   endif
@@ -1280,6 +1287,27 @@ endif #ENABLE_$(NAME:c)
 dist_bin_SCRIPTS = \\
 .   endif
     $(bin.name)$(last ()?? "\n"? " \\")
+.   if ( defined(bin.service) & bin.service > 0 ) | ( defined(bin.timer) & bin.timer > 0 )
+if WITH_SYSTEMD_UNITS
+.#  Systemd stuff for bins
+.       if ( defined(bin.service) & bin.service > 0 )
+.           if ( bin.service ?= 1 | bin.service ?= 3 )
+systemdsystemunit_DATA += src/$(bin.name).service
+.           endif
+.           if ( bin.service ?= 2 | bin.service ?= 3 )
+systemdsystemunit_DATA += src/$(bin.name)@.service
+.           endif
+.       endif
+.       if ( defined(bin.timer) & bin.timer > 0 )
+.           if ( bin.timer ?= 1 | bin.timer ?= 3 )
+systemdsystemunit_DATA += src/$(bin.name).timer
+.           endif
+.           if ( bin.timer ?= 2 | bin.timer ?= 3 )
+systemdsystemunit_DATA += src/$(bin.name)@.timer
+.           endif
+.       endif
+endif #WITH_SYSTEMD_UNITS
+.   endif
 .endfor
 .for class where defined (class.api)
 .   if first ()
