@@ -51,7 +51,6 @@ dist_bin_SCRIPTS = \
     mkapi.py \
     fake_cpp
 
-	cd $(srcdir); gsl -target:- project.xml
 
 # Directories with test fixtures optionally provided by the project,
 # and with volatile RW data possibly created by a selftest program.
