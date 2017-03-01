@@ -1257,13 +1257,13 @@ $\(abs_top_builddir)/$\(SELFTEST_DIR_RO): $\(abs_top_srcdir)/$\(SELFTEST_DIR_RO)
 CLEANFILES += $\(abs_top_builddir)/$\(SELFTEST_DIR_RW)/*
 EXTRA_DIST += $\(SELFTEST_DIR_RO)
 
-clean-local: clean-local-check
-\.PHONY: clean-local-check
-clean-local-check:
+clean-local: clean-local-selftest-ro
+\.PHONY: clean-local-selftest-ro
+clean-local-selftest-ro:
 \t@if test "$\(abs_top_builddir)" != "$\(abs_top_srcdir)" ; then \\
 \t\tif test -d "$\(abs_top_builddir)/$\(SELFTEST_DIR_RO)" ; then \\
-\t\tchmod -R u+w "$\(abs_top_builddir)/$\(SELFTEST_DIR_RO)" ; \\
-\t\trm -rf "$\(abs_top_builddir)/$\(SELFTEST_DIR_RO)" ; \\
+\t\t\tchmod -R u+w "$\(abs_top_builddir)/$\(SELFTEST_DIR_RO)" ; \\
+\t\t\trm -rf "$\(abs_top_builddir)/$\(SELFTEST_DIR_RO)" ; \\
 \t\tfi; \\
 \tfi
 
