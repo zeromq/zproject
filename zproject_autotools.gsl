@@ -800,6 +800,20 @@ AM_COND_IF([WITH_SYSTEMD_UNITS],
                  src/$(main.name)@.service
 .       endif
 .   endfor
+.   for project.bin where ( defined(bin.service) & bin.service > 0 )
+.       if ( bin.service ?= 1 | bin.service ?= 3 )
+                 src/$(bin.name).service
+.           if file.exists("src/$(bin.name).timer.in")
+                 src/$(bin.name).timer
+.           endif
+.       endif
+.       if ( bin.service ?= 2 | bin.service ?= 3 )
+                 src/$(bin.name)@.service
+.           if file.exists("src/$(bin.name)@.timer.in")
+                 src/$(bin.name)@.timer
+.           endif
+.       endif
+.   endfor
     ])],
     [])
 
@@ -1191,6 +1205,23 @@ endif #ENABLE_$(NAME:c)
 dist_bin_SCRIPTS = \\
 .   endif
     $(bin.name)$(last ()?? "\n"? " \\")
+.#  Systemd stuff
+if WITH_SYSTEMD_UNITS
+.   if ( defined(bin.service) & bin.service > 0 )
+.      if file.exists("src/$(bin.name).service.in")
+systemdsystemunit_DATA += src/$(bin.name).service
+.      endif
+.      if file.exists("src/$(bin.name)@.service.in")
+systemdsystemunit_DATA += src/$(bin.name)@.service
+.      endif
+.      if file.exists("src/$(bin.name).timer.in")
+systemdsystemunit_DATA += src/$(bin.name).timer
+.      endif
+.      if file.exists("src/$(bin.name)@.timer.in")
+systemdsystemunit_DATA += src/$(bin.name)@.timer
+.      endif
+.   endif
+endif #WITH_SYSTEMD_UNITS
 .endfor
 .for class where defined (class.api)
 .   if first ()
