@@ -216,6 +216,12 @@ find %{buildroot} -name '*.la' | xargs rm -f
 .       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in") | ( main.service ?= 2 | main.service ?= 3 )
 /usr/lib/systemd/system/$(main.name)@.service
 .       endif
+.       if file.exists("src/$(main.name).timer") | file.exists("src/$(main.name).timer.in") | ( main.service ?= 1 | main.service ?= 3 )
+/usr/lib/systemd/system/$(main.name).timer
+.       endif
+.       if file.exists("src/$(main.name)@.timer") | file.exists("src/$(main.name)@.timer.in") | ( main.service ?= 2 | main.service ?= 3 )
+/usr/lib/systemd/system/$(main.name)@.timer
+.       endif
 .etc_exists = 1
 .endfor
 .for project.bin where ( defined(bin.service) & bin.service > 0 )
