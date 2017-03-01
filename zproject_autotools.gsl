@@ -1323,11 +1323,11 @@ dist_api_DATA = \\
 .endfor
 .if count (project.class)
 # define custom target for all products of /src
-src:
+src: \\
 .   for project.main
-\tsrc/$(main.name) \\
+\t\tsrc/$(main.name) \\
 .   endfor
-\tsrc/$(project.libname).la
+\t\tsrc/$(project.libname).la
 
 .endif
 .for model
@@ -1348,8 +1348,10 @@ code:
 .       endif
 -q $(name).xml
 .   endif
-.endfor
+.   if last ()
 \tcd $\(srcdir); gsl -target:- project.xml
+.   endif
+.endfor
 
 # Directories with test fixtures optionally provided by the project,
 # and with volatile RW data possibly created by a selftest program.
