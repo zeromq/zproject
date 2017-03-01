@@ -922,6 +922,9 @@ $(main.name)@.service
 .   endfor
 .endif
 
+# location designated for writing self-tests:
+selftest-rw/
+
 $(project.GENERATED_WARNING_HEADER:)
 .endmacro
 
