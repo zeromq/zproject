@@ -958,48 +958,48 @@ $(bin.name).cfg
 # + systemd service unit for daemons (if any):
 .   for project.main where ( defined(main.service) & main.service > 0 )
 .       if ( main.service ?= 1 | main.service ?= 3 )
-.           if file.exists("src/$(main.name).service.in")
+.           if file.exists("src/$(main.name).service.in") | file.exists("src/$(main.name).service")
 $(main.name).service
 .           endif
 .       endif
 .       if ( main.service ?= 2 | main.service ?= 3 )
-.           if file.exists("src/$(main.name)@.service.in")
+.           if file.exists("src/$(main.name)@.service.in") | file.exists("src/$(main.name)@.service")
 $(main.name)@.service
 .           endif
 .       endif
 .   endfor
 .   for project.main where ( defined(main.timer) & main.timer > 0 )
 .       if ( main.timer ?= 1 | main.timer ?= 3 )
-.           if file.exists("src/$(main.name).timer.in")
+.           if file.exists("src/$(main.name).timer.in") | file.exists("src/$(main.name).timer")
 $(main.name).timer
 .           endif
 .       endif
 .       if ( main.timer ?= 2 | main.timer ?= 3 )
-.           if file.exists("src/$(main.name)@.timer.in")
+.           if file.exists("src/$(main.name)@.timer.in") | file.exists("src/$(main.name)@.timer")
 $(main.name)@.timer
 .           endif
 .       endif
 .   endfor
 .   for project.bin where ( defined(bin.service) & bin.service > 0 )
 .       if ( bin.service ?= 1 | bin.service ?= 3 )
-.           if file.exists("src/$(bin.name).service.in")
+.           if file.exists("src/$(bin.name).service.in") | file.exists("src/$(bin.name).service")
 $(bin.name).service
 .           endif
 .       endif
 .       if ( bin.service ?= 2 | bin.service ?= 3 )
-.           if file.exists("src/$(bin.name)@.service.in")
+.           if file.exists("src/$(bin.name)@.service.in") | file.exists("src/$(bin.name)@.service")
 $(bin.name)@.service
 .           endif
 .       endif
 .   endfor
 .   for project.bin where ( defined(bin.timer) & bin.timer > 0 )
 .       if ( bin.timer ?= 1 | bin.timer ?= 3 )
-.           if file.exists("src/$(bin.name).timer.in")
+.           if file.exists("src/$(bin.name).timer.in") | file.exists("src/$(bin.name).timer")
 $(bin.name).timer
 .           endif
 .       endif
 .       if ( bin.timer ?= 2 | bin.timer ?= 3 )
-.           if file.exists("src/$(bin.name)@.timer.in")
+.           if file.exists("src/$(bin.name)@.timer.in") | file.exists("src/$(bin.name)@.timer")
 $(bin.name)@.timer
 .           endif
 .       endif
