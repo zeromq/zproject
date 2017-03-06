@@ -7,7 +7,7 @@
 #   Script to generate all required files from fresh git checkout.
 
 if [ ! -f src/Makemodule-local.am ] ; then
-    echo "autogen.sh: generating a dummy src/Makemodule-local.am to fulfill dependencies"
+    echo "autogen.sh: generating a dummy src/Makemodule-local.am to fulfill dependencies." 1>&2
     touch src/Makemodule-local.am
 fi
 

@@ -25,16 +25,23 @@ endif
 # Workaround for automake < 1.14 bug
 $(shell dpkg --compare-versions `dpkg-query -W -f='$${Version}\n' automake` lt 1:1.14 && mkdir -p config)
 
+.autogened: autogen.sh
+	@echo "Executing autogen.sh for this project..."
+	./autogen.sh
+	touch $@
+
 override_dh_strip:
 	dh_strip --dbg-package=zproject-dbg
 
 override_dh_auto_test:
 	echo "Skipped for now"
 
-override_dh_auto_configure:
+override_dh_auto_configure: .autogened
 	dh_auto_configure -- \
 		--enable-drafts=$(DRAFTS)
 
 %:
+	if test "$@" = "clean" ; then rm -f .autogened ; fi; \
+	if test "$@" = "build" ; then $(MAKE) .autogened ; else true; fi && \
 	dh $@ \
 		--with autoreconf
