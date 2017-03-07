@@ -146,6 +146,10 @@
         <use project = "libfastjson" />
     </use>
 
+    <use project = "zdiscgo"
+        repository = "https://github.com/zeromq/zdiscgo.git"
+        test = "zdiscgoplugin_new" />
+
     <use project = "systemd"
         libname = "libsystemd"
         prefix = "libsystemd"
