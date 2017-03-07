@@ -182,6 +182,9 @@ endif
 	./autogen.sh
 	touch $@
 
+clean-autogened:
+	rm -f .autogened
+
 override_dh_strip:
 	dh_strip --dbg-package=$(string.replace (project.name, "_|-"):lower)-dbg
 
@@ -195,9 +198,11 @@ override_dh_auto_configure: .autogened
 .endif
 		--enable-drafts=\$(DRAFTS)
 
+# Additional dependency for certain targets
+build: .autogened
+clean: clean-autogened
+
 %:
-	if test "$@" = "clean" ; then rm -f .autogened ; fi; \\
-	if test "$@" = "build" ; then $\(MAKE) .autogened ; else true; fi && \\
 	dh $@ \\
 .if systemd ?= 1
 		--with systemd \\
