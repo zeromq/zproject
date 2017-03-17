@@ -35,8 +35,13 @@ PATH="$PATH:/usr/local/bin"
 export PATH
 
 if [ -s Makefile ]; then
+    find . -ls
+    if [ -s ./autogen.sh ]; then mv -f ./autogen.sh ./autogen.sh.bak; fi
+    if [ -s ./configure.ac ]; then mv -f ./configure.ac ./configure.ac.bak; fi
     make clean -k || true
     make distclean -k || true
+    if [ -s ./autogen.sh.bak ]; then mv -f ./autogen.sh.bak ./autogen.sh; fi
+    if [ -s ./configure.ac.bak ]; then mv -f ./configure.ac.bak ./configure.ac; fi
 fi
 ./autogen.sh
 

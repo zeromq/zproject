@@ -3,16 +3,27 @@
 # but should facilitate passing of out-of-tree builds and "make distcheck"
 
 EXTRA_DIST += \
+    autogen.sh \
+    configure.ac \
     src/zproject_selftest
+
 $(abs_builddir)/src/zproject_selftest: $(abs_srcdir)/src/zproject_selftest
-	cp -pf $< $@ && chmod +x $@
+	@if [ "$@" != "$<" ]; then cp -pf "$<" "$@" ; fi
 
-src/zproject_selftest: $(abs_builddir)/src/zproject_selftest
+$(abs_builddir)/autogen.sh: $(abs_srcdir)/autogen.sh
+	@if [ "$@" != "$<" ]; then cp -pf "$<" "$@" ; fi
 
-check-local: $(abs_builddir)/src/zproject_selftest
-check-TESTS: $(abs_builddir)/src/zproject_selftest
+$(abs_builddir)/configure.ac: $(abs_srcdir)/configure.ac
+	@if [ "$@" != "$<" ]; then cp -pf "$<" "$@" ; fi
 
-clean-local:
+check-local: $(abs_builddir)/src/zproject_selftest $(abs_builddir)/autogen.sh $(abs_builddir)/configure.ac
+check-TESTS: $(abs_builddir)/src/zproject_selftest $(abs_builddir)/autogen.sh $(abs_builddir)/configure.ac
+
+clean-local: clean-local-zproject_selftest
+.PHONY: clean-local-zproject_selftest
+clean-local-zproject_selftest:
 	if test "$(abs_builddir)" != "$(abs_srcdir)" ; then \
 		rm -f $(abs_builddir)/src/zproject_selftest || true ; \
+		rm -f $(abs_builddir)/autogen.sh || true ; \
+		rm -f $(abs_builddir)/configure.ac || true ; \
 	fi
