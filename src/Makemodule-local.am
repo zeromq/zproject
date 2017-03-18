@@ -4,15 +4,19 @@
 
 EXTRA_DIST += \
     src/zproject_selftest
-$(abs_builddir)/src/zproject_selftest: $(abs_srcdir)/src/zproject_selftest
-	cp -pf $< $@ && chmod +x $@
 
-src/zproject_selftest: $(abs_builddir)/src/zproject_selftest
+# For (dist)check, sabotage the script by not doing a distcheck again
+$(abs_builddir)/src/zproject_selftest: $(abs_srcdir)/src/zproject_selftest
+	@if [ "$@" != "$<" ]; then \
+	 ( echo "#! /bin/sh"; echo "true" ) > "$@" && \
+	   chmod +x "$@" ; fi
 
 check-local: $(abs_builddir)/src/zproject_selftest
 check-TESTS: $(abs_builddir)/src/zproject_selftest
 
-clean-local:
+clean-local: clean-local-zproject_selftest
+.PHONY: clean-local-zproject_selftest
+clean-local-zproject_selftest:
 	if test "$(abs_builddir)" != "$(abs_srcdir)" ; then \
 		rm -f $(abs_builddir)/src/zproject_selftest || true ; \
 	fi

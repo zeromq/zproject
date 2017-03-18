@@ -1,6 +1,8 @@
 # Travis CI script
 language: c
 
+cache: ccache
+
 sudo: false
 
 # Set CI_TIME=true to enable build-step profiling in Travis
@@ -13,6 +15,7 @@ env:
     - CI_CONFIG_QUIET=true
   matrix:
     - BUILD_TYPE=default
+    - BUILD_TYPE=distcheck
 
 matrix:
   include:
