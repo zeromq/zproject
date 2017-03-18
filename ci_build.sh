@@ -27,7 +27,8 @@ case "$CI_TRACE" in
         set -x ;;
 esac
 
-if [ "$BUILD_TYPE" == "default" ]; then
+case "$BUILD_TYPE" in
+"default"|"distcheck")
     mkdir tmp
     BUILD_PREFIX="$PWD/tmp"
 
@@ -54,30 +55,41 @@ if [ "$BUILD_TYPE" == "default" ]; then
       CCACHE_BASEDIR=${PWD} && \
       export CCACHE_BASEDIR && \
       $CI_TIME ./configure --prefix="${BUILD_PREFIX}" && \
-      $CI_TIME make && \
-      $CI_TIME make install \
+      case "$BUILD_TYPE" in
+        "default")
+          $CI_TIME make && \
+          $CI_TIME make install
+          ;;
+        "distcheck")
+          $CI_TIME make distcheck
+          ;;
+      esac
     ) || exit 1
 
     # Verify new zproject by regenerating CZMQ without (syntax/runtime) errors
     # Make sure to prefer use of just-built and locally installed copy of gsl
-    [ -z "$CI_TIME" ] || echo "`date`: Starting test of zproject (and gsl) by reconfiguring czmq..."
-    $CI_TIME git clone --depth 1 https://github.com/zeromq/czmq.git czmq
-    ( PATH="${BUILD_PREFIX}/bin:$PATH"; export PATH; \
+    if [ "$BUILD_TYPE" == "default" ] ; then
+    ( [ -z "$CI_TIME" ] || echo "`date`: Starting test of zproject (and gsl) by reconfiguring czmq..."
+      $CI_TIME git clone --depth 1 https://github.com/zeromq/czmq.git czmq
+      PATH="${BUILD_PREFIX}/bin:$PATH"; export PATH; \
       cd czmq && \
       CCACHE_BASEDIR=${PWD} && \
       export CCACHE_BASEDIR && \
       $CI_TIME gsl -target:* project.xml \
     ) || exit 1
+    fi
     [ -z "$CI_TIME" ] || echo "`date`: Builds completed without fatal errors!"
 
     echo "=== How well did ccache help on this platform?"
     ccache -s 2>/dev/null || true
     echo "==="
-else
+    ;;
+*)
     pushd "./builds/${BUILD_TYPE}" && \
     REPO_DIR="$(dirs -l +1)" $CI_TIME ./ci_build.sh \
     || exit 1
-fi
+    ;;
+esac
 
 echo "=== Are GitIgnores good after making zproject '$BUILD_TYPE'? (should have no output below)"
 git status -s || true

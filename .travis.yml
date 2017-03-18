@@ -13,6 +13,7 @@ env:
     - CI_CONFIG_QUIET=true
   matrix:
     - BUILD_TYPE=default
+    - BUILD_TYPE=distcheck
 
 matrix:
   include:
