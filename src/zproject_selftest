@@ -55,9 +55,10 @@ cp -pf "${ABS_SRC_DIR}/src/zproject_selftest" ./src/
 ../configure
 
 make
+make clean -k || true
 
 SKIP_ZPROJECT_SELFTEST=yes
 export SKIP_ZPROJECT_SELFTEST
-DISTCHECK_CONFIGURE_FLAGS="--srcdir=$ABS_SRC_DIR"
+DISTCHECK_CONFIGURE_FLAGS="--srcdir='$ABS_SRC_DIR'"
 export DISTCHECK_CONFIGURE_FLAGS
 make distcheck
