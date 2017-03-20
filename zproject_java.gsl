@@ -648,7 +648,7 @@ cd ..
 .   endfor
 .   for use where defined (use.repository)
 .      if defined (use.release)
-$CI_TIME git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+$CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
 .      else
 $CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
 .      endif

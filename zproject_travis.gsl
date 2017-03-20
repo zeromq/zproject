@@ -316,7 +316,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
 .           elsif defined (use.repository)
         echo "`date`: INFO: Building prerequisite '$(use.project)' from Git repository..." >&2
 .               if defined (use.release)
-        $CI_TIME git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+        $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
 .               else
         $CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
 .               endif
@@ -452,7 +452,7 @@ set -ex
 cd "$REPO_DIR/.."
 .for project.use where !optional & defined (use.repository)
 .   if defined (use.release)
-git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
 .   else
 git clone --quiet --depth 1 $(use.repository) $(use.project)
 .   endif

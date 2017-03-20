@@ -608,7 +608,7 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)
 .   endif
        (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
 .   if defined (use.release)
-    $CI_TIME git clone --quiet --depth 1 -b $(use.release) $(use.repository) $(use.project)
+    $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
 .   else
     $CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
 .   endif
