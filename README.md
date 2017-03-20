@@ -202,7 +202,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         redhat              Packaging for RedHat
         ruby                Ruby binding
         travis              Travis CI scripts
-            <option name="distcheck" value="0" /> will disable run of make distcheck
+            <option name="travis_distcheck" value="0" /> will disable run of make distcheck
         vs2008              Microsoft Visual Studio 2008
         vs2010              Microsoft Visual Studio 2010
         vs2012              Microsoft Visual Studio 2012
