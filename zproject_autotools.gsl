@@ -64,6 +64,311 @@ $(project.GENERATED_WARNING_HEADER:)
 .if file.exists ("version.sh")
 .   echo "WARNING: Your workspace has a 'version.sh' - note that zproject no longer generates this, and its presence may confuse your builds; you may want to remove it (or bump manually for project version '$(project->version.major).$(project->version.minor).$(project->version.patch)')"
 .endif
+.#  Generate infrastructure for services
+.#  This need to be done prior to configure.ac, otherwise service files
+.#  will not be listed in AC_CONFIG_FILES directive
+.for project.main where ( defined(main.service) & main.service > 0 )
+.if ( main.service ?= 1 | main.service ?= 3 )
+.  if !file.exists ("src/$(main.name).service.in")
+.   output "src/$(main.name).service.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=$(main.name) service
+After=network.target
+# Requires=network.target
+# Conflicts=shutdown.target
+# PartOf=$(project.name).target
+
+[Service]
+Type=simple
+# User=@uid@
+Environment="prefix=@prefix@"
+Environment='SYSTEMD_UNIT_FULLNAME=%n'
+.       if ( !defined(main.no_config) | main.no_config ?= 0 )
+ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name).cfg
+.       else
+ExecStart=@prefix@/bin/$(main.name)
+.       endif
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(main.name).service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.if ( main.service ?= 2 | main.service ?= 3 )
+.  if !file.exists ("src/$(main.name)@.service.in")
+.   output "src/$(main.name)@.service.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=$(main.name) service for %I
+After=network.target
+# Requires=network.target
+# Conflicts=shutdown.target
+# PartOf=$(project.name).target
+
+[Service]
+Type=simple
+# User=@uid@
+Environment="prefix=@prefix@"
+Environment='SYSTEMD_UNIT_FULLNAME=%n'
+.       if ( !defined(main.no_config) | main.no_config ?= 0 )
+ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name)@%i.cfg
+.       else
+ExecStart=@prefix@/bin/$(main.name) %i
+.       endif
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(main.name)@.service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.endfor
+.#
+.#
+.#
+.# Prepare timer units, assuming they restart the corresponding service units
+.for project.main where ( defined(main.timer) & main.timer > 0 )
+.if ( main.timer ?= 1 | main.timer ?= 3 )
+.  if !file.exists ("src/$(main.name).timer.in")
+.   output "src/$(main.name).timer.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=Timer to regularly trigger the job done by $(main.name) service
+PartOf=timers.target
+# PartOf=multi-user.target
+# PartOf=$(project.name).target
+
+[Timer]
+# Time to wait after booting before we run first time
+OnBootSec=30
+# Regular re-runs
+OnUnitActiveSec=1min
+### Run every night
+OnCalendar=*-*-* 04:20:00
+# Run instantly if last run was skipped (e.g. system powered off)
+Persistent=true
+# Do not record last-execution times
+Persistent=false
+# Which unit to trigger (defaults to same basename):
+Unit=$(main.name).service
+
+[Install]
+WantedBy=timers.target
+# WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(main.name).timer.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.#
+.#
+.#
+.if ( main.timer ?= 2 | main.timer ?= 3 )
+.  if !file.exists ("src/$(main.name)@.timer.in")
+.   output "src/$(main.name)@.timer.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=Timer to regularly trigger the job done by $(main.name) service for %I
+PartOf=timers.target
+# PartOf=multi-user.target
+# PartOf=$(project.name).target
+
+[Timer]
+# Time to wait after booting before we run first time
+OnBootSec=30
+# Regular re-runs
+OnUnitActiveSec=1min
+### Run every night
+OnCalendar=*-*-* 04:20:00
+# Run instantly if last run was skipped (e.g. system powered off)
+Persistent=true
+# Do not record last-execution times
+Persistent=false
+# Which unit to trigger (defaults to same basename):
+Unit=$(main.name)@%i.service
+
+[Install]
+WantedBy=timers.target
+# WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(main.name)@.timer.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.endfor
+.#
+.#
+.#
+.# Generate services for non-main (accompanying bins)
+.for project.bin where ( defined(bin.service) & bin.service > 0 )
+.if ( bin.service ?= 1 | bin.service ?= 3 )
+.  if !file.exists ("src/$(bin.name).service.in")
+.   output "src/$(bin.name).service.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=$(bin.name) service
+After=network.target
+# Requires=network.target
+# Conflicts=shutdown.target
+# PartOf=$(project.name).target
+
+[Service]
+Type=simple
+# User=@uid@
+Environment="prefix=@prefix@"
+Environment='SYSTEMD_UNIT_FULLNAME=%n'
+.       if ( !defined(bin.no_config) | bin.no_config ?= 0 )
+ExecStart=@prefix@/bin/$(bin.name) @sysconfdir@/@PACKAGE@/$(bin.name).cfg
+.       else
+ExecStart=@prefix@/bin/$(bin.name)
+.       endif
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(bin.name).service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.#
+.#
+.#
+.if ( bin.service ?= 2 | bin.service ?= 3 )
+.  if !file.exists ("src/$(bin.name)@.service.in")
+.   output "src/$(bin.name)@.service.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=$(bin.name) service for %I
+After=network.target
+# Requires=network.target
+# Conflicts=shutdown.target
+# PartOf=$(project.name).target
+
+[Service]
+Type=simple
+# User=@uid@
+Environment="prefix=@prefix@"
+Environment='SYSTEMD_UNIT_FULLNAME=%n'
+.       if ( !defined(bin.no_config) | bin.no_config ?= 0 )
+ExecStart=@prefix@/bin/$(bin.name) @sysconfdir@/@PACKAGE@/$(bin.name)@%i.cfg
+.       else
+ExecStart=@prefix@/bin/$(bin.name) %i
+.       endif
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(bin.name)@.service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.endfor
+.#
+.#
+.#
+.# Prepare timer units, assuming they restart the corresponding service units
+.for project.bin where ( defined(bin.timer) & bin.timer > 0 )
+.if ( bin.timer ?= 1 | bin.timer ?= 3 )
+.  if !file.exists ("src/$(bin.name).timer.in")
+.   output "src/$(bin.name).timer.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=Timer to regularly trigger the job done by $(bin.name) service
+PartOf=timers.target
+# PartOf=multi-user.target
+# PartOf=$(project.name).target
+
+[Timer]
+# Time to wait after booting before we run first time
+OnBootSec=30
+# Regular re-runs
+OnUnitActiveSec=1min
+### Run every night
+OnCalendar=*-*-* 04:20:00
+# Run instantly if last run was skipped (e.g. system powered off)
+Persistent=true
+# Do not record last-execution times
+Persistent=false
+# Which unit to trigger (defaults to same basename):
+Unit=$(bin.name).service
+
+[Install]
+WantedBy=timers.target
+# WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(bin.name).timer.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.#
+.#
+.#
+.if ( bin.timer ?= 2 | bin.timer ?= 3 )
+.  if !file.exists ("src/$(bin.name)@.timer.in")
+.   output "src/$(bin.name)@.timer.in"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+[Unit]
+Description=Timer to regularly trigger the job done by $(bin.name) service for %I
+PartOf=timers.target
+# PartOf=multi-user.target
+# PartOf=$(project.name).target
+
+[Timer]
+# Time to wait after booting before we run first time
+OnBootSec=30
+# Regular re-runs
+OnUnitActiveSec=1min
+### Run every night
+OnCalendar=*-*-* 04:20:00
+# Run instantly if last run was skipped (e.g. system powered off)
+Persistent=true
+# Do not record last-execution times
+Persistent=false
+# Which unit to trigger (defaults to same basename):
+Unit=$(bin.name)@%i.service
+
+[Install]
+WantedBy=timers.target
+# WantedBy=multi-user.target
+# WantedBy=$(project.name).target
+.   close
+.  else
+.   echo "NOT regenerating an existing src/$(bin.name)@.timer.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.  endif
+.endif
+.endfor
+
 .output "configure.ac"
 $(project.GENERATED_WARNING_HEADER:)
 
@@ -1478,305 +1783,6 @@ server
 .#
 .#
 .#
-.if ( main.service ?= 1 | main.service ?= 3 )
-.  if !file.exists ("src/$(main.name).service.in")
-.   output "src/$(main.name).service.in"
-# This is a skeleton created by zproject.
-# You can add hand-written code here.
-
-[Unit]
-Description=$(main.name) service
-After=network.target
-# Requires=network.target
-# Conflicts=shutdown.target
-# PartOf=$(project.name).target
-
-[Service]
-Type=simple
-# User=@uid@
-Environment="prefix=@prefix@"
-Environment='SYSTEMD_UNIT_FULLNAME=%n'
-.       if ( !defined(main.no_config) | main.no_config ?= 0 )
-ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name).cfg
-.       else
-ExecStart=@prefix@/bin/$(main.name)
-.       endif
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-# WantedBy=$(project.name).target
-.   close
-.  else
-.   echo "NOT regenerating an existing src/$(main.name).service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
-.  endif
-.endif
-.if ( main.service ?= 2 | main.service ?= 3 )
-.  if !file.exists ("src/$(main.name)@.service.in")
-.   output "src/$(main.name)@.service.in"
-# This is a skeleton created by zproject.
-# You can add hand-written code here.
-
-[Unit]
-Description=$(main.name) service for %I
-After=network.target
-# Requires=network.target
-# Conflicts=shutdown.target
-# PartOf=$(project.name).target
-
-[Service]
-Type=simple
-# User=@uid@
-Environment="prefix=@prefix@"
-Environment='SYSTEMD_UNIT_FULLNAME=%n'
-.       if ( !defined(main.no_config) | main.no_config ?= 0 )
-ExecStart=@prefix@/bin/$(main.name) @sysconfdir@/@PACKAGE@/$(main.name)@%i.cfg
-.       else
-ExecStart=@prefix@/bin/$(main.name) %i
-.       endif
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-# WantedBy=$(project.name).target
-.   close
-.  else
-.   echo "NOT regenerating an existing src/$(main.name)@.service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
-.  endif
-.endif
-.endfor
-.#
-.#
-.#
-.# Prepare timer units, assuming they restart the corresponding service units
-.for project.main where ( defined(main.timer) & main.timer > 0 )
-.if ( main.timer ?= 1 | main.timer ?= 3 )
-.  if !file.exists ("src/$(main.name).timer.in")
-.   output "src/$(main.name).timer.in"
-# This is a skeleton created by zproject.
-# You can add hand-written code here.
-
-[Unit]
-Description=Timer to regularly trigger the job done by $(main.name) service
-PartOf=timers.target
-# PartOf=multi-user.target
-# PartOf=$(project.name).target
-
-[Timer]
-# Time to wait after booting before we run first time
-OnBootSec=30
-# Regular re-runs
-OnUnitActiveSec=1min
-### Run every night
-OnCalendar=*-*-* 04:20:00
-# Run instantly if last run was skipped (e.g. system powered off)
-Persistent=true
-# Do not record last-execution times
-Persistent=false
-# Which unit to trigger (defaults to same basename):
-Unit=$(main.name).service
-
-[Install]
-WantedBy=timers.target
-# WantedBy=multi-user.target
-# WantedBy=$(project.name).target
-.   close
-.  else
-.   echo "NOT regenerating an existing src/$(main.name).timer.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
-.  endif
-.endif
-.#
-.#
-.#
-.if ( main.timer ?= 2 | main.timer ?= 3 )
-.  if !file.exists ("src/$(main.name)@.timer.in")
-.   output "src/$(main.name)@.timer.in"
-# This is a skeleton created by zproject.
-# You can add hand-written code here.
-
-[Unit]
-Description=Timer to regularly trigger the job done by $(main.name) service for %I
-PartOf=timers.target
-# PartOf=multi-user.target
-# PartOf=$(project.name).target
-
-[Timer]
-# Time to wait after booting before we run first time
-OnBootSec=30
-# Regular re-runs
-OnUnitActiveSec=1min
-### Run every night
-OnCalendar=*-*-* 04:20:00
-# Run instantly if last run was skipped (e.g. system powered off)
-Persistent=true
-# Do not record last-execution times
-Persistent=false
-# Which unit to trigger (defaults to same basename):
-Unit=$(main.name)@%i.service
-
-[Install]
-WantedBy=timers.target
-# WantedBy=multi-user.target
-# WantedBy=$(project.name).target
-.   close
-.  else
-.   echo "NOT regenerating an existing src/$(main.name)@.timer.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
-.  endif
-.endif
-.endfor
-.#
-.#
-.#
-.# Generate services for non-main (accompanying bins)
-.for project.bin where ( defined(bin.service) & bin.service > 0 )
-.if ( bin.service ?= 1 | bin.service ?= 3 )
-.  if !file.exists ("src/$(bin.name).service.in")
-.   output "src/$(bin.name).service.in"
-# This is a skeleton created by zproject.
-# You can add hand-written code here.
-
-[Unit]
-Description=$(bin.name) service
-After=network.target
-# Requires=network.target
-# Conflicts=shutdown.target
-# PartOf=$(project.name).target
-
-[Service]
-Type=simple
-# User=@uid@
-Environment="prefix=@prefix@"
-Environment='SYSTEMD_UNIT_FULLNAME=%n'
-.       if ( !defined(bin.no_config) | bin.no_config ?= 0 )
-ExecStart=@prefix@/bin/$(bin.name) @sysconfdir@/@PACKAGE@/$(bin.name).cfg
-.       else
-ExecStart=@prefix@/bin/$(bin.name)
-.       endif
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-# WantedBy=$(project.name).target
-.   close
-.  else
-.   echo "NOT regenerating an existing src/$(bin.name).service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
-.  endif
-.endif
-.#
-.#
-.#
-.if ( bin.service ?= 2 | bin.service ?= 3 )
-.  if !file.exists ("src/$(bin.name)@.service.in")
-.   output "src/$(bin.name)@.service.in"
-# This is a skeleton created by zproject.
-# You can add hand-written code here.
-
-[Unit]
-Description=$(bin.name) service for %I
-After=network.target
-# Requires=network.target
-# Conflicts=shutdown.target
-# PartOf=$(project.name).target
-
-[Service]
-Type=simple
-# User=@uid@
-Environment="prefix=@prefix@"
-Environment='SYSTEMD_UNIT_FULLNAME=%n'
-.       if ( !defined(bin.no_config) | bin.no_config ?= 0 )
-ExecStart=@prefix@/bin/$(bin.name) @sysconfdir@/@PACKAGE@/$(bin.name)@%i.cfg
-.       else
-ExecStart=@prefix@/bin/$(bin.name) %i
-.       endif
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-# WantedBy=$(project.name).target
-.   close
-.  else
-.   echo "NOT regenerating an existing src/$(bin.name)@.service.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
-.  endif
-.endif
-.endfor
-.#
-.#
-.#
-.# Prepare timer units, assuming they restart the corresponding service units
-.for project.bin where ( defined(bin.timer) & bin.timer > 0 )
-.if ( bin.timer ?= 1 | bin.timer ?= 3 )
-.  if !file.exists ("src/$(bin.name).timer.in")
-.   output "src/$(bin.name).timer.in"
-# This is a skeleton created by zproject.
-# You can add hand-written code here.
-
-[Unit]
-Description=Timer to regularly trigger the job done by $(bin.name) service
-PartOf=timers.target
-# PartOf=multi-user.target
-# PartOf=$(project.name).target
-
-[Timer]
-# Time to wait after booting before we run first time
-OnBootSec=30
-# Regular re-runs
-OnUnitActiveSec=1min
-### Run every night
-OnCalendar=*-*-* 04:20:00
-# Run instantly if last run was skipped (e.g. system powered off)
-Persistent=true
-# Do not record last-execution times
-Persistent=false
-# Which unit to trigger (defaults to same basename):
-Unit=$(bin.name).service
-
-[Install]
-WantedBy=timers.target
-# WantedBy=multi-user.target
-# WantedBy=$(project.name).target
-.   close
-.  else
-.   echo "NOT regenerating an existing src/$(bin.name).timer.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
-.  endif
-.endif
-.#
-.#
-.#
-.if ( bin.timer ?= 2 | bin.timer ?= 3 )
-.  if !file.exists ("src/$(bin.name)@.timer.in")
-.   output "src/$(bin.name)@.timer.in"
-# This is a skeleton created by zproject.
-# You can add hand-written code here.
-
-[Unit]
-Description=Timer to regularly trigger the job done by $(bin.name) service for %I
-PartOf=timers.target
-# PartOf=multi-user.target
-# PartOf=$(project.name).target
-
-[Timer]
-# Time to wait after booting before we run first time
-OnBootSec=30
-# Regular re-runs
-OnUnitActiveSec=1min
-### Run every night
-OnCalendar=*-*-* 04:20:00
-# Run instantly if last run was skipped (e.g. system powered off)
-Persistent=true
-# Do not record last-execution times
-Persistent=false
-# Which unit to trigger (defaults to same basename):
-Unit=$(bin.name)@%i.service
-
-[Install]
-WantedBy=timers.target
-# WantedBy=multi-user.target
-# WantedBy=$(project.name).target
-.   close
-.  else
-.   echo "NOT regenerating an existing src/$(bin.name)@.timer.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
-.  endif
-.endif
 .endfor
 .endmacro
 
