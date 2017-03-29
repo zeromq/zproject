@@ -368,7 +368,6 @@ WantedBy=timers.target
 .  endif
 .endif
 .endfor
-
 .output "configure.ac"
 $(project.GENERATED_WARNING_HEADER:)
 
