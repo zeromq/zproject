@@ -69,6 +69,28 @@ matrix:
         - $(string.replace (use.project, "_|-"))-dev
 .         endif
 .      endfor
+  - env: BUILD_TYPE=default ADDRESS_SANITIZER=enabled
+    os: linux
+    dist: trusty
+    addons:
+      apt:
+        sources:
+        - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/ ./'
+          key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/Release.key'
+        packages:
+.      for use
+.         if defined (use.debian_name)
+.             if !(use.debian_name = '')
+        - $(use.debian_name)
+.             else
+.                 echo "WARNING: debian_name=='' for $(use.project) - not added to .travis.yml"
+.             endif
+.         elsif defined (use.libname)
+        - $(string.replace (use.libname, "_|-"):lower)-dev
+.         else
+        - $(string.replace (use.project, "_|-"))-dev
+.         endif
+.      endfor
 
 addons:
   apt:
@@ -281,6 +303,11 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         CONFIG_OPTS+=("CC=${CC}")
         CONFIG_OPTS+=("CXX=${CXX}")
         CONFIG_OPTS+=("CPP=${CPP}")
+    fi
+
+    if [ -n "$ADDRESS_SANITIZER" ] && [ "$ADDRESS_SANITIZER" == "enabled" ]; then
+        CONFIG_OPTS+=("CFLAGS=-fsanitize=address")
+        CONFIG_OPTS+=("CXXFLAGS=-fsanitize=address")
     fi
 
     # Clone and build dependencies, if not yet installed to Travis env as DEBs
