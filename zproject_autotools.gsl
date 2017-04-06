@@ -438,6 +438,7 @@ AX_PROJECT_LOCAL_HOOK
 
 .endif
 # Code coverage
+AC_MSG_CHECKING([whether to enable GCov])
 AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
                   [With GCC Code Coverage reporting])],
                   [$(PROJECT.PREFIX)_GCOV="$withval"])
@@ -449,22 +450,27 @@ if test "x${$(PROJECT.PREFIX)_GCOV}" == "xyes"; then
         CFLAGS="${CFLAGS} ${$(PROJECT.PREFIX)_ORIG_CFLAGS}"
     fi
     AM_CONDITIONAL(WITH_GCOV, true)
+    AC_MSG_RESULT([yes])
 else
     AM_CONDITIONAL(WITH_GCOV, false)
+    AC_MSG_RESULT([no])
 fi
 
 # Memory mis-use detection
+AC_MSG_CHECKING([whether to enable ASan])
 AC_ARG_ENABLE(address-sanitizer, [AS_HELP_STRING([--enable-address-sanitizer=yes/no],
                   [Build with GCC Address Sanitizer instrumentation])],
-                  [$(PROJECT.PREFIX)_ASAN="$withval"])
+                  [$(PROJECT.PREFIX)_ASAN="$enableval"])
 
 if test "x${$(PROJECT.PREFIX)_ASAN}" == "xyes"; then
     CFLAGS="${CFLAGS} -fsanitize=address"
     CXXFLAGS="${CXXFLAGS} -fsanitize=address"
 
-    AM_CONDITIONAL(WITH_ASAN, true)
+    AM_CONDITIONAL(ENABLE_ASAN, true)
+    AC_MSG_RESULT([yes])
 else
-    AM_CONDITIONAL(WITH_ASAN, false)
+    AM_CONDITIONAL(ENABLE_ASAN, false)
+    AC_MSG_RESULT([no])
 fi
 
 # Set pkgconfigdir
