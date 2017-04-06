@@ -168,7 +168,8 @@ case "$CI_TRACE" in
         set -x ;;
 esac
 
-if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ "$BUILD_TYPE" == "valgrind" ]; then
+case "$BUILD_TYPE" in
+default|default-Werror|valgrind)
     LANG=C
     LC_ALL=C
     export LANG LC_ALL
@@ -462,12 +463,14 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         echo "CCache stats after build:"
         ccache -s
     fi
-
-elif [ "$BUILD_TYPE" == "bindings" ]; then
+    ;;
+bindings)
     pushd "./bindings/${BINDING}" && ./ci_build.sh
-else
+    ;;
+*)
     pushd "./builds/${BUILD_TYPE}" && REPO_DIR="\$(dirs -l +1)" ./ci_build.sh
-fi
+    ;;
+esac
 .close
 .chmod_x ("ci_build.sh")
 .directory.create ("builds/check_zproject")
