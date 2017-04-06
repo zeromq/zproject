@@ -20,14 +20,28 @@ register_target ("travis", "Travis CI scripts")
 # This is a skeleton created by zproject.
 # You can add hand-written code here.
 
-language: c
+language:
+- c
 
-cache: ccache
+cache:
+- ccache
 
 os:
 - linux
 
+# Note: some packages or dependencies may require extended permissions
+# which take longer to set up and boot. If your project does not build
+# in the default container with sudo==false, consider requiring a docker
+# image and/or a newer Ubuntu Trusty baseline VM, by uncommenting below.
+# See the current docs on http://travis-ci.org for up-to-date options.
 sudo: false
+#sudo: required
+
+#dist:
+#- trusty
+
+#services:
+#- docker
 
 # Set CI_TIME=true to enable build-step profiling in Travis
 # Set CI_TRACE=true to enable shell script tracing in Travis
