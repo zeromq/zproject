@@ -94,7 +94,6 @@ addons:
       <<: *pkg_src_zeromq_ubuntu12
     packages: &pkg_deps_common
     - *pkg_deps_devtools
-    - *pkg_deps_doctools
     - *pkg_deps_prereqs
 
 matrix:
@@ -118,6 +117,15 @@ matrix:
           <<: *pkg_src_zeromq_ubuntu14
         packages:
         - *pkg_deps_common
+  - env: BUILD_TYPE=default-with-docs
+    os: linux
+    addons:
+      apt:
+        sources:
+          <<: *pkg_src_zeromq_ubuntu12
+        packages:
+        - *pkg_deps_common
+        - *pkg_deps_doctools
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ] ; then brew update; brew install binutils ; fi
@@ -169,7 +177,7 @@ case "$CI_TRACE" in
 esac
 
 case "$BUILD_TYPE" in
-default|default-Werror|valgrind)
+default|default-Werror|default-with-docs|valgrind)
     LANG=C
     LC_ALL=C
     export LANG LC_ALL
@@ -255,7 +263,6 @@ default|default-Werror|valgrind)
     CONFIG_OPTS+=("LDFLAGS=-L${BUILD_PREFIX}/lib")
     CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
     CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
-    CONFIG_OPTS+=("--with-docs=no")
     if [ -z "${CI_CONFIG_QUIET-}" ] || [ "${CI_CONFIG_QUIET-}" = yes ] || [ "${CI_CONFIG_QUIET-}" = true ]; then
         CONFIG_OPTS+=("--quiet")
     fi
@@ -314,6 +321,9 @@ default|default-Werror|valgrind)
     if [ -n "$ADDRESS_SANITIZER" ] && [ "$ADDRESS_SANITIZER" == "enabled" ]; then
         CONFIG_OPTS+=("--enable-address-sanitizer=yes")
     fi
+
+    CONFIG_OPTS_COMMON=$CONFIG_OPTS
+    CONFIG_OPTS+=("--with-docs=no")
 
     # Clone and build dependencies, if not yet installed to Travis env as DEBs
     # or MacOS packages; other OSes are not currently supported by Travis cloud
@@ -398,6 +408,10 @@ default|default-Werror|valgrind)
     echo "`date`: INFO: Starting build of currently tested project with DRAFT APIs..."
     CCACHE_BASEDIR=${PWD}
     export CCACHE_BASEDIR
+    if [ "$BUILD_TYPE" = "default-with-docs" ]; then
+        CONFIG_OPTS=$CONFIG_OPTS_COMMON
+        CONFIG_OPTS+=("--with-docs=yes")
+    fi
     # Only use --enable-Werror on projects that are expected to have it
     # (and it is not our duty to check prerequisite projects anyway)
     CONFIG_OPTS+=("${CONFIG_OPT_WERROR}")
