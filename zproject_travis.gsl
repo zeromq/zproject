@@ -120,8 +120,8 @@ matrix:
         - *pkg_deps_common
 
 before_install:
-- if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils ; fi
-- if [ $TRAVIS_OS_NAME == "osx" -a $BUILD_TYPE == "valgrind" ] ; then brew install valgrind ; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ] ; then brew update; brew install binutils ; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "valgrind" ] ; then brew install valgrind ; fi
 
 # Hand off to generated script for each BUILD_TYPE
 script: ./ci_build.sh
