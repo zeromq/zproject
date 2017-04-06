@@ -68,6 +68,20 @@ else
     AM_CONDITIONAL(WITH_GCOV, false)
 fi
 
+# Memory mis-use detection
+AC_ARG_ENABLE(address-sanitizer, [AS_HELP_STRING([--enable-address-sanitizer=yes/no],
+                  [Build with GCC Address Sanitizer instrumentation])],
+                  [ZPROJECT_ASAN="$withval"])
+
+if test "x${ZPROJECT_ASAN}" == "xyes"; then
+    CFLAGS="${CFLAGS} -fsanitize=address"
+    CXXFLAGS="${CXXFLAGS} -fsanitize=address"
+
+    AM_CONDITIONAL(WITH_ASAN, true)
+else
+    AM_CONDITIONAL(WITH_ASAN, false)
+fi
+
 # Set pkgconfigdir
 AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
     [Path to the pkgconfig directory [[LIBDIR/pkgconfig]]]),
