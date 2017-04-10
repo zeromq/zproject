@@ -88,10 +88,10 @@ pkg_src_zeromq_ubuntu14: &pkg_src_zeromq_ubuntu14
 - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/ ./'
   key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/Release.key'
 
+# Note: refer to ubuntu14 if you use dist==Trusty
 addons:
   apt:
-    sources:
-      <<: *pkg_src_zeromq_ubuntu12
+    sources: *pkg_src_zeromq_ubuntu12
     packages: &pkg_deps_common
     - *pkg_deps_devtools
     - *pkg_deps_prereqs
@@ -103,8 +103,7 @@ matrix:
     dist: trusty
     addons:
       apt:
-        sources:
-          <<: *pkg_src_zeromq_ubuntu14
+        sources: *pkg_src_zeromq_ubuntu14
         packages:
         - valgrind
         - *pkg_deps_common
@@ -113,16 +112,14 @@ matrix:
     dist: trusty
     addons:
       apt:
-        sources:
-          <<: *pkg_src_zeromq_ubuntu14
+        sources: *pkg_src_zeromq_ubuntu14
         packages:
         - *pkg_deps_common
   - env: BUILD_TYPE=default-with-docs
     os: linux
     addons:
       apt:
-        sources:
-          <<: *pkg_src_zeromq_ubuntu12
+        sources: *pkg_src_zeromq_ubuntu12
         packages:
         - *pkg_deps_common
         - *pkg_deps_doctools
