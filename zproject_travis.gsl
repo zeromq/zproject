@@ -89,6 +89,8 @@ pkg_src_zeromq_ubuntu14: &pkg_src_zeromq_ubuntu14
   key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/Release.key'
 
 # Note: refer to ubuntu14 if you use dist==Trusty
+# Also note that as of early 2017, either dist==trusty or services==docker
+# is needed for C++11 support; docker envs are usually faster to start up
 addons:
   apt:
     sources: *pkg_src_zeromq_ubuntu12
