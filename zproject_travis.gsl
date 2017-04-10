@@ -98,6 +98,14 @@ addons:
 
 matrix:
   include:
+  - env: BUILD_TYPE=default-with-docs
+    os: linux
+    addons:
+      apt:
+        sources: *pkg_src_zeromq_ubuntu12
+        packages:
+        - *pkg_deps_common
+        - *pkg_deps_doctools
   - env: BUILD_TYPE=valgrind
     os: linux
     dist: trusty
@@ -115,14 +123,6 @@ matrix:
         sources: *pkg_src_zeromq_ubuntu14
         packages:
         - *pkg_deps_common
-  - env: BUILD_TYPE=default-with-docs
-    os: linux
-    addons:
-      apt:
-        sources: *pkg_src_zeromq_ubuntu12
-        packages:
-        - *pkg_deps_common
-        - *pkg_deps_doctools
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ] ; then brew update; brew install binutils ; fi
