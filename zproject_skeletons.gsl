@@ -304,7 +304,7 @@ $(actor.name:c)_test (bool verbose)
     // Note: If your selftest reads SCMed fixture data, please keep it in
     // src/selftest-ro; if your test creates filesystem objects, please
     // do so under src/selftest-rw. They are defined below along with a
-    // usecase (asert) to make compilers happy.
+    // usecase for the variables (assert) to make compilers happy.
     const char *SELFTEST_DIR_RO = "src/selftest-ro";
     const char *SELFTEST_DIR_RW = "src/selftest-rw";
     assert (SELFTEST_DIR_RO);
@@ -464,7 +464,7 @@ $(class.c_name)_test (bool verbose)
     // Note: If your selftest reads SCMed fixture data, please keep it in
     // src/selftest-ro; if your test creates filesystem objects, please
     // do so under src/selftest-rw. They are defined below along with a
-    // usecase (asert) to make compilers happy.
+    // usecase for the variables (assert) to make compilers happy.
     const char *SELFTEST_DIR_RO = "src/selftest-ro";
     const char *SELFTEST_DIR_RW = "src/selftest-rw";
     assert (SELFTEST_DIR_RO);
