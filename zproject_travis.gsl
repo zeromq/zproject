@@ -77,7 +77,7 @@ pkg_deps_doctools: &pkg_deps_doctools
     - asciidoc
     - xmlto
 
-pkg_deps_doctools: &pkg_deps_devtools
+pkg_deps_devtools: &pkg_deps_devtools
     - git
 
 pkg_src_zeromq_ubuntu12: &pkg_src_zeromq_ubuntu12
