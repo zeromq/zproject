@@ -1398,6 +1398,9 @@ EXTRA_DIST += \\
 endif
 
 EXTRA_DIST += \\
+.if file.exists ("bindings")
+    bindings \\
+.endif
 .for extra
     src/$(extra.name) \\
 .endfor
