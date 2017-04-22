@@ -344,6 +344,9 @@ stable\
     else
         test_runall (verbose);
 
+#ifdef __WINDOWS__
+    zsys_shutdown();
+#endif
     return 0;
 }
 /*
