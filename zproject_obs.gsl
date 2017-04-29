@@ -26,6 +26,7 @@ register_target ("obs", "service for Open Build Service")
     <!-- extract redhat packaging -->
     <param name="exclude">.git</param>
     <param name="changesgenerate">enable</param>
+    <param name="filename">$(string.replace (project.name, "_|-"):lower)</param>
   </service>
 
   <!-- extract redhat packaging -->
