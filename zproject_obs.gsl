@@ -24,6 +24,7 @@ register_target ("obs", "service for Open Build Service")
     <param name="versionrewrite-pattern">v(.*)</param>
     <param name="versionrewrite-replacement">\1</param>
     <!-- extract redhat packaging -->
+    <param name="exclude">.git</param>
     <param name="changesgenerate">enable</param>
   </service>
 
