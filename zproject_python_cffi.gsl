@@ -85,7 +85,8 @@ function generate_binding
     >import re
     >import sys
     >
-    >from pyczmq._cffi import ffi
+    >import cffi
+    >ffi = cffi.FFI()
     >
     >try:
     >    # If LD_LIBRARY_PATH or your OSs equivalent is set, this is the only way to
