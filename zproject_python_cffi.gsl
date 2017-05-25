@@ -76,13 +76,23 @@ function resolve_class (class)
 endfunction
 
 function generate_binding
-    directory.create ("bindings/python_cffi")
-    output "bindings/python_cffi/$(project.name:c)_cffi.py"
+    directory.create ("bindings/python_cffi/$(project.name:c)_cffi")
+    output "bindings/python_cffi/$(project.name:c)_cffi/__init__.py"
     >$(project.GENERATED_WARNING_HEADER:)
+    >try:
+    >    import native
+    >    lib = native.lib
+    >    ffi = native.ffi
+    >except ImportError:
+    >    import dlopen
+    >    lib = dlopen.lib
+    >    ffi = dlopen.ffi
     >
+
+    output "bindings/python_cffi/$(project.name:c)_cffi/dlopen.py"
+    >$(project.GENERATED_WARNING_HEADER:)
     >from __future__ import print_function
     >import os
-    >import re
     >import sys
     >
     >import cffi
@@ -105,10 +115,116 @@ function generate_binding
     >        raise ImportError("Unable to find $(project.libname)")
     >    lib = ffi.dlopen(libpath)
     >
+    >from $(project.name:c)_cffi.cdefs import $(project.name:c)_cdefs
+    >
+    >for cdef in $(project.name:c)_cdefs:
+    >   ffi.cdef (cdef)
+
+    output "bindings/python_cffi/$(project.name:c)_cffi/build.py"
+    >$(project.GENERATED_WARNING_HEADER:)
+    >
+    >from __future__ import print_function
+    >import os
+    >import re
+    >import sys
+    >
+    >import subprocess
+    >def pkgconfig_installed ():
+    >   try:
+    >        subprocess.check_output (["pkg-config", "--version"])
+    >        return True
+    >   except subprocess.CalledProcessError:
+    >        return False
+    >
+    >def pkgconfig_kwargs (libs):
+    >    """If pkg-config is available, then return kwargs for set_source based on pkg-config output
+    >    
+    >    It setup include_dirs, library_dirs, libraries and define_macros
+    >    """
+    >
+    >    # make API great again!
+    >    if isinstance (libs, (str, bytes)):
+    >        libs = (libs, )
+    >    
+    >    # drop starting -I -L -l from cflags
+    >    def dropILl (string):
+    >        def _dropILl (string):
+    >            if string.startswith ("-I") or string.startswith ("-L") or string.startswith ("-l"):
+    >                return string [2:]
+    >        return [_dropILl (x) for x in string.split ()]
+    >
+    >    # convert -Dfoo=bar to list of tuples [("foo", "bar")] expected by cffi
+    >    def macros (string):
+    >        def _macros (string):
+    >            return tuple (string [2:].split ('=', 2))
+    >        return [_macros (x) for x in string.split () if x.startswith ("-D")]
+    >
+    >    # pkg-config call
+    >    def pc (libname, *args):
+    >        a = ["pkg-config", "--print-errors"]
+    >        a.extend (args)
+    >        a.append (libname)
+    >        return subprocess.check_output (a)
+    >
+    >    # return kwargs for given libname
+    >    def kwargs (libname):
+    >        return {
+    >                "include_dirs" : dropILl (pc (libname, "--cflags-only-I")),
+    >                "library_dirs" : dropILl (pc (libname, "--libs-only-L")),
+    >                "libraries" : dropILl (pc (libname, "--libs-only-l")),
+    >                "define_macros" : macros (pc (libname, "--cflags")),
+    >                }
+    >
+    >    # merge all arguments together
+    >    ret = {}
+    >    for libname in libs:
+    >        foo = kwargs (libname)
+    >        for key, value in foo.items ():
+    >            if not key in ret:
+    >                ret [key] = value
+    >            else:
+    >                ret [key].extend (value)
+    >
+    >    return ret
+    >
+    >if not pkgconfig_installed ():
+    >    print ("ERROR: build without pkg-config not supported", file=sys.stderr)
+    >    sys.exit (1)
+    >
+    >kwargs = pkgconfig_kwargs ([
+    for project.use
+    >    "$(use.project)",
+    endfor
+    >    "$(project.libname)"
+    >])
+    >import cffi
+    ># can't import does not work, read and exec manually
+    >with open (os.path.join (
+    >    os.path.dirname (__file__),
+    >    "cdefs.py"), 'r') as fp:
+    >    cdefs_py = fp.read()
+    >gl = {}
+    >exec cdefs_py in gl
+    >$(project.name:c)_cdefs = gl ["$(project.name:c)_cdefs"]
+    >
+    >ffibuilder = cffi.FFI ()
+    >ffibuilder.set_source ("$(project.name:c)_cffi.native", "#include <$(project.header)>", **kwargs)
+    >
+    ># Custom setup for $(project.name)
+    >for item in $(project.name:c)_cdefs:
+    >    ffibuilder.cdef(item)
+    >
+    >if __name__ == "__main__":
+    >    ffibuilder.compile (verbose=True)
+
+    output "bindings/python_cffi/$(project.name:c)_cffi/cdefs.py"
+    >import re
+    >$(project.name:c)_cdefs = list ()
     ># Custom setup for $(project.name)
     >$(file.slurp('src/python_cffi.inc')?'')
     >
-    >cdefs = '''
+    >
+    >$(project.name:c)_cdefs.append ('''
     for project->python_types.type as t
         >typedef struct _$(t.name:c) $(t.name:c);
     endfor
@@ -140,10 +256,28 @@ function generate_binding
             >
         endfor
     endfor
-    >'''
-    >cdefs = re.sub(r';[^;]*\\bva_list\\b[^;]*;', ';', cdefs, flags=re.S) # we don't support anything with a va_list arg
+    >''')
+    >for i, item in enumerate ($(project.name:c)_cdefs):
+    >    $(project.name:c)_cdefs [i] = re.sub(r';[^;]*\\bva_list\\b[^;]*;', ';', item, flags=re.S) # we don't support anything with a va_list arg
     >
-    >ffi.cdef(cdefs)
+
+    output "bindings/python_cffi/README.md"
+    >#$(project.name) cffi bindings
+    >
+    >This package contains low level python bindings for $(project.name) based on cffi library.
+    >Module is compatible with 
+    > * The “in-line”, “ABI mode”, which simply **dlopen** main library and parse C declaration on runtime
+    > * The “out-of-line”, “API mode”, which build C **native** Python extension
+    >
+    >#Building
+    >Run
+    >    export PKG_CONFIG_PATH=/path/to/your/project/pkgconfig
+    >    python $(project.name:c)_cffi/build.py
+    >In order to use the bindings, code will fallback to dlopen part, so no need for C
+    >compiler or devel environment installed.
+    >
+    >#TODO:
+    > * proper setuptools installation
 endfunction
 
     if count (class, defined (class.api) & class.private = "0")
