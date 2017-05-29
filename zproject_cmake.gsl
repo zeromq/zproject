@@ -240,9 +240,19 @@ set_target_properties($(project.linkname)
 )
 set_target_properties ($(project.linkname)
 .if defined (project->abi)
-    PROPERTIES SOVERSION "$(project->abi.current - project->abi.age).$(project->abi.age).$(project->abi.revision)"
+    PROPERTIES SOVERSION "$(project->abi.current - project->abi.age)"
 .else
-    PROPERTIES SOVERSION "0.0.0"
+    PROPERTIES SOVERSION "0"
+.endif
+)
+target_link_libraries($(project.linkname)
+    ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES}
+)
+set_target_properties ($(project.linkname)
+.if defined (project->version)
+    PROPERTIES VERSION "$(project->version.major).$(project->version.minor).$(project->version.patch)"
+.else
+    PROPERTIES VERSION "0.0.0"
 .endif
 )
 target_link_libraries($(project.linkname)
