@@ -772,7 +772,7 @@ implements AutoCloseable\
         self = pointer;
     }
 .       else
-    public $(->return.jni_java_type:) $(jni_name:) ($(jni_method_signature:)) {
+    public $(static) $(->return.jni_java_type:) $(jni_name:) ($(jni_method_signature:)) {
         return new $(->return.type:pascal) (__$(name:camel) ($(jni_shim_invocation_java:)));
     }
 .       endif
