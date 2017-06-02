@@ -145,12 +145,14 @@ function resolve_method (method)
 
     my.method.jni_method_signature = ""
     if my.method.singleton = 1
+        my.method.static = "static"
         my.method.jni_shim_signature_java = ""
         my.method.jni_shim_signature_c = ""
         my.method.jni_shim_invocation_java = ""
         my.method.jni_native_invocation_c = ""
         comma = ""
     else
+        my.method.static = ""
         my.method.jni_shim_signature_java = "long self"
         my.method.jni_shim_signature_c = "jlong self"
         my.method.jni_shim_invocation_java = "self"
