@@ -39,6 +39,15 @@ register_target ("redhat", "packaging for RedHat")
 .   if !has_main & !project.exports_classes
 %global debug_package %{nil}
 .   endif
+
+# build with python_cffi support enabled
+# do not forget to add <target name="python_cffi" /> to your project.xml
+%bcond_with python_cffi
+%if %{with_python_cffi}
+%define py2_ver %(python2 -c "import sys; print ('%d.%d' % (sys.version_info.major, sys.version_info.minor))
+%define py3_ver %(python3 -c "import sys; print ('%d.%d' % (sys.version_info.major, sys.version_info.minor))
+%endif
+
 Name:           $(project.name)
 Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)
 Release:        1
@@ -76,6 +85,11 @@ BuildRequires:  $(use.redhat_name)
 BuildRequires:  $(use.project)-devel
 .endif
 .endfor
+%if %{with_python_cffi}
+BuildRequires:  python-devel >= 2.7
+BuildRequires:  python3-devel >= 3.5
+%endif
+%endif
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 .if project.has_main | count(project.bin) > 0
 .for project.use where use.type ?= "runtime"
@@ -161,7 +175,32 @@ This package contains development files for $(project.name): $(project.descripti
 .   endfor
 .endif
 
+%if %{with_python_cffi}
 %prep
+%package -n python2-$(project.name)_cffi
+Group:  Python
+Summary:    Python CFFI bindings for $(project.name)
+Requires:  python = %{py2_ver}
+
+%description -n python2-$(project.name)_cffi
+This package contains Python CFFI bindings for $(project.name)
+
+%files -n python2-$(project.name)_cffi
+%{_datadir}/%{_libdir}/python%{py2_ver}/site-packages/$(project.name)_cffi/
+
+
+%package -n python3-$(project.name)_cffi
+Group:  Python
+Summary:    Python 3 CFFI bindings for $(project.name)
+Requires:  python3 = %{py2_ver}
+
+%description -n python3-$(project.name)_cffi
+This package contains Python 3 CFFI bindings for $(project.name)
+
+%files -n python3-$(project.name)_cffi
+%{_datadir}/%{_libdir}/python%{py3_ver}/site-packages/$(project.name)_cffi/
+%endif
+
 %setup -q
 
 %build
@@ -173,12 +212,24 @@ sh autogen.sh
 .endif
 make %{_smp_mflags}
 
+%if %{with_python_cffi}
+cd bindings/python_cffi
+python2 setup.py build
+python3 setup.py build
+%endif
+
 %install
 make install DESTDIR=%{buildroot} %{?_smp_mflags}
 
 # remove static libraries
 find %{buildroot} -name '*.a' | xargs rm -f
 find %{buildroot} -name '*.la' | xargs rm -f
+
+%if %{with_python_cffi}
+cd bindings/python_cffi
+python2 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
+python3 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
+%endif
 
 .if has_main | count(project.bin) > 0
 %files
