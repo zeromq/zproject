@@ -289,4 +289,20 @@ endfunction
         endfor
         generate_binding ()
     endif
+
+    output "bindings/python_cffi/setup.py"
+    >from setuptools import setup
+    >
+    >setup(
+    >    name = "$(project.name:c)_cffi",
+    >    version = "$(project->version.major).$(project->version.minor).$(project->version.patch)",
+    >    license = "$(project.license)",
+    >    description = """$(project.description)""",
+    >    packages = ["$(project.name)_cffi", ],
+    >    setup_requires=["cffi>=1.0.0"],
+    >    cffi_modules=["$(project.name:c)_cffi/build.py:ffibuilder"],
+    >    install_requires=["cffi>=1.0.0"],
+    >)
+
+
 endfunction
