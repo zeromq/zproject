@@ -701,7 +701,7 @@ Methods:
 
 ```
 .       if count (method.return)
-.           if $(->return.is_object)
+.           if method.return.is_object ?= 1 & $(->return.is_object)
 $(->return.type:Pascal) \
 .           else
 $(->return.type:) \
