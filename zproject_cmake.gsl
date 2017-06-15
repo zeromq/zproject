@@ -245,9 +245,6 @@ set_target_properties ($(project.linkname)
     PROPERTIES SOVERSION "0"
 .endif
 )
-target_link_libraries($(project.linkname)
-    ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES}
-)
 set_target_properties ($(project.linkname)
 .if defined (project->version)
     PROPERTIES VERSION "$(project->version.major).$(project->version.minor).$(project->version.patch)"
