@@ -218,6 +218,7 @@ function generate_binding
     >    ffibuilder.compile (verbose=True)
 
     output "bindings/python_cffi/$(project.name:c)_cffi/cdefs.py"
+    >$(project.GENERATED_WARNING_HEADER:)
     >import re
     >$(project.name:c)_cdefs = list ()
     ># Custom setup for $(project.name)
@@ -262,6 +263,7 @@ function generate_binding
     >
 
     output "bindings/python_cffi/README.md"
+    >$(project.GENERATED_WARNING_HEADER:)
     >#$(project.name) cffi bindings
     >
     >This package contains low level python bindings for $(project.name) based on cffi library.
@@ -291,6 +293,7 @@ endfunction
     endif
 
     output "bindings/python_cffi/setup.py"
+    >$(project.GENERATED_WARNING_HEADER:)
     >from setuptools import setup
     >
     >setup(
