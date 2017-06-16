@@ -300,7 +300,7 @@ endfunction
     >    name = "$(project.name:c)_cffi",
     >    version = "$(project->version.major).$(project->version.minor).$(project->version.patch)",
     >    license = "$(project.license)",
-    >    description = """$(project.description)""",
+    >    description = """Python cffi bindings of: $(project.description)""",
     >    packages = ["$(project.name)_cffi", ],
     >    setup_requires=["cffi>=1.0.0"],
     >    cffi_modules=["$(project.name:c)_cffi/build.py:ffibuilder"],
