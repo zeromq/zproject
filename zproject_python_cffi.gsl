@@ -218,6 +218,7 @@ function generate_binding
     >    ffibuilder.compile (verbose=True)
 
     output "bindings/python_cffi/$(project.name:c)_cffi/cdefs.py"
+    >$(project.GENERATED_WARNING_HEADER:)
     >import re
     >$(project.name:c)_cdefs = list ()
     ># Custom setup for $(project.name)
@@ -262,6 +263,7 @@ function generate_binding
     >
 
     output "bindings/python_cffi/README.md"
+    >$(project.GENERATED_WARNING_HEADER:)
     >#$(project.name) cffi bindings
     >
     >This package contains low level python bindings for $(project.name) based on cffi library.
@@ -269,15 +271,12 @@ function generate_binding
     > * The “in-line”, “ABI mode”, which simply **dlopen** main library and parse C declaration on runtime
     > * The “out-of-line”, “API mode”, which build C **native** Python extension
     >
-    >#Building
-    >Run
-    >    export PKG_CONFIG_PATH=/path/to/your/project/pkgconfig
-    >    python $(project.name:c)_cffi/build.py
-    >In order to use the bindings, code will fallback to dlopen part, so no need for C
-    >compiler or devel environment installed.
+    >#Build the native extension
     >
-    >#TODO:
-    > * proper setuptools installation
+    >    python setup.py build
+    >
+    >Note you need to have setuptools and cffi packages installed.
+    >
 endfunction
 
     if count (class, defined (class.api) & class.private = "0")
@@ -289,4 +288,21 @@ endfunction
         endfor
         generate_binding ()
     endif
+
+    output "bindings/python_cffi/setup.py"
+    >$(project.GENERATED_WARNING_HEADER:)
+    >from setuptools import setup
+    >
+    >setup(
+    >    name = "$(project.name:c)_cffi",
+    >    version = "$(project->version.major).$(project->version.minor).$(project->version.patch)",
+    >    license = "$(project.license)",
+    >    description = """Python cffi bindings of: $(project.description)""",
+    >    packages = ["$(project.name)_cffi", ],
+    >    setup_requires=["cffi>=1.0.0"],
+    >    cffi_modules=["$(project.name:c)_cffi/build.py:ffibuilder"],
+    >    install_requires=["cffi>=1.0.0"],
+    >)
+
+
 endfunction
