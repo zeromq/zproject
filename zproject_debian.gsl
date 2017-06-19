@@ -69,8 +69,9 @@ Package: $(string.replace (project.libname, "_|-"))0
 .endif
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: $(project.description) shared library
- This package contains shared library for $(project.name): $(project.description)
+Description: $(project.name) shared library
+ This package contains shared library for $(project.name):
+ $(project.description)
 
 Package: $(string.replace (project.libname, "_|-"))-dev
 Architecture: any
@@ -94,8 +95,9 @@ Depends:
 .else
     $(string.replace (project.libname, "_|-"))0 (= ${binary:Version})
 .endif
-Description: $(project.description) development tools
- This package contains development files for $(project.name): $(project.description)
+Description: $(project.name) development tools
+ This package contains development files for $(project.name):
+ $(project.description)
 .endif
 
 .if project.has_main | count(project.bin) > 0
@@ -115,8 +117,9 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
     $(string.replace (use.project, "_|-")),
 .endif
 .endfor
-Description: $(project.description)
- Main package for $(project.name): $(project.description)
+Description: runnable binaries from $(project.name)
+ Main package for $(project.name):
+ $(project.description)
 .endif
 
 Package: $(string.replace (project.name, "_|-"):lower)-dbg
@@ -134,8 +137,9 @@ Depends:
 .endif
 .endif
     ${misc:Depends}
-Description: $(project.description) debugging symbols
- This package contains the debugging symbols for $(project.name) : $(project.description).
+Description: $(project.name) debugging symbols
+ This package contains the debugging symbols for $(project.name):
+ $(project.description).
 
 .output "packaging/debian/copyright"
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
