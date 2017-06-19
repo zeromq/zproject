@@ -16,6 +16,9 @@ register_target ("debian", "packaging for Debian")
 .for project.main where ( defined(main.service) & main.service > 0 )
 .   systemd = 1
 .endfor
+.for project.target where ( target.name = "*" | target.name = "python_cffi" > 0 ) & project.exports_classes
+.   python_cffi = 1
+.endfor
 .directory.create ('packaging/debian')
 .output "packaging/debian/changelog"
 $(project.name:lower) ($(->version.major).$(->version.minor).$(->version.patch)) UNRELEASED; urgency=low
@@ -57,6 +60,11 @@ Build-Depends: debhelper (>= 9),
 .# necessary for systemd.pc to get unit install path
     systemd,
     dh-systemd,
+.endif
+.if python_cffi ?= 1
+    dh-python,
+    python-all-dev, python-cffi, python-setuptools,
+    python3-all-dev, python3-cffi, python3-setuptools,
 .endif
     asciidoc-base | asciidoc, xmlto,
     dh-autoreconf
@@ -141,7 +149,36 @@ Depends:
 Description: $(project.name) debugging symbols
  This package contains the debugging symbols for $(project.name):
  $(project.description).
+.if python_cffi ?= 1
 
+Package: python-$(string.replace (project.name, "_|-"):lower)-cffi
+Architecture: any
+Section: python
+Depends:
+.if defined (project->abi)
+    $(string.replace (project.libname, "_|-"))$(project->abi.current - project->abi.age) (= ${binary:Version}),
+.else
+    $(string.replace (project.libname, "_|-"))0 (= ${binary:Version}),
+.endif
+    ${misc:Depends}, ${shlibs:Depends},
+    ${python:Depends}, python-cffi,
+Description: Python CFFI bindings for $(project.name)
+ This package contains Python CFFI bindings for $(project.name).
+
+Package: python3-$(string.replace (project.name, "_|-"):lower)-cffi
+Architecture: any
+Section: python
+Depends:
+.if defined (project->abi)
+    $(string.replace (project.libname, "_|-"))$(project->abi.current - project->abi.age) (= ${binary:Version}),
+.else
+    $(string.replace (project.libname, "_|-"))0 (= ${binary:Version}),
+.endif
+    ${misc:Depends}, ${shlibs:Depends},
+    ${python3:Depends}, python3-cffi,
+Description: Python 3 CFFI bindings for $(project.name)
+ This package contains Python 3 CFFI bindings for $(project.name).
+.endif
 .output "packaging/debian/copyright"
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: $(project.name)
@@ -178,10 +215,34 @@ endif
 ifneq (,\$(findstring drafts,\$(DEB_BUILD_OPTIONS)))
 DRAFTS=yes
 endif
+.if python_cffi ?= 1
+
+export PYBUILD_NAME=czmq-cffi
+export PKG_CONFIG_PATH=\$(CURDIR)/bindings/python_cffi:$PKG_CONFIG_PATH
+
+override_dh_auto_build:
+	dh_auto_build
+	# Problem: we need pkg-config points to built and not yet installed copy of $(project.name)
+	# Solution: chicken-egg problem - let's make "fake" pkg-config file
+	sed -e "s@^libdir.*@libdir=\$(CURDIR)/src/.libs@" \
+		-e "s@^includedir.*@includedir=\$(CURDIR)/include@" \
+		src/$(string.replace (project.libname, "_|-")).pc > bindings/python_cffi/$(string.replace (project.libname, "_|-")).pc
+	dh_auto_build --sourcedirectory=bindings/python_cffi -O--buildsystem=pybuild
+
+override_dh_auto_install:
+	dh_auto_install
+	dh_auto_install --sourcedirectory=bindings/python_cffi -O--buildsystem=pybuild
+
+override_dh_auto_clean:
+	dh_auto_clean
+	dh_auto_clean -O--buildsystem=pybuild
+	rm -f bindings/python_cffi/*.pc
+	rm -rf bindings/python_cffi/*.egg-info/
+.endif
 
 # Workaround for automake < 1.14 bug
 \$(shell dpkg --compare-versions `dpkg-query -W -f='\$${Version}\\n' automake` lt 1:1.14 && mkdir -p config)
-test -f src/Makemodule-local.am || touch src/Makemodule-local.am
+\$(shell test -f src/Makemodule-local.am || touch src/Makemodule-local.am)
 
 override_dh_strip:
 	dh_strip --dbg-package=$(string.replace (project.name, "_|-"):lower)-dbg
@@ -200,6 +261,9 @@ override_dh_auto_configure:
 	dh $@ \\
 .if systemd ?= 1
 		--with systemd \\
+.endif
+.if python_cffi ?= 1
+		--with python2,python3 \\
 .endif
 		--with autoreconf
 .chmod_x ("packaging/debian/rules")
@@ -303,6 +367,11 @@ Build-Depends: debhelper (>= 9),
 .if systemd ?= 1
     systemd,
     dh-systemd,
+.endif
+.if python_cffi ?= 1
+    dh-python,
+    python-all-dev, python-cffi, python-setuptools,
+    python3-all-dev, python3-cffi, python3-setuptools,
 .endif
     asciidoc-base | asciidoc, xmlto,
     dh-autoreconf
