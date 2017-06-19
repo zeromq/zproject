@@ -196,7 +196,7 @@ This package contains Python CFFI bindings for $(project.name)
 
 %files -n python2-$(project.name)_cffi
 %{_libdir}/python%{py2_ver}/site-packages/czmq_cffi/
-%{_libdir}/python%{py2_ver}/site-packages/czmq_cffi-%{version}-py%{py2_ver}.egg-info/
+%{_libdir}/python%{py2_ver}/site-packages/czmq_cffi-*-py%{py2_ver}.egg-info/
 
 %package -n python3-$(project.name)_cffi
 Group:  Python
@@ -208,7 +208,7 @@ This package contains Python 3 CFFI bindings for $(project.name)
 
 %files -n python3-$(project.name)_cffi
 %{_libdir}/python%{py3_ver}/site-packages/czmq_cffi/
-%{_libdir}/python%{py3_ver}/site-packages/czmq_cffi-%{version}-py%{py3_ver}.egg-info/
+%{_libdir}/python%{py3_ver}/site-packages/czmq_cffi-*-py%{py3_ver}.egg-info/
 %endif
 .endif
 
