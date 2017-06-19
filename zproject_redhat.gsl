@@ -16,6 +16,9 @@ register_target ("redhat", "packaging for RedHat")
 .for project.main where ( defined(main.service) & main.service > 0 )
 .   systemd = 1
 .endfor
+.for project.target where ( target.name = "*" | target.name = "python_cffi" > 0 )
+.   python_cffi = 1
+.endfor
 .directory.create ('packaging/redhat')
 .output "packaging/redhat/$(project.name).spec"
 #
@@ -39,6 +42,16 @@ register_target ("redhat", "packaging for RedHat")
 .   if !has_main & !project.exports_classes
 %global debug_package %{nil}
 .   endif
+
+.if python_cffi ?= 1
+# build with python_cffi support enabled
+%bcond_with python_cffi
+%if %{with python_cffi}
+%define py2_ver %(python2 -c "import sys; print ('%d.%d' % (sys.version_info.major, sys.version_info.minor))")
+%define py3_ver %(python3 -c "import sys; print ('%d.%d' % (sys.version_info.major, sys.version_info.minor))")
+%endif
+.endif
+
 Name:           $(project.name)
 Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)
 Release:        1
@@ -76,6 +89,16 @@ BuildRequires:  $(use.redhat_name)
 BuildRequires:  $(use.project)-devel
 .endif
 .endfor
+.if python_cffi ?= 1
+%if %{with python_cffi}
+BuildRequires:  python-cffi
+BuildRequires:  python-devel >= 2.7
+BuildRequires:  python-setuptools
+BuildRequires:  python3-devel >= 3.5
+BuildRequires:  python3-cffi
+BuildRequires:  python3-setuptools
+%endif
+.endif
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 .if project.has_main | count(project.bin) > 0
 .for project.use where use.type ?= "runtime"
@@ -161,11 +184,47 @@ This package contains development files for $(project.name): $(project.descripti
 .   endfor
 .endif
 
+.if python_cffi ?= 1
+%if %{with python_cffi}
+%package -n python2-$(project.name)_cffi
+Group:  Python
+Summary:    Python CFFI bindings for $(project.name)
+Requires:  python = %{py2_ver}
+
+%description -n python2-$(project.name)_cffi
+This package contains Python CFFI bindings for $(project.name)
+
+%files -n python2-$(project.name)_cffi
+%{_libdir}/python%{py2_ver}/site-packages/czmq_cffi/
+%{_libdir}/python%{py2_ver}/site-packages/czmq_cffi-*-py%{py2_ver}.egg-info/
+
+%package -n python3-$(project.name)_cffi
+Group:  Python
+Summary:    Python 3 CFFI bindings for $(project.name)
+Requires:  python3 = %{py2_ver}
+
+%description -n python3-$(project.name)_cffi
+This package contains Python 3 CFFI bindings for $(project.name)
+
+%files -n python3-$(project.name)_cffi
+%{_libdir}/python%{py3_ver}/site-packages/czmq_cffi/
+%{_libdir}/python%{py3_ver}/site-packages/czmq_cffi-*-py%{py3_ver}.egg-info/
+%endif
+.endif
+
 %prep
+#FIXME: %{error:...} did not worked for me
+%if %{with python_cffi}
+%if %{without drafts}
+echo "FATAL: python_cffi not yet supported w/o drafts"
+exit 1
+%endif
+%endif
+
 %setup -q
 
 %build
-sh autogen.sh
+[ -f autogen.sh ] && sh autogen.sh
 .if systemd ?= 1
 %{configure} --enable-drafts=%{DRAFTS} --with-systemd-units
 .else
@@ -173,12 +232,35 @@ sh autogen.sh
 .endif
 make %{_smp_mflags}
 
+.if python_cffi ?= 1
+%if %{with python_cffi}
+# Problem: we need pkg-config points to built and not yet installed copy of czmq
+# Solution: chicken-egg problem - let's make "fake" pkg-config file
+sed -e "s@^libdir.*@libdir=`pwd`/src/.libs@" \\
+    -e "s@^includedir.*@includedir=`pwd`/include@" \\
+    src/libczmq.pc > bindings/python_cffi/libczmq.pc
+cd bindings/python_cffi
+export PKG_CONFIG_PATH=`pwd`
+python2 setup.py build
+python3 setup.py build
+%endif
+.endif
+
 %install
 make install DESTDIR=%{buildroot} %{?_smp_mflags}
 
 # remove static libraries
 find %{buildroot} -name '*.a' | xargs rm -f
 find %{buildroot} -name '*.la' | xargs rm -f
+
+.if python_cffi ?= 1
+%if %{with python_cffi}
+cd bindings/python_cffi
+export PKG_CONFIG_PATH=`pwd`
+python2 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
+python3 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
+%endif
+.endif
 
 .if has_main | count(project.bin) > 0
 %files
