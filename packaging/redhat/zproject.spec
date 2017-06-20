@@ -59,7 +59,7 @@ exit 1
 %setup -q
 
 %build
-[ -f autogen.sh ] && sh autogen.sh
+sh autogen.sh
 %{configure} --enable-drafts=%{DRAFTS}
 make %{_smp_mflags}
 

@@ -224,7 +224,7 @@ exit 1
 %setup -q
 
 %build
-[ -f autogen.sh ] && sh autogen.sh
+sh autogen.sh
 .if systemd ?= 1
 %{configure} --enable-drafts=%{DRAFTS} --with-systemd-units
 .else
