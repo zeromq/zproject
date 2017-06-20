@@ -202,8 +202,8 @@ function generate_binding
     >    sys.exit (1)
     >
     >kwargs = pkgconfig_kwargs ([
-    for project.use
-    >    "$(use.project)",
+    for project.use where (use.pkgconfig ?<> "")
+    >    "$(use.pkgconfig)",
     endfor
     >    "$(project.libname)"
     >])
