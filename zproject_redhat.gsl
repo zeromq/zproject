@@ -42,16 +42,16 @@ register_target ("redhat", "packaging for RedHat")
 .   if !has_main & !project.exports_classes
 %global debug_package %{nil}
 .   endif
-
 .if python_cffi ?= 1
+
 # build with python_cffi support enabled
 %bcond_with python_cffi
 %if %{with python_cffi}
 %define py2_ver %(python2 -c "import sys; print ('%d.%d' % (sys.version_info.major, sys.version_info.minor))")
 %define py3_ver %(python3 -c "import sys; print ('%d.%d' % (sys.version_info.major, sys.version_info.minor))")
 %endif
-.endif
 
+.endif
 Name:           $(project.name)
 Version:        $(project->version.major).$(project->version.minor).$(project->version.patch)
 Release:        1
@@ -183,8 +183,8 @@ This package contains development files for $(project.name): $(project.descripti
 .      endif
 .   endfor
 .endif
-
 .if python_cffi ?= 1
+
 %if %{with python_cffi}
 %package -n python2-$(project.name)_cffi
 Group:  Python
@@ -231,8 +231,8 @@ exit 1
 %{configure} --enable-drafts=%{DRAFTS}
 .endif
 make %{_smp_mflags}
-
 .if python_cffi ?= 1
+
 %if %{with python_cffi}
 # Problem: we need pkg-config points to built and not yet installed copy of czmq
 # Solution: chicken-egg problem - let's make "fake" pkg-config file
@@ -260,8 +260,8 @@ export PKG_CONFIG_PATH=`pwd`
 python2 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
 python3 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
 %endif
-.endif
 
+.endif
 .if has_main | count(project.bin) > 0
 %files
 %defattr(-,root,root)
