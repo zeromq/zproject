@@ -92,9 +92,9 @@ BuildRequires:  $(use.project)-devel
 .if python_cffi ?= 1
 %if %{with python_cffi}
 BuildRequires:  python-cffi
-BuildRequires:  python-devel >= 2.7
+BuildRequires:  python-devel
 BuildRequires:  python-setuptools
-BuildRequires:  python3-devel >= 3.5
+BuildRequires:  python3-devel
 BuildRequires:  python3-cffi
 BuildRequires:  python3-setuptools
 %endif

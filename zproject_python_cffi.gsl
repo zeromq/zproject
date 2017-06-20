@@ -309,9 +309,9 @@ endfunction
     >    license = "$(project.license)",
     >    description = """Python cffi bindings of: $(project.description)""",
     >    packages = ["$(project.name)_cffi", ],
-    >    setup_requires=["cffi>=1.0.0"],
+    >    setup_requires=["cffi"],
     >    cffi_modules=["$(project.name:c)_cffi/build.py:ffibuilder"],
-    >    install_requires=["cffi>=1.0.0"],
+    >    install_requires=["cffi"],
     >)
 
 
