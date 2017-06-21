@@ -181,14 +181,7 @@ endif
 
 # Workaround for automake < 1.14 bug
 \$(shell dpkg --compare-versions `dpkg-query -W -f='\$${Version}\\n' automake` lt 1:1.14 && mkdir -p config)
-
-\.autogened: autogen.sh
-	@echo "Executing autogen.sh for this project..."
-	./autogen.sh
-	touch $@
-
-clean-autogened:
-	rm -f .autogened
+test -f src/Makemodule-local.am || touch src/Makemodule-local.am
 
 override_dh_strip:
 	dh_strip --dbg-package=$(string.replace (project.name, "_|-"):lower)-dbg
@@ -196,16 +189,12 @@ override_dh_strip:
 override_dh_auto_test:
 	echo "Skipped for now"
 
-override_dh_auto_configure: .autogened
+override_dh_auto_configure:
 	dh_auto_configure -- \\
 .if systemd ?= 1
 		--with-systemd-units \\
 .endif
 		--enable-drafts=\$(DRAFTS)
-
-# Additional dependency for certain targets
-build: .autogened
-clean: clean-autogened
 
 %:
 	dh $@ \\
