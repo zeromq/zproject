@@ -25,8 +25,9 @@ Package: zproject
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
     generator-scripting-language,
-Description: project
- Main package for zproject: project
+Description: runnable binaries from zproject
+ Main package for zproject:
+ project
 
 Package: zproject-dbg
 Architecture: any
@@ -35,6 +36,6 @@ Priority: extra
 Depends:
     zproject (= ${binary:Version}),
     ${misc:Depends}
-Description: project debugging symbols
- This package contains the debugging symbols for zproject : project.
-
+Description: zproject debugging symbols
+ This package contains the debugging symbols for zproject:
+ project.
