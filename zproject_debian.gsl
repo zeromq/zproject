@@ -209,6 +209,11 @@ ifneq ("\$(wildcard \$(OBS_BUILD_CFG))","")
 ifneq ("\$(shell grep drafts \$(OBS_BUILD_CFG))","")
 DRAFTS=yes
 endif
+.if python_cffi ?= 1
+ifneq ("\$(shell grep python_cffi \$(OBS_BUILD_CFG))","")
+PYTHON_CFFI=yes
+endif
+.endif
 endif
 
 # User build: DEB_BUILD_OPTIONS=drafts dpkg-buildpackage
@@ -217,6 +222,12 @@ DRAFTS=yes
 endif
 .if python_cffi ?= 1
 
+# User build: DEB_BUILD_OPTIONS=python_cffi dpkg-buildpackage
+ifneq (,\$(findstring python_cffi,\$(DEB_BUILD_OPTIONS)))
+PYTHON_CFFI=yes
+endif
+
+ifeq (yes,$(PYTHON_CFFI))
 export PYBUILD_NAME=czmq-cffi
 export PKG_CONFIG_PATH=\$(CURDIR)/bindings/python_cffi:$PKG_CONFIG_PATH
 
@@ -238,6 +249,7 @@ override_dh_auto_clean:
 	dh_auto_clean -O--buildsystem=pybuild
 	rm -f bindings/python_cffi/*.pc
 	rm -rf bindings/python_cffi/*.egg-info/
+endif
 .endif
 
 # Workaround for automake < 1.14 bug
