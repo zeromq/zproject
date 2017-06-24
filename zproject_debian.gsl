@@ -67,6 +67,7 @@ Build-Depends: debhelper (>= 9),
     python-all-dev, python-cffi, python-setuptools,
     python3-all-dev, python3-cffi, python3-setuptools,
 .endif
+.- NOTE: after support for Debian 7 and Ubuntu 12.04 is dropped, <!nodoc> can be added to each of the following
     asciidoc-base | asciidoc, xmlto,
     dh-autoreconf
 
@@ -198,6 +199,7 @@ License: $(project.name)_license
 # -*- makefile -*-
 
 DRAFTS=no
+DOCS=yes
 
 # OBS build: add
 #   Macros:
@@ -221,6 +223,13 @@ endif
 # User build: DEB_BUILD_OPTIONS=drafts dpkg-buildpackage
 ifneq (,\$(findstring drafts,\$(DEB_BUILD_OPTIONS)))
 DRAFTS=yes
+endif
+
+ifneq (,\$(findstring nodoc,\$(DEB_BUILD_OPTIONS)))
+DOCS=no
+endif
+ifneq (,\$(findstring nodoc,\$(DEB_BUILD_PROFILES)))
+DOCS=no
 endif
 .if python_cffi ?= 1
 
@@ -280,6 +289,7 @@ override_dh_auto_configure:
 .if systemd ?= 1
 		--with-systemd-units \\
 .endif
+		--with-docs=\$(DOCS) \\
 		--enable-drafts=\$(DRAFTS)
 
 %:
