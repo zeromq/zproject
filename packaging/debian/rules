@@ -2,6 +2,7 @@
 # -*- makefile -*-
 
 DRAFTS=no
+DOCS=yes
 
 # OBS build: add
 #   Macros:
@@ -22,6 +23,13 @@ ifneq (,$(findstring drafts,$(DEB_BUILD_OPTIONS)))
 DRAFTS=yes
 endif
 
+ifneq (,$(findstring nodoc,$(DEB_BUILD_OPTIONS)))
+DOCS=no
+endif
+ifneq (,$(findstring nodoc,$(DEB_BUILD_PROFILES)))
+DOCS=no
+endif
+
 # Workaround for automake < 1.14 bug
 $(shell dpkg --compare-versions `dpkg-query -W -f='$${Version}\n' automake` lt 1:1.14 && mkdir -p config)
 $(shell test -f src/Makemodule-local.am || touch src/Makemodule-local.am)
@@ -34,6 +42,7 @@ override_dh_auto_test:
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
+		--with-docs=$(DOCS) \
 		--enable-drafts=$(DRAFTS)
 
 %:
