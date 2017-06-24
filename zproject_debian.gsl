@@ -62,6 +62,7 @@ Build-Depends: debhelper (>= 9),
     dh-systemd,
 .endif
 .if python_cffi ?= 1
+.- NOTE: after support for Debian 7 and Ubuntu 12.04 is dropped, <!nopython> can be added to each of the following
     dh-python,
     python-all-dev, python-cffi, python-setuptools,
     python3-all-dev, python3-cffi, python3-setuptools,
@@ -153,6 +154,7 @@ Description: $(project.name) debugging symbols
 
 Package: python-$(string.replace (project.name, "_|-"):lower)-cffi
 Architecture: any
+.- NOTE: after support for Debian 7 and Ubuntu 12.04 is dropped, Build-Profiles: <!nopython> can be added
 Section: python
 Depends:
 .if defined (project->abi)
@@ -224,7 +226,12 @@ endif
 
 # User build: DEB_BUILD_OPTIONS=python_cffi dpkg-buildpackage
 ifneq (,\$(findstring python_cffi,\$(DEB_BUILD_OPTIONS)))
+ifeq (,\$(findstring nopython,\$(DEB_BUILD_OPTIONS)))
+ifeq (,\$(findstring nopython,\$(DEB_BUILD_PROFILES)))
 PYTHON_CFFI=yes
+WITH_PYTHON = --with=python2,python3
+endif
+endif
 endif
 
 ifeq (yes,\$(PYTHON_CFFI))
@@ -249,6 +256,12 @@ override_dh_auto_clean:
 	dh_auto_clean -O--buildsystem=pybuild
 	rm -f bindings/python_cffi/*.pc
 	rm -rf bindings/python_cffi/*.egg-info/
+else
+WITH_PYTHON =
+# This tells debhelper to avoid building the python CFFI packages
+DH_OPTIONS += -Npython-$(string.replace (project.name, "_|-"):lower)-cffi
+DH_OPTIONS += -Npython3-$(string.replace (project.name, "_|-"):lower)-cffi
+export DH_OPTIONS
 endif
 .endif
 
@@ -275,7 +288,7 @@ override_dh_auto_configure:
 		--with systemd \\
 .endif
 .if python_cffi ?= 1
-		--with python2,python3 \\
+		\$(WITH_PYTHON) \\
 .endif
 		--with autoreconf
 .chmod_x ("packaging/debian/rules")
