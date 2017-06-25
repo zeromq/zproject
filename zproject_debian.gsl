@@ -304,14 +304,15 @@ override_dh_auto_configure:
 .chmod_x ("packaging/debian/rules")
 .discover_manpages(project)
 .if project.has_main | count(project.bin) > 0
+.   output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).manpages")
+.   for project.main where scope = "public" & project.has_main & man1 ?<> ""
+usr/share/man/man1/$(main.name).1
+.   endfor
 .   output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).install")
 .# generate binary names
 .   for project.main where scope = "public"
 .       if project.has_main
 usr/bin/$(main.name)
-.          if man1 ?<> ""
-usr/share/man/man1/$(main.name).1
-.          endif
 .       endif
 .   endfor
 .   for project.bin
@@ -370,6 +371,7 @@ usr/lib/*/pkgconfig/$(project.libname).pc
 .   if count (class, defined (class.api))
 usr/share/zproject
 .   endif
+.   output ("packaging/debian/$(string.replace (project.libname, "_|-"))-dev.manpages")
 .   if man3 ?<> ""
 usr/share/man/man3/*
 .   endif
