@@ -221,6 +221,9 @@ case "${host_os}" in
         AC_DEFINE(ZPROJECT_HAVE_HPUX, 1, [Have HPUX OS])
         ;;
     *mingw32*)
+        # Disable format error due to incomplete ANSI C
+        CFLAGS="-Wno-error=format -Wno-unused-function -Wno-unused-variable -D_XOPEN_SOURCE $CFLAGS"
+        CPPFLAGS="-Wno-error=format -Wno-unused-function -Wno-unused-variable -D_XOPEN_SOURCE $CPPFLAGS"
         AC_DEFINE(ZPROJECT_HAVE_WINDOWS, 1, [Have Windows OS])
         AC_DEFINE(ZPROJECT_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
@@ -230,7 +233,8 @@ case "${host_os}" in
     *mingw64*)
         # Define on MINGW64 to enable all libeary features
         # Disable format error due to incomplete ANSI C
-        CPPFLAGS="-Wno-error=format -D_XOPEN_SOURCE $CPPFLAGS"
+        CFLAGS="-Wno-error=format -Wno-unused-function -Wno-unused-variable -D_XOPEN_SOURCE $CFLAGS"
+        CPPFLAGS="-Wno-error=format -Wno-unused-function -Wno-unused-variable -D_XOPEN_SOURCE $CPPFLAGS"
         AC_DEFINE(ZPROJECT_HAVE_WINDOWS, 1, [Have Windows OS])
         AC_DEFINE(ZPROJECT_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
