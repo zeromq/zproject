@@ -244,7 +244,7 @@ endif
 endif
 
 ifeq (yes,\$(PYTHON_CFFI))
-export PYBUILD_NAME=czmq-cffi
+export PYBUILD_NAME=$(project.name)-cffi
 export PKG_CONFIG_PATH=\$(CURDIR)/bindings/python_cffi:$PKG_CONFIG_PATH
 
 override_dh_auto_build:
