@@ -306,7 +306,7 @@ override_dh_auto_configure:
 .if project.has_main | count(project.bin) > 0
 .   output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).manpages")
 .   for project.main where scope = "public" & project.has_main & man1 ?<> ""
-usr/share/man/man1/$(main.name).1
+debian/tmp/usr/share/man/man1/$(main.name).1
 .   endfor
 .   output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).install")
 .# generate binary names
@@ -373,10 +373,10 @@ usr/share/zproject
 .   endif
 .   output ("packaging/debian/$(string.replace (project.libname, "_|-"))-dev.manpages")
 .   if man3 ?<> ""
-usr/share/man/man3/*
+debian/tmp/usr/share/man/man3/*
 .   endif
 .   if man7 ?<> ""
-usr/share/man/man7/*
+debian/tmp/usr/share/man/man7/*
 .   endif
 .endif
 .output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).dsc.obs")
