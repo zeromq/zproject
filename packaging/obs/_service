@@ -51,6 +51,11 @@
   </service>
   <service name="extract_file">
     <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/zproject.manpages</param>
+    <param name="outfilename">debian.zproject.manpages</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/format</param>
     <param name="outfilename">debian.format</param>
   </service>
