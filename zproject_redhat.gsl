@@ -213,6 +213,7 @@ This package contains Python 3 CFFI bindings for $(project.name)
 .endif
 
 %prep
+.if python_cffi ?= 1
 #FIXME: %{error:...} did not worked for me
 %if %{with python_cffi}
 %if %{without drafts}
@@ -220,6 +221,7 @@ echo "FATAL: python_cffi not yet supported w/o drafts"
 exit 1
 %endif
 %endif
+.endif
 
 %setup -q
 
