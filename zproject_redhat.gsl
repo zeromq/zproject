@@ -186,27 +186,27 @@ This package contains development files for $(project.name): $(project.descripti
 .if python_cffi ?= 1
 
 %if %{with python_cffi}
-%package -n python2-$(project.name)_cffi
+%package -n python2-$(project.name)-cffi
 Group:  Python
 Summary:    Python CFFI bindings for $(project.name)
 Requires:  python = %{py2_ver}
 
-%description -n python2-$(project.name)_cffi
+%description -n python2-$(project.name)-cffi
 This package contains Python CFFI bindings for $(project.name)
 
-%files -n python2-$(project.name)_cffi
+%files -n python2-$(project.name)-cffi
 %{_libdir}/python%{py2_ver}/site-packages/$(project.name:c)_cffi/
 %{_libdir}/python%{py2_ver}/site-packages/$(project.name:c)_cffi-*-py%{py2_ver}.egg-info/
 
-%package -n python3-$(project.name)_cffi
+%package -n python3-$(project.name)-cffi
 Group:  Python
 Summary:    Python 3 CFFI bindings for $(project.name)
 Requires:  python3 = %{py2_ver}
 
-%description -n python3-$(project.name)_cffi
+%description -n python3-$(project.name)-cffi
 This package contains Python 3 CFFI bindings for $(project.name)
 
-%files -n python3-$(project.name)_cffi
+%files -n python3-$(project.name)-cffi
 %{_libdir}/python%{py3_ver}/site-packages/$(project.name:c)_cffi/
 %{_libdir}/python%{py3_ver}/site-packages/$(project.name:c)_cffi-*-py%{py3_ver}.egg-info/
 %endif
