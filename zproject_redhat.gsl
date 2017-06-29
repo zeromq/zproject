@@ -201,7 +201,7 @@ This package contains Python CFFI bindings for $(project.name)
 %package -n python3-$(project.name)-cffi
 Group:  Python
 Summary:    Python 3 CFFI bindings for $(project.name)
-Requires:  python3 = %{py2_ver}
+Requires:  python3 = %{py3_ver}
 
 %description -n python3-$(project.name)-cffi
 This package contains Python 3 CFFI bindings for $(project.name)
@@ -213,6 +213,7 @@ This package contains Python 3 CFFI bindings for $(project.name)
 .endif
 
 %prep
+.if python_cffi ?= 1
 #FIXME: %{error:...} did not worked for me
 %if %{with python_cffi}
 %if %{without drafts}
@@ -220,6 +221,7 @@ echo "FATAL: python_cffi not yet supported w/o drafts"
 exit 1
 %endif
 %endif
+.endif
 
 %setup -q
 
