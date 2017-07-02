@@ -48,13 +48,6 @@ zproject project.
 
 
 %prep
-#FIXME: %{error:...} did not worked for me
-%if %{with python_cffi}
-%if %{without drafts}
-echo "FATAL: python_cffi not yet supported w/o drafts"
-exit 1
-%endif
-%endif
 
 %setup -q
 
