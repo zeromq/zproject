@@ -297,22 +297,22 @@ endfunction
             resolve_class (class)
         endfor
         generate_binding ()
-    endif
 
-    output "bindings/python_cffi/setup.py"
-    >$(project.GENERATED_WARNING_HEADER:)
-    >from setuptools import setup
-    >
-    >setup(
-    >    name = "$(project.name:c)_cffi",
-    >    version = "$(project->version.major).$(project->version.minor).$(project->version.patch)",
-    >    license = "$(project.license)",
-    >    description = """Python cffi bindings of: $(project.description)""",
-    >    packages = ["$(project.name:c)_cffi", ],
-    >    setup_requires=["cffi"],
-    >    cffi_modules=["$(project.name:c)_cffi/build.py:ffibuilder"],
-    >    install_requires=["cffi"],
-    >)
+        output "bindings/python_cffi/setup.py"
+        >$(project.GENERATED_WARNING_HEADER:)
+        >from setuptools import setup
+        >
+        >setup(
+        >    name = "$(project.name:c)_cffi",
+        >    version = "$(project->version.major).$(project->version.minor).$(project->version.patch)",
+        >    license = "$(project.license)",
+        >    description = """Python cffi bindings of: $(project.description)""",
+        >    packages = ["$(project.name:c)_cffi", ],
+        >    setup_requires=["cffi"],
+        >    cffi_modules=["$(project.name:c)_cffi/build.py:ffibuilder"],
+        >    install_requires=["cffi"],
+        >)
+    endif
 
 
 endfunction
