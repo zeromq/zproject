@@ -186,6 +186,7 @@
     <bin name = "zproject_cmake.gsl" />
     <bin name = "zproject_cygwin.gsl" />
     <bin name = "zproject_debian.gsl" />
+    <bin name = "zproject_delphi.gsl" />
     <bin name = "zproject_docker.gsl" />
     <bin name = "zproject_gyp.gsl" />
     <bin name = "zproject_java.gsl" />

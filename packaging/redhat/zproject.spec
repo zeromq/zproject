@@ -1,13 +1,13 @@
 #
 #    zproject - Project
 #
-#    Copyright (c) the Contributors as noted in the AUTHORS file.       
-#    This file is part of CZMQ, the high-level C binding for 0MQ:       
-#    http://czmq.zeromq.org.                                            
-#                                                                       
+#    Copyright (c) the Contributors as noted in the AUTHORS file.
+#    This file is part of CZMQ, the high-level C binding for 0MQ:
+#    http://czmq.zeromq.org.
+#
 #    This Source Code Form is subject to the terms of the Mozilla Public
 #    License, v. 2.0. If a copy of the MPL was not distributed with this
-#    file, You can obtain one at http://mozilla.org/MPL/2.0/.           
+#    file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
 # To build with draft APIs, use "--with drafts" in rpmbuild for local builds or add
@@ -87,6 +87,7 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/zproject_cmake.gsl
 %{_bindir}/zproject_cygwin.gsl
 %{_bindir}/zproject_debian.gsl
+%{_bindir}/zproject_delphi.gsl
 %{_bindir}/zproject_docker.gsl
 %{_bindir}/zproject_gyp.gsl
 %{_bindir}/zproject_java.gsl

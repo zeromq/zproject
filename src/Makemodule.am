@@ -24,6 +24,7 @@ dist_bin_SCRIPTS = \
     zproject_cmake.gsl \
     zproject_cygwin.gsl \
     zproject_debian.gsl \
+    zproject_delphi.gsl \
     zproject_docker.gsl \
     zproject_gyp.gsl \
     zproject_java.gsl \
