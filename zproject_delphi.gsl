@@ -371,7 +371,7 @@ function target_delphi
   endfunction
 
   function generate_class_interface(class)
-    > 
+    >
     >  // $(class.description:no,block)
     if have_interface(my.class)
     >  T$(class.name:Pascal) = class(TInterfacedObject, I$(class.name:Pascal))
@@ -552,7 +552,7 @@ function target_delphi
              generate_arguments_value(method)
         >    Result := $(generate_return(return, "$(class.name:c)_$(method.name:c)$(generate_arguments_method_call(method))"));
              generate_arguments_cleanup(method)
-        >  end;      
+        >  end;
       endfor
     else
       >  procedure T$(class.name:Pascal).$(check_reserved(method.name))$(generate_arguments(method));
@@ -804,8 +804,11 @@ function target_delphi
 
   function generate_binding
     directory.create ("bindings/delphi")
+    my.oldterm = terminator
+    terminator = "\r\n"
     generate_c_binding()
     generate_object_binding()
+    terminator = my.oldterm
   endfunction
 
 
