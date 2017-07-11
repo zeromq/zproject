@@ -75,6 +75,40 @@ function resolve_class (class)
     endfor
 endfunction
 
+function generate_cdefs (project)
+    for my.project->python_types.type as t
+        >typedef struct _$(t.name:c) $(t.name:c);
+    endfor
+    for class where defined (class.api) & class.private = "0"
+        for class.callback_type
+            >// $(callback_type.description:no,block)
+            >$(c_callback_typedef (callback_type):)
+            >
+        endfor
+    endfor
+    for class where defined (class.api) & class.private = "0"
+        >// CLASS: $(class.name)
+        for class. as f
+            if class(f) = "XML item" & (name(f) = 'constructor' | name(f) = 'destructor')
+                >// $(f.description:no,block)
+                >$(c_method_signature (f):);
+                >
+            endif
+        endfor
+        for class.actor
+            >// $(actor.description:no,block)
+            >$(PROJECT.PREFIX)_EXPORT void
+            >   $(actor.name:c) (zsock_t *pipe, void *args);
+            >
+        endfor
+        for class.method
+            >// $(method.description:no,block)
+            >$(c_method_signature (method):);
+            >
+        endfor
+    endfor
+endfunction
+
 function generate_binding
     directory.create ("bindings/python_cffi/$(project.name:c)_cffi")
     output "bindings/python_cffi/$(project.name:c)_cffi/__init__.py"
@@ -229,6 +263,17 @@ function generate_binding
     >if __name__ == "__main__":
     >    ffibuilder.compile (verbose=True)
 
+    output "bindings/python_cffi/$(project.name:c)_cffi/_cdefs.inc"
+    >$(project.GENERATED_WARNING_HEADER:)
+    ># This file is intended to be included while generating cffi binding for top level library
+    >
+    >$(project.name:c)_cdefs = list ()
+    ># Custom setup for $(project.name)
+    >$(file.slurp('src/python_cffi.inc')?'')
+    >$(project.name:c)_cdefs.append ('''
+    generate_cdefs (project)
+    >''')
+
     output "bindings/python_cffi/$(project.name:c)_cffi/cdefs.py"
     >$(project.GENERATED_WARNING_HEADER:)
     >import re
@@ -238,47 +283,14 @@ function generate_binding
     >
     >#Import definitions from dependent projects
     for project.use
-        if file.exists ('../$(use.project:c)/bindings/python_cffi/$(use.project:c)_cffi/cdefs.py')
-    >$(use.project:c)_slurp = """$(file.slurp('../$(use.project:c)/bindings/python_cffi/$(use.project:c)_cffi/cdefs.py'))"""
-    >gl = {}
-    >exec ($(use.project:c)_slurp, gl)
-    >$(project.name:c)_cdefs.extend (gl ["$(use.project:c)_cdefs"])
-    >
+        if file.exists ('../$(use.project:c)/bindings/python_cffi/$(use.project:c)_cffi/_cdefs.inc')
+            >$(file.slurp('../$(use.project:c)/bindings/python_cffi/$(use.project:c)_cffi/_cdefs.inc'))
+            >$(project.name:c)_cdefs.extend ($(use.project)_cdefs)
         endif
     endfor
     >
     >$(project.name:c)_cdefs.append ('''
-    for project->python_types.type as t
-        >typedef struct _$(t.name:c) $(t.name:c);
-    endfor
-    for class where defined (class.api) & class.private = "0"
-        for class.callback_type
-            >// $(callback_type.description:no,block)
-            >$(c_callback_typedef (callback_type):)
-            >
-        endfor
-    endfor
-    for class where defined (class.api) & class.private = "0"
-        >// CLASS: $(class.name)
-        for class. as f
-            if class(f) = "XML item" & (name(f) = 'constructor' | name(f) = 'destructor')
-                >// $(f.description:no,block)
-                >$(c_method_signature (f):);
-                >
-            endif
-        endfor
-        for class.actor
-            >// $(actor.description:no,block)
-            >$(PROJECT.PREFIX)_EXPORT void
-            >   $(actor.name:c) (zsock_t *pipe, void *args);
-            >
-        endfor
-        for class.method
-            >// $(method.description:no,block)
-            >$(c_method_signature (method):);
-            >
-        endfor
-    endfor
+    generate_cdefs (project)
     >''')
     >for i, item in enumerate ($(project.name:c)_cdefs):
     >    $(project.name:c)_cdefs [i] = re.sub(r';[^;]*\\bva_list\\b[^;]*;', ';', item, flags=re.S) # we don't support anything with a va_list arg
