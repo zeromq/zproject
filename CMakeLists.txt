@@ -128,6 +128,7 @@ foreach(TEST_CLASS ${TEST_CLASSES})
     add_test(
         NAME ${TEST_CLASS}
         COMMAND zproject_selftest --continue --verbose --test ${TEST_CLASS}
+        WORKING_DIRECTORY ${SOURCE_DIR}
     )
     set_tests_properties(
         ${TEST_CLASS}
