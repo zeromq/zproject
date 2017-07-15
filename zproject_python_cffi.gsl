@@ -75,6 +75,40 @@ function resolve_class (class)
     endfor
 endfunction
 
+function generate_cdefs (project)
+    for my.project->python_types.type as t
+        >typedef struct _$(t.name:c) $(t.name:c);
+    endfor
+    for class where defined (class.api) & class.private = "0"
+        for class.callback_type
+            >// $(callback_type.description:no,block)
+            >$(c_callback_typedef (callback_type):)
+            >
+        endfor
+    endfor
+    for class where defined (class.api) & class.private = "0"
+        >// CLASS: $(class.name)
+        for class. as f
+            if class(f) = "XML item" & (name(f) = 'constructor' | name(f) = 'destructor')
+                >// $(f.description:no,block)
+                >$(c_method_signature (f):);
+                >
+            endif
+        endfor
+        for class.actor
+            >// $(actor.description:no,block)
+            >$(PROJECT.PREFIX)_EXPORT void
+            >   $(actor.name:c) (zsock_t *pipe, void *args);
+            >
+        endfor
+        for class.method
+            >// $(method.description:no,block)
+            >$(c_method_signature (method):);
+            >
+        endfor
+    endfor
+endfunction
+
 function generate_binding
     directory.create ("bindings/python_cffi/$(project.name:c)_cffi")
     output "bindings/python_cffi/$(project.name:c)_cffi/__init__.py"
@@ -190,6 +224,8 @@ function generate_binding
     >        if isinstance (value, bytes):
     >            ret [key] = value.decode ("utf-8")
     >        elif isinstance (value, list):
+    >            if len (value) == 0:
+    >                continue
     >            if isinstance (value[0], tuple):
     >                ret [key] = [(v[0].decode ("utf-8"), v[1].decode ("utf-8")) for v in value]
     >            else:
@@ -227,6 +263,17 @@ function generate_binding
     >if __name__ == "__main__":
     >    ffibuilder.compile (verbose=True)
 
+    output "bindings/python_cffi/$(project.name:c)_cffi/_cdefs.inc"
+    >$(project.GENERATED_WARNING_HEADER:)
+    ># This file is intended to be included while generating cffi binding for top level library
+    >
+    >$(project.name:c)_cdefs = list ()
+    ># Custom setup for $(project.name)
+    >$(file.slurp('src/python_cffi.inc')?'')
+    >$(project.name:c)_cdefs.append ('''
+    generate_cdefs (project)
+    >''')
+
     output "bindings/python_cffi/$(project.name:c)_cffi/cdefs.py"
     >$(project.GENERATED_WARNING_HEADER:)
     >import re
@@ -234,39 +281,16 @@ function generate_binding
     ># Custom setup for $(project.name)
     >$(file.slurp('src/python_cffi.inc')?'')
     >
+    >#Import definitions from dependent projects
+    for project.use
+        if file.exists ('../$(use.project:c)/bindings/python_cffi/$(use.project:c)_cffi/_cdefs.inc')
+            >$(file.slurp('../$(use.project:c)/bindings/python_cffi/$(use.project:c)_cffi/_cdefs.inc'))
+            >$(project.name:c)_cdefs.extend ($(use.project)_cdefs)
+        endif
+    endfor
     >
     >$(project.name:c)_cdefs.append ('''
-    for project->python_types.type as t
-        >typedef struct _$(t.name:c) $(t.name:c);
-    endfor
-    for class where defined (class.api) & class.private = "0"
-        for class.callback_type
-            >// $(callback_type.description:no,block)
-            >$(c_callback_typedef (callback_type):)
-            >
-        endfor
-    endfor
-    for class where defined (class.api) & class.private = "0"
-        >// CLASS: $(class.name)
-        for class. as f
-            if class(f) = "XML item" & (name(f) = 'constructor' | name(f) = 'destructor')
-                >// $(f.description:no,block)
-                >$(c_method_signature (f):);
-                >
-            endif
-        endfor
-        for class.actor
-            >// $(actor.description:no,block)
-            >$(PROJECT.PREFIX)_EXPORT void
-            >   $(actor.name:c) (zsock_t *pipe, void *args);
-            >
-        endfor
-        for class.method
-            >// $(method.description:no,block)
-            >$(c_method_signature (method):);
-            >
-        endfor
-    endfor
+    generate_cdefs (project)
     >''')
     >for i, item in enumerate ($(project.name:c)_cdefs):
     >    $(project.name:c)_cdefs [i] = re.sub(r';[^;]*\\bva_list\\b[^;]*;', ';', item, flags=re.S) # we don't support anything with a va_list arg
@@ -285,8 +309,22 @@ function generate_binding
     >
     >    python setup.py build
     >
-    >Note you need to have setuptools and cffi packages installed.
+    >Note you need to have setuptools and cffi packages installed. As well as a checkout of all dependencies
+    >at the same level as this project, because all dependant defs.py will be included in project cdefs.py.
     >
+    >#Using more cffi modules together
+    >While zproject and CLASS encourages you to split your dependencies to smaller libraries, this does
+    >not work well for cffi. zproject generated backends have own private cffi instance, which can't
+    >be easily combined with others in one function call.
+    >
+    >See ML thread about topic https://groups.google.com/forum/#!topic/python-cffi/JtAKU-g9Exg
+    >
+    >The solution is to include all the definitions of dependant modules, so we will have an access
+    >to underlying functions directly from top level module. It is a sort of static linking, but
+    >the only way to ensure the cffi bindings will work accross multiple C libraries. And this is the
+    >reason you need to have a checkout at the same level as the project.
+    >
+    >The advantage is there are no python dependencies between modules.
 endfunction
 
     if count (class, defined (class.api) & class.private = "0")
