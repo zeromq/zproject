@@ -124,15 +124,34 @@ endif()
 set(TEST_CLASSES
 )
 
+
+add_custom_target(
+    copy-selftest-ro ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src/selftest-ro ${CMAKE_BINARY_DIR}/src/selftest-ro
+)
+
+add_custom_target(
+    make-selftest-rw ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/src/selftest-rw
+)
+
+set_directory_properties(
+    PROPERTIES
+    ADDITIONAL_MAKE_CLEAN_FILES "${CMAKE_BINARY_DIR}/src/selftest-ro;${CMAKE_BINARY_DIR}/src/selftest-rw"
+)
+
 foreach(TEST_CLASS ${TEST_CLASSES})
     add_test(
         NAME ${TEST_CLASS}
         COMMAND zproject_selftest --continue --verbose --test ${TEST_CLASS}
-        WORKING_DIRECTORY ${SOURCE_DIR}
     )
     set_tests_properties(
         ${TEST_CLASS}
         PROPERTIES TIMEOUT ${CLASSTEST_TIMEOUT}
+    )
+    set_tests_properties(
+        ${TEST_CLASS}
+        PROPERTIES DEPENDS "copy-selftest-ro;make-selftest-rw"
     )
 endforeach(TEST_CLASS)
 
