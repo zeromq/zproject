@@ -438,6 +438,23 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 .endfor
 
 //  Internal API
+.for class where scope = "public"
+.   visibility = "$(PROJECT.PREFIX)_PRIVATE"
+.   for class.method where private
+//  $(method.description:no,block)
+.       if method->return.fresh
+//  Caller owns return value and must destroy it when done.
+.       endif
+$(VISIBILITY) $(c_method_signature (method):)\
+.       if defined(method.format_index)
+ CHECK_PRINTF ($(method.format_index));
+.       else
+;
+.       endif
+
+.   endfor
+.endfor
+
 .for class where scope = "private"
 #include "$(class.c_name).h"
 .endfor
@@ -545,7 +562,7 @@ $(VISIBILITY) void
     $(actor.name:c) (zsock_t *pipe, void *args);
 
 .   endfor
-.   for class.method where draft = my.draft
+.   for class.method where draft = my.draft & !private
 .       method_state_comment (state)
 //  $(method.description:no,block)
 .       if method->return.fresh
