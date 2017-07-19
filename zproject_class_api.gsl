@@ -225,6 +225,7 @@ function resolve_c_method (method, default_description)
     my.method.is_constructor ?= 0
     my.method.is_destructor ?= 0
     my.method.polymorphic ?= 0
+    my.method.private ?= 0
 
     # Resolve language-specific attributes for the C language.
     my.method.c_name ?= "$(my.method.name:c)"
