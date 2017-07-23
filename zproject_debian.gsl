@@ -190,7 +190,7 @@ Files: *
 Copyright: 2015- $(project.name) Developers <$(project.email)>
 License: $(project.name)_license
 .   for project.license
- $(string.trim (license.):block                                         )
+ $(string.search_replace(string.trim (license.), '\n\n', '\n.\n'):block)
 .   endfor
 .output "packaging/debian/format"
 3.0 (quilt)
