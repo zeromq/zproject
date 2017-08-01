@@ -1732,11 +1732,22 @@ clean-local-selftest-rw:
 \t\tfi; \\
 \tfi
 
+check-empty-selftest-rw:
+\tif test -e $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) ; then \\
+\t\tif test `find "$\(abs_top_builddir)/$\(SELFTEST_DIR_RW)" | wc -l` -lt 1 ; then \\
+\t\t\techo "FATAL: selftest did not tidy up the data it wrote" >&2 ; \\
+\t\t\tfind "$\(abs_top_builddir)/$\(SELFTEST_DIR_RW)" ; \\
+\t\t\texit 2; \\
+\t\telse true ; fi; \\
+\telse true ; fi
+
 check-local: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute $\(builddir)/src/$(project.prefix)_selftest
+\t$\(MAKE) check-empty-selftest-rw
 
 check-verbose: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute $\(builddir)/src/$(project.prefix)_selftest -v
+\t$\(MAKE) check-empty-selftest-rw
 
 # Run the selftest binary under valgrind to check for memory leaks
 memcheck: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
@@ -1744,34 +1755,41 @@ memcheck: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW
 \t\t--leak-check=full --show-reachable=yes --error-exitcode=1 \\
 \t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
 \t\t$\(builddir)/src/$(project.prefix)_selftest
+\t$\(MAKE) check-empty-selftest-rw
 
 memcheck-verbose: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute valgrind --tool=memcheck \\
 \t\t--leak-check=full --show-reachable=yes --error-exitcode=1 \\
 \t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
 \t\t$\(builddir)/src/$(project.prefix)_selftest -v
+\t$\(MAKE) check-empty-selftest-rw
 
 # Run the selftest binary under valgrind to check for performance leaks
 callcheck: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute valgrind --tool=callgrind \\
 \t\t$\(builddir)/src/$(project.prefix)_selftest
+\t$\(MAKE) check-empty-selftest-rw
 
 callcheck-verbose: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute valgrind --tool=callgrind \\
 \t\t$\(builddir)/src/$(project.prefix)_selftest -v
+\t$\(MAKE) check-empty-selftest-rw
 
 # Run the selftest binary under gdb for debugging
 debug: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute gdb -q \\
 \t\t$\(builddir)/src/$(project.prefix)_selftest
+\t$\(MAKE) check-empty-selftest-rw
 
 debug-verbose: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute gdb -q \\
 \t\t$\(builddir)/src/$(project.prefix)_selftest -v
+\t$\(MAKE) check-empty-selftest-rw
 
 # Run the selftest binary with verbose switch for tracing
 animate: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute $\(builddir)/src/$(project.prefix)_selftest -v
+\t$\(MAKE) check-empty-selftest-rw
 
 animate-verbose: animate
 
