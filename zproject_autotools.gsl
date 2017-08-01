@@ -1694,7 +1694,10 @@ code:
 SELFTEST_DIR_RO = src/selftest-ro
 SELFTEST_DIR_RW = src/selftest-rw
 
+# This is recreated on every invocation (as a selftest dependency),
+# so tests run in a clean environment
 $\(abs_top_builddir)/$\(SELFTEST_DIR_RW):
+\trm -rf "\$@"
 \tmkdir -p "\$@"
 
 $\(abs_top_builddir)/$\(SELFTEST_DIR_RO): $\(abs_top_srcdir)/$\(SELFTEST_DIR_RO)
