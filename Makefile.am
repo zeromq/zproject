@@ -14,8 +14,8 @@ AM_CPPFLAGS = \
 
 project_libs =
 
-SUBDIRS = 
-DIST_SUBDIRS = 
+SUBDIRS =
+DIST_SUBDIRS =
 lib_LTLIBRARIES =
 bin_PROGRAMS =
 noinst_PROGRAMS =
