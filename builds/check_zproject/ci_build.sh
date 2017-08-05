@@ -24,6 +24,8 @@ case "$CI_TRACE" in
 esac
 
 cd "${REPO_DIR}" || exit
+PATH="`pwd`:$PATH"
+export PATH
 $CI_TIME gsl project.xml
 
 # keep an eye on git version used by CI
