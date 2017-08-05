@@ -16,15 +16,7 @@ env:
   matrix:
     - BUILD_TYPE=default
     - BUILD_TYPE=distcheck
-
-matrix:
-  include:
-  - env: BUILD_TYPE=check_zproject
-    os: linux
-    dist: trusty
-    services: docker
-    addons:
-      apt:
+    - BUILD_TYPE=check_zproject
 
 addons:
   apt:
