@@ -24,7 +24,7 @@ case "$CI_TRACE" in
 esac
 
 cd "${REPO_DIR}" || exit
-$CI_TIME gsl zeromqorg/zproject project.xml
+$CI_TIME gsl project.xml
 
 # keep an eye on git version used by CI
 git --version
