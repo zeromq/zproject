@@ -23,7 +23,10 @@ case "$CI_TRACE" in
         set -x ;;
 esac
 
-$CI_TIME docker run -v "$REPO_DIR":/gsl zeromqorg/zproject project.xml
+cd "${REPO_DIR}" || exit
+PATH="`pwd`:$PATH"
+export PATH
+$CI_TIME gsl project.xml
 
 # keep an eye on git version used by CI
 git --version
