@@ -40,7 +40,7 @@ Source:         $(string.replace (project.name, "_|-"):lower)
 Section:        net
 Priority:       optional
 Maintainer:     $(project.name) Developers <$(project.email)>
-Standards-Version: 4.0.0
+Standards-Version: 4.0.1.0
 Build-Depends: debhelper (>= 9),
     pkg-config,
 .for project.use
@@ -136,7 +136,7 @@ Description: runnable binaries from $(project.name)
 Package: $(string.replace (project.name, "_|-"):lower)-dbg
 Architecture: any
 Section: debug
-Priority: extra
+Priority: optional
 Depends:
 .if project.has_main | count(project.bin) > 0
     $(string.replace (project.name, "_|-"):lower) (= ${binary:Version}),
