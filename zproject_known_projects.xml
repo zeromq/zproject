@@ -192,4 +192,10 @@
             <pkgconfig>lua</pkgconfig>
     </use>
 
+    <use project = "lz4"
+        libname = "liblz4"
+        redhat_name = "liblz4-devel"
+        header = "lz4.h"
+        test = "LZ4_decompress_safe" />
+
 </known_projects>
