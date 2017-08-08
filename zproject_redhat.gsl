@@ -227,11 +227,14 @@ exit 1
 
 %build
 sh autogen.sh
+%{configure} --enable-drafts=%{DRAFTS}\
 .if systemd ?= 1
-%{configure} --enable-drafts=%{DRAFTS} --with-systemd-units
-.else
-%{configure} --enable-drafts=%{DRAFTS}
+ --with-systemd-units\
 .endif
+.for project.use where use.optional
+ --with-$(use.libname)=yes\
+.endfor
+
 make %{_smp_mflags}
 .if python_cffi ?= 1
 
