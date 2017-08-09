@@ -289,6 +289,9 @@ override_dh_auto_configure:
 .if systemd ?= 1
 		--with-systemd-units \\
 .endif
+.for project.use where use.optional
+		--with-$(use.libname)=yes \\
+.endfor
 		--with-docs=\$(DOCS) \\
 		--enable-drafts=\$(DRAFTS)
 
