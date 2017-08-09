@@ -404,6 +404,13 @@ default|default-Werror|default-with-docs|valgrind)
         $CI_TIME make -j4
         $CI_TIME make install
         cd "${BASE_PWD}"
+.           if use.optional
+        CONFIG_OPTS+=("--with-$(use.libname)=yes")
+.           endif
+.       endif
+.       if use.optional
+    else
+        CONFIG_OPTS+=("--with-$(use.libname)=yes")
 .       endif
     fi
 .   endfor
