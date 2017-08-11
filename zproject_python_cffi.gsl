@@ -260,8 +260,30 @@ function generate_binding
     >for item in $(project.name:c)_cdefs:
     >    ffibuilder.cdef(item)
     >
+    >ffidestructorbuilder = cffi.FFI ()
+    >ffidestructorbuilder.cdef('''
+    for class where defined (class.api) & class.private = "0" & count (class.destructor) > 0
+    >void
+    >   $(class.name:c)_destroy_py (void *self);
+    >
+    endfor
+    >''')
+    >
+    >ffidestructorbuilder.set_source ("$(project.name:c)_cffi.destructors", '''
+    >#include <$(project.header)>
+    for class where defined (class.api) & class.private = "0" & count (class.destructor) > 0
+    >void
+    >$(class.name:c)_destroy_py (void *self)
+    >{
+    >   $(class.name:c)_destroy (($(class.name:c)_t **) &self);
+    >}
+    >
+    endfor
+    >''', **kwargs)
+    >
     >if __name__ == "__main__":
     >    ffibuilder.compile (verbose=True)
+    >    ffidestructorbuilder.compile (verbose=True)
 
     output "bindings/python_cffi/$(project.name:c)_cffi/_cdefs.inc"
     >$(project.GENERATED_WARNING_HEADER:)
@@ -347,9 +369,13 @@ endfunction
         >    description = """Python cffi bindings of: $(project.description)""",
         >    packages = ["$(project.name:c)_cffi", ],
         >    setup_requires=["cffi"],
-        >    cffi_modules=["$(project.name:c)_cffi/build.py:ffibuilder"],
+        >    cffi_modules=[
+        >           "$(project.name:c)_cffi/build.py:ffibuilder",
+        >           "$(project.name:c)_cffi/build.py:ffidestructorbuilder"
+        >    ],
         >    install_requires=["cffi"],
         >)
+        >$(project.GENERATED_WARNING_HEADER:)
     endif
 
 
