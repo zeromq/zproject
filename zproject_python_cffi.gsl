@@ -27,7 +27,26 @@ function register_type (struct, pointer)
     endif
 endfunction
 
+# Resolve missing or implicit details in the given container.
+#
+# Here, "container" refers to an <argument/> or <return/> in the model XML.
+# In other words, a container fully describes any value / variable reference
+# that can be passed to or returned from a method.
+#
 function resolve_container (container)
+    # Resolve semantic attributes for python cffi binding.
+    #
+    # After this function, these should all be fully resolved to a value.
+    #
+
+    # Resolve language-specific attributes for the python language.
+    #
+    my.container.py_name ?= "$(my.container.name:c)"
+
+    my.py_arg_pass = my.container.py_name
+
+    # Resolve the `py_type` for this `type`, finish tweaking semantic attributes.
+    #
     if my.container.variadic
     elsif my.container.type = "nothing"
     elsif my.container.type = "anything" | my.container.type = "sockish"
@@ -35,15 +54,25 @@ function resolve_container (container)
     elsif my.container.type = "byte"
     elsif my.container.type = "integer" | my.container.type = "file_size" | my.container.type = "time"
     elsif my.container.type = "number"
+        if my.container.size = 1
+        elsif my.container.size = 2
+        elsif my.container.size = 4
+        elsif my.container.size = 8
+        endif
     elsif my.container.type = "size"
     elsif my.container.type = "real"
     elsif my.container.type = "buffer"
     elsif my.container.type = "FILE"
-    elsif my.container.type = "string" | my.container.type = "format"
+    elsif my.container.type = "string"
+        my.py_arg_pass = "to_bytes($(my.container.py_name:))"
+    elsif my.container.type = "format"
     elsif my.container.callback
     else
         register_type ("$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
+        my.py_arg_pass = "$(my.container.py_name:)._p"
     endif
+
+    my.container.py_arg_pass = my.py_arg_pass
 endfunction
 
 function resolve_method (method)
@@ -51,7 +80,7 @@ function resolve_method (method)
     if regexp.match ("^(is|from)$", my.method.python_name) # matches keyword
         my.method.python_name += "_"
     endif
-    for my.method.argument where !argument.variadic
+    for my.method.argument
         resolve_container (argument)
     endfor
     for my.method.return as ret
@@ -73,6 +102,74 @@ function resolve_class (class)
     for my.class.method
         resolve_method (method)
     endfor
+endfunction
+
+function python_c_method_call (class, method)
+    # Temporarily add pythons self parameter to methods
+    # TODO: Copy methods during resolve and add self parameter there
+    #       instead of creating and destroying them for every call
+    #       of this method.
+    if !my.method.singleton
+        new tmp_arg to my.method as arg
+            arg.name = 'self'
+            arg.c_name = 'self'
+            arg.py_arg_pass = 'self._p'
+            arg.variadic = 0
+        endnew
+    endif
+    for my.method.argument
+        copy argument to my.method as tmp_arg
+    endfor
+
+    my.out = "lib$(project.name:c).$(my.class.c_name)_$(my.method.c_name)("
+    for my.method.tmp_arg as argument
+        if !argument.variadic
+            my.out += (argument.py_arg_pass?"") + (last() ?? '' ? ', ')
+        endif
+    endfor
+    my.out += ")"
+
+    # Cleanup python modified temp arguments
+    for my.method.tmp_arg
+        delete tmp_arg
+    endfor
+    return my.out
+endfunction
+
+function python_method_signature (method)
+    # Temporarily add pythons self parameter to methods
+    # TODO: Copy methods during resolve and add self parameter there
+    #       instead of creating and destroying them for every call
+    #       of this method.
+    if !my.method.singleton | my.method.is_constructor
+        new tmp_arg to my.method as arg
+            arg.name = 'self'
+            arg.c_name = 'self'
+            arg.py_arg_pass = 'self._p'
+            arg.variadic = 0
+        endnew
+    endif
+    for my.method.argument
+        copy argument to my.method as tmp_arg
+    endfor
+
+    if my.method.is_constructor & my.method.name = 'new'
+        my.out = "def __init__("
+    else
+        my.out = "def $(my.method.c_name)("
+    endif
+    for my.method.tmp_arg as argument
+        if !argument.variadic
+            my.out += (argument.c_name?"") + (last() ?? '' ? ', ')
+        endif
+    endfor
+    my.out += "):"
+
+    # Cleanup python modified temp arguments
+    for my.method.tmp_arg
+        delete tmp_arg
+    endfor
+    return my.out
 endfunction
 
 function generate_cdefs (project)
@@ -172,14 +269,14 @@ function generate_binding
     >
     >def pkgconfig_kwargs (libs):
     >    """If pkg-config is available, then return kwargs for set_source based on pkg-config output
-    >    
+    >
     >    It setup include_dirs, library_dirs, libraries and define_macros
     >    """
     >
     >    # make API great again!
     >    if isinstance (libs, (str, bytes)):
     >        libs = (libs, )
-    >    
+    >
     >    # drop starting -I -L -l from cflags
     >    def dropILl (string):
     >        def _dropILl (string):
@@ -323,7 +420,7 @@ function generate_binding
     >#$(project.name) cffi bindings
     >
     >This package contains low level python bindings for $(project.name) based on cffi library.
-    >Module is compatible with 
+    >Module is compatible with
     > * The “in-line”, “ABI mode”, which simply **dlopen** main library and parse C declaration on runtime
     > * The “out-of-line”, “API mode”, which build C **native** Python extension
     >
@@ -349,6 +446,94 @@ function generate_binding
     >The advantage is there are no python dependencies between modules.
 endfunction
 
+.macro generate_classes ()
+.for class where defined (class.api) & class.private = "0"
+.output "bindings/python_cffi/$(project.name:c)_cffi/$(class.name:Pascal).py"
+$(project.GENERATED_WARNING_HEADER:)
+from .utils import *
+from . import native
+from . import destructors
+lib$(project.name:c) = native.lib
+lib$(project.name:c)_destructors = destructors.lib
+ffi = native.ffi
+
+class $(class.name:Pascal)(object):
+    """
+    $(string.trim (class.?""):left)
+    """
+
+.   for class.constructor
+.       if constructor.name = 'new'
+    $(python_method_signature (constructor):)
+        """
+        $(constructor.description:no,block)
+        """
+        p = $(python_c_method_call (class, constructor))
+        if p == ffi.NULL:
+            raise MemoryError("Could not allocate person")
+
+.           for class.destructor
+        # ffi.gc returns a copy of the cdata object which will have the
+        # destructor called when the Python object is GC'd:
+        # https://cffi.readthedocs.org/en/latest/using.html#ffi-interface
+        self._p = ffi.gc(p, lib$(project.name:c)_destructors.$(class.c_name)_destroy_py)
+.           endfor
+.       endif
+
+.   endfor
+.   for class.actor
+        """
+        $(actor.description:no,block)
+        """
+
+.   endfor
+.   for class.method
+    $(python_method_signature (method):)
+        """
+        $(method.description:no,block)
+        """
+.       if count (method.return)
+        return $(python_c_method_call (class, method))
+.       else
+        $(python_c_method_call (class, method))
+.       endif
+
+.   endfor
+.endfor
+$(project.GENERATED_WARNING_HEADER:)
+.close
+
+.output "bindings/python_cffi/$(project.name:c)_cffi/utils.py"
+$(project.GENERATED_WARNING_HEADER:)
+import sys
+
+
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
+
+
+if PY3:
+    text_type = str
+    binary_type = bytes
+else:
+    text_type = unicode
+    binary_type = str
+
+
+def to_bytes(s):
+    if isinstance(s, binary_type):
+        return s
+    return text_type(s).encode("utf-8")
+
+
+def to_unicode(s):
+    if isinstance(s, text_type):
+        return s
+    return binary_type(s).decode("utf-8")
+$(project.GENERATED_WARNING_HEADER:)
+.close
+.endmacro
+
     if count (class, defined (class.api) & class.private = "0")
         # Container for UDTs used by this module
         new python_types
@@ -357,6 +542,7 @@ endfunction
             resolve_class (class)
         endfor
         generate_binding ()
+        generate_classes ()
 
         output "bindings/python_cffi/setup.py"
         >$(project.GENERATED_WARNING_HEADER:)
