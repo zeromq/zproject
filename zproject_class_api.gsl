@@ -537,6 +537,38 @@ function c_callback_typedef (method)
     return my.out
 endfunction
 
+#
+# Saves the state of resolved C classes.
+#
+# This function SHOULD BE called by language bindings that
+# modify the class state with their own properties to avoid
+# property conflicts with other language bindings.
+#
+# If language bindings require the original class they use the
+# saved state at 'project.c_class'. Under no circumstance is a
+# bindings allowed to modify those classes. In case this is needed
+# the language binding MUST copy them first.
+#
+function save_c_class_state()
+    for class
+        copy class to project as c_class
+    endfor
+endfunction
+
+#
+# Restores the state of resolved C classes.
+#
+# This function will discard any changes a language binding may
+# have done to the class state.
+#
+function restore_c_class_state()
+    for class
+        delete class
+    endfor
+    for c_class
+        move c_class to project as class
+    endfor
+endfunction
 
 # Resolve each class using the functions written above.
 #

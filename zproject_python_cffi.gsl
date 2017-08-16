@@ -27,7 +27,7 @@ function register_type (struct, pointer)
     endif
 endfunction
 
-# Resolve missing or implicit details in the given container.
+# Resolve missing or implicit python cffi details in the given container.
 #
 # Here, "container" refers to an <argument/> or <return/> in the model XML.
 # In other words, a container fully describes any value / variable reference
@@ -41,16 +41,16 @@ function resolve_container (container)
 
     # Resolve language-specific attributes for the python language.
     #
-    my.container.py_name ?= "$(my.container.name:c)"
+    my.container.python_name ?= "$(my.container.name:c)"
 
-    my.py_arg_pass = my.container.py_name
+    my.py_arg_pass = my.container.python_name
 
     # Resolve the `py_type` for this `type`, finish tweaking semantic attributes.
     #
     if my.container.variadic
     elsif my.container.type = "nothing"
     elsif my.container.type = "anything" | my.container.type = "sockish"
-        my.py_arg_pass = "$(my.container.py_name:)._p"
+        my.py_arg_pass = "$(my.container.python_name:)._p"
     elsif my.container.type = "boolean"
     elsif my.container.type = "byte"
     elsif my.container.type = "integer" | my.container.type = "file_size" | my.container.type = "time"
@@ -65,23 +65,37 @@ function resolve_container (container)
     elsif my.container.type = "buffer"
     elsif my.container.type = "FILE"
     elsif my.container.type = "string"
-        my.py_arg_pass = "to_bytes($(my.container.py_name:))"
+        my.py_arg_pass = "to_bytes($(my.container.python_name:))"
     elsif my.container.type = "format"
     elsif my.container.callback
     else
         register_type ("$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
-        my.py_arg_pass = "$(my.container.py_name:)._p"
+        my.py_arg_pass = "$(my.container.python_name:)._p"
     endif
 
-    my.container.py_arg_pass = my.py_arg_pass
+    my.container.py_arg_pass ?= my.py_arg_pass
 endfunction
 
 function resolve_method (method)
     my.method.python_name = "$(my.method.name:c)"
+    # Prepend python self argument to non singleton classes
+    if (!my.method.singleton & count (my.method.argument, argument.name = 'self') = 0) | my.method.is_constructor
+        new argument to my.method
+            argument.python_name = 'self'
+            argument.type = 'nothing'
+            argument.py_arg_pass = 'self._p'
+            argument.variadic = 0
+            argument.order = 0
+        endnew
+    endif
     if regexp.match ("^(is|from)$", my.method.python_name) # matches keyword
         my.method.python_name += "_"
     endif
+    # Add order to arguments so we can place python self argument first
+    ORDERNO = 1
     for my.method.argument
+        argument.order ?= ORDERNO
+        ORDERNO += 1
         resolve_container (argument)
     endfor
     for my.method.return as ret
@@ -90,7 +104,7 @@ function resolve_method (method)
 endfunction
 
 function resolve_class (class)
-    register_type("$(class.c_name)_t", "$(class.c_name)_p")
+    my.class.python_name ?= "$(class.name:Pascal)"
     for my.class.callback_type as method
         resolve_method (method)
     endfor
@@ -103,73 +117,34 @@ function resolve_class (class)
     for my.class.method
         resolve_method (method)
     endfor
+    register_type("$(class.c_name)_t", "$(class.c_name)_p")
 endfunction
 
 function python_c_method_call (class, method)
-    # Temporarily add pythons self parameter to methods
-    # TODO: Copy methods during resolve and add self parameter there
-    #       instead of creating and destroying them for every call
-    #       of this method.
-    if !my.method.singleton
-        new tmp_arg to my.method as arg
-            arg.name = 'self'
-            arg.c_name = 'self'
-            arg.py_arg_pass = 'self._p'
-            arg.variadic = 0
-        endnew
-    endif
-    for my.method.argument
-        copy argument to my.method as tmp_arg
-    endfor
-
     my.out = "lib$(project.name:c).$(my.class.c_name)_$(my.method.c_name)("
-    for my.method.tmp_arg as argument
+    for my.method.argument by argument.order
         if !argument.variadic
             my.out += (argument.py_arg_pass?"") + (last() ?? '' ? ', ')
         endif
     endfor
     my.out += ")"
 
-    # Cleanup python modified temp arguments
-    for my.method.tmp_arg
-        delete tmp_arg
-    endfor
     return my.out
 endfunction
 
 function python_method_signature (method)
-    # Temporarily add pythons self parameter to methods
-    # TODO: Copy methods during resolve and add self parameter there
-    #       instead of creating and destroying them for every call
-    #       of this method.
-    if !my.method.singleton | my.method.is_constructor
-        new tmp_arg to my.method as arg
-            arg.name = 'self'
-            arg.c_name = 'self'
-            arg.py_arg_pass = 'self._p'
-            arg.variadic = 0
-        endnew
-    endif
-    for my.method.argument
-        copy argument to my.method as tmp_arg
-    endfor
-
     if my.method.is_constructor & my.method.name = 'new'
         my.out = "def __init__("
     else
-        my.out = "def $(my.method.c_name)("
+        my.out = "def $(my.method.python_name)("
     endif
-    for my.method.tmp_arg as argument
+    for my.method.argument by argument.order
         if !argument.variadic
-            my.out += (argument.c_name?"") + (last() ?? '' ? ', ')
+            my.out += (argument.python_name?"") + (last() ?? '' ? ', ')
         endif
     endfor
     my.out += "):"
 
-    # Cleanup python modified temp arguments
-    for my.method.tmp_arg
-        delete tmp_arg
-    endfor
     return my.out
 endfunction
 
@@ -177,14 +152,14 @@ function generate_cdefs (project)
     for my.project->python_types.type as t
         >typedef struct _$(t.name:c) $(t.name:c);
     endfor
-    for class where defined (class.api) & class.private = "0"
+    for c_class where defined (class.api) & class.private = "0" as class
         for class.callback_type
             >// $(callback_type.description:no,block)
             >$(c_callback_typedef (callback_type):)
             >
         endfor
     endfor
-    for class where defined (class.api) & class.private = "0"
+    for c_class where defined (class.api) & class.private = "0" as class
         >// CLASS: $(class.name)
         for class. as f
             if class(f) = "XML item" & (name(f) = 'constructor' | name(f) = 'destructor')
@@ -220,6 +195,9 @@ function generate_binding
     >    lib = dlopen.lib
     >    ffi = dlopen.ffi
     >
+    for class where defined (class.api) & class.private = "0"
+    >from . import $(class.python_name:)
+    endfor
 
     output "bindings/python_cffi/$(project.name:c)_cffi/dlopen.py"
     >$(project.GENERATED_WARNING_HEADER:)
@@ -447,95 +425,96 @@ function generate_binding
     >The advantage is there are no python dependencies between modules.
 endfunction
 
-.macro generate_classes ()
-.for class where defined (class.api) & class.private = "0"
-.output "bindings/python_cffi/$(project.name:c)_cffi/$(class.name:Pascal).py"
-$(project.GENERATED_WARNING_HEADER:)
-from .utils import *
-from . import native
-from . import destructors
-lib$(project.name:c) = native.lib
-lib$(project.name:c)_destructors = destructors.lib
-ffi = native.ffi
+function generate_classes ()
+    for class where defined (class.api) & class.private = "0"
+        output "bindings/python_cffi/$(project.name:c)_cffi/$(class.python_name:).py"
+        >$(project.GENERATED_WARNING_HEADER:)
+        >from .utils import *
+        >from . import native
+        >from . import destructors
+        >lib$(project.name:c) = native.lib
+        >lib$(project.name:c)_destructors = destructors.lib
+        >ffi = native.ffi
+        >
+        >class $(class.name:Pascal)(object):
+        >    """
+        >    $(string.trim (class.?""):left)
+        >    """
+        >
+        for class.constructor
+            if constructor.name = 'new'
+                >    $(python_method_signature (constructor):)
+                >        """
+                >        $(constructor.description:no,block)
+                >        """
+                >        p = $(python_c_method_call (class, constructor))
+                >        if p == ffi.NULL:
+                >            raise MemoryError("Could not allocate person")
+                >
+                for class.destructor
+                    >        # ffi.gc returns a copy of the cdata object which will have the
+                    >        # destructor called when the Python object is GC'd:
+                    >        # https://cffi.readthedocs.org/en/latest/using.html#ffi-interface
+                    >        self._p = ffi.gc(p, lib$(project.name:c)_destructors.$(class.c_name)_destroy_py)
+                endfor
+                >
+            endif
+        endfor
+        for class.actor
+            >        """
+            >        $(actor.description:no,block)
+            >        """
+            >
+        endfor
+        for class.method
+            >    $(python_method_signature (method):)
+            >        """
+            >        $(method.description:no,block)
+            >        """
+            if count (method.return)
+                >        return $(python_c_method_call (class, method))
+            else
+                >        $(python_c_method_call (class, method))
+            endif
+            >
+        endfor
+        >$(project.GENERATED_WARNING_HEADER:)
+        close
+    endfor
 
-class $(class.name:Pascal)(object):
-    """
-    $(string.trim (class.?""):left)
-    """
-
-.   for class.constructor
-.       if constructor.name = 'new'
-    $(python_method_signature (constructor):)
-        """
-        $(constructor.description:no,block)
-        """
-        p = $(python_c_method_call (class, constructor))
-        if p == ffi.NULL:
-            raise MemoryError("Could not allocate person")
-
-.           for class.destructor
-        # ffi.gc returns a copy of the cdata object which will have the
-        # destructor called when the Python object is GC'd:
-        # https://cffi.readthedocs.org/en/latest/using.html#ffi-interface
-        self._p = ffi.gc(p, lib$(project.name:c)_destructors.$(class.c_name)_destroy_py)
-.           endfor
-.       endif
-
-.   endfor
-.   for class.actor
-        """
-        $(actor.description:no,block)
-        """
-
-.   endfor
-.   for class.method
-    $(python_method_signature (method):)
-        """
-        $(method.description:no,block)
-        """
-.       if count (method.return)
-        return $(python_c_method_call (class, method))
-.       else
-        $(python_c_method_call (class, method))
-.       endif
-
-.   endfor
-.endfor
-$(project.GENERATED_WARNING_HEADER:)
-.close
-
-.output "bindings/python_cffi/$(project.name:c)_cffi/utils.py"
-$(project.GENERATED_WARNING_HEADER:)
-import sys
-
-
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
-
-
-if PY3:
-    text_type = str
-    binary_type = bytes
-else:
-    text_type = unicode
-    binary_type = str
-
-
-def to_bytes(s):
-    if isinstance(s, binary_type):
-        return s
-    return text_type(s).encode("utf-8")
-
-
-def to_unicode(s):
-    if isinstance(s, text_type):
-        return s
-    return binary_type(s).decode("utf-8")
-$(project.GENERATED_WARNING_HEADER:)
-.close
-.endmacro
+    output "bindings/python_cffi/$(project.name:c)_cffi/utils.py"
+    >$(project.GENERATED_WARNING_HEADER:)
+    >import sys
+    >
+    >
+    >PY2 = sys.version_info[0] == 2
+    >PY3 = sys.version_info[0] == 3
+    >
+    >
+    >if PY3:
+    >    text_type = str
+    >    binary_type = bytes
+    >else:
+    >    text_type = unicode
+    >    binary_type = str
+    >
+    >
+    >def to_bytes(s):
+    >    if isinstance(s, binary_type):
+    >        return s
+    >    return text_type(s).encode("utf-8")
+    >
+    >
+    >def to_unicode(s):
+    >    if isinstance(s, text_type):
+    >        return s
+    >    return binary_type(s).decode("utf-8")
+    >$(project.GENERATED_WARNING_HEADER:)
+    close
+endfunction
 
     if count (class, defined (class.api) & class.private = "0")
+        save_c_class_state ()
         # Container for UDTs used by this module
         new python_types
         endnew
@@ -563,7 +542,8 @@ $(project.GENERATED_WARNING_HEADER:)
         >    install_requires=["cffi"],
         >)
         >$(project.GENERATED_WARNING_HEADER:)
-    endif
 
+        restore_c_class_state ()
+    endif
 
 endfunction
