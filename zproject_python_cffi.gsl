@@ -447,93 +447,93 @@ function generate_binding
     >The advantage is there are no python dependencies between modules.
 endfunction
 
-.macro generate_classes ()
-.for class where defined (class.api) & class.private = "0"
-.output "bindings/python_cffi/$(project.name:c)_cffi/$(class.name:Pascal).py"
-$(project.GENERATED_WARNING_HEADER:)
-from .utils import *
-from . import native
-from . import destructors
-lib$(project.name:c) = native.lib
-lib$(project.name:c)_destructors = destructors.lib
-ffi = native.ffi
+function generate_classes ()
+    for class where defined (class.api) & class.private = "0"
+        output "bindings/python_cffi/$(project.name:c)_cffi/$(class.python_name:).py"
+        >$(project.GENERATED_WARNING_HEADER:)
+        >from .utils import *
+        >from . import native
+        >from . import destructors
+        >lib$(project.name:c) = native.lib
+        >lib$(project.name:c)_destructors = destructors.lib
+        >ffi = native.ffi
+        >
+        >class $(class.name:Pascal)(object):
+        >    """
+        >    $(string.trim (class.?""):left)
+        >    """
+        >
+        for class.constructor
+            if constructor.name = 'new'
+                >    $(python_method_signature (constructor):)
+                >        """
+                >        $(constructor.description:no,block)
+                >        """
+                >        p = $(python_c_method_call (class, constructor))
+                >        if p == ffi.NULL:
+                >            raise MemoryError("Could not allocate person")
+                >
+                for class.destructor
+                    >        # ffi.gc returns a copy of the cdata object which will have the
+                    >        # destructor called when the Python object is GC'd:
+                    >        # https://cffi.readthedocs.org/en/latest/using.html#ffi-interface
+                    >        self._p = ffi.gc(p, lib$(project.name:c)_destructors.$(class.c_name)_destroy_py)
+                endfor
+                >
+            endif
+        endfor
+        for class.actor
+            >        """
+            >        $(actor.description:no,block)
+            >        """
+            >
+        endfor
+        for class.method
+            >    $(python_method_signature (method):)
+            >        """
+            >        $(method.description:no,block)
+            >        """
+            if count (method.return)
+                >        return $(python_c_method_call (class, method))
+            else
+                >        $(python_c_method_call (class, method))
+            endif
+            >
+        endfor
+        >$(project.GENERATED_WARNING_HEADER:)
+        close
+    endfor
 
-class $(class.name:Pascal)(object):
-    """
-    $(string.trim (class.?""):left)
-    """
-
-.   for class.constructor
-.       if constructor.name = 'new'
-    $(python_method_signature (constructor):)
-        """
-        $(constructor.description:no,block)
-        """
-        p = $(python_c_method_call (class, constructor))
-        if p == ffi.NULL:
-            raise MemoryError("Could not allocate person")
-
-.           for class.destructor
-        # ffi.gc returns a copy of the cdata object which will have the
-        # destructor called when the Python object is GC'd:
-        # https://cffi.readthedocs.org/en/latest/using.html#ffi-interface
-        self._p = ffi.gc(p, lib$(project.name:c)_destructors.$(class.c_name)_destroy_py)
-.           endfor
-.       endif
-
-.   endfor
-.   for class.actor
-        """
-        $(actor.description:no,block)
-        """
-
-.   endfor
-.   for class.method
-    $(python_method_signature (method):)
-        """
-        $(method.description:no,block)
-        """
-.       if count (method.return)
-        return $(python_c_method_call (class, method))
-.       else
-        $(python_c_method_call (class, method))
-.       endif
-
-.   endfor
-.endfor
-$(project.GENERATED_WARNING_HEADER:)
-.close
-
-.output "bindings/python_cffi/$(project.name:c)_cffi/utils.py"
-$(project.GENERATED_WARNING_HEADER:)
-import sys
-
-
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
-
-
-if PY3:
-    text_type = str
-    binary_type = bytes
-else:
-    text_type = unicode
-    binary_type = str
-
-
-def to_bytes(s):
-    if isinstance(s, binary_type):
-        return s
-    return text_type(s).encode("utf-8")
-
-
-def to_unicode(s):
-    if isinstance(s, text_type):
-        return s
-    return binary_type(s).decode("utf-8")
-$(project.GENERATED_WARNING_HEADER:)
-.close
-.endmacro
+    output "bindings/python_cffi/$(project.name:c)_cffi/utils.py"
+    >$(project.GENERATED_WARNING_HEADER:)
+    >import sys
+    >
+    >
+    >PY2 = sys.version_info[0] == 2
+    >PY3 = sys.version_info[0] == 3
+    >
+    >
+    >if PY3:
+    >    text_type = str
+    >    binary_type = bytes
+    >else:
+    >    text_type = unicode
+    >    binary_type = str
+    >
+    >
+    >def to_bytes(s):
+    >    if isinstance(s, binary_type):
+    >        return s
+    >    return text_type(s).encode("utf-8")
+    >
+    >
+    >def to_unicode(s):
+    >    if isinstance(s, text_type):
+    >        return s
+    >    return binary_type(s).decode("utf-8")
+    >$(project.GENERATED_WARNING_HEADER:)
+    close
+endfunction
 
     if count (class, defined (class.api) & class.private = "0")
         # Container for UDTs used by this module
