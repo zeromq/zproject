@@ -195,6 +195,9 @@ function generate_binding
     >    lib = dlopen.lib
     >    ffi = dlopen.ffi
     >
+    for class where defined (class.api) & class.private = "0"
+    >from . import $(class.python_name:)
+    endfor
 
     output "bindings/python_cffi/$(project.name:c)_cffi/dlopen.py"
     >$(project.GENERATED_WARNING_HEADER:)
