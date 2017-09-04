@@ -78,6 +78,13 @@ endfunction
 
 function resolve_method (method)
     my.method.python_name = "$(my.method.name:c)"
+    # Test if method name violates python 2 syntax
+    if regexp.match ("^(and|del|from|not|while|as|elif|global|or|with|assert|\
+                        else|if|pass|yield|break|except|import|print|class|\
+                        exec|in|raise|continue|finally|is|return|def|for|\
+                        lambda|try)$", my.method.python_name)
+        my.method.python_name = "$(my.method.python_name)_py"
+    endif
     # Prepend python self argument to non singleton classes
     if (!my.method.singleton & count (my.method.argument, argument.name = 'self') = 0) | my.method.is_constructor
         new argument to my.method
