@@ -13,6 +13,7 @@
 ##  Generate main source if not already present
 
 .directory.create ('src')
+.directory.create ('include')
 
 .macro skeleton_main_source
 . if !file.exists (main.source)
