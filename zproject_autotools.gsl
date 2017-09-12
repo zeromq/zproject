@@ -1800,7 +1800,11 @@ coverage: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW
 \t\$(MAKE) check
 \tlcov --base-directory . --directory . --capture -o coverage.info
 \tlcov --remove coverage.info "/usr*" -o coverage.info
+.if project.use_cxx
+\tlcov --remove coverage.info "$(project.prefix)_selftest.cc" -o coverage.info
+.else
 \tlcov --remove coverage.info "$(project.prefix)_selftest.c" -o coverage.info
+.endif
 \t\$(RM) -rf coverage/*
 \tgenhtml -o coverage/ -t "$(project.name) test coverage" --num-spaces 4 coverage.info
 else
