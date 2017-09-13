@@ -300,8 +300,8 @@ function resolve_c_class (class)
         endif
     endfor
 
-    # All classes must have a test method
-    if !count (my.class.method, method.name = "test")
+    # All classes must have a test method... unless selftest="0" in project.xml
+    if !count (my.class.method, method.name = "test") & my.class.selftest
         new method to my.class
             method.name = "test"
             method.singleton = 1
