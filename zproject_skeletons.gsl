@@ -327,6 +327,7 @@ $(actor.name:c)_test (bool verbose)
     // NOTE that for "char*" context you need (str_SELFTEST_DIR_RO + "/myfilename").c_str()
 
     zactor_t *$(actor.name:c) = zactor_new ($(actor.name:c)_actor, NULL);
+    assert ($(actor.name:c));
 
     zactor_destroy (&$(actor.name:c));
     //  @end
