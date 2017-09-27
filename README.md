@@ -185,6 +185,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         docker              packaging for Docker
         java                Java JNI binding
         java-msvc           MSVC builds for Java JNI binding
+        jenkins             Jenkins pipeline build
         mingw32             Mingw32 build system
         nuget               Packaging for NuGet
         python              Python binding
@@ -343,6 +344,14 @@ zproject's `project.xml` contains an extensive description of the available conf
     <target name = "debian" />
     <target name = "redhat" />
 
+    <!-- Jenkins target creates jenkins pipeline
+         Pipeline file is not overwriten if it exists.
+    <target name = "jenkins">
+        <option name = "file" value = "Jenkinsfile" />
+        <option name = "docker" value = "zeromqorg/czmq" />
+    </target>
+    -->
+
     <!-- In order loaded by zproject.gsl -->
     <bin name = "zproject.gsl" />
     <bin name = "zproject_projects.gsl" />
@@ -366,6 +375,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_java.gsl" />
     <bin name = "zproject_java_lib.gsl" />
     <bin name = "zproject_java_msvc.gsl" />
+    <bin name = "zproject_jenkins.gsl" />
     <bin name = "zproject_lua_ffi.gsl" />
     <bin name = "zproject_mingw32.gsl" />
     <bin name = "zproject_nodejs.gsl" />
