@@ -51,7 +51,7 @@ CMAKE_OPTS+=("-DCMAKE_INCLUDE_PATH:PATH=${BUILD_PREFIX}/include")
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scripting-language >/dev/null 2>&1) || \
        (command -v brew >/dev/null 2>&1 && brew ls --versions gsl >/dev/null 2>&1)); then
-    $CI_TIME git clone --quiet --depth 1 https://github.com/imatix/gsl.git gsl
+    $CI_TIME git clone --quiet --depth 1 https://github.com/zeromq/gsl.git gsl
     BASE_PWD=${PWD}
     cd gsl
     CCACHE_BASEDIR=${PWD}
