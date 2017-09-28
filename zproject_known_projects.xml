@@ -63,7 +63,7 @@
     </use>
 
     <use project = "gsl" libname = ""
-        repository = "https://github.com/imatix/gsl.git"
+        repository = "https://github.com/zeromq/gsl.git"
         debian_name = "generator-scripting-language"
         redhat_name = "generator-scripting-language">
     </use>
