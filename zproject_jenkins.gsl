@@ -1,4 +1,4 @@
-#   Generate spec file for project
+#   Generate Jenkinsfile for project, to test automatically on Jenkins v2.x+
 #
 #   This is a code generator built using the iMatix GSL code generation
 #   language. See https://github.com/imatix/gsl for details.
@@ -41,6 +41,9 @@ pipeline {
     triggers {
         pollSCM 'H/5 * * * *'
     }
+.# TODO: do DRAFT and non-DRAFT builds, like in Travis
+.# TODO: use parallel{} and possibly stash/unstash to do draft/nondraft/*check quicker on big enough test-farms
+.# TODO: augment the envvars to benefit from CCACHE (PATH for the binaries, CCACHE_BASEDIR to cache the project objects relative to its random workspace name)
     stages {
         stage ('compile') {
             steps {
@@ -63,6 +66,16 @@ pipeline {
                 }
             }
         }
+.  if jenkins_distcheck ?= 0
+.  else
+        stage ('distcheck') {
+            steps {
+                timeout (time: 10, unit: MINUTES) {
+                    sh 'make distcheck'
+                }
+            }
+        }
+.  endif
     }
     post {
         success {

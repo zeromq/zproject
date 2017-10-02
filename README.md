@@ -194,7 +194,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         redhat              Packaging for RedHat
         ruby                Ruby binding
         travis              Travis CI scripts
-            <option name="travis_distcheck" value="0" /> will disable run of make distcheck
+            <option name="distcheck" value="0" /> will disable run of make distcheck in Travis CI
         vs2008              Microsoft Visual Studio 2008
         vs2010              Microsoft Visual Studio 2010
         vs2012              Microsoft Visual Studio 2012
@@ -346,9 +346,12 @@ zproject's `project.xml` contains an extensive description of the available conf
 
     <!-- Jenkins target creates jenkins pipeline
          Pipeline file is not overwriten if it exists.
+         A "make distcheck" is enabled by default, though some
+         projects tend to opt out of supporting that functionality.
     <target name = "jenkins">
         <option name = "file" value = "Jenkinsfile" />
         <option name = "docker" value = "zeromqorg/czmq" />
+        <option name = "distcheck" value = "0" />
     </target>
     -->
 
