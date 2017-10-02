@@ -172,6 +172,14 @@
          on Travis CI, not a generated one, so DO NOT ENABLE this one:
         <target name = "travis" />
     -->
+
+    <!-- Jenkins target creates jenkins pipeline
+         Pipeline file is not overwriten if it exists.
+    <target name = "jenkins">
+        <option name = "file" value = "Jenkinsfile" />
+        <option name = "docker" value = "zeromqorg/czmq" />
+    </target>
+    -->
     <target name = "jenkins" />
 
     <!-- In order loaded by zproject.gsl -->
