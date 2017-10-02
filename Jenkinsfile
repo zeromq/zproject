@@ -37,6 +37,13 @@ pipeline {
                 }
             }
         }
+        stage ('distcheck') {
+            steps {
+                timeout (time: 10, unit: MINUTES) {
+                    sh 'make distcheck'
+                }
+            }
+        }
     }
     post {
         success {

@@ -63,6 +63,16 @@ pipeline {
                 }
             }
         }
+.  if jenkins_distcheck ?= 0
+.  else
+        stage ('distcheck') {
+            steps {
+                timeout (time: 10, unit: MINUTES) {
+                    sh 'make distcheck'
+                }
+            }
+        }
+.  endif
     }
     post {
         success {
