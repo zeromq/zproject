@@ -13,14 +13,14 @@
 register_target ("jenkins", "pipeline CI script for jenkins")
 
 .macro target_jenkins
-.if defined (project.jenkins_file)
+. if defined (project.jenkins_file)
 .   jenkinsfile = project.jenkins_file
-.else
+. else
 .   jenkinsfile = 'Jenkinsfile'
-.endif
-.if file.exists (jenkinsfile)
+. endif
+. if file.exists (jenkinsfile)
 .    echo "NOT regenerating an existing Jenkins file"
-.else
+. else
 .    output jenkinsfile
 /*
     $(project.name) - $(project.description?'':)
@@ -31,13 +31,13 @@ register_target ("jenkins", "pipeline CI script for jenkins")
 */
 
 pipeline {
-.if defined (project.jenkins_docker)
+.   if defined (project.jenkins_docker)
     agent {
         docker { image '$(project.jenkins_docker)' }
     }
-.else
+.   else
     agent any
-.endif
+.   endif
     triggers {
         pollSCM 'H/5 * * * *'
     }
@@ -84,5 +84,5 @@ pipeline {
         }
     }
 }
-.endif
+. endif
 .endmacro
