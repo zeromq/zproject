@@ -168,6 +168,12 @@
     <target name = "debian" />
     <target name = "redhat" />
 
+    <!-- Note: zproject itself uses a customized CI-testing routine
+         on Travis CI, not a generated one, so DO NOT ENABLE this one:
+        <target name = "travis" />
+    -->
+    <target name = "jenkins" />
+
     <!-- In order loaded by zproject.gsl -->
     <bin name = "zproject.gsl" />
     <bin name = "zproject_projects.gsl" />
