@@ -1,43 +1,17 @@
-#   Generate spec file for project
-#
-#   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
-#
-#   Copyright (c) the Contributors as noted in the AUTHORS file.
-#   This file is part of zproject.
-#
-#   This Source Code Form is subject to the terms of the Mozilla Public
-#   License, v. 2.0. If a copy of the MPL was not distributed with this
-#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-register_target ("jenkins", "pipeline CI script for jenkins")
-
-.macro target_jenkins
-. if defined (project.jenkins_file)
-.   jenkinsfile = project.jenkins_file
-. else
-.   jenkinsfile = 'Jenkinsfile'
-. endif
-. if file.exists (jenkinsfile)
-.    echo "NOT regenerating an existing Jenkins file '$(jenkinsfile:)'; you might want to move yours out of the way and re-generate the project again to get updated settings"
-. else
-.    output jenkinsfile
 /*
-    $(project.name) - $(project.description?'':)
+    zproject - Project
 
-.   for project.license
-    $(string.trim (license.):block                                         )
-.   endfor
+    Copyright (c) the Contributors as noted in the AUTHORS file.
+    This file is part of CZMQ, the high-level C binding for 0MQ:
+    http://czmq.zeromq.org.
+
+    This Source Code Form is subject to the terms of the Mozilla Public
+    License, v. 2.0. If a copy of the MPL was not distributed with this
+    file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
 pipeline {
-.   if defined (project.jenkins_docker)
-    agent {
-        docker { image '$(project.jenkins_docker:)' }
-    }
-.   else
     agent any
-.   endif
     triggers {
         pollSCM 'H/5 * * * *'
     }
@@ -80,9 +54,7 @@ pipeline {
             // Section must not be empty, you can delete the sleep once you set notification
             sleep 1
             //slackSend (color: "#AA0000", message: "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} ${currentBuild.result} (<${env.BUILD_URL}|Open>)")
-            //emailext (to: "qa@example.com", subject: "Build ${env.JOB_NAME} failed!", body: "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} ${currentBuild.result}\\nSee ${env.BUILD_URL}")
+            //emailext (to: "qa@example.com", subject: "Build ${env.JOB_NAME} failed!", body: "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} ${currentBuild.result}\nSee ${env.BUILD_URL}")
         }
     }
 }
-. endif
-.endmacro
