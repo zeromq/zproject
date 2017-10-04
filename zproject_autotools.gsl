@@ -1754,6 +1754,7 @@ memcheck: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW
 \t$\(LIBTOOL) --mode=execute valgrind --tool=memcheck \\
 \t\t--leak-check=full --show-reachable=yes --error-exitcode=1 \\
 \t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
+\t\t$\(VALGRIND_OPTIONS) \\
 \t\t$\(builddir)/src/$(project.prefix)_selftest
 \t$\(MAKE) check-empty-selftest-rw
 
@@ -1761,17 +1762,20 @@ memcheck-verbose: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTES
 \t$\(LIBTOOL) --mode=execute valgrind --tool=memcheck \\
 \t\t--leak-check=full --show-reachable=yes --error-exitcode=1 \\
 \t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
+\t\t$\(VALGRIND_OPTIONS) \\
 \t\t$\(builddir)/src/$(project.prefix)_selftest -v
 \t$\(MAKE) check-empty-selftest-rw
 
 # Run the selftest binary under valgrind to check for performance leaks
 callcheck: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute valgrind --tool=callgrind \\
+\t\t$\(VALGRIND_OPTIONS) \\
 \t\t$\(builddir)/src/$(project.prefix)_selftest
 \t$\(MAKE) check-empty-selftest-rw
 
 callcheck-verbose: src/$(project.prefix)_selftest $\(abs_top_builddir)/$\(SELFTEST_DIR_RW) $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute valgrind --tool=callgrind \\
+\t\t$\(VALGRIND_OPTIONS) \\
 \t\t$\(builddir)/src/$(project.prefix)_selftest -v
 \t$\(MAKE) check-empty-selftest-rw
 

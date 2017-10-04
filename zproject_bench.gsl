@@ -189,6 +189,7 @@ bench-memcheck: \$(benchmark_progs)
 \t\t$\(LIBTOOL) --mode=execute valgrind --tool=memcheck \\
 \t\t\t--leak-check=full --show-reachable=yes --error-exitcode=1 \\
 \t\t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
+\t\t\t$\(VALGRIND_OPTIONS) \\
 \t\t\t$\(srcdir)/\$\$f; \\
 \tdone
 
@@ -196,6 +197,7 @@ bench-memcheck: \$(benchmark_progs)
 bench-callcheck: \$(benchmark_progs)
 \tfor f in \$^; do \\
 \t\t$\(LIBTOOL) --mode=execute valgrind --tool=callgrind \\
+\t\t\t$\(VALGRIND_OPTIONS) \\
 \t\t\t$\(srcdir)/\$\$f; \\
 \tdone
 
