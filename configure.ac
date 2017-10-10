@@ -52,6 +52,9 @@ AC_PROG_SED
 AC_PROG_AWK
 PKG_PROG_PKG_CONFIG
 
+# Check endianess of the system
+AC_C_BIGENDIAN
+
 # Code coverage
 AC_MSG_CHECKING([whether to enable GCov])
 AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
