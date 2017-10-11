@@ -296,36 +296,18 @@ $(actor.name:c)_actor (zsock_t *pipe, void *args)
 //  --------------------------------------------------------------------------
 //  Self test of this actor.
 
+// If your selftest reads SCMed fixture data, please keep it in
+// src/selftest-ro; if your test creates filesystem objects, please
+// do so under src/selftest-rw. 
+#define SELFTEST_DIR_RO "src/selftest-ro"
+#define SELFTEST_DIR_RW "src/selftest-rw"
+
 void
 $(actor.name:c)_test (bool verbose)
 {
     printf (" * $(actor.name:c): ");
     //  @selftest
     //  Simple create/destroy test
-
-    // Note: If your selftest reads SCMed fixture data, please keep it in
-    // src/selftest-ro; if your test creates filesystem objects, please
-    // do so under src/selftest-rw. They are defined below along with a
-    // usecase for the variables (assert) to make compilers happy.
-    const char *SELFTEST_DIR_RO = "src/selftest-ro";
-    const char *SELFTEST_DIR_RW = "src/selftest-rw";
-    assert (SELFTEST_DIR_RO);
-    assert (SELFTEST_DIR_RW);
-    // The following pattern is suggested for C selftest code:
-    //    char *filename = NULL;
-    //    filename = zsys_sprintf ("%s/%s", SELFTEST_DIR_RO, "mytemplate.file");
-    //    assert (filename);
-    //    ... use the filename for I/O ...
-    //    zstr_free (&filename);
-    // This way the same filename variable can be reused for many subtests.
-    //
-    // Uncomment these to use C++ strings in C++ selftest code:
-    //std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
-    //std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
-    //assert ( (str_SELFTEST_DIR_RO != "") );
-    //assert ( (str_SELFTEST_DIR_RW != "") );
-    // NOTE that for "char*" context you need (str_SELFTEST_DIR_RO + "/myfilename").c_str()
-
     zactor_t *$(actor.name:c) = zactor_new ($(actor.name:c)_actor, NULL);
     assert ($(actor.name:c));
 
@@ -464,6 +446,12 @@ $(class.c_name)_destroy ($(class.c_name)_t **self_p)
 //  --------------------------------------------------------------------------
 //  Self test of this class
 
+// If your selftest reads SCMed fixture data, please keep it in
+// src/selftest-ro; if your test creates filesystem objects, please
+// do so under src/selftest-rw. 
+#define SELFTEST_DIR_RO "src/selftest-ro"
+#define SELFTEST_DIR_RW "src/selftest-rw"
+
 void
 $(class.c_name)_test (bool verbose)
 {
@@ -471,30 +459,6 @@ $(class.c_name)_test (bool verbose)
 
     //  @selftest
     //  Simple create/destroy test
-
-    // Note: If your selftest reads SCMed fixture data, please keep it in
-    // src/selftest-ro; if your test creates filesystem objects, please
-    // do so under src/selftest-rw. They are defined below along with a
-    // usecase for the variables (assert) to make compilers happy.
-    const char *SELFTEST_DIR_RO = "src/selftest-ro";
-    const char *SELFTEST_DIR_RW = "src/selftest-rw";
-    assert (SELFTEST_DIR_RO);
-    assert (SELFTEST_DIR_RW);
-    // The following pattern is suggested for C selftest code:
-    //    char *filename = NULL;
-    //    filename = zsys_sprintf ("%s/%s", SELFTEST_DIR_RO, "mytemplate.file");
-    //    assert (filename);
-    //    ... use the filename for I/O ...
-    //    zstr_free (&filename);
-    // This way the same filename variable can be reused for many subtests.
-    //
-    // Uncomment these to use C++ strings in C++ selftest code:
-    //std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
-    //std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
-    //assert ( (str_SELFTEST_DIR_RO != "") );
-    //assert ( (str_SELFTEST_DIR_RW != "") );
-    // NOTE that for "char*" context you need (str_SELFTEST_DIR_RO + "/myfilename").c_str()
-
     $(class.c_name)_t *self = $(class.c_name)_new ();
     assert (self);
     $(class.c_name)_destroy (&self);
