@@ -303,6 +303,7 @@ override_dh_auto_configure:
 .if python_cffi ?= 1
 		\$(WITH_PYTHON) \\
 .endif
+		--parallel \\
 		--with autoreconf
 .chmod_x ("packaging/debian/rules")
 .discover_manpages(project)
