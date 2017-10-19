@@ -27,7 +27,7 @@ $(project.name:lower) ($(->version.major).$(->version.minor).$(->version.patch))
 
  -- $(project.name) Developers <$(project.email)>  Wed, 31 Dec 2014 00:00:00 +0000
 .output "packaging/debian/compat"
-9
+10
 .output "packaging/debian/control"
 #
 #    $(project.name) - $(project.description?'':)
