@@ -42,6 +42,9 @@ register_target ("redhat", "packaging for RedHat")
 .   if !has_main & !project.exports_classes
 %global debug_package %{nil}
 .   endif
+.if systemd ?= 1
+%define SYSTEMD_UNIT_DIR %(pkg-config --variable=systemdsystemunitdir systemd)
+.endif
 .if python_cffi ?= 1
 
 # build with python_cffi support enabled
@@ -298,35 +301,35 @@ python3 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
 %config(noreplace) %{_sysconfdir}/$(project.name)/$(main.name).cfg
 .       endif
 .       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in") | ( main.service ?= 1 | main.service ?= 3 )
-/usr/lib/systemd/system/$(main.name).service
+%{SYSTEMD_UNIT_DIR}/$(main.name).service
 .       endif
 .       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in") | ( main.service ?= 2 | main.service ?= 3 )
-/usr/lib/systemd/system/$(main.name)@.service
+%{SYSTEMD_UNIT_DIR}/$(main.name)@.service
 .       endif
 .etc_exists = 1
 .endfor
 .for project.main where ( defined(main.timer) & main.timer > 0 )
 .       if file.exists("src/$(main.name).timer") | file.exists("src/$(main.name).timer.in") | ( main.timer ?= 1 | main.timer ?= 3 )
-/usr/lib/systemd/system/$(main.name).timer
+%{SYSTEMD_UNIT_DIR}/$(main.name).timer
 .       endif
 .       if file.exists("src/$(main.name)@.timer") | file.exists("src/$(main.name)@.timer.in") | ( main.timer ?= 2 | main.timer ?= 3 )
-/usr/lib/systemd/system/$(main.name)@.timer
+%{SYSTEMD_UNIT_DIR}/$(main.name)@.timer
 .       endif
 .endfor
 .for project.bin where ( defined(bin.service) & bin.service > 0 )
 .       if file.exists("src/$(bin.name).service") | file.exists("src/$(bin.name).service.in") | ( bin.service ?= 1 | bin.service ?= 3 )
-/usr/lib/systemd/system/$(bin.name).service
+%{SYSTEMD_UNIT_DIR}/$(bin.name).service
 .       endif
 .       if file.exists("src/$(bin.name)@.service") | file.exists("src/$(bin.name)@.service.in") | ( bin.service ?= 2 | bin.service ?= 3 )
-/usr/lib/systemd/system/$(bin.name)@.service
+%{SYSTEMD_UNIT_DIR}/$(bin.name)@.service
 .       endif
 .endfor
 .for project.bin where ( defined(bin.timer) & bin.timer > 0 )
 .       if file.exists("src/$(bin.name).timer") | file.exists("src/$(bin.name).timer.in") | ( bin.timer ?= 1 | bin.timer ?= 3 )
-/usr/lib/systemd/system/$(bin.name).timer
+%{SYSTEMD_UNIT_DIR}/$(bin.name).timer
 .       endif
 .       if file.exists("src/$(bin.name)@.timer") | file.exists("src/$(bin.name)@.timer.in") | ( bin.timer ?= 2 | bin.timer ?= 3 )
-/usr/lib/systemd/system/$(bin.name)@.timer
+%{SYSTEMD_UNIT_DIR}/$(bin.name)@.timer
 .       endif
 .endfor
 .if etc_exists ?= 1
