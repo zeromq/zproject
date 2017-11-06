@@ -415,6 +415,9 @@ LTVER="0:0:0"
 .endif
 AC_SUBST(LTVER)
 
+# building in a subdirectory?
+AM_CONDITIONAL([USING_VPATH], [test "x${srcdir}" != "x."])
+
 # Capture c flags
 $(PROJECT.PREFIX)_ORIG_CFLAGS="${CFLAGS:-none}"
 
@@ -1703,12 +1706,12 @@ $\(abs_top_builddir)/$\(SELFTEST_DIR_RW):
 \trm -rf "\$@"
 \tmkdir -p "\$@"
 
+if USING_VPATH
 $\(abs_top_builddir)/$\(SELFTEST_DIR_RO): $\(abs_top_srcdir)/$\(SELFTEST_DIR_RO)
-\t@if test "$@" != "$<" ; then \\
-\t\techo "  COPYDIR  $\(SELFTEST_DIR_RO)"; \\
-\t\trm -rf "$@"; \\
-\t\tcp -r "$<" "$@" ; \\
-\t\tfi
+\techo "  COPYDIR  $\(SELFTEST_DIR_RO)"; \\
+\trm -rf "$@"; \\
+\tcp -r "$<" "$@"
+endif
 
 CLEANFILES += $\(abs_top_builddir)/$\(SELFTEST_DIR_RW)/*
 
