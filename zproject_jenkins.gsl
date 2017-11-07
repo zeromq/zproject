@@ -100,10 +100,6 @@ pipeline {
                         sh 'echo "Are GitIgnores good after make check without drafts? (should have no output below)"; git status -s || true'
                     }
                 }
-            }
-        }
-        stage ('memcheck') {
-            parallel {
                 stage ('memcheck with DRAFT') {
                     steps {
                         unstash 'built-draft'
@@ -122,12 +118,8 @@ pipeline {
                         sh 'echo "Are GitIgnores good after make memcheck without drafts? (should have no output below)"; git status -s || true'
                     }
                 }
-            }
-        }
 .  if jenkins_distcheck ?= 0
 .  else
-        stage ('distcheck') {
-            parallel {
                 stage ('distcheck with DRAFT') {
                     steps {
                         unstash 'built-draft'
@@ -146,9 +138,9 @@ pipeline {
                         sh 'echo "Are GitIgnores good after make distcheck without drafts? (should have no output below)"; git status -s || true'
                     }
                 }
+.  endif
             }
         }
-.  endif
     }
     post {
         success {
