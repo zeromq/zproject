@@ -134,6 +134,7 @@ function resolve_method (method)
     |  my.method.name = "finalize" \
     |  my.method.name = "getClass" \
     |  my.method.name = "hashCode" \
+    |  my.method.name = "interface" \
     |  my.method.name = "toString" \
     |  my.method.name = "notify" \
     |  my.method.name = "notifyAll" \
