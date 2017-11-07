@@ -190,9 +190,9 @@ This package contains development files for $(project.name): $(project.descripti
 
 %if %{with python_cffi}
 %package -n python2-$(project.name)-cffi
-Group:  Python
-Summary:    Python CFFI bindings for $(project.name)
-Requires:  python = %{py2_ver}
+Group: Python
+Summary: Python CFFI bindings for $(project.name)
+Requires: python = %{py2_ver}
 
 %description -n python2-$(project.name)-cffi
 This package contains Python CFFI bindings for $(project.name)
@@ -202,9 +202,9 @@ This package contains Python CFFI bindings for $(project.name)
 %{_libdir}/python%{py2_ver}/site-packages/$(project.name:c)_cffi-*-py%{py2_ver}.egg-info/
 
 %package -n python3-$(project.name)-cffi
-Group:  Python
-Summary:    Python 3 CFFI bindings for $(project.name)
-Requires:  python3 = %{py3_ver}
+Group: Python
+Summary: Python 3 CFFI bindings for $(project.name)
+Requires: python = %{py3_ver}
 
 %description -n python3-$(project.name)-cffi
 This package contains Python 3 CFFI bindings for $(project.name)
