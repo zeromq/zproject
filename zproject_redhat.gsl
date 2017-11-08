@@ -51,6 +51,11 @@ register_target ("redhat", "packaging for RedHat")
 %bcond_with python_cffi
 %if %{with python_cffi}
 %define py2_ver %(python2 -c "import sys; print ('%d.%d' % (sys.version_info.major, sys.version_info.minor))")
+%endif
+
+# build with python3_cffi support enabled
+%bcond_with python3_cffi
+%if %{with python3_cffi}
 %define py3_ver %(python3 -c "import sys; print ('%d.%d' % (sys.version_info.major, sys.version_info.minor))")
 %endif
 
@@ -97,6 +102,8 @@ BuildRequires:  $(use.project)-devel
 BuildRequires:  python-cffi
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools
+%endif
+%if %{with python3_cffi}
 BuildRequires:  python3-devel
 BuildRequires:  python3-cffi
 BuildRequires:  python3-setuptools
@@ -200,7 +207,9 @@ This package contains Python CFFI bindings for $(project.name)
 %files -n python2-$(project.name)-cffi
 %{_libdir}/python%{py2_ver}/site-packages/$(project.name:c)_cffi/
 %{_libdir}/python%{py2_ver}/site-packages/$(project.name:c)_cffi-*-py%{py2_ver}.egg-info/
+%endif
 
+%if %{with python3_cffi}
 %package -n python3-$(project.name)-cffi
 Group: Python
 Summary: Python 3 CFFI bindings for $(project.name)
@@ -240,7 +249,6 @@ sh autogen.sh
 
 make %{_smp_mflags}
 .if python_cffi ?= 1
-
 %if %{with python_cffi}
 # Problem: we need pkg-config points to built and not yet installed copy of $(project.name)
 # Solution: chicken-egg problem - let's make "fake" pkg-config file
@@ -250,6 +258,16 @@ sed -e "s@^libdir.*@libdir=`pwd`/src/.libs@" \\
 cd bindings/python_cffi
 export PKG_CONFIG_PATH=`pwd`
 python2 setup.py build
+%endif
+
+%if %{with python3_cffi}
+# Problem: we need pkg-config points to built and not yet installed copy of $(project.name)
+# Solution: chicken-egg problem - let's make "fake" pkg-config file
+sed -e "s@^libdir.*@libdir=`pwd`/src/.libs@" \\
+    -e "s@^includedir.*@includedir=`pwd`/include@" \\
+    src/$(project.libname).pc > bindings/python_cffi/$(project.libname).pc
+cd bindings/python_cffi
+export PKG_CONFIG_PATH=`pwd`
 python3 setup.py build
 %endif
 .endif
@@ -266,10 +284,15 @@ find %{buildroot} -name '*.la' | xargs rm -f
 cd bindings/python_cffi
 export PKG_CONFIG_PATH=`pwd`
 python2 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
-python3 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
 %endif
 
+%if %{with python3_cffi}
+cd bindings/python_cffi
+export PKG_CONFIG_PATH=`pwd`
+python3 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
+%endif
 .endif
+
 .if has_main | count(project.bin) > 0
 %files
 %defattr(-,root,root)
