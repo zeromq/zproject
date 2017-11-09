@@ -130,6 +130,9 @@ endfunction
 function python_c_method_call (class, method)
     my.out = "lib$(project.name:c).$(my.class.c_name)_$(my.method.c_name)("
     for my.method.argument by argument.order
+        if first() & my.method.is_constructor
+            next
+        endif
         if !argument.variadic
             my.out += (argument.py_arg_pass?"") + (last() ?? '' ? ', ')
         endif
