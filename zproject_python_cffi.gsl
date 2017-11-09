@@ -128,7 +128,7 @@ function resolve_class (class)
 endfunction
 
 function python_c_method_call (class, method)
-    my.out = "lib$(project.name:c).$(my.class.c_name)_$(my.method.c_name)("
+    my.out = "utils.lib.$(my.class.c_name)_$(my.method.c_name)("
     for my.method.argument by argument.order
         if first() & my.method.is_constructor
             next
@@ -196,15 +196,7 @@ function generate_binding
     directory.create ("bindings/python_cffi/$(project.name:c)_cffi")
     output "bindings/python_cffi/$(project.name:c)_cffi/__init__.py"
     >$(project.GENERATED_WARNING_HEADER:)
-    >try:
-    >    from . import native
-    >    lib = native.lib
-    >    ffi = native.ffi
-    >except ImportError:
-    >    from . import dlopen
-    >    lib = dlopen.lib
-    >    ffi = dlopen.ffi
-    >
+    >import utils
     for class where defined (class.api) & class.private = "0"
     >from .$(class.python_name:) import *
     endfor
@@ -428,12 +420,9 @@ function generate_binding
     >
     >See ML thread about topic https://groups.google.com/forum/#!topic/python-cffi/JtAKU-g9Exg
     >
-    >The solution is to include all the definitions of dependant modules, so we will have an access
-    >to underlying functions directly from top level module. It is a sort of static linking, but
-    >the only way to ensure the cffi bindings will work accross multiple C libraries. And this is the
-    >reason you need to have a checkout at the same level as the project.
-    >
-    >The advantage is there are no python dependencies between modules.
+    >This is the reason the Lib and CompiledFFi objects are referenced from utils module and dynamically
+    >accessed on each call. Calling `lower.utils.rebind (higher.utils.lib, higher.utils.ffi)' you can
+    >change instance used by lower module and enforce all Python classes will use single instance.
 endfunction
 
 function generate_classes ()
@@ -441,11 +430,8 @@ function generate_classes ()
         output "bindings/python_cffi/$(project.name:c)_cffi/$(class.python_name:).py"
         >$(project.GENERATED_WARNING_HEADER:)
         >import utils
-        >from . import native
         >from . import destructors
-        >lib$(project.name:c) = native.lib
         >lib$(project.name:c)_destructors = destructors.lib
-        >ffi = native.ffi
         >
         >class $(class.name:Pascal)(object):
         >    """
@@ -459,14 +445,14 @@ function generate_classes ()
                 >        $(constructor.description:no,block)
                 >        """
                 >        p = $(python_c_method_call (class, constructor))
-                >        if p == ffi.NULL:
+                >        if p == utils.ffi.NULL:
                 >            raise MemoryError("Could not allocate person")
                 >
                 for class.destructor
                     >        # ffi.gc returns a copy of the cdata object which will have the
                     >        # destructor called when the Python object is GC'd:
                     >        # https://cffi.readthedocs.org/en/latest/using.html#ffi-interface
-                    >        self._p = ffi.gc(p, lib$(project.name:c)_destructors.$(class.c_name)_destroy_py)
+                    >        self._p = utils.ffi.gc(p, lib$(project.name:c)_destructors.$(class.c_name)_destroy_py)
                 endfor
                 >
             endif
@@ -495,6 +481,23 @@ function generate_classes ()
 
     output "bindings/python_cffi/$(project.name:c)_cffi/utils.py"
     >$(project.GENERATED_WARNING_HEADER:)
+    >try:
+    >    from . import native
+    >    lib = native.lib
+    >    ffi = native.ffi
+    >except ImportError:
+    >    from . import dlopen
+    >    lib = dlopen.lib
+    >    ffi = dlopen.ffi
+    >
+    >def rebind (_lib, _ffi):
+    >    """Rebind Lib and CompiledFFi objects for given package. Lib object MUST expose all functions
+    >       required by the classes. This is default for zproject based projects"""
+    >    global lib
+    >    global ffi
+    >    lib = _lib
+    >    ffi = _ffi
+    >
     >try:
     >    text_type = unicode  # Python 2
     >    binary_type = str
