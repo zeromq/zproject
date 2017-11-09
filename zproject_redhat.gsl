@@ -292,7 +292,6 @@ export PKG_CONFIG_PATH=`pwd`
 python3 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
 %endif
 .endif
-
 .if has_main | count(project.bin) > 0
 %files
 %defattr(-,root,root)
