@@ -65,7 +65,7 @@ function resolve_container (container)
     elsif my.container.type = "buffer"
     elsif my.container.type = "FILE"
     elsif my.container.type = "string"
-        my.py_arg_pass = "to_bytes($(my.container.python_name:))"
+        my.py_arg_pass = "utils.to_bytes($(my.container.python_name:))"
     elsif my.container.type = "format"
     elsif my.container.callback
     else
@@ -440,7 +440,7 @@ function generate_classes ()
     for class where defined (class.api) & class.private = "0"
         output "bindings/python_cffi/$(project.name:c)_cffi/$(class.python_name:).py"
         >$(project.GENERATED_WARNING_HEADER:)
-        >from .utils import *
+        >import utils
         >from . import native
         >from . import destructors
         >lib$(project.name:c) = native.lib
