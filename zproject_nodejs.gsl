@@ -362,7 +362,9 @@ using namespace Nan;
     if (info [$(index () - 1)]->IsUndefined ())
         return Nan::ThrowTypeError ("method requires a `$(name)`");
 
-    $(c_type) $(c_name);
+    //$(c_type) $(c_name); // bjornw typedef - if using c_type, then you get 'int * major' but it needs to be 'int major'. later using the FromJust() returns an int
+    $(nan_type) $(c_name); 
+
 .           if type = "boolean"
 .               my.check = "IsBoolean"
 .               my.what = "Boolean"
@@ -374,6 +376,7 @@ using namespace Nan;
 .               my.what = "number or string"
     if (info [$(index () - 1)]->IsString ()) {
         Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
+            // bjornw: check if we need to remove scope here
         char *$(c_name)_name = *$(c_name)_utf8;
         for (char *$(c_name)_ptr = $(c_name)_name; *$(c_name)_ptr; $(c_name)_ptr++)
             *$(c_name)_ptr = tolower (*$(c_name)_ptr);
@@ -389,23 +392,30 @@ using namespace Nan;
 .               my.check = "IsNumber"
 .               my.what = "number"
 .           endif
+
     if (info [$(index () - 1)]->$(my.check:) ())
-        $(c_name) = Nan::To<$(nan_type:)>(info [$(index () - 1)]).FromJust ();
+    {
+          $(c_name) = Nan::To<$(nan_type:)>(info [$(index () - 1)]).FromJust ();
+    }
     else
         return Nan::ThrowTypeError ("`$(name)` must be a $(my.what:)");
 .       elsif type = "char"
     char $(c_name);
     if (info [$(index () - 1)]->IsUndefined ())
+    {
         return Nan::ThrowTypeError ("method requires a `$(name)`");
-    else
-    if (!info [$(index () - 1)]->IsString ())
-        return Nan::ThrowTypeError ("`$(name)` must be a string");
-    else {
-        Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
-        if (strlen (*$(c_name)_utf8) != 1)
-            return Nan::ThrowTypeError ("`$(name)` must be a single character");
-        $(c_name) = (*$(c_name)_utf8) [0];
     }
+    else if (!info [$(index () - 1)]->IsString ())
+    {
+        return Nan::ThrowTypeError ("`$(name)` must be a string");
+    }
+    //else { // bjornw: remove brackets to keep scope
+    Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
+
+    if (strlen (*$(c_name)_utf8) != 1)
+        return Nan::ThrowTypeError ("`$(name)` must be a single character");
+    $(c_name) = (*$(c_name)_utf8) [0];
+    //} // bjornw end
 .       elsif type = "string" | type = "format"
     char *$(c_name);
     if (info [$(index () - 1)]->IsUndefined ())
@@ -417,10 +427,10 @@ using namespace Nan;
     else
     if (!info [$(index () - 1)]->IsString ())
         return Nan::ThrowTypeError ("`$(name)` must be a string");
-    else {
-        Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
-        $(c_name) = *$(c_name)_utf8;
-    }
+    //else { // bjornw: remove brackets to keep scope
+    Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
+    $(c_name) = *$(c_name)_utf8;
+         //} //bjornw end
 .       elsif type = "buffer"
     if (info [$(index () - 1)]->IsUndefined ())
         return Nan::ThrowTypeError ("method requires a argument to provide data");
