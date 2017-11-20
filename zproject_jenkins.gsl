@@ -12,18 +12,43 @@
 
 register_target ("jenkins", "pipeline CI script for jenkins")
 
-.function jenkins_agent (project)
-.   if !(defined (project.jenkins_agent_single)) | (project.jenkins_agent_single ?= 0)
+.function isSingle_jenkins_agent (project, global_agent)
+.# See details below in jenkins_agent()
+.   if ( ( ( ( !(defined (project.jenkins_agent_single)) | (project.jenkins_agent_single ?= 0) ) & (my.global_agent ?= 0) ) ) | ( (my.global_agent ?= 1) & ( project.jenkins_agent_single ?= 1 ) ) )
+.       return 1
+.   endif
+.   return 0
+.endfunction
+
+.function jenkins_agent (project, global_agent)
+.# An "agent_single" setup defines one of the choices from project.xml
+.# in the head of Jenkinsfile, and no more agents in individual steps.
+.# The opposite setup (default) uses "agent none" at the top and sets
+.# the agents in each step of the build and test, to spread the load.
+.# The "global_agent" option is "1" in header and "0" in steps, to
+.# specify whether we want anything to be printed at that position.
+.   if ( isSingle_jenkins_agent(project, my.global_agent) )
+.# Project can be built and tested in a single agent, or can spread
+.# the load across executors or even different agents
 .     if defined (project.jenkins_agent_docker)
->    agent \{ docker \{ image '$(project.jenkins_agent_docker:)' } }
+>                   agent \{ docker \{ image '$(project.jenkins_agent_docker:)' } }
 .     elsif defined (project.jenkins_docker)
->    agent \{ docker \{ image '$(project.jenkins_docker:)' } }
+.# Legacy naming for the variable
+>                    agent \{ docker \{ image '$(project.jenkins_docker:)' } }
 .     elsif defined (project.jenkins_agent_label)
->    agent \{ label "$(project.jenkins_agent_label:)" }
+>                    agent \{ label "$(project.jenkins_agent_label:)" }
 .     else
->    agent any
+>                    agent any
+.     endif
+.     return 1
+.   else
+.     if ( (my.global_agent ?= 1) | (project.jenkins_agent_single ?= 0) )
+.# This option only happens in the header of the file, not in steps
+>    agent none
+.     return 1
 .     endif
 .   endif
+.   return 0
 .endfunction
 
 .macro target_jenkins
@@ -45,30 +70,7 @@ register_target ("jenkins", "pipeline CI script for jenkins")
 */
 
 pipeline {
-.# Project can be built and tested in a single agent, or can spread the load
-.   if project.jenkins_agent_single ?= 1
-.     if defined (project.jenkins_agent_docker)
-    agent {
-        docker { image '$(project.jenkins_agent_docker:)' }
-    }
-.     elsif defined (project.jenkins_docker)
-.# Legacy naming for the variable
-    agent {
-        docker { image '$(project.jenkins_docker:)' }
-    }
-.     elsif defined (project.jenkins_agent_label)
-.# TODO: Consider an option to do basic work on the master (agent none)
-.# e.g. to checkout and stash, and request an actual agent when doing
-.# actual work in the steps below
-    agent {
-        label "$(project.jenkins_agent_label:)"
-    }
-.     else
-    agent any
-.     endif
-.   else
-    agent none
-.   endif
+.       jenkins_agent (project, 1)
     triggers {
         pollSCM 'H/5 * * * *'
     }
@@ -76,7 +78,7 @@ pipeline {
 .# TODO: Add a --enable-address-sanitizer=yes matrix
     stages {
         stage ('prepare') {
-.       jenkins_agent (project)
+.       jenkins_agent (project, 0)
             steps {
                 sh './autogen.sh'
                 stash (name: 'prepped', includes: '**/*')
@@ -85,7 +87,7 @@ pipeline {
         stage ('compile') {
             parallel {
                 stage ('build with DRAFT') {
-.       jenkins_agent (project)
+.       jenkins_agent (project, 0)
                     steps {
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes'
@@ -95,7 +97,7 @@ pipeline {
                     }
                 }
                 stage ('build without DRAFT') {
-.       jenkins_agent (project)
+.       jenkins_agent (project, 0)
                     steps {
                         unstash 'prepped'
                         sh './configure --enable-drafts=no'
@@ -105,7 +107,7 @@ pipeline {
                     }
                 }
                 stage ('build with DOCS') {
-.       jenkins_agent (project)
+.       jenkins_agent (project, 0)
                     steps {
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes --with-docs=yes'
@@ -118,7 +120,7 @@ pipeline {
         stage ('check') {
             parallel {
                 stage ('check with DRAFT') {
-.       jenkins_agent (project)
+.       jenkins_agent (project, 0)
                     steps {
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -128,7 +130,7 @@ pipeline {
                     }
                 }
                 stage ('check without DRAFT') {
-.       jenkins_agent (project)
+.       jenkins_agent (project, 0)
                     steps {
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -138,7 +140,7 @@ pipeline {
                     }
                 }
                 stage ('memcheck with DRAFT') {
-.       jenkins_agent (project)
+.       jenkins_agent (project, 0)
                     steps {
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -148,7 +150,7 @@ pipeline {
                     }
                 }
                 stage ('memcheck without DRAFT') {
-.       jenkins_agent (project)
+.       jenkins_agent (project, 0)
                     steps {
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -160,7 +162,7 @@ pipeline {
 .  if project.jenkins_distcheck ?= 0
 .  else
                 stage ('distcheck with DRAFT') {
-.       jenkins_agent (project)
+.       jenkins_agent (project, 0)
                     steps {
                         unstash 'built-draft'
                         timeout (time: 10, unit: 'MINUTES') {
@@ -170,7 +172,7 @@ pipeline {
                     }
                 }
                 stage ('distcheck without DRAFT') {
-.       jenkins_agent (project)
+.       jenkins_agent (project, 0)
                     steps {
                         unstash 'built-nondraft'
                         timeout (time: 10, unit: 'MINUTES') {
