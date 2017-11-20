@@ -36,6 +36,8 @@ export PATH
 
 if [ -s Makefile ]; then
     make clean -k || true
+    cp -f Makefile Makefile.pre-selftest
+    cp -f config.status config.status.pre-selftest
     make distclean -k || true
 fi
 ./autogen.sh
@@ -53,6 +55,17 @@ cp -pf "${ABS_SRC_DIR}/src/zproject_selftest" ./src/
 #./autogen.sh
 #./configure --srcdir="$ABS_SRC_DIR"
 ../configure
+
+if [ ! -s ../Makefile ] && [ -s ../Makefile.pre-selftest ]; then
+    echo "Restore Makefile in src dir" >&2
+    mv -f ../Makefile.pre-selftest ../Makefile
+fi
+
+if [ ! -s ../config.status ] && [ -s ../config.status.pre-selftest ]; then
+    echo "Restore config.status in src dir" >&2
+    mv -f ../config.status.pre-selftest ../config.status \
+    && chmod +x ../config.status
+fi
 
 make
 make clean -k || true
