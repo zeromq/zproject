@@ -63,8 +63,8 @@ fi
 
 if [ ! -s ../config.status ] && [ -s ../config.status.pre-selftest ]; then
     echo "Restore config.status in src dir" >&2
-    mv -f ../config.status.pre-selftest ../config.status
-    chmod +x ../config.status.pre-selftest
+    mv -f ../config.status.pre-selftest ../config.status \
+    && chmod +x ../config.status
 fi
 
 make
