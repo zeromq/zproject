@@ -89,30 +89,51 @@ pipeline {
                 stage ('build with DRAFT') {
 .       jenkins_agent (project, 0)
                     steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/build-withDRAFT") {
+                        deleteDir()
+.       endif
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes'
                         sh 'make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with drafts? (should have no output below)"; git status -s || true'
                         stash (name: 'built-draft', includes: '**/*')
+.       if !(isSingle_jenkins_agent (project, 0))
+                      }
+.       endif
                     }
                 }
                 stage ('build without DRAFT') {
 .       jenkins_agent (project, 0)
                     steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/build-withoutDRAFT") {
+                        deleteDir()
+.       endif
                         unstash 'prepped'
                         sh './configure --enable-drafts=no'
                         sh 'make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make without drafts? (should have no output below)"; git status -s || true'
                         stash (name: 'built-nondraft', includes: '**/*')
+.       if !(isSingle_jenkins_agent (project, 0))
+                      }
+.       endif
                     }
                 }
                 stage ('build with DOCS') {
 .       jenkins_agent (project, 0)
                     steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/build-DOCS") {
+                        deleteDir()
+.       endif
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes --with-docs=yes'
                         sh 'make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with docs? (should have no output below)"; git status -s || true'
+.       if !(isSingle_jenkins_agent (project, 0))
+                      }
+.       endif
                     }
                 }
             }
@@ -122,41 +143,69 @@ pipeline {
                 stage ('check with DRAFT') {
 .       jenkins_agent (project, 0)
                     steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-check-withDRAFT") {
+                        deleteDir()
+.       endif
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make check'
                         }
                         sh 'echo "Are GitIgnores good after make check with drafts? (should have no output below)"; git status -s || true'
+.       if !(isSingle_jenkins_agent (project, 0))
+                      }
+.       endif
                     }
                 }
                 stage ('check without DRAFT') {
 .       jenkins_agent (project, 0)
                     steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-check-withoutDRAFT") {
+                        deleteDir()
+.       endif
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make check'
                         }
                         sh 'echo "Are GitIgnores good after make check without drafts? (should have no output below)"; git status -s || true'
+.       if !(isSingle_jenkins_agent (project, 0))
+                      }
+.       endif
                     }
                 }
                 stage ('memcheck with DRAFT') {
 .       jenkins_agent (project, 0)
                     steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-memcheck-withDRAFT") {
+                        deleteDir()
+.       endif
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
                         sh 'echo "Are GitIgnores good after make memcheck with drafts? (should have no output below)"; git status -s || true'
+.       if !(isSingle_jenkins_agent (project, 0))
+                      }
+.       endif
                     }
                 }
                 stage ('memcheck without DRAFT') {
 .       jenkins_agent (project, 0)
                     steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-memcheck-withoutDRAFT") {
+                        deleteDir()
+.       endif
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
                         sh 'echo "Are GitIgnores good after make memcheck without drafts? (should have no output below)"; git status -s || true'
+.       if !(isSingle_jenkins_agent (project, 0))
+                      }
+.       endif
                     }
                 }
 .  if project.jenkins_distcheck ?= 0
@@ -164,21 +213,35 @@ pipeline {
                 stage ('distcheck with DRAFT') {
 .       jenkins_agent (project, 0)
                     steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-distcheck-withDRAFT") {
+                        deleteDir()
+.       endif
                         unstash 'built-draft'
                         timeout (time: 10, unit: 'MINUTES') {
                             sh 'make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck with drafts? (should have no output below)"; git status -s || true'
+.       if !(isSingle_jenkins_agent (project, 0))
+                      }
+.       endif
                     }
                 }
                 stage ('distcheck without DRAFT') {
 .       jenkins_agent (project, 0)
                     steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-distcheck-withoutDRAFT") {
+                        deleteDir()
+.       endif
                         unstash 'built-nondraft'
                         timeout (time: 10, unit: 'MINUTES') {
                             sh 'make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck without drafts? (should have no output below)"; git status -s || true'
+.       if !(isSingle_jenkins_agent (project, 0))
+                      }
+.       endif
                     }
                 }
 .  endif
