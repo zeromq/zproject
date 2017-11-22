@@ -79,10 +79,10 @@ pipeline {
     stages {
         stage ('prepare') {
 .       jenkins_agent (project, 0)
-            steps {
-                sh './autogen.sh'
-                stash (name: 'prepped', includes: '**/*')
-            }
+                    steps {
+                        sh './autogen.sh'
+                        stash (name: 'prepped', includes: '**/*')
+                    }
         }
         stage ('compile') {
             parallel {
