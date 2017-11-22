@@ -5,6 +5,16 @@
 EXTRA_DIST += \
     src/zproject_selftest
 
+README.md: README.txt *.xml
+	@GITDOWN="`which gitdown 2>/dev/null | awk '{print $$1}' | head -1`" || GITDOWN="" ; \
+	 case "$$GITDOWN" in \
+	    /*) if test -x "$GITDOWN" ; then \
+	            echo "  GITDOWN  $^ => $@" ; \
+	            gitdown $< ; exit $$? ; \
+	        fi ;; \
+	 esac ; \
+	 echo "WARNING : $@ should be updated, but gitdown is not installed on this system" >&2
+
 # For (dist)check, sabotage the script by not doing a distcheck again
 $(abs_builddir)/src/zproject_selftest: $(abs_srcdir)/src/zproject_selftest
 	@if [ "$@" != "$<" ]; then \
