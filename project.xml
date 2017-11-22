@@ -183,17 +183,34 @@
          The agent_single option is a flag that enables parallel
          builds of this component on several agents (specified by
          label or docker) vs. a sequential build on a single agent.
+         The build_* and test_* options influence the default setting
+         of corresponding build arguments for the project. You can
+         still run a custom Jenkins Build with Arguments with other
+         checkboxes clicked, e.g. while developing a missing feature.
+         If not explicitly set to 0, these options are assumed to be
+         "true", as normally a project should be capable of all these
+         aspects.
     <target name = "jenkins">
         <option name = "file" value = "Jenkinsfile" />
         <option name = "agent_docker" value = "zeromqorg/czmq" />
         <option name = "agent_label" value = "linux || macosx || bsd || solaris || posix || windows" />
         <option name = "agent_single" value = "1" />
-        <option name = "distcheck" value = "0" />
+        <option name = "build_without_draft_api" value = "0" />
+        <option name = "build_with_draft_api" value = "0" />
+        <option name = "build_with_docs" value = "0" />
+        <option name = "test_check" value = "0" />
+        <option name = "test_memcheck" value = "0" />
+        <option name = "test_distcheck" value = "0" />
     </target>
     -->
     <target name = "jenkins" >
         <option name = "agent_label" value = "linux || macosx || bsd || solaris || posix || windows" />
         <option name = "agent_single" value = "1" />
+        <!-- Note: for zproject itself, all the *check jobs are
+             essentially a loopback to distcheck itself -->
+        <option name = "test_check" value = "1" />
+        <option name = "test_memcheck" value = "0" />
+        <option name = "test_distcheck" value = "0" />
     </target>
 
     <!-- In order loaded by zproject.gsl -->
