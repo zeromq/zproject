@@ -3,12 +3,16 @@
 # but should facilitate passing of out-of-tree builds and "make distcheck"
 
 EXTRA_DIST += \
+    license.xml \
+    project.xml \
+    zproject_known_projects.xml \
+    api/myclass.api \
     src/zproject_selftest
 
-README.md: README.txt *.xml
+README.md: README.txt api/myclass.api project.xml zproject_known_projects.xml
 	@GITDOWN="`which gitdown 2>/dev/null | awk '{print $$1}' | head -1`" || GITDOWN="" ; \
 	 case "$$GITDOWN" in \
-	    /*) if test -x "$GITDOWN" ; then \
+	    /*) if test -x "$$GITDOWN" ; then \
 	            echo "  GITDOWN  $^ => $@" ; \
 	            gitdown $< ; exit $$? ; \
 	        fi ;; \

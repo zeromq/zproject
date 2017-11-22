@@ -72,6 +72,7 @@ Testing/
 
 # Repositories downloaded by CI integration scripts
 gsl/
+gitdown/
 
 # Manually tracked: the czmq source is pulled as a test target
 czmq/
