@@ -78,6 +78,7 @@ pipeline {
         // defined in this jenkins setup -- in Jenkins Management Web-GUI
         // see Configure System / Global properties / Environment variables
         // Default (if unset) is empty => no deployment attempt after good test
+        // See zproject Jenkinsfile-deploy.example for an example deploy job.
         // TODO: Try to marry MultiBranchPipeline support with pre-set defaults
         // directly in MultiBranchPipeline plugin, or mechanism like Credentials,
         // or a config file uploaded to master for all jobs or this job, see
