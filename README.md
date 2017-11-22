@@ -344,6 +344,11 @@ zproject's `project.xml` contains an extensive description of the available conf
     <target name = "debian" />
     <target name = "redhat" />
 
+    <!-- Note: zproject itself uses a customized CI-testing routine
+         on Travis CI, not a generated one, so DO NOT ENABLE this one:
+        <target name = "travis" />
+    -->
+
     <!-- Jenkins target creates jenkins pipeline
          Pipeline file is not overwriten if it exists.
          A "make distcheck" is enabled by default, though some
@@ -354,6 +359,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         <option name = "distcheck" value = "0" />
     </target>
     -->
+    <target name = "jenkins" />
 
     <!-- In order loaded by zproject.gsl -->
     <bin name = "zproject.gsl" />
@@ -386,7 +392,6 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_obs.gsl" />
     <bin name = "zproject_python.gsl" />
     <bin name = "zproject_python_cffi.gsl" />
-    <bin name = "zproject_python_cffi2.gsl" />
     <bin name = "zproject_qml.gsl" />
     <bin name = "zproject_qt.gsl" />
     <bin name = "zproject_redhat.gsl" />
@@ -476,7 +481,7 @@ Model is described in `zproject_known_projects.xml` file:
     </use>
 
     <use project = "gsl" libname = ""
-        repository = "https://github.com/imatix/gsl.git"
+        repository = "https://github.com/zeromq/gsl.git"
         debian_name = "generator-scripting-language"
         redhat_name = "generator-scripting-language">
     </use>
@@ -604,6 +609,12 @@ Model is described in `zproject_known_projects.xml` file:
             <pkgconfig>lua51</pkgconfig>
             <pkgconfig>lua</pkgconfig>
     </use>
+
+    <use project = "lz4"
+        libname = "liblz4"
+        redhat_name = "liblz4-devel"
+        header = "lz4.h"
+        test = "LZ4_decompress_safe" />
 
 </known_projects>
 ```
