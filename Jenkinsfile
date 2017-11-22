@@ -100,7 +100,7 @@ pipeline {
                     }
                 }
                 stage ('build with DOCS') {
-                    when { environment name:'DO_BUILD_WITH_DOCS', value:'true' }
+                    when { environment name:'DO_BUILD_DOCS', value:'true' }
                     steps {
                       dir("tmp/build-DOCS") {
                         deleteDir()

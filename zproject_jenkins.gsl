@@ -198,7 +198,7 @@ pipeline {
                     }
                 }
                 stage ('build with DOCS') {
-                    when { environment name:'DO_BUILD_WITH_DOCS', value:'true' }
+                    when { environment name:'DO_BUILD_DOCS', value:'true' }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
