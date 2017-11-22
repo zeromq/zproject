@@ -14,7 +14,9 @@ register_target ("jenkins", "pipeline CI script for jenkins")
 
 .function isSingle_jenkins_agent (project, global_agent)
 .# See details below in jenkins_agent()
-.   if ( ( ( ( !(defined (project.jenkins_agent_single)) | (project.jenkins_agent_single ?= 0) ) & (my.global_agent ?= 0) ) ) | ( (my.global_agent ?= 1) & ( project.jenkins_agent_single ?= 1 ) ) )
+.# The default if agent_single is not defined is to treat it as "true" mostly
+.# due to https://issues.jenkins-ci.org/browse/JENKINS-48168 instability so far
+.   if ( ( (project.jenkins_agent_single ?= 0) & (my.global_agent ?= 0) ) | ( (my.global_agent ?= 1) & ( !(defined (project.jenkins_agent_single)) | project.jenkins_agent_single ?= 1 ) ) )
 .       return 1
 .   endif
 .   return 0
