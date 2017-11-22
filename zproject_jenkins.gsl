@@ -12,6 +12,20 @@
 
 register_target ("jenkins", "pipeline CI script for jenkins")
 
+.function jenkins_agent (project)
+.   if !(defined (project.jenkins_agent_single)) | (project.jenkins_agent_single ?= 0)
+.     if defined (project.jenkins_agent_docker)
+>    agent \{ docker \{ image '$(project.jenkins_agent_docker:)' } }
+.     elsif defined (project.jenkins_docker)
+>    agent \{ docker \{ image '$(project.jenkins_docker:)' } }
+.     elsif defined (project.jenkins_agent_label)
+>    agent \{ label "$(project.jenkins_agent_label:)" }
+.     else
+>    agent any
+.     endif
+.   endif
+.endfunction
+
 .macro target_jenkins
 . if defined (project.jenkins_file)
 .   jenkinsfile = project.jenkins_file
@@ -31,12 +45,29 @@ register_target ("jenkins", "pipeline CI script for jenkins")
 */
 
 pipeline {
-.   if defined (project.jenkins_docker)
+.# Project can be built and tested in a single agent, or can spread the load
+.   if project.jenkins_agent_single ?= 1
+.     if defined (project.jenkins_agent_docker)
+    agent {
+        docker { image '$(project.jenkins_agent_docker:)' }
+    }
+.     elsif defined (project.jenkins_docker)
+.# Legacy naming for the variable
     agent {
         docker { image '$(project.jenkins_docker:)' }
     }
-.   else
+.     elsif defined (project.jenkins_agent_label)
+.# TODO: Consider an option to do basic work on the master (agent none)
+.# e.g. to checkout and stash, and request an actual agent when doing
+.# actual work in the steps below
+    agent {
+        label "$(project.jenkins_agent_label:)"
+    }
+.     else
     agent any
+.     endif
+.   else
+    agent none
 .   endif
     triggers {
         pollSCM 'H/5 * * * *'
@@ -45,6 +76,7 @@ pipeline {
 .# TODO: Add a --enable-address-sanitizer=yes matrix
     stages {
         stage ('prepare') {
+.       jenkins_agent (project)
             steps {
                 sh './autogen.sh'
                 stash (name: 'prepped', includes: '**/*')
@@ -53,6 +85,7 @@ pipeline {
         stage ('compile') {
             parallel {
                 stage ('build with DRAFT') {
+.       jenkins_agent (project)
                     steps {
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes'
@@ -62,6 +95,7 @@ pipeline {
                     }
                 }
                 stage ('build without DRAFT') {
+.       jenkins_agent (project)
                     steps {
                         unstash 'prepped'
                         sh './configure --enable-drafts=no'
@@ -71,6 +105,7 @@ pipeline {
                     }
                 }
                 stage ('build with DOCS') {
+.       jenkins_agent (project)
                     steps {
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes --with-docs=yes'
@@ -83,6 +118,7 @@ pipeline {
         stage ('check') {
             parallel {
                 stage ('check with DRAFT') {
+.       jenkins_agent (project)
                     steps {
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -92,6 +128,7 @@ pipeline {
                     }
                 }
                 stage ('check without DRAFT') {
+.       jenkins_agent (project)
                     steps {
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -101,6 +138,7 @@ pipeline {
                     }
                 }
                 stage ('memcheck with DRAFT') {
+.       jenkins_agent (project)
                     steps {
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -110,6 +148,7 @@ pipeline {
                     }
                 }
                 stage ('memcheck without DRAFT') {
+.       jenkins_agent (project)
                     steps {
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -118,9 +157,10 @@ pipeline {
                         sh 'echo "Are GitIgnores good after make memcheck without drafts? (should have no output below)"; git status -s || true'
                     }
                 }
-.  if jenkins_distcheck ?= 0
+.  if project.jenkins_distcheck ?= 0
 .  else
                 stage ('distcheck with DRAFT') {
+.       jenkins_agent (project)
                     steps {
                         unstash 'built-draft'
                         timeout (time: 10, unit: 'MINUTES') {
@@ -130,6 +170,7 @@ pipeline {
                     }
                 }
                 stage ('distcheck without DRAFT') {
+.       jenkins_agent (project)
                     steps {
                         unstash 'built-nondraft'
                         timeout (time: 10, unit: 'MINUTES') {

@@ -178,13 +178,23 @@
          Pipeline file is not overwriten if it exists.
          A "make distcheck" is enabled by default, though some
          projects tend to opt out of supporting that functionality.
+         Your projects can build under a docker container OR agents
+         matched by a label OR under an "any" agent by default.
+         The agent_single option is a flag that enables parallel
+         builds of this component on several agents (specified by
+         label or docker) vs. a sequential build on a single agent.
     <target name = "jenkins">
         <option name = "file" value = "Jenkinsfile" />
-        <option name = "docker" value = "zeromqorg/czmq" />
+        <option name = "agent_docker" value = "zeromqorg/czmq" />
+        <option name = "agent_label" value = "linux || macosx || bsd || solaris || posix || windows" />
+        <option name = "agent_single" value = "1" />
         <option name = "distcheck" value = "0" />
     </target>
     -->
-    <target name = "jenkins" />
+    <target name = "jenkins" >
+        <option name = "agent_label" value = "linux || macosx || bsd || solaris || posix || windows" />
+        <option name = "agent_single" value = "0" />
+    </target>
 
     <!-- In order loaded by zproject.gsl -->
     <bin name = "zproject.gsl" />
