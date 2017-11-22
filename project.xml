@@ -193,7 +193,7 @@
     -->
     <target name = "jenkins" >
         <option name = "agent_label" value = "linux || macosx || bsd || solaris || posix || windows" />
-        <option name = "agent_single" value = "0" />
+        <option name = "agent_single" value = "1" />
     </target>
 
     <!-- In order loaded by zproject.gsl -->
