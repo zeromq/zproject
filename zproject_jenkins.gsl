@@ -46,7 +46,6 @@ pipeline {
     stages {
         stage ('prepare') {
             steps {
-                checkout scm
                 sh './autogen.sh'
                 stash (name: 'prepped', includes: '**/*')
             }
