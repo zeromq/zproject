@@ -1,0 +1,107 @@
+/*  The following example Jenkinsfile is a skeleton to copy into your CI
+ *  scripts repository and configure a MultiBranch Pipeline job from it.
+ *  This would create a job instance from every branch that contains this
+ *  file, so you can adapt the content to your installation's tools and
+ *  call this job to deploy projects generated with zproject.
+ *
+ *  Then in your Jenkins Management Web-GUI go to Configure System /
+ *  / Global properties / Environment variables and Add a new variable
+ *  DEFAULT_DEPLOY_JOB_NAME with value like '/my-deploy/master', and a
+ *  DEFAULT_DEPLOY_BRANCH_PATTERN like '^(master|feature/,*|release/.*)$'
+ *
+ *  Contributed to zproject, Copyright (C) 2017 by Eaton
+ *  Author: Jim Klimov <EvgenyKlimov@eaton.com>
+ */
+
+pipeline {
+// Select an agent with proper tools and access needed for deployment
+    agent { label "deploy-tools" }
+    parameters {
+        string (
+            defaultValue: '',
+            description: 'Git repo URL with sources',
+            name: 'DEPLOY_GIT_URL')
+        string (
+            defaultValue: '',
+            description: 'The branch which passed tests (e.g. "master") - influences which OBS project to push into',
+            name: 'DEPLOY_GIT_BRANCH')
+        string (
+            defaultValue: '',
+            description: 'The commit ID of the sources to check out (may be not current HEAD of that repo/branch)',
+            name: 'DEPLOY_GIT_COMMIT')
+        string (
+            defaultValue: 'https://github.com/myorg/myjenkinsscripts.git',
+            description: 'GIT Repo with CI scripts and tools',
+            name: 'CI_REPO_FORK')
+        string (
+            defaultValue: 'origin/master',
+            description: '',
+            name: 'CI_REPO_BRANCH')
+        string (
+            defaultValue: '',
+            description: '',
+            name: 'CI_REPO_REFSPEC')
+// You may have more parameters passed here, to pass them down to your
+// deployment script; make sure to set some sane defaults or guess blank
+// values in your scripts
+    }
+
+    stages {
+        stage ('Sanity check') {
+            steps {
+                script {
+                    if ( "${params["CI_REPO_BRANCH"]}" == "" || "${params["CI_REPO_FORK"]}" == "" ||
+                         "${params["DEPLOY_GIT_URL"]}" == "" || "${params["DEPLOY_GIT_BRANCH"]}" == ""
+                       ) { return false; }
+                }
+            }
+        }
+
+        stage ('Checkout') {
+            parallel {
+                stage ('Checkout SRC') {
+                    steps {
+                        checkout([$class: 'GitSCM',
+                            branches: [[name: "${params["DEPLOY_GIT_BRANCH"]}"]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[$class: 'WipeWorkspace'],
+                                [$class: 'RelativeTargetDirectory', relativeTargetDir: 'project'],
+                                [$class: 'CloneOption', noTags: false, shallow: false]],
+                            submoduleCfg: [],
+                            userRemoteConfigs: [[url: "${params["DEPLOY_GIT_URL"]}", refspec: "${params["DEPLOY_GIT_COMMIT"]}"]]
+                                // Maybe also pass a credentialsId with account who may read your repos, if access is restricted
+                        ])
+                    }
+                }
+                stage ('Checkout CI scripts') {
+                    steps {
+                        checkout([$class: 'GitSCM',
+                            branches: [[name: "${params["CI_REPO_BRANCH"]}"]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[$class: 'WipeWorkspace'],
+                                [$class: 'RelativeTargetDirectory', relativeTargetDir: 'ci'],
+                                [$class: 'CloneOption', depth: 3, noTags: true, shallow: true, reference: "${env.WORKSPACE}/.git"]],
+                                // Optimization above assumes that this Jenkinsfile-deploy lives in the same repo, so we know it is already checked out
+                            submoduleCfg: [],
+                            userRemoteConfigs: [[url: "${params["CI_REPO_FORK"]}", refspec: "${params["CI_REPO_REFSPEC"]}"]]
+                        ])
+                    }
+                }
+            }
+        }
+
+// Certainly, customize the code below to match your tools and their params
+        stage ('Deploy') {
+            steps {
+                sh """
+DEPLOY_GIT_URL="${params["DEPLOY_GIT_URL"]}"
+DEPLOY_GIT_BRANCH="${params["DEPLOY_GIT_BRANCH"]}"
+DEPLOY_GIT_COMMIT="${params["DEPLOY_GIT_COMMIT"]}"
+export DEPLOY_GIT_URL DEPLOY_GIT_BRANCH DEPLOY_GIT_COMMIT
+cd project && \
+../ci/update-deployment.sh
+"""
+            }
+        }
+    }
+}
