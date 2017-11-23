@@ -74,7 +74,7 @@ pipeline {
         stage ('compile') {
             parallel {
                 stage ('build with DRAFT') {
-                    when { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true' }
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API ) } }
                     steps {
                       dir("tmp/build-withDRAFT") {
                         deleteDir()
@@ -87,7 +87,7 @@ pipeline {
                     }
                 }
                 stage ('build without DRAFT') {
-                    when { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true' }
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API ) } }
                     steps {
                       dir("tmp/build-withoutDRAFT") {
                         deleteDir()
@@ -100,7 +100,7 @@ pipeline {
                     }
                 }
                 stage ('build with DOCS') {
-                    when { environment name:'DO_BUILD_DOCS', value:'true' }
+                    when { expression { return ( params.DO_BUILD_DOCS ) } }
                     steps {
                       dir("tmp/build-DOCS") {
                         deleteDir()

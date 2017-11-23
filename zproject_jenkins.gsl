@@ -162,7 +162,7 @@ pipeline {
         stage ('compile') {
             parallel {
                 stage ('build with DRAFT') {
-                    when { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true' }
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API ) } }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -180,7 +180,7 @@ pipeline {
                     }
                 }
                 stage ('build without DRAFT') {
-                    when { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true' }
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API ) } }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -198,7 +198,7 @@ pipeline {
                     }
                 }
                 stage ('build with DOCS') {
-                    when { environment name:'DO_BUILD_DOCS', value:'true' }
+                    when { expression { return ( params.DO_BUILD_DOCS ) } }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
