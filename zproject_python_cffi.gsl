@@ -140,6 +140,7 @@ function python_c_method_call (class, method)
             my.out += "            foo_p = utils.ffi.new(\"struct _zlist_t *[1]\")\n"
             my.out += "            foo_p [0] = foo\n"
             my.out += "            utils.lib.dproto_set_argv(self._p, foo_p)\n"
+            my.out += "            return\n"
             my.out += "\n        "
     endif
 
