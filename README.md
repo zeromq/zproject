@@ -390,6 +390,7 @@ zproject's `project.xml` contains an extensive description of the available conf
          Jenkins cron syntax. The default is approximately every 5 minutes
          with a spread to minimize burst-loads vs quiet times. An explicit
          empty string disables polling, so you'd only run the job manually.
+         Note that the most frequent working setting is "H/2", NOT a "H/1".
     <target name = "jenkins">
         <option name = "file" value = "Jenkinsfile" />
         <option name = "agent_docker" value = "zeromqorg/czmq" />
