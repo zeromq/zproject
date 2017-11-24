@@ -375,6 +375,9 @@ zproject's `project.xml` contains an extensive description of the available conf
          That job should accept parameters DEPLOY_GIT_URL (URL of repo),
          DEPLOY_GIT_BRANCH (name for decision-making), DEPLOY_GIT_COMMIT
          (actual commit to check out and shrink-wrap into packaging.
+         The test_cppcheck is different, as it calls the "cppcheck" tool
+         which may be not installed on a particular deployment, so by
+         default this option is disabled if not set explicitly.
     <target name = "jenkins">
         <option name = "file" value = "Jenkinsfile" />
         <option name = "agent_docker" value = "zeromqorg/czmq" />
@@ -386,6 +389,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         <option name = "test_check" value = "0" />
         <option name = "test_memcheck" value = "0" />
         <option name = "test_distcheck" value = "0" />
+        <option name = "test_cppcheck" value = "1" />
     </target>
     -->
     <target name = "jenkins" >
@@ -396,6 +400,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         <option name = "test_check" value = "1" />
         <option name = "test_memcheck" value = "0" />
         <option name = "test_distcheck" value = "0" />
+        <option name = "test_cppcheck" value = "0" />
     </target>
 
     <!-- In order loaded by zproject.gsl -->

@@ -144,6 +144,15 @@ pipeline {
 .  endif
             description: 'Attempt "make distcheck" in this run?',
             name: 'DO_TEST_DISTCHECK')
+        booleanParam (
+.  if ( !(defined(project.jenkins_test_cppcheck)) | (project.jenkins_test_cppcheck ?= 0) )
+. # cppcheck is an external tool that may be not installed in general case
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt "cppcheck" analysis before this run?',
+            name: 'DO_CPPCHECK')
     }
     triggers {
         pollSCM 'H/5 * * * *'
@@ -152,6 +161,14 @@ pipeline {
 // Note: your Jenkins setup may benefit from similar setup on side of agents:
 //        PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/bin:/bin:\$\{PATH}"
     stages {
+        stage ('cppcheck') {
+                    when { expression { return ( params.DO_CPPCHECK ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+                        sh 'cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>cppcheck.xml'
+                        archiveArtifacts artifacts: '**/cppcheck.xml'
+                    }
+        }
         stage ('prepare') {
 .       jenkins_agent (project, 0)
                     steps {
