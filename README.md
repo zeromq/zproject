@@ -353,6 +353,10 @@ zproject's `project.xml` contains an extensive description of the available conf
          Pipeline file is not overwriten if it exists.
          Your projects can build under a docker container OR agents
          matched by a label OR under an "any" agent by default.
+         If you specify a complex label expression, be sure to use
+         XML escaping of the amperesand character (&amp;) if some of
+         your tooling expects project.xml to be valid XML (the GSL
+         parser accepts a verbatim amperesand character as well).
          The agent_single option is a flag that enables parallel
          builds of this component on several agents (specified by
          label or docker) vs. a sequential build on a single agent.
@@ -375,6 +379,9 @@ zproject's `project.xml` contains an extensive description of the available conf
          That job should accept parameters DEPLOY_GIT_URL (URL of repo),
          DEPLOY_GIT_BRANCH (name for decision-making), DEPLOY_GIT_COMMIT
          (actual commit to check out and shrink-wrap into packaging.
+         The test_install check tries to "make DESTDIR=... install" where
+         the DESTDIR is test_install_DESTDIR value (must be an absolute
+         path), or BUILD_DIR/_inst if the option is not specified or empty.
          The test_cppcheck is different, as it calls the "cppcheck" tool
          which may be not installed on a particular deployment, so by
          default this option is disabled if not set explicitly.
@@ -383,6 +390,7 @@ zproject's `project.xml` contains an extensive description of the available conf
          Jenkins cron syntax. The default is approximately every 5 minutes
          with a spread to minimize burst-loads vs quiet times. An explicit
          empty string disables polling, so you'd only run the job manually.
+         Note that the most frequent working setting is "H/2", NOT a "H/1".
     <target name = "jenkins">
         <option name = "file" value = "Jenkinsfile" />
         <option name = "agent_docker" value = "zeromqorg/czmq" />
@@ -395,6 +403,8 @@ zproject's `project.xml` contains an extensive description of the available conf
         <option name = "test_check" value = "0" />
         <option name = "test_memcheck" value = "0" />
         <option name = "test_distcheck" value = "0" />
+        <option name = "test_install" value = "0" />
+        <option name = "test_install_DESTDIR" value = "/tmp/proto-area" />
         <option name = "test_cppcheck" value = "1" />
     </target>
     -->
