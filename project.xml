@@ -178,6 +178,10 @@
          Pipeline file is not overwriten if it exists.
          Your projects can build under a docker container OR agents
          matched by a label OR under an "any" agent by default.
+         If you specify a complex label expression, be sure to use
+         XML escaping of the amperesand character (&amp;) if some of
+         your tooling expects project.xml to be valid XML (the GSL
+         parser accepts a verbatim amperesand character as well).
          The agent_single option is a flag that enables parallel
          builds of this component on several agents (specified by
          label or docker) vs. a sequential build on a single agent.
