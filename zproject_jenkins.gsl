@@ -145,6 +145,22 @@ pipeline {
             description: 'Attempt "make distcheck" in this run?',
             name: 'DO_TEST_DISTCHECK')
         booleanParam (
+.  if project.jenkins_test_install ?= 0
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt a "make install" check in this run?',
+            name: 'DO_TEST_INSTALL')
+        string (
+.  if ( !(defined(project.jenkins_test_install_DESTDIR)) | project.jenkins_test_install_DESTDIR ?= "" )
+            defaultValue: "`pwd`/_inst",
+.  else
+            defaultValue: "$(project.jenkins_test_install_DESTDIR)",
+.  endif
+            description: 'If attempting a "make install" check in this run, what DESTDIR to specify? (absolute path, defaults to "BUILD_DIR/_inst")',
+            name: 'USE_TEST_INSTALL_DESTDIR')
+        booleanParam (
 .  if ( !(defined(project.jenkins_test_cppcheck)) | (project.jenkins_test_cppcheck ?= 0) )
 . # cppcheck is an external tool that may be not installed in general case
             defaultValue: false,
@@ -348,6 +364,42 @@ pipeline {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck without drafts? (should have no output below)"; git status -s || true'
+.       if !(isSingle_jenkins_agent (project, 0))
+                      }
+.       endif
+                    }
+                }
+                stage ('install with DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_INSTALL ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-install-withDRAFT") {
+                        deleteDir()
+.       endif
+                        unstash 'built-draft'
+                        timeout (time: 5, unit: 'MINUTES') {
+                            sh "CCACHE_BASEDIR='`pwd`' ; export CCACHE_BASEDIR; make DESTDIR='${params.USE_TEST_INSTALL_DESTDIR}' install"
+                        }
+                        sh 'echo "Are GitIgnores good after make install with drafts? (should have no output below)"; git status -s || true'
+.       if !(isSingle_jenkins_agent (project, 0))
+                      }
+.       endif
+                    }
+                }
+                stage ('install without DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_INSTALL ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-install-withoutDRAFT") {
+                        deleteDir()
+.       endif
+                        unstash 'built-nondraft'
+                        timeout (time: 5, unit: 'MINUTES') {
+                            sh "CCACHE_BASEDIR='`pwd`' ; export CCACHE_BASEDIR; make DESTDIR='${params.USE_TEST_INSTALL_DESTDIR}' install"
+                        }
+                        sh 'echo "Are GitIgnores good after make install without drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
                       }
 .       endif

@@ -59,6 +59,14 @@ pipeline {
             description: 'Attempt "make distcheck" in this run?',
             name: 'DO_TEST_DISTCHECK')
         booleanParam (
+            defaultValue: true,
+            description: 'Attempt a "make install" check in this run?',
+            name: 'DO_TEST_INSTALL')
+        string (
+            defaultValue: "`pwd`/_inst",
+            description: 'If attempting a "make install" check in this run, what DESTDIR to specify? (absolute path, defaults to "BUILD_DIR/_inst")',
+            name: 'USE_TEST_INSTALL_DESTDIR')
+        booleanParam (
             defaultValue: false,
             description: 'Attempt "cppcheck" analysis before this run?',
             name: 'DO_CPPCHECK')
@@ -201,6 +209,32 @@ pipeline {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck without drafts? (should have no output below)"; git status -s || true'
+                      }
+                    }
+                }
+                stage ('install with DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_INSTALL ) } }
+                    steps {
+                      dir("tmp/test-install-withDRAFT") {
+                        deleteDir()
+                        unstash 'built-draft'
+                        timeout (time: 5, unit: 'MINUTES') {
+                            sh "CCACHE_BASEDIR='`pwd`' ; export CCACHE_BASEDIR; make DESTDIR='${params.USE_TEST_INSTALL_DESTDIR}' install"
+                        }
+                        sh 'echo "Are GitIgnores good after make install with drafts? (should have no output below)"; git status -s || true'
+                      }
+                    }
+                }
+                stage ('install without DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_INSTALL ) } }
+                    steps {
+                      dir("tmp/test-install-withoutDRAFT") {
+                        deleteDir()
+                        unstash 'built-nondraft'
+                        timeout (time: 5, unit: 'MINUTES') {
+                            sh "CCACHE_BASEDIR='`pwd`' ; export CCACHE_BASEDIR; make DESTDIR='${params.USE_TEST_INSTALL_DESTDIR}' install"
+                        }
+                        sh 'echo "Are GitIgnores good after make install without drafts? (should have no output below)"; git status -s || true'
                       }
                     }
                 }
