@@ -378,11 +378,17 @@ zproject's `project.xml` contains an extensive description of the available conf
          The test_cppcheck is different, as it calls the "cppcheck" tool
          which may be not installed on a particular deployment, so by
          default this option is disabled if not set explicitly.
+         The triggers_pollSCM option sets up the pipeline-generated job
+         for regular polling of the original SCM repository, using the
+         Jenkins cron syntax. The default is approximately every 5 minutes
+         with a spread to minimize burst-loads vs quiet times. An explicit
+         empty string disables polling, so you'd only run the job manually.
     <target name = "jenkins">
         <option name = "file" value = "Jenkinsfile" />
         <option name = "agent_docker" value = "zeromqorg/czmq" />
         <option name = "agent_label" value = "linux || macosx || bsd || solaris || posix || windows" />
         <option name = "agent_single" value = "1" />
+        <option name = "triggers_pollSCM" value = "H/5 * * * *" />
         <option name = "build_without_draft_api" value = "0" />
         <option name = "build_with_draft_api" value = "0" />
         <option name = "build_with_docs" value = "0" />

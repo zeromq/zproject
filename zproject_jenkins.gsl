@@ -154,9 +154,19 @@ pipeline {
             description: 'Attempt "cppcheck" analysis before this run?',
             name: 'DO_CPPCHECK')
     }
+.  if !(defined(project.jenkins_triggers_pollSCM))
     triggers {
         pollSCM 'H/5 * * * *'
     }
+.  else
+.   if project.jenkins_triggers_pollSCM ?= ""
+.       # Explicit skip of polling setup
+.   else
+    triggers {
+        pollSCM '$(project.jenkins_triggers_pollSCM)'
+    }
+.   endif
+.  endif
 .# TODO: Add a --enable-address-sanitizer=yes matrix
 // Note: your Jenkins setup may benefit from similar setup on side of agents:
 //        PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/bin:/bin:\$\{PATH}"
