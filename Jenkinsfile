@@ -87,7 +87,7 @@ pipeline {
         stage ('prepare') {
                     steps {
                         sh './autogen.sh'
-                        stash (name: 'prepped', includes: '**/*')
+                        stash (name: 'prepped', includes: '**/*', excludes: '**/cppcheck.xml')
                     }
         }
         stage ('compile') {
@@ -101,7 +101,7 @@ pipeline {
                         sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=yes'
                         sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with drafts? (should have no output below)"; git status -s || true'
-                        stash (name: 'built-draft', includes: '**/*')
+                        stash (name: 'built-draft', includes: '**/*', excludes: '**/cppcheck.xml')
                       }
                     }
                 }
@@ -114,7 +114,7 @@ pipeline {
                         sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=no'
                         sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make without drafts? (should have no output below)"; git status -s || true'
-                        stash (name: 'built-nondraft', includes: '**/*')
+                        stash (name: 'built-nondraft', includes: '**/*', excludes: '**/cppcheck.xml')
                       }
                     }
                 }
