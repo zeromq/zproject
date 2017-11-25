@@ -52,12 +52,13 @@ function set_state (element, default)
     my.element.state ?= my.default
     if my.element.state = "stable" \
     |  my.element.state = "legacy" \
+    |  my.element.state = "deprecated" \
     |  my.element.private ?= 1
         my.element.draft = 0
     elsif my.element.state = "draft"
         my.element.draft = 1
     else
-        abort "E: $(name (element)).state must be draft/stable/legacy (is '$(my.element.state)')"
+        abort "E: $(name (my.element)).state must be draft/stable/legacy/deprecated (is '$(my.element.state)')"
     endif
 endfunction
 
