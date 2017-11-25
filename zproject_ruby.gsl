@@ -127,7 +127,15 @@ endfunction
 # The line that attaches the function to the project's FFI module
 # like: attach_function my_project_method, [:pointer], :int, **opts
 function ruby_ffi_attach_definition(method)
-    my.attach_definition = "attach_function :$(class.c_name)_$(method.c_name:), ["
+    if my.method.state = "deprecated"
+      my.attach_definition = "attach_deprecated_function"
+    elsif my.method.state = "draft"
+      my.attach_definition = "attach_draft_function"
+    else
+      my.attach_definition = "attach_function"
+    endif
+
+    my.attach_definition += " :$(class.c_name)_$(method.c_name:), ["
     if !my.method.singleton
         my.attach_definition += ":pointer"
         if count (my.method.argument)
@@ -143,23 +151,6 @@ function ruby_ffi_attach_definition(method)
     my.attach_definition += "], $(method->return.ruby_ffi_type:), **opts"
     return my.attach_definition
 endfunction
-
-
-# Ruby code that warns about unavailable function and creates a placeholder
-# function that just raises NotImplementedError with a helpful message.
-.macro ruby_unimplemented_method_definition(method)
-        if $VERBOSE || $DEBUG
-          warn "The $(method.STATE) function $(class.c_name:)_$(method.name:c)()" +
-            " is not provided by the installed $(project.name:) library."
-        end
-        def self.$(class.c_name:)_$(method.c_name:)(*)
-.       if method.state = 'draft'
-          raise NotImplementedError, "compile $(project.name:) with --enable-drafts"
-.       else
-          raise NotImplementedError, "update your code or downgrade the $(project.name:) library"
-.       endif
-        end
-.endmacro
 
 # Returns the Ruby method call without arguments,
 # like: ::MyProject::FFI.my_class_my_method
@@ -312,6 +303,32 @@ module $(project.RubyName:)
       @available = false
     end
 
+
+    def self.attach_deprecated_function(name, *rest)
+      attach_function(name, *rest)
+    rescue ::FFI::NotFoundError
+      define_singleton_method name do |*|
+        raise NotImplementedError, "update your code or downgrade the $(project.name:) library"
+      end
+
+      return unless $VERBOSE || $DEBUG
+
+      warn "The DEPRECATED function #{name}() is not provided by the installed $(project.name:) library."
+    end
+
+    def self.attach_draft_function(name, *rest)
+      attach_function(name, *rest)
+    rescue ::FFI::NotFoundError
+      define_singleton_method name do |*|
+        raise NotImplementedError, "compile $(project.name:) with --enable-drafts"
+      end
+
+      return unless $VERBOSE || $DEBUG
+
+      warn "The DRAFT function #{name}() is not provided by the installed $(project.name:) library."
+    end
+
+
     if available?
       opts = {
         blocking: true  # only necessary on MRI to deal with the GIL.
@@ -319,37 +336,13 @@ module $(project.RubyName:)
 .for class where defined (class.api) & class.private = "0"
 
 .for constructor as method
-.  if method.state = 'draft' | method.state = 'deprecated'
-      begin # $(method.STATE) method
-        $(ruby_ffi_attach_definition (method))
-      rescue ::FFI::NotFoundError
-.       ruby_unimplemented_method_definition (method)
-      end
-.  else
       $(ruby_ffi_attach_definition (method))
-.  endif
 .endfor
 .for destructor as method
-.  if method.state = 'draft' | method.state = 'deprecated'
-      begin # $(method.STATE) method
-        $(ruby_ffi_attach_definition (method))
-      rescue ::FFI::NotFoundError
-.       ruby_unimplemented_method_definition (method)
-      end
-.  else
       $(ruby_ffi_attach_definition (method))
-.  endif
 .endfor
 .for method
-.  if method.state = 'draft' | method.state = 'deprecated'
-      begin # $(method.STATE) method
-        $(ruby_ffi_attach_definition (method))
-      rescue ::FFI::NotFoundError
-.       ruby_unimplemented_method_definition (method)
-      end
-.  else
       $(ruby_ffi_attach_definition (method))
-.  endif
 .endfor
 
       require_relative 'ffi/$(class.ruby_require:)'
