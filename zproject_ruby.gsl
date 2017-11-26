@@ -127,15 +127,7 @@ endfunction
 # The line that attaches the function to the project's FFI module
 # like: attach_function my_project_method, [:pointer], :int, **opts
 function ruby_ffi_attach_definition(method)
-    if my.method.state = "deprecated"
-      my.attach_definition = "attach_deprecated_function"
-    elsif my.method.state = "draft"
-      my.attach_definition = "attach_draft_function"
-    else
-      my.attach_definition = "attach_function"
-    endif
-
-    my.attach_definition += " :$(class.c_name)_$(method.c_name:), ["
+    my.attach_definition = "attach_function :$(class.c_name)_$(method.c_name:), ["
     if !my.method.singleton
         my.attach_definition += ":pointer"
         if count (my.method.argument)
@@ -304,30 +296,17 @@ module $(project.RubyName:)
     end
 
 
-    def self.attach_deprecated_function(name, *rest)
-      attach_function(name, *rest)
+    def self.attach_function(name, *rest)
+      super
     rescue ::FFI::NotFoundError
       define_singleton_method name do |*|
-        raise NotImplementedError, "update your code or downgrade the $(project.name:) library"
+        raise NotImplementedError, "The function #{name}() is not provided by the $(project.name:) library installed. Upgrade the library or compile it with --enable-drafts."
       end
 
       return unless $VERBOSE || $DEBUG
 
-      warn "The DEPRECATED function #{name}() is not provided by the installed $(project.name:) library."
+      warn "The function #{name}() is not provided by the installed $(project.name:) library."
     end
-
-    def self.attach_draft_function(name, *rest)
-      attach_function(name, *rest)
-    rescue ::FFI::NotFoundError
-      define_singleton_method name do |*|
-        raise NotImplementedError, "compile $(project.name:) with --enable-drafts"
-      end
-
-      return unless $VERBOSE || $DEBUG
-
-      warn "The DRAFT function #{name}() is not provided by the installed $(project.name:) library."
-    end
-
 
     if available?
       opts = {
