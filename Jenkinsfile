@@ -43,8 +43,8 @@ pipeline {
             description: 'Attempt build with DRAFT API in this run?',
             name: 'DO_BUILD_WITH_DRAFT_API')
         booleanParam (
-            defaultValue: true,
-            description: 'Attempt build with docs in this run?',
+            defaultValue: false,
+            description: 'Attempt a build with docs in this run? (Note: corresponding tools are required in the build environment)',
             name: 'DO_BUILD_DOCS')
         booleanParam (
             defaultValue: true,
@@ -68,7 +68,7 @@ pipeline {
             name: 'USE_TEST_INSTALL_DESTDIR')
         booleanParam (
             defaultValue: false,
-            description: 'Attempt "cppcheck" analysis before this run?',
+            description: 'Attempt "cppcheck" analysis before this run? (Note: corresponding tools are required in the build environment)',
             name: 'DO_CPPCHECK')
         booleanParam (
             defaultValue: true,
@@ -109,7 +109,7 @@ pipeline {
                       dir("tmp/build-withDRAFT") {
                         deleteDir()
                         unstash 'prepped'
-                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=yes'
+                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=yes --with-docs=no'
                         sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
                         stash (name: 'built-draft', includes: '**/*', excludes: '**/cppcheck.xml')
@@ -127,7 +127,7 @@ pipeline {
                       dir("tmp/build-withoutDRAFT") {
                         deleteDir()
                         unstash 'prepped'
-                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=no'
+                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=no --with-docs=no'
                         sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make without drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
                         stash (name: 'built-nondraft', includes: '**/*', excludes: '**/cppcheck.xml')
