@@ -191,7 +191,9 @@
          checkboxes clicked, e.g. while developing a missing feature.
          If not explicitly set to 0, these options are assumed to be
          "true", as normally a project should be capable of all these
-         aspects.
+         aspects. Note however that a project with no classes marked
+         "stable" would by default not test non-DRAFT builds as the
+         configure.ac script would have no support for those anyway.
          The require_gitignore option (enabled by default) also causes
          the test to fail, rather than warn, if untracked or changed
          files are found as a result of some build or test stage.

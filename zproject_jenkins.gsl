@@ -96,12 +96,15 @@ pipeline {
             description: 'If the deployment is done, should THIS job wait for it to complete and include its success or failure as the build result (true), or should it schedule the job and exit quickly to free up the executor (false)',
             name: 'DEPLOY_REPORT_RESULT')
         booleanParam (
-.  if project.jenkins_build_without_draft_api ?= 0
+.  if ( ( project.jenkins_build_without_draft_api ?= 0 ) | !(project.stable) )
+.# NOTE: If "!project.stable" then there is no support for --enable-drafts in
+.# the generated configure.ac script, drafts are always on. So we can skip the
+.# non-draft test for young experimental projects.
             defaultValue: false,
 .  else
             defaultValue: true,
 .  endif
-            description: 'Attempt build without DRAFT API in this run?',
+            description: 'Attempt stable build without DRAFT API in this run?',
             name: 'DO_BUILD_WITHOUT_DRAFT_API')
         booleanParam (
 .  if project.jenkins_build_with_draft_api ?= 0
