@@ -43,8 +43,8 @@ pipeline {
             description: 'Attempt build with DRAFT API in this run?',
             name: 'DO_BUILD_WITH_DRAFT_API')
         booleanParam (
-            defaultValue: true,
-            description: 'Attempt build with docs in this run?',
+            defaultValue: false,
+            description: 'Attempt build with docs in this run? (Note: corresponding tools are required in the build environment)',
             name: 'DO_BUILD_DOCS')
         booleanParam (
             defaultValue: true,
@@ -68,7 +68,7 @@ pipeline {
             name: 'USE_TEST_INSTALL_DESTDIR')
         booleanParam (
             defaultValue: false,
-            description: 'Attempt "cppcheck" analysis before this run?',
+            description: 'Attempt "cppcheck" analysis before this run? (Note: corresponding tools are required in the build environment)',
             name: 'DO_CPPCHECK')
         booleanParam (
             defaultValue: true,

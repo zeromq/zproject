@@ -189,7 +189,7 @@
          of corresponding build arguments for the project. You can
          still run a custom Jenkins Build with Arguments with other
          checkboxes clicked, e.g. while developing a missing feature.
-         If not explicitly set to 0, these options are assumed to be
+         If not explicitly set to 0, most of these options are assumed
          "true", as normally a project should be capable of all these
          aspects. Note however that a project with no classes marked
          "stable" would by default not test non-DRAFT builds as the
@@ -214,7 +214,8 @@
          path), or BUILD_DIR/tmp/_inst if the option is unspecified/empty.
          The test_cppcheck is different, as it calls the "cppcheck" tool
          which may be not installed on a particular deployment, so by
-         default this option is disabled if not set explicitly.
+         default this option is disabled if not set explicitly. Same
+         goes for build_with_docs as it requires asciidoc and xmlto.
          The triggers_pollSCM option sets up the pipeline-generated job
          for regular polling of the original SCM repository, using the
          Jenkins cron syntax. The default is approximately every 5 minutes
@@ -229,7 +230,7 @@
         <option name = "triggers_pollSCM" value = "H/5 * * * *" />
         <option name = "build_without_draft_api" value = "0" />
         <option name = "build_with_draft_api" value = "0" />
-        <option name = "build_with_docs" value = "0" />
+        <option name = "build_with_docs" value = "1" />
         <option name = "require_gitignore" value = "0" />
         <option name = "test_check" value = "0" />
         <option name = "test_memcheck" value = "0" />
