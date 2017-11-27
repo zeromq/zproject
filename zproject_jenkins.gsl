@@ -204,6 +204,9 @@ pipeline {
         stage ('prepare') {
 .       jenkins_agent (project, 0)
                     steps {
+                        dir("tmp") {
+                            deleteDir()
+                        }
                         sh './autogen.sh'
                         stash (name: 'prepped', includes: '**/*', excludes: '**/cppcheck.xml')
                     }

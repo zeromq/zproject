@@ -90,6 +90,9 @@ pipeline {
         }
         stage ('prepare') {
                     steps {
+                        dir("tmp") {
+                            deleteDir()
+                        }
                         sh './autogen.sh'
                         stash (name: 'prepped', includes: '**/*', excludes: '**/cppcheck.xml')
                     }
