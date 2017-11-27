@@ -163,7 +163,7 @@ pipeline {
                         deleteDir()
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make check'
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make check'
                         }
                         sh 'echo "Are GitIgnores good after make check with drafts? (should have no output below)"; git status -s || true'
                         script {
@@ -181,7 +181,7 @@ pipeline {
                         deleteDir()
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make check'
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make check'
                         }
                         sh 'echo "Are GitIgnores good after make check without drafts? (should have no output below)"; git status -s || true'
                         script {
@@ -199,7 +199,7 @@ pipeline {
                         deleteDir()
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
                         sh 'echo "Are GitIgnores good after make memcheck with drafts? (should have no output below)"; git status -s || true'
                         script {
@@ -217,7 +217,7 @@ pipeline {
                         deleteDir()
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
                         sh 'echo "Are GitIgnores good after make memcheck without drafts? (should have no output below)"; git status -s || true'
                         script {
@@ -235,7 +235,7 @@ pipeline {
                         deleteDir()
                         unstash 'built-draft'
                         timeout (time: 10, unit: 'MINUTES') {
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make distcheck'
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck with drafts? (should have no output below)"; git status -s || true'
                         script {
@@ -253,7 +253,7 @@ pipeline {
                         deleteDir()
                         unstash 'built-nondraft'
                         timeout (time: 10, unit: 'MINUTES') {
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make distcheck'
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck without drafts? (should have no output below)"; git status -s || true'
                         script {
@@ -271,7 +271,7 @@ pipeline {
                         deleteDir()
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
-                            sh "CCACHE_BASEDIR='`pwd`' ; export CCACHE_BASEDIR; make DESTDIR='${params.USE_TEST_INSTALL_DESTDIR}' install"
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\${LD_LIBRARY_PATH}"; export LD_LIBRARY_PATH; make DESTDIR='${params.USE_TEST_INSTALL_DESTDIR}' install"""
                         }
                         sh 'echo "Are GitIgnores good after make install with drafts? (should have no output below)"; git status -s || true'
                         script {
@@ -289,7 +289,7 @@ pipeline {
                         deleteDir()
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
-                            sh "CCACHE_BASEDIR='`pwd`' ; export CCACHE_BASEDIR; make DESTDIR='${params.USE_TEST_INSTALL_DESTDIR}' install"
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\${LD_LIBRARY_PATH}"; export LD_LIBRARY_PATH; make DESTDIR='${params.USE_TEST_INSTALL_DESTDIR}' install"""
                         }
                         sh 'echo "Are GitIgnores good after make install without drafts? (should have no output below)"; git status -s || true'
                         script {
