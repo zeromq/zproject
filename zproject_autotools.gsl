@@ -788,6 +788,9 @@ else
     AC_CHECK_PROG($(project.name:c)_have_asciidoc, asciidoc, yes, no)
     AC_CHECK_PROG($(project.name:c)_have_xmlto, xmlto, yes, no)
     if test "x$$(project.name:c)_have_asciidoc" = "xno" -o "x$$(project.name:c)_have_xmlto" = "xno"; then
+        if test "x$with_docs" = "xyes" ; then
+            AC_MSG_ERROR([Build with docs was explicitly requested, but tools are not available])
+        fi
         $(project.name:c)_build_doc="no"
         # Tarballs built with 'make dist' ship with prebuilt documentation.
         if ! test -f doc/$(project.name).7; then
