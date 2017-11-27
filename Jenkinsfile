@@ -70,6 +70,10 @@ pipeline {
             defaultValue: false,
             description: 'Attempt "cppcheck" analysis before this run?',
             name: 'DO_CPPCHECK')
+        booleanParam (
+            defaultValue: true,
+            description: 'When using temporary subdirs in build/test workspaces, wipe them after successful builds?',
+            name: 'DO_CLEANUP_AFTER_BUILD')
     }
     triggers {
         pollSCM 'H/5 * * * *'
@@ -102,6 +106,11 @@ pipeline {
                         sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with drafts? (should have no output below)"; git status -s || true'
                         stash (name: 'built-draft', includes: '**/*', excludes: '**/cppcheck.xml')
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
                     }
                 }
@@ -115,6 +124,11 @@ pipeline {
                         sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make without drafts? (should have no output below)"; git status -s || true'
                         stash (name: 'built-nondraft', includes: '**/*', excludes: '**/cppcheck.xml')
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
                     }
                 }
@@ -127,6 +141,11 @@ pipeline {
                         sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=yes --with-docs=yes'
                         sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with docs? (should have no output below)"; git status -s || true'
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
                     }
                 }
@@ -144,6 +163,11 @@ pipeline {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make check'
                         }
                         sh 'echo "Are GitIgnores good after make check with drafts? (should have no output below)"; git status -s || true'
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
                     }
                 }
@@ -157,6 +181,11 @@ pipeline {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make check'
                         }
                         sh 'echo "Are GitIgnores good after make check without drafts? (should have no output below)"; git status -s || true'
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
                     }
                 }
@@ -170,6 +199,11 @@ pipeline {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
                         sh 'echo "Are GitIgnores good after make memcheck with drafts? (should have no output below)"; git status -s || true'
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
                     }
                 }
@@ -183,6 +217,11 @@ pipeline {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
                         sh 'echo "Are GitIgnores good after make memcheck without drafts? (should have no output below)"; git status -s || true'
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
                     }
                 }
@@ -196,6 +235,11 @@ pipeline {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck with drafts? (should have no output below)"; git status -s || true'
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
                     }
                 }
@@ -209,6 +253,11 @@ pipeline {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck without drafts? (should have no output below)"; git status -s || true'
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
                     }
                 }
@@ -222,6 +271,11 @@ pipeline {
                             sh "CCACHE_BASEDIR='`pwd`' ; export CCACHE_BASEDIR; make DESTDIR='${params.USE_TEST_INSTALL_DESTDIR}' install"
                         }
                         sh 'echo "Are GitIgnores good after make install with drafts? (should have no output below)"; git status -s || true'
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
                     }
                 }
@@ -235,6 +289,11 @@ pipeline {
                             sh "CCACHE_BASEDIR='`pwd`' ; export CCACHE_BASEDIR; make DESTDIR='${params.USE_TEST_INSTALL_DESTDIR}' install"
                         }
                         sh 'echo "Are GitIgnores good after make install without drafts? (should have no output below)"; git status -s || true'
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
                     }
                 }

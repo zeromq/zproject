@@ -169,6 +169,12 @@ pipeline {
 .  endif
             description: 'Attempt "cppcheck" analysis before this run?',
             name: 'DO_CPPCHECK')
+.  if !(isSingle_jenkins_agent (project, 0))
+        booleanParam (
+            defaultValue: true,
+            description: 'When using temporary subdirs in build/test workspaces, wipe them after successful builds?',
+            name: 'DO_CLEANUP_AFTER_BUILD')
+.  endif
     }
 .  if !(defined(project.jenkins_triggers_pollSCM))
     triggers {
@@ -218,6 +224,11 @@ pipeline {
                         sh 'echo "Are GitIgnores good after make with drafts? (should have no output below)"; git status -s || true'
                         stash (name: 'built-draft', includes: '**/*', excludes: '**/cppcheck.xml')
 .       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
 .       endif
                     }
@@ -236,6 +247,11 @@ pipeline {
                         sh 'echo "Are GitIgnores good after make without drafts? (should have no output below)"; git status -s || true'
                         stash (name: 'built-nondraft', includes: '**/*', excludes: '**/cppcheck.xml')
 .       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
 .       endif
                     }
@@ -253,6 +269,11 @@ pipeline {
                         sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with docs? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
 .       endif
                     }
@@ -275,6 +296,11 @@ pipeline {
                         }
                         sh 'echo "Are GitIgnores good after make check with drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
 .       endif
                     }
@@ -293,6 +319,11 @@ pipeline {
                         }
                         sh 'echo "Are GitIgnores good after make check without drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
 .       endif
                     }
@@ -311,6 +342,11 @@ pipeline {
                         }
                         sh 'echo "Are GitIgnores good after make memcheck with drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
 .       endif
                     }
@@ -329,6 +365,11 @@ pipeline {
                         }
                         sh 'echo "Are GitIgnores good after make memcheck without drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
 .       endif
                     }
@@ -347,6 +388,11 @@ pipeline {
                         }
                         sh 'echo "Are GitIgnores good after make distcheck with drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
 .       endif
                     }
@@ -365,6 +411,11 @@ pipeline {
                         }
                         sh 'echo "Are GitIgnores good after make distcheck without drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
 .       endif
                     }
@@ -383,6 +434,11 @@ pipeline {
                         }
                         sh 'echo "Are GitIgnores good after make install with drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
 .       endif
                     }
@@ -401,6 +457,11 @@ pipeline {
                         }
                         sh 'echo "Are GitIgnores good after make install without drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                deleteDir()
+                            }
+                        }
                       }
 .       endif
                     }
