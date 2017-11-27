@@ -2243,7 +2243,7 @@ $(name).txt: $\(top_srcdir)/src/$(name:c).c
 
 .endfor
 
-clean:
+clean-local:
 \trm -f *.1 *.3 *.7 $\(GENERATED_DOCS)
 
 doc: $\(GENERATED_DOCS)
