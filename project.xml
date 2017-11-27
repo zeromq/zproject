@@ -206,7 +206,7 @@
          (actual commit to check out and shrink-wrap into packaging.
          The test_install check tries to "make DESTDIR=... install" where
          the DESTDIR is test_install_DESTDIR value (must be an absolute
-         path), or BUILD_DIR/_inst if the option is not specified or empty.
+         path), or BUILD_DIR/tmp/_inst if the option is unspecified/empty.
          The test_cppcheck is different, as it calls the "cppcheck" tool
          which may be not installed on a particular deployment, so by
          default this option is disabled if not set explicitly.

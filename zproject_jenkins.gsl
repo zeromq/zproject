@@ -154,11 +154,11 @@ pipeline {
             name: 'DO_TEST_INSTALL')
         string (
 .  if ( !(defined(project.jenkins_test_install_DESTDIR)) | project.jenkins_test_install_DESTDIR ?= "" )
-            defaultValue: "`pwd`/_inst",
+            defaultValue: "`pwd`/tmp/_inst",
 .  else
             defaultValue: "$(project.jenkins_test_install_DESTDIR)",
 .  endif
-            description: 'If attempting a "make install" check in this run, what DESTDIR to specify? (absolute path, defaults to "BUILD_DIR/_inst")',
+            description: 'If attempting a "make install" check in this run, what DESTDIR to specify? (absolute path, defaults to "BUILD_DIR/tmp/_inst")',
             name: 'USE_TEST_INSTALL_DESTDIR')
         booleanParam (
 .  if ( !(defined(project.jenkins_test_cppcheck)) | (project.jenkins_test_cppcheck ?= 0) )
