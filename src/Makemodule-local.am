@@ -20,17 +20,38 @@ README.md: README.txt api/myclass.api project.xml zproject_known_projects.xml
 	 echo "WARNING : $@ should be updated, but gitdown is not installed on this system" >&2
 
 # For (dist)check, sabotage the script by not doing a distcheck again
+# Note that automake "if" has no "else"
+if USING_VPATH
 $(abs_builddir)/src/zproject_selftest: $(abs_srcdir)/src/zproject_selftest
 	@if [ "$@" != "$<" ]; then \
 	 ( echo "#! /bin/sh"; echo "true" ) > "$@" && \
 	   chmod +x "$@" ; fi
 
-check-local: $(abs_builddir)/src/zproject_selftest
-check-TESTS: $(abs_builddir)/src/zproject_selftest
+src/zproject_selftest: $(abs_builddir)/src/zproject_selftest
+endif
+
+if !USING_VPATH
+$(builddir)/src/zproject_selftest: $(srcdir)/src/zproject_selftest
+	@if [ "$@" != "$<" ]; then \
+	 ( echo "#! /bin/sh"; echo "true" ) > "$@" && \
+	   chmod +x "$@" ; fi
+
+src/zproject_selftest: $(builddir)/src/zproject_selftest
+endif
+
+check-local: src/zproject_selftest
+check-TESTS: src/zproject_selftest
 
 clean-local: clean-local-zproject_selftest
 .PHONY: clean-local-zproject_selftest
-clean-local-zproject_selftest:
+clean-local-zproject_selftest: clean-fake-zproject_selftest-abs clean-fake-zproject_selftest-rel
+
+clean-fake-zproject_selftest-abs:
 	if test "$(abs_builddir)" != "$(abs_srcdir)" ; then \
 		rm -f $(abs_builddir)/src/zproject_selftest || true ; \
+	fi
+
+clean-fake-zproject_selftest-rel:
+	if test "$(builddir)" != "$(srcdir)" ; then \
+		rm -f $(builddir)/src/zproject_selftest || true ; \
 	fi
