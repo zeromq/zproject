@@ -44,7 +44,7 @@ pipeline {
             name: 'DO_BUILD_WITH_DRAFT_API')
         booleanParam (
             defaultValue: false,
-            description: 'Attempt build with docs in this run? (Note: corresponding tools are required in the build environment)',
+            description: 'Attempt a build with docs in this run? (Note: corresponding tools are required in the build environment)',
             name: 'DO_BUILD_DOCS')
         booleanParam (
             defaultValue: true,

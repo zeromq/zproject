@@ -221,8 +221,8 @@
 
          The test_cppcheck is different, as it calls the "cppcheck" tool
          which may be not installed on a particular deployment, so by
-         default this option is disabled if not set explicitly. Same
-         goes for build_with_docs as it requires asciidoc and xmlto.
+         default this option is disabled if not set explicitly. Same idea
+         goes for build_docs as it requires asciidoc and xmlto toolkits.
 
          The triggers_pollSCM option sets up the pipeline-generated job
          for regular polling of the original SCM repository, using the
@@ -238,7 +238,7 @@
         <option name = "triggers_pollSCM" value = "H/5 * * * *" />
         <option name = "build_without_draft_api" value = "0" />
         <option name = "build_with_draft_api" value = "0" />
-        <option name = "build_with_docs" value = "1" />
+        <option name = "build_docs" value = "1" />
         <option name = "require_gitignore" value = "0" />
         <option name = "test_check" value = "0" />
         <option name = "test_memcheck" value = "0" />
