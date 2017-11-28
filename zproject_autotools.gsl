@@ -1710,11 +1710,15 @@ $\(top_builddir)/$\(SELFTEST_DIR_RW):
 \tmkdir -p "\$@"
 
 if USING_VPATH
-$\(top_builddir)/$\(SELFTEST_DIR_RO): $\(top_srcdir)/$\(SELFTEST_DIR_RO)
+$\(abs_top_builddir)/$\(SELFTEST_DIR_RO): $\(abs_top_srcdir)/$\(SELFTEST_DIR_RO)
 \techo "  COPYDIR  $\(SELFTEST_DIR_RO)"; \\
 \trm -rf "$@"; \\
 \tcp -r "$<" "$@"
+
+$\(top_builddir)/$\(SELFTEST_DIR_RO): $\(abs_top_builddir)/$\(SELFTEST_DIR_RO)
 endif
+
+$\(SELFTEST_DIR_RO): $\(top_builddir)/$\(SELFTEST_DIR_RO)
 
 CLEANFILES += $\(top_builddir)/$\(SELFTEST_DIR_RW)/*
 
