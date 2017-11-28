@@ -209,6 +209,9 @@ pipeline {
                     when { expression { return ( params.DO_CPPCHECK ) } }
 .       jenkins_agent (project, 0)
                     steps {
+                        dir("tmp") {
+                            deleteDir()
+                        }
                         sh 'cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>cppcheck.xml'
                         archiveArtifacts artifacts: '**/cppcheck.xml'
                         sh 'rm -f cppcheck.xml'
