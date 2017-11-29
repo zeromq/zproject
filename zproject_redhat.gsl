@@ -199,7 +199,7 @@ This package contains development files for $(project.name): $(project.descripti
 %package -n python2-$(project.name)-cffi
 Group: Python
 Summary: Python CFFI bindings for $(project.name)
-Requires: python = %{py2_ver}
+Requires: python >= %{py2_ver}.0, python < 3.0.0
 
 %description -n python2-$(project.name)-cffi
 This package contains Python CFFI bindings for $(project.name)
