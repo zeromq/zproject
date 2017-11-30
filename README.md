@@ -363,6 +363,13 @@ zproject's `project.xml` contains an extensive description of the available conf
          builds of this component on several agents (specified by
          label or docker) vs. a sequential build on a single agent.
 
+         Similarly, a check_sequential option can be defined so that
+         self-testing stages would run sequentially. This can be needed
+         at early stages of a project's evolution, where hardcoding is
+         prevalent so parallel runs in same operating environemnt cause
+         conflicts to each other. Ultimately a project should remove
+         this flag ;)
+
          The build_* and test_* options influence the default setting
          of corresponding build arguments for the project. You can
          still run a custom Jenkins Build with Arguments with other
@@ -410,6 +417,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         <option name = "agent_docker" value = "zeromqorg/czmq" />
         <option name = "agent_label" value = "linux || macosx || bsd || solaris || posix || windows" />
         <option name = "agent_single" value = "1" />
+        <option name = "check_sequential" value = "1" />
         <option name = "triggers_pollSCM" value = "H/5 * * * *" />
         <option name = "build_without_draft_api" value = "0" />
         <option name = "build_with_draft_api" value = "0" />
