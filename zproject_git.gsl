@@ -183,5 +183,5 @@ if !file.exists (".editorconfig")
     >[*.am]
     >indent_style = tab
 else
-    echo "NOT regenerating an existing .gitattributes file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+    echo "NOT regenerating an existing .editorconfig file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 endif
