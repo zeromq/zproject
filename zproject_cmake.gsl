@@ -158,6 +158,22 @@ ENDIF ($(USE.PROJECT)_FOUND)
 .endfor
 
 ########################################################################
+# version
+########################################################################
+.if defined (project->version)
+set($(PROJECT.PREFIX)_VERSION_MAJOR $(project->version.major))
+set($(PROJECT.PREFIX)_VERSION_MINOR $(project->version.minor))
+set($(PROJECT.PREFIX)_VERSION_PATCH $(project->version.patch))
+.else
+set($(PROJECT.PREFIX)_VERSION_MAJOR "0")
+set($(PROJECT.PREFIX)_VERSION_MINOR "0")
+set($(PROJECT.PREFIX)_VERSION_PATCH "0")
+.endif
+set($(PROJECT.PREFIX)_VERSION "${$(PROJECT.PREFIX)_VERSION_MAJOR}.${$(PROJECT.PREFIX)_VERSION_MINOR}.${$(PROJECT.PREFIX)_VERSION_PATCH}")
+message(STATUS "Detected $(PROJECT.PREFIX) Version - ${$(PROJECT.PREFIX)_VERSION}")
+
+
+########################################################################
 # includes
 ########################################################################
 set ($(project.prefix)_headers
@@ -231,38 +247,101 @@ ENDIF (ENABLE_DRAFTS)
 
 .endif
 source_group("Source Files" FILES ${$(project.linkname)_sources})
-if (NOT DEFINED BUILD_SHARED_LIBS)
-    SET(BUILD_SHARED_LIBS ON)
-endif()
-add_library($(project.linkname) ${$(project.linkname)_sources})
-set_target_properties($(project.linkname)
-    PROPERTIES DEFINE_SYMBOL "$(PROJECT.PREFIX)_EXPORTS"
-)
-set_target_properties ($(project.linkname)
-.if defined (project->abi)
-    PROPERTIES SOVERSION "$(project->abi.current - project->abi.age)"
-.else
-    PROPERTIES SOVERSION "0"
-.endif
-)
-set_target_properties ($(project.linkname)
-.if defined (project->version)
-    PROPERTIES VERSION "$(project->version.major).$(project->version.minor).$(project->version.patch)"
-.else
-    PROPERTIES VERSION "0.0.0"
-.endif
-)
-target_link_libraries($(project.linkname)
-    ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES}
-)
 
-install(TARGETS $(project.linkname)
+
+option($(PROJECT.PREFIX)_BUILD_SHARED "Whether or not to build the shared object" ON)
+option($(PROJECT.PREFIX)_BUILD_STATIC "Whether or not to build the static archive" ON)
+
+if (NOT $(PROJECT.PREFIX)_BUILD_SHARED AND NOT $(PROJECT.PREFIX)_BUILD_STATIC)
+  message(FATAL_ERROR "Neither static nor shared library build enabled")
+endif()
+
+# shared
+if ($(PROJECT.PREFIX)_BUILD_SHARED)
+  add_library($(project.linkname) SHARED ${$(project.linkname)_sources})
+  set_target_properties($(project.linkname)
+    PROPERTIES DEFINE_SYMBOL "$(PROJECT.PREFIX)_EXPORTS"
+  )
+
+if (MSVC)
+  set_target_properties ($(project.linkname) PROPERTIES
+    PUBLIC_HEADER "${public_headers}"
+    RELEASE_POSTFIX "${MSVC_TOOLSET}-mt-${$(PROJECT.PREFIX)_VERSION_MAJOR}_${$(PROJECT.PREFIX)_VERSION_MINOR}_${$(PROJECT.PREFIX)_VERSION_PATCH}"
+    RELWITHDEBINFO_POSTFIX "${MSVC_TOOLSET}-mt-${$(PROJECT.PREFIX)_VERSION_MAJOR}_${$(PROJECT.PREFIX)_VERSION_MINOR}_${$(PROJECT.PREFIX)_VERSION_PATCH}"
+    DEBUG_POSTFIX "${MSVC_TOOLSET}-mt-gd-${$(PROJECT.PREFIX)_VERSION_MAJOR}_${$(PROJECT.PREFIX)_VERSION_MINOR}_${$(PROJECT.PREFIX)_VERSION_PATCH}"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
+    COMPILE_DEFINITIONS "DLL_EXPORT"
+    OUTPUT_NAME "$(project.linkname)")
+else()
+  set_target_properties ($(project.linkname) PROPERTIES
+    PUBLIC_HEADER "${public_headers}"
+    VERSION "${$(PROJECT.PREFIX)_VERSION}"
+.if defined (project->abi)
+    SOVERSION "$(project->abi.current - project->abi.age)"
+.else
+    SOVERSION "0"
+.endif
+    COMPILE_DEFINITIONS "DLL_EXPORT"
+    OUTPUT_NAME "$(project.linkname)"
+    PREFIX "lib")
+endif()
+
+  target_link_libraries($(project.linkname)
+    ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES}
+  )
+
+  install(TARGETS $(project.linkname)
     LIBRARY DESTINATION "lib${LIB_SUFFIX}" # .so file
     ARCHIVE DESTINATION "lib${LIB_SUFFIX}" # .lib file
-    RUNTIME DESTINATION bin              # .dll file
-)
-.if file.exists ("src/CMakeLists-local.txt")
+    RUNTIME DESTINATION bin                # .dll file
+  )
 
+  target_include_directories($(project.linkname)
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+  )
+
+endif()
+
+# static
+if ($(PROJECT.PREFIX)_BUILD_STATIC)
+  add_library($(project.linkname)-static STATIC ${$(project.linkname)_sources})
+
+  if (MSVC)
+    set_target_properties($(project.linkname)-static PROPERTIES
+      PUBLIC_HEADER "${public_headers}"
+      RELEASE_POSTFIX "${MSVC_TOOLSET}-mt-s-${$(PROJECT.PREFIX)_VERSION_MAJOR}_${$(PROJECT.PREFIX)_VERSION_MINOR}_${$(PROJECT.PREFIX)_VERSION_PATCH}"
+      RELWITHDEBINFO_POSTFIX "${MSVC_TOOLSET}-mt-s-${$(PROJECT.PREFIX)_VERSION_MAJOR}_${$(PROJECT.PREFIX)_VERSION_MINOR}_${$(PROJECT.PREFIX)_VERSION_PATCH}"
+      DEBUG_POSTFIX "${MSVC_TOOLSET}-mt-sgd-${$(PROJECT.PREFIX)_VERSION_MAJOR}_${$(PROJECT.PREFIX)_VERSION_MINOR}_${$(PROJECT.PREFIX)_VERSION_PATCH}"
+      COMPILE_DEFINITIONS "$(PROJECT.PREFIX)_STATIC"
+      OUTPUT_NAME "$(project.linkname)"
+    )
+  else()
+    set_target_properties($(project.linkname)-static PROPERTIES
+      PUBLIC_HEADER "${public_headers}"
+      COMPILE_DEFINITIONS "$(PROJECT.PREFIX)_STATIC"
+      OUTPUT_NAME "$(project.linkname)"
+      PREFIX "lib"
+    )
+  endif()
+
+  target_link_libraries($(project.linkname)-static
+    ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES}
+  )
+
+  install(TARGETS $(project.linkname)-static
+    LIBRARY DESTINATION "lib${LIB_SUFFIX}" # .so file
+    ARCHIVE DESTINATION "lib${LIB_SUFFIX}" # .lib file
+    RUNTIME DESTINATION bin                # .dll file
+  )
+
+  target_include_directories($(project.linkname)-static
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+  )
+
+endif()
+
+
+.if file.exists ("src/CMakeLists-local.txt")
 include(${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists-local.txt) # Optional project-local hook
 .endif
 
@@ -298,6 +377,7 @@ add_executable(
     $(main.name)
     "${SOURCE_DIR}/src/$(name).c"
 )
+if (TARGET $(project.linkname))
 target_link_libraries(
     $(main.name)
 .if count (project.class)
@@ -310,6 +390,21 @@ target_link_libraries(
 .endfor
     ${OPTIONAL_LIBRARIES}
 )
+endif()
+if (NOT TARGET $(project.linkname) AND TARGET $(project.linkname)-static)
+target_link_libraries(
+    $(main.name)
+.if count (project.class)
+    $(project.linkname)-static
+.endif
+.for project.use
+.if use.optional = 0
+    ${$(USE.PROJECT)_LIBRARIES}
+.endif
+.endfor
+    ${OPTIONAL_LIBRARIES}
+)
+endif()
 .   if main.scope = "public"
 install(TARGETS $(main.name)
     RUNTIME DESTINATION bin
@@ -429,6 +524,8 @@ message (STATUS "  C compiler        :   ${CMAKE_C_COMPILER}")
 message (STATUS "  Debug C flags     :   ${CMAKE_C_FLAGS_DEBUG} ${CMAKE_C_FLAGS}")
 message (STATUS "  Release C flags   :   ${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS}")
 message (STATUS "  Build type        :   ${CMAKE_BUILD_TYPE}")
+message (STATUS "  Static build      :   ${$(PROJECT.PREFIX)_BUILD_STATIC}")
+message (STATUS "  Shared build      :   ${$(PROJECT.PREFIX)_BUILD_SHARED}")
 IF (ENABLE_DRAFTS)
 message (STATUS "  Draft API         :   Yes")
 ELSE (ENABLE_DRAFTS)
