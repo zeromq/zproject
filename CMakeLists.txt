@@ -64,6 +64,12 @@ if (MSVC)
         PROPERTIES LANGUAGE CXX
     )
     set(MORE_LIBRARIES ws2_32 Rpcrt4 Iphlpapi)
+
+    if (MSVC_IDE)
+        set (MSVC_TOOLSET "-${CMAKE_VS_PLATFORM_TOOLSET}")
+    else()
+        set (MSVC_TOOLSET "")
+    endif()
 endif()
 
 # specific case of windows UWP
@@ -94,6 +100,16 @@ IF (GSL_FOUND)
 ELSE (GSL_FOUND)
     message( FATAL_ERROR "gsl not found." )
 ENDIF (GSL_FOUND)
+
+########################################################################
+# version
+########################################################################
+set(ZPROJECT_VERSION_MAJOR 1)
+set(ZPROJECT_VERSION_MINOR 1)
+set(ZPROJECT_VERSION_PATCH 0)
+set(ZPROJECT_VERSION "${ZPROJECT_VERSION_MAJOR}.${ZPROJECT_VERSION_MINOR}.${ZPROJECT_VERSION_PATCH}")
+message(STATUS "Detected ZPROJECT Version - ${ZPROJECT_VERSION}")
+
 
 ########################################################################
 # includes
@@ -196,6 +212,8 @@ message (STATUS "  C compiler        :   ${CMAKE_C_COMPILER}")
 message (STATUS "  Debug C flags     :   ${CMAKE_C_FLAGS_DEBUG} ${CMAKE_C_FLAGS}")
 message (STATUS "  Release C flags   :   ${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS}")
 message (STATUS "  Build type        :   ${CMAKE_BUILD_TYPE}")
+message (STATUS "  Static build      :   ${ZPROJECT_BUILD_STATIC}")
+message (STATUS "  Shared build      :   ${ZPROJECT_BUILD_SHARED}")
 IF (ENABLE_DRAFTS)
 message (STATUS "  Draft API         :   Yes")
 ELSE (ENABLE_DRAFTS)
