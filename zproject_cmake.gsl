@@ -299,7 +299,6 @@ endif()
   target_include_directories($(project.linkname)
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
   )
-
 endif()
 
 # static
@@ -336,6 +335,9 @@ if ($(PROJECT.PREFIX)_BUILD_STATIC)
 
   target_include_directories($(project.linkname)-static
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+  )
+  target_compile_definitions($(project.linkname)-static
+    PUBLIC $(PROJECT.PREFIX)_STATIC
   )
 
 endif()
