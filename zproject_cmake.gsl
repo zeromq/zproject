@@ -106,12 +106,6 @@ if (MSVC)
         PROPERTIES LANGUAGE CXX
     )
     set(MORE_LIBRARIES ws2_32 Rpcrt4 Iphlpapi)
-
-    if (MSVC_IDE)
-        set (MSVC_TOOLSET "-${CMAKE_VS_PLATFORM_TOOLSET}")
-    else()
-        set (MSVC_TOOLSET "")
-    endif()
 endif()
 
 # specific case of windows UWP
@@ -265,32 +259,18 @@ endif()
 # shared
 if ($(PROJECT.PREFIX)_BUILD_SHARED)
   add_library($(project.linkname) SHARED ${$(project.linkname)_sources})
-  set_target_properties($(project.linkname)
-    PROPERTIES DEFINE_SYMBOL "$(PROJECT.PREFIX)_EXPORTS"
-  )
 
-if (MSVC)
   set_target_properties ($(project.linkname) PROPERTIES
     PUBLIC_HEADER "${public_headers}"
-    RELEASE_POSTFIX "${MSVC_TOOLSET}-mt-${$(PROJECT.PREFIX)_VERSION_MAJOR}_${$(PROJECT.PREFIX)_VERSION_MINOR}_${$(PROJECT.PREFIX)_VERSION_PATCH}"
-    RELWITHDEBINFO_POSTFIX "${MSVC_TOOLSET}-mt-${$(PROJECT.PREFIX)_VERSION_MAJOR}_${$(PROJECT.PREFIX)_VERSION_MINOR}_${$(PROJECT.PREFIX)_VERSION_PATCH}"
-    DEBUG_POSTFIX "${MSVC_TOOLSET}-mt-gd-${$(PROJECT.PREFIX)_VERSION_MAJOR}_${$(PROJECT.PREFIX)_VERSION_MINOR}_${$(PROJECT.PREFIX)_VERSION_PATCH}"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
-    COMPILE_DEFINITIONS "DLL_EXPORT"
-    OUTPUT_NAME "$(project.linkname)")
-else()
-  set_target_properties ($(project.linkname) PROPERTIES
-    PUBLIC_HEADER "${public_headers}"
-    VERSION "${$(PROJECT.PREFIX)_VERSION}"
+    DEFINE_SYMBOL "$(PROJECT.PREFIX)_EXPORTS"
 .if defined (project->abi)
     SOVERSION "$(project->abi.current - project->abi.age)"
 .else
     SOVERSION "0"
 .endif
+    VERSION "${$(PROJECT.PREFIX)_VERSION}"
     COMPILE_DEFINITIONS "DLL_EXPORT"
-    OUTPUT_NAME "$(project.linkname)"
-    PREFIX "lib")
-endif()
+  )
 
   target_link_libraries($(project.linkname)
     ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES}
@@ -311,23 +291,10 @@ endif()
 if ($(PROJECT.PREFIX)_BUILD_STATIC)
   add_library($(project.linkname)-static STATIC ${$(project.linkname)_sources})
 
-  if (MSVC)
-    set_target_properties($(project.linkname)-static PROPERTIES
-      PUBLIC_HEADER "${public_headers}"
-      RELEASE_POSTFIX "${MSVC_TOOLSET}-mt-s-${$(PROJECT.PREFIX)_VERSION_MAJOR}_${$(PROJECT.PREFIX)_VERSION_MINOR}_${$(PROJECT.PREFIX)_VERSION_PATCH}"
-      RELWITHDEBINFO_POSTFIX "${MSVC_TOOLSET}-mt-s-${$(PROJECT.PREFIX)_VERSION_MAJOR}_${$(PROJECT.PREFIX)_VERSION_MINOR}_${$(PROJECT.PREFIX)_VERSION_PATCH}"
-      DEBUG_POSTFIX "${MSVC_TOOLSET}-mt-sgd-${$(PROJECT.PREFIX)_VERSION_MAJOR}_${$(PROJECT.PREFIX)_VERSION_MINOR}_${$(PROJECT.PREFIX)_VERSION_PATCH}"
-      COMPILE_DEFINITIONS "$(PROJECT.PREFIX)_STATIC"
-      OUTPUT_NAME "$(project.linkname)"
-    )
-  else()
-    set_target_properties($(project.linkname)-static PROPERTIES
-      PUBLIC_HEADER "${public_headers}"
-      COMPILE_DEFINITIONS "$(PROJECT.PREFIX)_STATIC"
-      OUTPUT_NAME "$(project.linkname)"
-      PREFIX "lib"
-    )
-  endif()
+  set_target_properties($(project.linkname)-static PROPERTIES
+    PUBLIC_HEADER "${public_headers}"
+    COMPILE_DEFINITIONS "$(PROJECT.PREFIX)_STATIC"
+  )
 
   target_link_libraries($(project.linkname)-static
     ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES}
