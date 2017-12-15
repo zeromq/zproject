@@ -166,11 +166,11 @@ $(project.GENERATED_WARNING_HEADER:)
         '../../include/$(project.prelude)',
 .   endif
 .   for class by name
-        '../../src/$(name:c).c',
+        '../../src/$(name:$(project.filename_prettyprint)).c',
 .       if scope = "public"
-        '../../include/$(name:c).h',
+        '../../include/$(name:$(project.filename_prettyprint)).h',
 .       else
-        '../../src/$(name:c).h',
+        '../../src/$(name:$(project.filename_prettyprint)).h',
 .       endif
 .   endfor
 .   for header by name

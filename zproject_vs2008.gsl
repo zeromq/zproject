@@ -281,7 +281,7 @@ $(project.GENERATED_WARNING_HEADER:)
   <Files>
     <Filter Name="Source Files" Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 .for class
-      <File RelativePath="..\\..\\..\\..\\src\\$(name:c).c">
+      <File RelativePath="..\\..\\..\\..\\src\\$(name:$(project.filename_prettyprint)).c">
         <FileConfiguration Name="Release|Win32">
           <Tool Name="VCCLCompilerTool" CompileAs="2" />
         </FileConfiguration>
@@ -356,10 +356,10 @@ $(project.GENERATED_WARNING_HEADER:)
     <Filter Name="Header Files">
       <File RelativePath="..\\..\\..\\..\\builds\\msvc\\platform.h" />
 .for class where scope = "private"
-      <File RelativePath="..\\..\\..\\..\\src\\$(name:c).h" />
+      <File RelativePath="..\\..\\..\\..\\src\\$(name:$(project.filename_prettyprint)).h" />
 .endfor
 .for class where scope = "public"
-      <File RelativePath="..\\..\\..\\..\\include\\$(name:c).h" />
+      <File RelativePath="..\\..\\..\\..\\include\\$(name:$(project.filename_prettyprint)).h" />
 .endfor
       <File RelativePath="..\\..\\..\\..\\include\\$(project.prefix)_library.h" />
 .if file.exists ("include/$(project.prelude)")
@@ -369,7 +369,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <File RelativePath="..\\..\\..\\..\\include\\$(project.header:)" />
 .endif
 .for header where scope = "public"
-      <File RelativePath="..\\..\\..\\..\\include\\$(name:c).h" />
+      <File RelativePath="..\\..\\..\\..\\include\\$(name:$(project.filename_prettyprint)).h" />
 .endfor
 .for extra
       <File RelativePath="..\\..\\..\\..\\src\\$(name)" />

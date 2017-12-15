@@ -195,13 +195,13 @@ set ($(project.prefix)_headers
 .   endif
 .endif
 .for header where scope = "public"
-    include/$(name:c).h
+    include/$(name:$(project.filename_prettyprint)).h
 .endfor
 .for class where scope = "public" & !draft
-    include/$(name:c).h
+    include/$(name:$(project.filename_prettyprint)).h
 .endfor
 .for class where scope = "private"
-    src/$(name:c).h
+    src/$(name:$(project.filename_prettyprint)).h
 .endfor
 .for extra
     src/$(name)
@@ -212,7 +212,7 @@ set ($(project.prefix)_headers
 IF (ENABLE_DRAFTS)
     list(APPEND $(project.prefix)_headers
 .   for class where scope = "public" & draft
-        include/$(name:c).h
+        include/$(name:$(project.filename_prettyprint)).h
 .   endfor
     )
 ENDIF (ENABLE_DRAFTS)
@@ -225,13 +225,15 @@ install(FILES ${$(project.prefix)_headers} DESTINATION include)
 ########################################################################
 # library
 ########################################################################
+
+
 include_directories("${SOURCE_DIR}/src" "${SOURCE_DIR}/include")
 set ($(project.linkname)_sources
 .for class where !draft
 .   if project.use_cxx
-    src/$(name:c).cc
+    src/$(name:$(project.filename_prettyprint)).cc
 .   else
-    src/$(name:c).c
+    src/$(name:$(project.filename_prettyprint)).c
 .   endif
 .endfor
 )
@@ -241,9 +243,9 @@ IF (ENABLE_DRAFTS)
     list (APPEND $(project.linkname)_sources
 .   for class where draft
 .       if project.use_cxx
-        src/$(name:c).cc
+        src/$(name:$(project.filename_prettyprint)).cc
 .       else
-        src/$(name:c).c
+        src/$(name:$(project.filename_prettyprint)).c
 .       endif
 .   endfor
     )

@@ -1418,7 +1418,7 @@ EXTRA_DIST += \\
     src/$(extra.name) \\
 .endfor
 .for class where scope = "private"
-    src/$(name:c).h \\
+    src/$(name:$(project.filename_prettyprint)).h \\
 .endfor
 .if file.exists ("LICENSE")
     LICENSE \\
@@ -1472,10 +1472,10 @@ include_HEADERS = \\
     include/$(project.header:) \\
 .endif
 .for header where scope = "public"
-    include/$(name:c).h \\
+    include/$(name:$(project.filename_prettyprint)).h \\
 .endfor
 .for class where scope = "public" & !draft
-    include/$(name:c).h \\
+    include/$(name:$(project.filename_prettyprint)).h \\
 .endfor
     include/$(project.prefix)_library.h
 
@@ -1483,16 +1483,16 @@ include_HEADERS = \\
 if ENABLE_DRAFTS
 include_HEADERS += \\
 .   for class where scope = "public" & draft
-    include/$(name:c).h$(last ()?? "\n"? " \\")
+    include/$(name:$(project.filename_prettyprint)).h$(last ()?? "\n"? " \\")
 .   endfor
 endif
 .endif
 src_$(project.libname)_la_SOURCES = \\
 .for class where !draft
-.   if file.exists ("src/$(name:c).cc")
-    src/$(name:c).cc \\
+.   if file.exists ("src/$(name:$(project.filename_prettyprint)).cc")
+    src/$(name:$(project.filename_prettyprint)).cc \\
 .   else
-    src/$(name:c).c \\
+    src/$(name:$(project.filename_prettyprint)).c \\
 .   endif
 .   if file.exists ("src/$(name:c)_engine.inc")
     src/$(name:c)_engine.inc \\
@@ -1507,10 +1507,10 @@ src_$(project.libname)_la_SOURCES = \\
 if ENABLE_DRAFTS
 src_$(project.libname)_la_SOURCES += \\
 .   for class where draft
-.       if file.exists ("src/$(name:c).cc")
-    src/$(name:c).cc\
+.       if file.exists ("src/$(name:$(project.filename_prettyprint)).cc")
+    src/$(name:$(project.filename_prettyprint)).cc\
 .       else
-    src/$(name:c).c\
+    src/$(name:$(project.filename_prettyprint)).c\
 .       endif
 .       if file.exists ("src/$(name:c)_engine.inc")
  \\
@@ -2228,20 +2228,20 @@ GENERATED_DOCS =
 
 .for project.class where scope = "public"
 GENERATED_DOCS += $(name:c).txt $(name:c).doc
-.   if file.exists ("src/$(name:c).cc")
-$(name:c).txt: $\(top_srcdir)/src/$(name:c).cc
+.   if file.exists ("src/$(name:$(project.filename_prettyprint)).cc")
+$(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).cc
 .   else
-$(name:c).txt: $\(top_srcdir)/src/$(name:c).c
+$(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).c
 .   endif
 \t"$\(srcdir)/mkman" "$(name:c)" "$\(builddir)/$(name:c).txt" "$\(srcdir)/.."
 
 .endfor
 .for project.main where scope = "public"
 GENERATED_DOCS += $(name).txt $(name).doc
-.   if file.exists ("src/$(name:c).cc")
-$(name).txt: $\(top_srcdir)/src/$(name:c).cc
+.   if file.exists ("src/$(name:$(project.filename_prettyprint)).cc")
+$(name).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).cc
 .   else
-$(name).txt: $\(top_srcdir)/src/$(name:c).c
+$(name).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).c
 .   endif
 \t"$\(srcdir)/mkman" "$(name:c)" "$\(builddir)/$(name).txt" "$\(srcdir)/.."
 

@@ -311,7 +311,7 @@ $(project.GENERATED_WARNING_HEADER:)
     <ClInclude Include="..\\..\\..\\..\\include\\$(project.header)" />
 .endif
 .for header where scope = "public"
-    <ClInclude Include="..\\..\\..\\..\\include\\$(name:c).h" />
+    <ClInclude Include="..\\..\\..\\..\\include\\$(name:$(project.filename_prettyprint)).h" />
 .endfor
 .for extra
     <ClInclude Include="..\\..\\..\\..\\src\\$(name)" />
@@ -319,7 +319,7 @@ $(project.GENERATED_WARNING_HEADER:)
   </ItemGroup>
   <ItemGroup>
 .for class
-    <ClCompile Include="..\\..\\..\\..\\src\\$(name:c).c">
+    <ClCompile Include="..\\..\\..\\..\\src\\$(name:$(project.filename_prettyprint)).c">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
 .endfor
@@ -346,7 +346,7 @@ $(project.GENERATED_WARNING_HEADER:)
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
 .for class
-    <ClCompile Include="..\\..\\..\\..\\src\\$(name:c).c">
+    <ClCompile Include="..\\..\\..\\..\\src\\$(name:$(project.filename_prettyprint)).c">
       <Filter>src</Filter>
     </ClCompile>
 .endfor
@@ -366,7 +366,7 @@ $(project.GENERATED_WARNING_HEADER:)
     </ClInclude>
 .endif
 .for header where scope = "public"
-    <ClInclude Include="..\\..\\..\\..\\include\\$(name:c).h">
+    <ClInclude Include="..\\..\\..\\..\\include\\$(name:$(project.filename_prettyprint)).h">
       <Filter>include</Filter>
     </ClInclude>
 .endfor
