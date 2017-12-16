@@ -74,6 +74,10 @@ pipeline {
             defaultValue: true,
             description: 'Require that there are no files not discovered changed/untracked via .gitignore after builds and tests?',
             name: 'REQUIRE_GOOD_GITIGNORE')
+        string (
+            defaultValue: "10",
+            description: 'When running tests, use this timeout (in minutes; be sure to leave enough for double-job of a distcheck too)',
+            name: 'USE_TEST_TIMEOUT')
         booleanParam (
             defaultValue: true,
             description: 'When using temporary subdirs in build/test workspaces, wipe them after successful builds?',
@@ -175,7 +179,7 @@ pipeline {
                       dir("tmp/test-check-withDRAFT") {
                         deleteDir()
                         unstash 'built-draft'
-                        timeout (time: 5, unit: 'MINUTES') {
+                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make check'
                         }
                         sh 'echo "Are GitIgnores good after make check with drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
@@ -193,7 +197,7 @@ pipeline {
                       dir("tmp/test-check-withoutDRAFT") {
                         deleteDir()
                         unstash 'built-nondraft'
-                        timeout (time: 5, unit: 'MINUTES') {
+                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make check'
                         }
                         sh 'echo "Are GitIgnores good after make check without drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
@@ -211,7 +215,7 @@ pipeline {
                       dir("tmp/test-memcheck-withDRAFT") {
                         deleteDir()
                         unstash 'built-draft'
-                        timeout (time: 5, unit: 'MINUTES') {
+                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
                         sh 'echo "Are GitIgnores good after make memcheck with drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
@@ -229,7 +233,7 @@ pipeline {
                       dir("tmp/test-memcheck-withoutDRAFT") {
                         deleteDir()
                         unstash 'built-nondraft'
-                        timeout (time: 5, unit: 'MINUTES') {
+                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
                         sh 'echo "Are GitIgnores good after make memcheck without drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
@@ -247,7 +251,7 @@ pipeline {
                       dir("tmp/test-distcheck-withDRAFT") {
                         deleteDir()
                         unstash 'built-draft'
-                        timeout (time: 10, unit: 'MINUTES') {
+                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck with drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
@@ -265,7 +269,7 @@ pipeline {
                       dir("tmp/test-distcheck-withoutDRAFT") {
                         deleteDir()
                         unstash 'built-nondraft'
-                        timeout (time: 10, unit: 'MINUTES') {
+                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck without drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
@@ -283,7 +287,7 @@ pipeline {
                       dir("tmp/test-install-withDRAFT") {
                         deleteDir()
                         unstash 'built-draft'
-                        timeout (time: 5, unit: 'MINUTES') {
+                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                             sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\${LD_LIBRARY_PATH}"; export LD_LIBRARY_PATH; make DESTDIR="${params.USE_TEST_INSTALL_DESTDIR}/withDRAFT" install"""
                         }
                         sh """cd "${params.USE_TEST_INSTALL_DESTDIR}/withDRAFT" && find . -ls"""
@@ -302,7 +306,7 @@ pipeline {
                       dir("tmp/test-install-withoutDRAFT") {
                         deleteDir()
                         unstash 'built-nondraft'
-                        timeout (time: 5, unit: 'MINUTES') {
+                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                             sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\${LD_LIBRARY_PATH}"; export LD_LIBRARY_PATH; make DESTDIR="${params.USE_TEST_INSTALL_DESTDIR}/withoutDRAFT" install"""
                         }
                         sh """cd "${params.USE_TEST_INSTALL_DESTDIR}/withoutDRAFT" && find . -ls"""
@@ -321,7 +325,7 @@ pipeline {
                       dir("tmp/test-install-withDOCS") {
                         deleteDir()
                         unstash 'built-docs'
-                        timeout (time: 5, unit: 'MINUTES') {
+                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                             sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\${LD_LIBRARY_PATH}"; export LD_LIBRARY_PATH; make DESTDIR="${params.USE_TEST_INSTALL_DESTDIR}/withDOCS" install"""
                         }
                         sh """cd "${params.USE_TEST_INSTALL_DESTDIR}/withDOCS" && find . -ls"""
