@@ -212,6 +212,9 @@ pipeline {
                         dir("tmp") {
                             sh 'if [ -s Makefile ]; then make -k distclean || true ; fi'
                             sh 'chmod -R u+w .'
+.       if project.jenkins_use_deleteDir_rm_first ?= 1
+                            sh 'rm -rf `pwd` || true'
+.       endif
                             deleteDir()
                         }
                         sh 'cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>cppcheck.xml'
@@ -225,6 +228,9 @@ pipeline {
                         dir("tmp") {
                             sh 'if [ -s Makefile ]; then make -k distclean || true ; fi'
                             sh 'chmod -R u+w .'
+.       if project.jenkins_use_deleteDir_rm_first ?= 1
+                            sh 'rm -rf `pwd` || true'
+.       endif
                             deleteDir()
                         }
                         sh './autogen.sh'
@@ -239,6 +245,9 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/build-withDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh 'rm -rf `pwd` || true'
+.           endif
                         deleteDir()
 .       endif
                         unstash 'prepped'
@@ -249,6 +258,9 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh 'rm -rf `pwd` || true'
+.           endif
                                 deleteDir()
                             }
                         }
@@ -262,6 +274,9 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/build-withoutDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh 'rm -rf `pwd` || true'
+.           endif
                         deleteDir()
 .       endif
                         unstash 'prepped'
@@ -272,6 +287,9 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh 'rm -rf `pwd` || true'
+.           endif
                                 deleteDir()
                             }
                         }
@@ -285,6 +303,9 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/build-DOCS") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh 'rm -rf `pwd` || true'
+.           endif
                         deleteDir()
 .       endif
                         unstash 'prepped'
@@ -295,6 +316,9 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh 'rm -rf `pwd` || true'
+.           endif
                                 deleteDir()
                             }
                         }
@@ -324,6 +348,9 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-check-withDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh 'rm -rf `pwd` || true'
+.           endif
                         deleteDir()
 .       endif
                         unstash 'built-draft'
@@ -334,6 +361,9 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh 'rm -rf `pwd` || true'
+.           endif
                                 deleteDir()
                             }
                         }
@@ -347,6 +377,9 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-check-withoutDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh 'rm -rf `pwd` || true'
+.           endif
                         deleteDir()
 .       endif
                         unstash 'built-nondraft'
@@ -357,6 +390,9 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh 'rm -rf `pwd` || true'
+.           endif
                                 deleteDir()
                             }
                         }
@@ -370,6 +406,9 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-memcheck-withDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh 'rm -rf `pwd` || true'
+.           endif
                         deleteDir()
 .       endif
                         unstash 'built-draft'
@@ -380,6 +419,9 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh 'rm -rf `pwd` || true'
+.           endif
                                 deleteDir()
                             }
                         }
@@ -393,6 +435,9 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-memcheck-withoutDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh 'rm -rf `pwd` || true'
+.           endif
                         deleteDir()
 .       endif
                         unstash 'built-nondraft'
@@ -403,6 +448,9 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh 'rm -rf `pwd` || true'
+.           endif
                                 deleteDir()
                             }
                         }
@@ -416,6 +464,9 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-distcheck-withDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh 'rm -rf `pwd` || true'
+.           endif
                         deleteDir()
 .       endif
                         unstash 'built-draft'
@@ -426,6 +477,9 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh 'rm -rf `pwd` || true'
+.           endif
                                 deleteDir()
                             }
                         }
@@ -439,6 +493,9 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-distcheck-withoutDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh 'rm -rf `pwd` || true'
+.           endif
                         deleteDir()
 .       endif
                         unstash 'built-nondraft'
@@ -449,6 +506,9 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh 'rm -rf `pwd` || true'
+.           endif
                                 deleteDir()
                             }
                         }
@@ -462,6 +522,9 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-install-withDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh 'rm -rf `pwd` || true'
+.           endif
                         deleteDir()
 .       endif
                         unstash 'built-draft'
@@ -473,6 +536,9 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh 'rm -rf `pwd` || true'
+.           endif
                                 deleteDir()
                             }
                         }
@@ -486,6 +552,9 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-install-withoutDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh 'rm -rf `pwd` || true'
+.           endif
                         deleteDir()
 .       endif
                         unstash 'built-nondraft'
@@ -497,6 +566,9 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh 'rm -rf `pwd` || true'
+.           endif
                                 deleteDir()
                             }
                         }
@@ -510,6 +582,9 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-install-withDOCS") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh 'rm -rf `pwd` || true'
+.           endif
                         deleteDir()
 .       endif
                         unstash 'built-docs'
@@ -521,6 +596,9 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh 'rm -rf `pwd` || true'
+.           endif
                                 deleteDir()
                             }
                         }
