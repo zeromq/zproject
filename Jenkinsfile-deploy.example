@@ -74,6 +74,19 @@ pipeline {
                         }
                     }
                 }
+// Comment away the block below if you have some need
+// to publish the codebase of ephemeral PR branches.
+// This is a Jenkins server instance implementation
+// detail; with proper DEPLOY_BRANCH_PATTERN settings
+// you would not even hit this clause unless desired.
+                script {
+                    if ( "${params["DEPLOY_GIT_BRANCH"]}" =~ /^PR-[0-9]+/ ) {
+                        manager.addShortText("Sanity: ephemeral PR branches should not be published")
+                        currentBuild.result = 'ABORTED'
+                        manager.buildAborted()
+                        error("This run tried to publish an ephemeral PR branch; it looks like an operator error.")
+                    }
+                }
             }
         }
 
