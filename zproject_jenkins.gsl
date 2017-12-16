@@ -213,7 +213,7 @@ pipeline {
                             sh 'if [ -s Makefile ]; then make -k distclean || true ; fi'
                             sh 'chmod -R u+w .'
 .       if project.jenkins_use_deleteDir_rm_first ?= 1
-                            sh 'rm -rf `pwd` || true'
+                            sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .       endif
                             deleteDir()
                         }
@@ -229,7 +229,7 @@ pipeline {
                             sh 'if [ -s Makefile ]; then make -k distclean || true ; fi'
                             sh 'chmod -R u+w .'
 .       if project.jenkins_use_deleteDir_rm_first ?= 1
-                            sh 'rm -rf `pwd` || true'
+                            sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .       endif
                             deleteDir()
                         }
@@ -246,7 +246,7 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/build-withDRAFT") {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh 'rm -rf `pwd` || true'
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                         deleteDir()
 .       endif
@@ -259,7 +259,7 @@ pipeline {
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                                sh 'rm -rf `pwd` || true'
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                                 deleteDir()
                             }
@@ -275,7 +275,7 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/build-withoutDRAFT") {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh 'rm -rf `pwd` || true'
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                         deleteDir()
 .       endif
@@ -288,7 +288,7 @@ pipeline {
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                                sh 'rm -rf `pwd` || true'
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                                 deleteDir()
                             }
@@ -304,7 +304,7 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/build-DOCS") {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh 'rm -rf `pwd` || true'
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                         deleteDir()
 .       endif
@@ -317,7 +317,7 @@ pipeline {
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                                sh 'rm -rf `pwd` || true'
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                                 deleteDir()
                             }
@@ -349,7 +349,7 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-check-withDRAFT") {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh 'rm -rf `pwd` || true'
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                         deleteDir()
 .       endif
@@ -362,7 +362,7 @@ pipeline {
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                                sh 'rm -rf `pwd` || true'
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                                 deleteDir()
                             }
@@ -378,7 +378,7 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-check-withoutDRAFT") {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh 'rm -rf `pwd` || true'
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                         deleteDir()
 .       endif
@@ -391,7 +391,7 @@ pipeline {
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                                sh 'rm -rf `pwd` || true'
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                                 deleteDir()
                             }
@@ -407,7 +407,7 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-memcheck-withDRAFT") {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh 'rm -rf `pwd` || true'
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                         deleteDir()
 .       endif
@@ -420,7 +420,7 @@ pipeline {
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                                sh 'rm -rf `pwd` || true'
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                                 deleteDir()
                             }
@@ -436,7 +436,7 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-memcheck-withoutDRAFT") {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh 'rm -rf `pwd` || true'
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                         deleteDir()
 .       endif
@@ -449,7 +449,7 @@ pipeline {
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                                sh 'rm -rf `pwd` || true'
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                                 deleteDir()
                             }
@@ -465,7 +465,7 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-distcheck-withDRAFT") {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh 'rm -rf `pwd` || true'
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                         deleteDir()
 .       endif
@@ -478,7 +478,7 @@ pipeline {
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                                sh 'rm -rf `pwd` || true'
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                                 deleteDir()
                             }
@@ -494,7 +494,7 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-distcheck-withoutDRAFT") {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh 'rm -rf `pwd` || true'
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                         deleteDir()
 .       endif
@@ -507,7 +507,7 @@ pipeline {
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                                sh 'rm -rf `pwd` || true'
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                                 deleteDir()
                             }
@@ -523,7 +523,7 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-install-withDRAFT") {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh 'rm -rf `pwd` || true'
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                         deleteDir()
 .       endif
@@ -537,7 +537,7 @@ pipeline {
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                                sh 'rm -rf `pwd` || true'
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                                 deleteDir()
                             }
@@ -553,7 +553,7 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-install-withoutDRAFT") {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh 'rm -rf `pwd` || true'
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                         deleteDir()
 .       endif
@@ -567,7 +567,7 @@ pipeline {
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                                sh 'rm -rf `pwd` || true'
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                                 deleteDir()
                             }
@@ -583,7 +583,7 @@ pipeline {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-install-withDOCS") {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh 'rm -rf `pwd` || true'
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                         deleteDir()
 .       endif
@@ -597,7 +597,7 @@ pipeline {
                         script {
                             if ( params.DO_CLEANUP_AFTER_BUILD ) {
 .           if project.jenkins_use_deleteDir_rm_first ?= 1
-                                sh 'rm -rf `pwd` || true'
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .           endif
                                 deleteDir()
                             }
