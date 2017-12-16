@@ -210,6 +210,8 @@ pipeline {
 .       jenkins_agent (project, 0)
                     steps {
                         dir("tmp") {
+                            sh 'if [ -s Makefile ]; then make -k distclean || true ; fi'
+                            sh 'chmod -R u+w .'
                             deleteDir()
                         }
                         sh 'cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>cppcheck.xml'
@@ -221,6 +223,8 @@ pipeline {
 .       jenkins_agent (project, 0)
                     steps {
                         dir("tmp") {
+                            sh 'if [ -s Makefile ]; then make -k distclean || true ; fi'
+                            sh 'chmod -R u+w .'
                             deleteDir()
                         }
                         sh './autogen.sh'
