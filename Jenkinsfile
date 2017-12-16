@@ -89,6 +89,8 @@ pipeline {
                     when { expression { return ( params.DO_CPPCHECK ) } }
                     steps {
                         dir("tmp") {
+                            sh 'if [ -s Makefile ]; then make -k distclean || true ; fi'
+                            sh 'chmod -R u+w .'
                             deleteDir()
                         }
                         sh 'cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>cppcheck.xml'
@@ -99,6 +101,8 @@ pipeline {
         stage ('prepare') {
                     steps {
                         dir("tmp") {
+                            sh 'if [ -s Makefile ]; then make -k distclean || true ; fi'
+                            sh 'chmod -R u+w .'
                             deleteDir()
                         }
                         sh './autogen.sh'
