@@ -10,6 +10,8 @@
  *  DEFAULT_DEPLOY_BRANCH_PATTERN like '^(master|feature/,*|release/.*)$'
  *
  *  Contributed to zproject, Copyright (C) 2017 by Eaton
+ *  See the reference version of this file at
+ *   https://github.com/zeromq/zproject/blob/master/Jenkinsfile-deploy.example
  *  Author: Jim Klimov <EvgenyKlimov@eaton.com>
  */
 
@@ -52,7 +54,38 @@ pipeline {
                 script {
                     if ( "${params["CI_REPO_BRANCH"]}" == "" || "${params["CI_REPO_FORK"]}" == "" ||
                          "${params["DEPLOY_GIT_URL"]}" == "" || "${params["DEPLOY_GIT_BRANCH"]}" == ""
-                       ) { return false; }
+                       ) {
+                        echo "BUILD_CAUSE : ${env.BUILD_CAUSE}"
+                        script {
+                            if ( env.BUILD_CAUSE_SCMTRIGGER == "true" || env.BUILD_CAUSE == "SCMTRIGGER" ) {
+                                // Not quite green, but not an outright failure either
+                                manager.addShortText("Sanity: Missing critical arguments, SCM triggered run")
+                                currentBuild.result = 'ABORTED'
+                                manager.buildUnstable()
+                                error("This run did not have critical arguments set; it looks like an automatic build of refreshed CI repo.")
+                            } else {
+                                // Bad arguments on manual/scripted invokation = FAIL
+                                manager.addShortText("Sanity: Missing critical arguments, normal build was attempted")
+                                currentBuild.result = 'FAILURE'
+                                manager.buildAborted()
+                                error("This run did not have critical arguments set; it looks like an operator error.")
+                            }
+                            return
+                        }
+                    }
+                }
+// Comment away the block below if you have some need
+// to publish the codebase of ephemeral PR branches.
+// This is a Jenkins server instance implementation
+// detail; with proper DEPLOY_BRANCH_PATTERN settings
+// you would not even hit this clause unless desired.
+                script {
+                    if ( "${params["DEPLOY_GIT_BRANCH"]}" =~ /^PR-[0-9]+/ ) {
+                        manager.addShortText("Sanity: ephemeral PR branches should not be published")
+                        currentBuild.result = 'ABORTED'
+                        manager.buildAborted()
+                        error("This run tried to publish an ephemeral PR branch; it looks like an operator error.")
+                    }
                 }
             }
         }

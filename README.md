@@ -412,6 +412,19 @@ zproject's `project.xml` contains an extensive description of the available conf
          with a spread to minimize burst-loads vs quiet times. An explicit
          empty string disables polling, so you'd only run the job manually.
          Note that the most frequent working setting is "H/2", NOT a "H/1".
+
+         The use_test_timeout option sets up the default timeout for test
+         steps (further configurable at run-time as a build argument).
+         Generally unit tests should not take pathologically long, so the
+         default of 10 minutes should commonly suffice even for distchecks.
+         If your selftests are known to take a lot of time, set this option.
+
+         As a workaround for some versions of Jenkins, if your project uses
+         "weird" (generally non-ASCII) filenames in the build directory,
+         their removal with Pipeline deleteDir() can fail even though it
+         should not. If this bites you, set use_deleteDir_rm_first=1 in
+         the project, so the OS native "rm" is tried first.
+
     <target name = "jenkins">
         <option name = "file" value = "Jenkinsfile" />
         <option name = "agent_docker" value = "zeromqorg/czmq" />
@@ -423,6 +436,8 @@ zproject's `project.xml` contains an extensive description of the available conf
         <option name = "build_with_draft_api" value = "0" />
         <option name = "build_docs" value = "1" />
         <option name = "require_gitignore" value = "0" />
+        <option name = "use_deleteDir_rm_first" value = "1" />
+        <option name = "use_test_timeout" value = "30" />
         <option name = "test_check" value = "0" />
         <option name = "test_memcheck" value = "0" />
         <option name = "test_distcheck" value = "0" />
