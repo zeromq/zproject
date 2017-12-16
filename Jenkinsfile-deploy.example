@@ -10,6 +10,8 @@
  *  DEFAULT_DEPLOY_BRANCH_PATTERN like '^(master|feature/,*|release/.*)$'
  *
  *  Contributed to zproject, Copyright (C) 2017 by Eaton
+ *  See the reference version of this file at
+ *   https://github.com/zeromq/zproject/blob/master/Jenkinsfile-deploy.example
  *  Author: Jim Klimov <EvgenyKlimov@eaton.com>
  */
 
