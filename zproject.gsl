@@ -32,13 +32,13 @@ resolve_includes (project)
 function project_use_cxx ()
     use_cxx = 0
     for class
-        if file.exists ("src/$(name:c.cc")
+        if file.exists ("src/$(name:c).cc")
             project.source_ext = "cc"
             return 1
         endif
     endfor
     for main
-        if file.exists ("src/$(name:c.cc")
+        if file.exists ("src/$(name:c).cc")
             project.source_ext = "cc"
             return 1
         endif
@@ -81,7 +81,7 @@ project.linkname ?= project.prefix
 project.libname ?= "lib" + project.linkname
 project.prelude ?= project.prefix + "_prelude.h"
 project.description ?= "Project"
-project.header ?= "$(project.name:c).h"
+project.header ?= "$(project.name:$(project.filename_prettyprint)).$(project.header_ext)"
 
 if count (project.version) = 0
     new version to project

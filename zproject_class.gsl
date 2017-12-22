@@ -31,7 +31,7 @@
 #define $(PROJECT.HEADER:c)_H_INCLUDED
 
 //  Include the project library file
-#include "$(project.prefix)_library.h"
+#include "$(project.prefix)_library.$(project.header_ext)"
 
 //  Add your own public definitions here, if you need them
 
@@ -39,7 +39,7 @@
 .else
 .   echo "NOT regenerating an existing include/$(project.header) skeleton file; but you probably should not care"
 .endif
-.output "include/$(project.prefix)_library.h"
+.output "include/$(project.prefix)_library.$(project.header_ext)"
 /*  =========================================================================
     $(project.name) - generated layer of public API
 
@@ -156,16 +156,16 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 
 //  Public classes, each with its own header file
 .for header where scope = "public"
-#include "$(header.name).h"
+#include "$(header.name:$(project.filename_prettyprint)).$(project.header_ext)"
 .endfor
 .for class where scope = "public" & class.c_name <> "$(project.name)" & !draft
-#include "$(class.c_name).h"
+#include "$(class.c_name:$(project.filename_prettyprint)).$(project.header_ext)"
 .endfor
 .for class where scope = "public" & class.c_name <> "$(project.name)" & draft
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
-#include "$(class.c_name).h"
+#include "$(class.c_name:$(project.filename_prettyprint)).$(project.header_ext)"
 .   if last ()
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
@@ -185,9 +185,9 @@ $(project.GENERATED_WARNING_HEADER:)
 .#  Build the project selftest program
 .#
 .if project.use_cxx
-.output "src/$(project.prefix)_selftest.cc"
+.output "src/$(project.prefix)_selftest.$(project.source_ext)"
 .else
-.output "src/$(project.prefix)_selftest.c"
+.output "src/$(project.prefix)_selftest.$(project.source_ext)"
 .endif
 /*  =========================================================================
     $(project.prefix)_selftest.c - run selftests
@@ -203,7 +203,7 @@ $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
-#include "$(project.prefix)_classes.h"
+#include "$(project.prefix)_classes.$(project.header_ext)"
 
 typedef struct {
     const char *testname;
@@ -356,9 +356,9 @@ $(project.GENERATED_WARNING_HEADER:)
 .#  Build the project private classes selftest module
 .#
 .if project.use_cxx
-.output "src/$(project.prefix)_private_selftest.cc"
+.output "src/$(project.prefix)_private_selftest.$(project.source_ext)"
 .else
-.output "src/$(project.prefix)_private_selftest.c"
+.output "src/$(project.prefix)_private_selftest.$(project.source_ext)"
 .endif
 /*  =========================================================================
     $(project.prefix)_private_selftest.c - run private classes selftests
@@ -374,7 +374,7 @@ $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
-#include "$(project.prefix)_classes.h"
+#include "$(project.prefix)_classes.$(project.header_ext)"
 
 
 //  -------------------------------------------------------------------------
@@ -407,7 +407,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .-
 .-  Build the classes header for private header files and constants
 .-
-.output "src/$(project.prefix)_classes.h"
+.output "src/$(project.prefix)_classes.$(project.header_ext)"
 /*  =========================================================================
     $(project.prefix)_classes - private header file
 
@@ -429,7 +429,7 @@ $(project.GENERATED_WARNING_HEADER:)
 
 //  Extra headers
 .for header where scope = "private"
-#include "$(header.name).h"
+#include "$(header.name:$(project.filename_prettyprint)).$(project.header_ext)"
 .endfor
 
 //  Opaque class structures to allow forward references
@@ -459,7 +459,7 @@ $(VISIBILITY) $(c_method_signature (method):)\
 .endfor
 
 .for class where scope = "private"
-#include "$(class.c_name).h"
+#include "$(class.c_name:$(project.filename_prettyprint)).$(project.header_ext)"
 .endfor
 
 //  *** To avoid double-definitions, only define if building without draft ***

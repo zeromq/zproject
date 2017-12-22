@@ -283,7 +283,7 @@ endfunction
 #   semantic or C-specific attributes of the method itself.
 #
 function resolve_c_class (class)
-    my.class.c_name ?= "$(my.class.name:c)"
+    my.class.c_name ?= "$(my.class.name:$(project.filename_prettyprint))"
     my.class.description ?= "$(string.trim (my.class.?""):left)"
     if !defined (my.class.selftest)
         my.class.selftest ?= 1
@@ -584,23 +584,23 @@ endfunction
 #
 for project.main
     if project.use_cxx
-        main.source = "src/$(main.name:c).cc"
+        main.source = "src/$(main.name:$(project.filename_prettyprint)).$(project.source_ext)"
     else
-        main.source = "src/$(main.name:c).c"
+        main.source = "src/$(main.name:$(project.filename_prettyprint)).$(project.source_ext)"
     endif
     skeleton_main_source ()
 endfor
 
 for project.actor
     if scope = "private"
-        actor.header = "src/$(actor.name:c).h"
+        actor.header = "src/$(actor.name:$(project.filename_prettyprint)).$(project.header_ext)"
     else
-        actor.header = "include/$(actor.name:c).h"
+        actor.header = "include/$(actor.name:$(project.filename_prettyprint)).$(project.header_ext)"
     endif
     if project.use_cxx
-        actor.source = "src/$(actor.name:c).cc"
+        actor.source = "src/$(actor.name:$(project.filename_prettyprint)).$(project.source_ext)"
     else
-        actor.source = "src/$(actor.name:c).c"
+        actor.source = "src/$(actor.name:$(project.filename_prettyprint)).$(project.source_ext)"
     endif
     skeleton_actor_header ()
     skeleton_actor_source ()
@@ -608,14 +608,14 @@ endfor
 
 for project.class
     if scope = "private"
-        class.header = "src/$(class.name:c).h"
+        class.header = "src/$(class.name:$(project.filename_prettyprint)).$(project.header_ext)"
     else
-        class.header = "include/$(class.name:c).h"
+        class.header = "include/$(class.name:$(project.filename_prettyprint)).$(project.header_ext)"
     endif
     if project.use_cxx
-        class.source = "src/$(class.name:c).cc"
+        class.source = "src/$(class.name:$(project.filename_prettyprint)).$(project.source_ext)"
     else
-        class.source = "src/$(class.name:c).c"
+        class.source = "src/$(class.name:$(project.filename_prettyprint)).$(project.source_ext)"
     endif
 
     if defined (class.api)
@@ -623,7 +623,7 @@ for project.class
     else
         # If there is no API model for this class,
         # all we can do is resolve the name and state
-        class.c_name = "$(class.name:c)"
+        class.c_name = "$(class.name:$(project.filename_prettyprint))"
         set_state (class, "draft")
     endif
 endfor

@@ -166,27 +166,27 @@ $(project.GENERATED_WARNING_HEADER:)
         '../../include/$(project.prelude)',
 .   endif
 .   for class by name
-        '../../src/$(name:$(project.filename_prettyprint)).c',
+        '../../src/$(name:$(project.filename_prettyprint)).$(project.source_ext)',
 .       if scope = "public"
-        '../../include/$(name:$(project.filename_prettyprint)).h',
+        '../../include/$(name:$(project.filename_prettyprint)).$(project.header_ext)',
 .       else
-        '../../src/$(name:$(project.filename_prettyprint)).h',
+        '../../src/$(name:$(project.filename_prettyprint)).$(project.header_ext)',
 .       endif
 .   endfor
 .   for header by name
-        '../../include/$(header.name).h',
+        '../../include/$(header.name).$(project.header_ext)',
 .   endfor
 .   for extra by name
         '../../src/$(extra.name)',
 .   endfor
-        '../../include/$(project.prefix)_library.h',
-        '../../src/$(project.prefix)_selftest.c',
+        '../../include/$(project.prefix)_library.$(project.header_ext)',
+        '../../src/$(project.prefix)_selftest.$(project.source_ext)',
 .   if project.use_cxx
-        '../../src/$(project.prefix)_private_selftest.cc',
+        '../../src/$(project.prefix)_private_selftest.$(project.source_ext)',
 .   else
-        '../../src/$(project.prefix)_private_selftest.c',
+        '../../src/$(project.prefix)_private_selftest.$(project.source_ext)',
 .   endif
-        '../../src/$(project.prefix)_classes.h'
+        '../../src/$(project.prefix)_classes.$(project.header_ext)'
       ],
       'dependencies': [
 .   for project.use where !optional
@@ -213,7 +213,7 @@ $(project.GENERATED_WARNING_HEADER:)
       'target_name': '$(name)',
       'type': 'executable',
       'sources': [
-        '../../src/$(name).c'
+        '../../src/$(name).$(project.source_ext)'
       ],
 .   if count (project.class)
       'dependencies': [

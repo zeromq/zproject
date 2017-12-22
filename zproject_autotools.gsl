@@ -1418,7 +1418,7 @@ EXTRA_DIST += \\
     src/$(extra.name) \\
 .endfor
 .for class where scope = "private"
-    src/$(name:$(project.filename_prettyprint)).h \\
+    src/$(name:$(project.filename_prettyprint)).$(project.header_ext) \\
 .endfor
 .if file.exists ("LICENSE")
     LICENSE \\
@@ -1432,7 +1432,7 @@ EXTRA_DIST += \\
 .if file.exists ("CONTRIBUTING.md")
     CONTRIBUTING.md \\
 .endif
-    src/$(project.prefix)_classes.h
+    src/$(project.prefix)_classes.$(project.header_ext)
 
 # NOTE: this "include" syntax is not a "make" but an "autotools" keyword,
 # see https://www.gnu.org/software/automake/manual/html_node/Include.html
@@ -1472,25 +1472,25 @@ include_HEADERS = \\
     include/$(project.header:) \\
 .endif
 .for header where scope = "public"
-    include/$(name:$(project.filename_prettyprint)).h \\
+    include/$(name:$(project.filename_prettyprint)).$(project.header_ext) \\
 .endfor
 .for class where scope = "public" & !draft
-    include/$(name:$(project.filename_prettyprint)).h \\
+    include/$(name:$(project.filename_prettyprint)).$(project.header_ext) \\
 .endfor
-    include/$(project.prefix)_library.h
+    include/$(project.prefix)_library.$(project.header_ext)
 
 .if count (class, scope = "public" & draft)
 if ENABLE_DRAFTS
 include_HEADERS += \\
 .   for class where scope = "public" & draft
-    include/$(name:$(project.filename_prettyprint)).h$(last ()?? "\n"? " \\")
+    include/$(name:$(project.filename_prettyprint)).$(project.header_ext)$(last ()?? "\n"? " \\")
 .   endfor
 endif
 .endif
 src_$(project.libname)_la_SOURCES = \\
 .for class where !draft
-.   if file.exists ("src/$(name:$(project.filename_prettyprint)).cc")
-    src/$(name:$(project.filename_prettyprint)).cc \\
+.   if file.exists ("src/$(name:$(project.filename_prettyprint)).$(project.source_ext)")
+    src/$(name:$(project.filename_prettyprint)).$(project.source_ext) \\
 .   else
     src/$(name:$(project.filename_prettyprint)).c \\
 .   endif
@@ -1507,8 +1507,8 @@ src_$(project.libname)_la_SOURCES = \\
 if ENABLE_DRAFTS
 src_$(project.libname)_la_SOURCES += \\
 .   for class where draft
-.       if file.exists ("src/$(name:$(project.filename_prettyprint)).cc")
-    src/$(name:$(project.filename_prettyprint)).cc\
+.       if file.exists ("src/$(name:$(project.filename_prettyprint)).$(project.source_ext)")
+    src/$(name:$(project.filename_prettyprint)).$(project.source_ext)\
 .       else
     src/$(name:$(project.filename_prettyprint)).c\
 .       endif
@@ -1525,9 +1525,9 @@ endif
 if ENABLE_DRAFTS
 src_$(project.libname)_la_SOURCES += \\
 .   if project.use_cxx
-    src/$(project.prefix)_private_selftest.cc
+    src/$(project.prefix)_private_selftest.$(project.source_ext)
 .   else
-    src/$(project.prefix)_private_selftest.c
+    src/$(project.prefix)_private_selftest.$(project.source_ext)
 .   endif
 endif
 
@@ -1818,9 +1818,9 @@ coverage: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\
 \tlcov --base-directory . --directory . --capture -o coverage.info
 \tlcov --remove coverage.info "/usr*" -o coverage.info
 .if project.use_cxx
-\tlcov --remove coverage.info "$(project.prefix)_selftest.cc" -o coverage.info
+\tlcov --remove coverage.info "$(project.prefix)_selftest.$(project.source_ext)" -o coverage.info
 .else
-\tlcov --remove coverage.info "$(project.prefix)_selftest.c" -o coverage.info
+\tlcov --remove coverage.info "$(project.prefix)_selftest.$(project.source_ext)" -o coverage.info
 .endif
 \t\$(RM) -rf coverage/*
 \tgenhtml -o coverage/ -t "$(project.name) test coverage" --num-spaces 4 coverage.info
@@ -2007,8 +2007,8 @@ sub generate_manpage {
     while (<MAKEFILE>) {
         if (/MAN1.*$outp_basename\\.1/) {
 .if project.use_cxx
-            $source = "$rootsrcdir/src/$name.cc";
-            $header = "$rootsrcdir/src/$name.cc";
+            $source = "$rootsrcdir/src/$name.$(project.source_ext)";
+            $header = "$rootsrcdir/src/$name.$(project.source_ext)";
 .else
             $source = "$rootsrcdir/src/$name.c";
             $header = "$rootsrcdir/src/$name.c";
@@ -2019,11 +2019,11 @@ sub generate_manpage {
         }
         elsif (/MAN3.*$name\\.3/) {
 .if project.use_cxx
-            $source = "$rootsrcdir/src/$name.cc";
+            $source = "$rootsrcdir/src/$name.$(project.source_ext)";
 .else
             $source = "$rootsrcdir/src/$name.c";
 .endif
-            $header = "$rootsrcdir/include/$name.h";
+            $header = "$rootsrcdir/include/$name.$(project.header_ext)";
             $cat = 3;
             $cat_text = "Class for ";
             last;
@@ -2228,8 +2228,8 @@ GENERATED_DOCS =
 
 .for project.class where scope = "public"
 GENERATED_DOCS += $(name:c).txt $(name:c).doc
-.   if file.exists ("src/$(name:$(project.filename_prettyprint)).cc")
-$(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).cc
+.   if file.exists ("src/$(name:$(project.filename_prettyprint)).$(project.source_ext)")
+$(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).$(project.source_ext)
 .   else
 $(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).c
 .   endif
@@ -2238,8 +2238,8 @@ $(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).c
 .endfor
 .for project.main where scope = "public"
 GENERATED_DOCS += $(name).txt $(name).doc
-.   if file.exists ("src/$(name:$(project.filename_prettyprint)).cc")
-$(name).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).cc
+.   if file.exists ("src/$(name:$(project.filename_prettyprint)).$(project.source_ext)")
+$(name).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).$(project.source_ext)
 .   else
 $(name).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).c
 .   endif

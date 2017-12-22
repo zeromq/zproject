@@ -15,6 +15,7 @@
 *  [Setup your project environment](#setup-your-project-environment)
 *  [Configuration](#configuration)
 *  [Project dependencies](#project-dependencies)
+*  [Optional : Class filename configuration](#optional--class-filename-configuration)
 *  [Targets](#targets)
 &emsp;[Target Options](#target-options)
 &emsp;[Target Scopes](#target-scopes)
@@ -699,6 +700,24 @@ Model is described in `zproject_known_projects.xml` file:
 
 </known_projects>
 ```
+
+### Optional : Class filename configuration
+
+Exemple:
+```classfilename
+<classfilename use-cxx = "true" pretty-print = "no" source-extension = "cpp" header-extension = "hpp" />
+```
+
+* use-cxx will force usage (or not) of c++.
+* pretty-print define the type of class name format change in order to generate the filename. It use the pretty-print option of gsl (see Substituting Symbols and Expressions on https://github.com/imatix/gsl#expressions for more information).
+* source-extension define the filename extension for source files in this project.
+* header-extension define the filename extension for source files in this project.
+
+Default value :
+* pretty-print : substitute_non_alpha_to_make_c_identifier (c option)
+* header-extension : h
+* source-extension : c (unless a cc file is present, then cc)
+* use-cxx : true if a cc file is present false otherwhise
 
 ### Targets
 
