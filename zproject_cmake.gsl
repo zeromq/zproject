@@ -19,7 +19,7 @@ $(project.GENERATED_WARNING_HEADER:)
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.8)
 project($(project.name:c))
 .if project.use_cxx
 enable_language(CXX)
@@ -272,9 +272,20 @@ if (NOT $(PROJECT.PREFIX)_BUILD_SHARED AND NOT $(PROJECT.PREFIX)_BUILD_STATIC)
   message(FATAL_ERROR "Neither static nor shared library build enabled")
 endif()
 
+IF (NOT MSVC)
+  # avoid building everything twice for shared + static
+  # only on *nix, as Windows needs different preprocessor defines in static builds
+  add_library (objects OBJECT ${$(project.linkname)_sources})
+  set_property(TARGET objects PROPERTY POSITION_INDEPENDENT_CODE ON)
+ENDIF (NOT MSVC)
+
 # shared
 if ($(PROJECT.PREFIX)_BUILD_SHARED)
-  add_library($(project.linkname) SHARED ${$(project.linkname)_sources})
+  IF (MSVC)
+    add_library($(project.linkname) SHARED ${$(project.linkname)_sources})
+  ELSE (MSVC)
+    add_library($(project.linkname) SHARED $<TARGET_OBJECTS:objects>)
+  ENDIF (MSVC)
 
   set_target_properties ($(project.linkname) PROPERTIES
     PUBLIC_HEADER "${public_headers}"
@@ -286,6 +297,8 @@ if ($(PROJECT.PREFIX)_BUILD_SHARED)
 .endif
     VERSION "${$(PROJECT.PREFIX)_VERSION}"
     COMPILE_DEFINITIONS "DLL_EXPORT"
+    OUTPUT_NAME "$(project.linkname)"
+    PREFIX "lib"
   )
 
   target_link_libraries($(project.linkname)
@@ -305,11 +318,17 @@ endif()
 
 # static
 if ($(PROJECT.PREFIX)_BUILD_STATIC)
-  add_library($(project.linkname)-static STATIC ${$(project.linkname)_sources})
+  IF (MSVC)
+    add_library($(project.linkname)-static STATIC ${$(project.linkname)_sources})
+  ELSE (MSVC)
+    add_library($(project.linkname)-static STATIC $<TARGET_OBJECTS:objects>)
+  ENDIF (MSVC)
 
   set_target_properties($(project.linkname)-static PROPERTIES
     PUBLIC_HEADER "${public_headers}"
     COMPILE_DEFINITIONS "$(PROJECT.PREFIX)_STATIC"
+    OUTPUT_NAME "$(project.linkname)"
+    PREFIX "lib"
   )
 
   target_link_libraries($(project.linkname)-static
