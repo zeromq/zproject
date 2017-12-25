@@ -297,6 +297,8 @@ if ($(PROJECT.PREFIX)_BUILD_SHARED)
 .endif
     VERSION "${$(PROJECT.PREFIX)_VERSION}"
     COMPILE_DEFINITIONS "DLL_EXPORT"
+    OUTPUT_NAME "$(project.linkname)"
+    PREFIX "lib"
   )
 
   target_link_libraries($(project.linkname)
@@ -325,6 +327,8 @@ if ($(PROJECT.PREFIX)_BUILD_STATIC)
   set_target_properties($(project.linkname)-static PROPERTIES
     PUBLIC_HEADER "${public_headers}"
     COMPILE_DEFINITIONS "$(PROJECT.PREFIX)_STATIC"
+    OUTPUT_NAME "$(project.linkname)"
+    PREFIX "lib"
   )
 
   target_link_libraries($(project.linkname)-static
