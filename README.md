@@ -419,6 +419,15 @@ zproject's `project.xml` contains an extensive description of the available conf
          default of 10 minutes should commonly suffice even for distchecks.
          If your selftests are known to take a lot of time, set this option.
 
+         A use_test_retry option allows to retry each failing test step
+         for the specified amount of attempts; it is deemed good if the
+         test passes at least once. This option should not normally need
+         to be used -- only if selftests somehow depend on environmental
+         circumstances and fail occasionally but not always. Ultimately,
+         project developers should find and fix the issue in tests (or in
+         the production codebase) so it always works on the first try,
+         bulletproof.
+
          As a workaround for some versions of Jenkins, if your project uses
          "weird" (generally non-ASCII) filenames in the build directory,
          their removal with Pipeline deleteDir() can fail even though it
@@ -438,6 +447,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         <option name = "require_gitignore" value = "0" />
         <option name = "use_deleteDir_rm_first" value = "1" />
         <option name = "use_test_timeout" value = "30" />
+        <option name = "use_test_retry" value = "3" />
         <option name = "test_check" value = "0" />
         <option name = "test_memcheck" value = "0" />
         <option name = "test_distcheck" value = "0" />
