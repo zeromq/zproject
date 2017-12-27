@@ -71,7 +71,7 @@ register_target ("jenkins", "pipeline CI script for jenkins")
 .   endfor
 
     NOTE : This Jenkins pipeline script only handles the self-testing of your
-    project. If you also want the successful codebawse published or deployed,
+    project. If you also want the successful codebase published or deployed,
     you can define a helper job - see the reference implementation skeleton at
     https://github.com/zeromq/zproject/blob/master/Jenkinsfile-deploy.example
 

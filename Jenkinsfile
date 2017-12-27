@@ -10,7 +10,7 @@
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
     NOTE : This Jenkins pipeline script only handles the self-testing of your
-    project. If you also want the successful codebawse published or deployed,
+    project. If you also want the successful codebase published or deployed,
     you can define a helper job - see the reference implementation skeleton at
     https://github.com/zeromq/zproject/blob/master/Jenkinsfile-deploy.example
 
