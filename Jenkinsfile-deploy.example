@@ -32,6 +32,10 @@ pipeline {
             description: 'The commit ID of the sources to check out (may be not current HEAD of that repo/branch)',
             name: 'DEPLOY_GIT_COMMIT')
         string (
+            defaultValue: '',
+            description: 'URL to a "dist" archive prepared by the build (e.g. with pregenerated docs and config script) which will be fetched, and used instead of (or combined with) git-archive checkout contents during further packaging; note all the DEPLOY_GIT_* arguments are still required if this feature is used.',
+            name: 'DEPLOY_DIST_ARCHIVE')
+        string (
             defaultValue: 'https://github.com/myorg/myjenkinsscripts.git',
             description: 'GIT Repo with CI scripts and tools',
             name: 'CI_REPO_FORK')
@@ -127,12 +131,13 @@ pipeline {
         stage ('Deploy') {
             steps {
                 script {
-                    manager.addShortText("Pushing: " + ( (params.DEPLOY_GIT_URL).substring( (params.DEPLOY_GIT_URL).lastIndexOf("/") + 1 ).replace(".git", "") ) + " / " + params.DEPLOY_GIT_BRANCH + " @ " + ( (params.DEPLOY_GIT_COMMIT).take(7) ) )
+                    manager.addShortText("Pushing: " + ( (params.DEPLOY_GIT_URL).substring( (params.DEPLOY_GIT_URL).lastIndexOf("/") + 1 ).replace(".git", "") ) + " / " + params.DEPLOY_GIT_BRANCH + " @ " + ( (params.DEPLOY_GIT_COMMIT).take(7) ) + ( (params.DEPLOY_DIST_ARCHIVE == "") ? "(no dist tarballs)" : (" using " + params.DEPLOY_DIST_ARCHIVE)  ) )
                     def statusCode = sh returnStatus:true, script: """
 DEPLOY_GIT_URL="${params["DEPLOY_GIT_URL"]}"
 DEPLOY_GIT_BRANCH="${params["DEPLOY_GIT_BRANCH"]}"
 DEPLOY_GIT_COMMIT="${params["DEPLOY_GIT_COMMIT"]}"
-export DEPLOY_GIT_URL DEPLOY_GIT_BRANCH DEPLOY_GIT_COMMIT
+DEPLOY_DIST_ARCHIVE="${params["DEPLOY_DIST_ARCHIVE"]}"
+export DEPLOY_GIT_URL DEPLOY_GIT_BRANCH DEPLOY_GIT_COMMIT DEPLOY_DIST_ARCHIVE
 cd project && \
 ../ci/update-deployment.sh
 """

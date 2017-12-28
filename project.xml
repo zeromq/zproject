@@ -230,6 +230,9 @@
          which may be not installed on a particular deployment, so by
          default this option is disabled if not set explicitly. Same idea
          goes for build_docs as it requires asciidoc and xmlto toolkits.
+         A further dist_docs enables preparation of a "dist" tarball from
+         the workspace configured with docs, so you can forward it to the
+         publishing helper job and avoid rebuilding manpages for packaging.
 
          The triggers_pollSCM option sets up the pipeline-generated job
          for regular polling of the original SCM repository, using the
@@ -269,6 +272,7 @@
         <option name = "build_without_draft_api" value = "0" />
         <option name = "build_with_draft_api" value = "0" />
         <option name = "build_docs" value = "1" />
+        <option name = "dist_docs" value = "1" />
         <option name = "require_gitignore" value = "0" />
         <option name = "use_deleteDir_rm_first" value = "1" />
         <option name = "use_test_timeout" value = "30" />
