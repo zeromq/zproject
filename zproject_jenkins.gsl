@@ -219,23 +219,6 @@ pipeline {
 // Note: your Jenkins setup may benefit from similar setup on side of agents:
 //        PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/bin:/bin:\$\{PATH}"
     stages {
-        stage ('cppcheck') {
-                    when { expression { return ( params.DO_CPPCHECK ) } }
-.       jenkins_agent (project, 0)
-                    steps {
-                        dir("tmp") {
-                            sh 'if [ -s Makefile ]; then make -k distclean || true ; fi'
-                            sh 'chmod -R u+w .'
-.       if project.jenkins_use_deleteDir_rm_first ?= 1
-                            sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
-.       endif
-                            deleteDir()
-                        }
-                        sh 'cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>cppcheck.xml'
-                        archiveArtifacts artifacts: '**/cppcheck.xml'
-                        sh 'rm -f cppcheck.xml'
-                    }
-        }
         stage ('prepare') {
 .       jenkins_agent (project, 0)
                     steps {
@@ -356,6 +339,32 @@ pipeline {
         stage ('check') {
             parallel {
 .       endif
+                stage ('cppcheck') {
+                    when { expression { return ( params.DO_CPPCHECK ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+                        dir("tmp/test-cppcheck") {
+.       if project.jenkins_use_deleteDir_rm_first ?= 1
+                            sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.       endif
+                            deleteDir()
+                            unstash 'prepped'
+                            sh 'cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>cppcheck.xml'
+                            archiveArtifacts artifacts: '**/cppcheck.xml'
+                            sh 'rm -f cppcheck.xml'
+.       if !(isSingle_jenkins_agent (project, 0))
+                            script {
+                                if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                    sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                    deleteDir()
+                                }
+                            }
+.       endif
+                        }
+                    }
+                }
                 stage ('check with DRAFT') {
                     when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_CHECK ) } }
 .       jenkins_agent (project, 0)
