@@ -531,7 +531,9 @@ AC_ARG_WITH([$(use.libname)],
     [
         search_$(use.libname:c)="yes"
     ],
-    [])
+    [
+        search_$(use.libname:c)="yes"
+    ])
 AS_CASE([x"${with_$(use.libname:c)}"],
     [xyes], [search_$(use.libname:c)="yes"],
     [xno],  [search_$(use.libname:c)="no"])
