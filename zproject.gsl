@@ -33,25 +33,55 @@ function project_use_cxx ()
     use_cxx = 0
     for class
         if file.exists ("src/$(name:c).cc")
+            project.source_ext = "cc"
             return 1
         endif
     endfor
     for main
         if file.exists ("src/$(name:c).cc")
+            project.source_ext = "cc"
             return 1
         endif
     endfor
     return 0
 endfunction
 
+function resolve_classfilename_option()
+    for classfilename
+        if defined (classfilename.pretty\-print)
+            project.filename_prettyprint = classfilename.pretty\-print
+        endif
+
+        if defined (classfilename.source\-extension)
+            project.source_ext = classfilename.source\-extension
+        endif
+
+        if defined (classfilename.header\-extension)
+            project.header_ext = classfilename.header\-extension
+        endif
+
+        if classfilename.use\-cxx ?= "true"
+            use_cxx = 1
+        elsif classfilename.use\-cxx ?= "false"
+            use_cxx = 0
+        endif
+
+        return
+    endfor
+endfunction
+
+project.filename_prettyprint = "c"
+project.header_ext = "h"
+project.source_ext = "c"
 project.use_cxx = project_use_cxx ()
+resolve_classfilename_option()
 project.name ?= "myproject"
 project.prefix ?= "$(project.name:c)"
 project.linkname ?= project.prefix
 project.libname ?= "lib" + project.linkname
 project.prelude ?= project.prefix + "_prelude.h"
 project.description ?= "Project"
-project.header ?= "$(project.name:c).h"
+project.header ?= "$(project.name:$(project.filename_prettyprint)).$(project.header_ext)"
 
 if count (project.version) = 0
     new version to project

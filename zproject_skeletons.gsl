@@ -20,7 +20,7 @@
 .   echo "Generating skeleton for $(main.source)"
 .   output main.source
 /*  =========================================================================
-    $(main.name:c) - $(string.trim (main.?'description'):no,left)
+    $(main.name:$(project.filename_prettyprint)) - $(string.trim (main.?'description'):no,left)
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -30,12 +30,12 @@
 
 /*
 @header
-    $(main.name:c) - $(string.trim (main.?''):no,left)
+    $(main.name:$(project.filename_prettyprint)) - $(string.trim (main.?''):no,left)
 @discuss
 @end
 */
 
-#include "$(project.prefix)_classes.h"
+#include "$(project.prefix)_classes.$(project.header_ext)"
 
 int main (int argc, char *argv [])
 {
@@ -60,7 +60,7 @@ int main (int argc, char *argv [])
     }
     //  Insert main code here
     if (verbose)
-        zsys_info ("$(main.name:c) - $(string.trim (main.?''):no,left)");
+        zsys_info ("$(main.name:$(project.filename_prettyprint)) - $(string.trim (main.?''):no,left)");
     return 0;
 }
 .   close
@@ -77,7 +77,7 @@ int main (int argc, char *argv [])
 .   echo "Generating skeleton for $(actor.header)"
 .   output actor.header
 /*  =========================================================================
-    $(actor.name:c) - $(string.trim (actor.?''):no,left)
+    $(actor.name:$(project.filename_prettyprint)) - $(string.trim (actor.?''):no,left)
 
 .   for project.license
     $(string.trim (license.):block                                         )
@@ -158,7 +158,7 @@ $(PROJECT.PREFIX)_EXPORT void
 @end
 */
 
-#include "$(project.prefix)_classes.h"
+#include "$(project.prefix)_classes.$(project.header_ext)"
 
 //  Structure of our actor
 
@@ -355,7 +355,7 @@ extern "C" {
 
 .   if class.c_name = project.name
 //  Include the library file with typdefs, public includes and public constants
-#include "$(class.c_name)_library.h"
+#include "$(class.c_name)_library.$(project.headerext)"
 
 .   endif
 //  @interface
@@ -411,7 +411,7 @@ $(VISIBILITY) void
 @end
 */
 
-#include "$(project.prefix)_classes.h"
+#include "$(project.prefix)_classes.$(project.header_ext)"
 
 //  Structure of our class
 

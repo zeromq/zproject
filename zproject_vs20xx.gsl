@@ -303,7 +303,7 @@ $(project.GENERATED_WARNING_HEADER:)
     <ClInclude Include="..\\..\\resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\\..\\..\\..\\include\\$(project.prefix)_library.h" />
+    <ClInclude Include="..\\..\\..\\..\\include\\$(project.prefix)_library.$(project.header_ext)" />
 .if file.exists ("include/$(project.prelude)")
     <ClInclude Include="..\\..\\..\\..\\include\\$(project.prelude)" />
 .endif
@@ -311,7 +311,7 @@ $(project.GENERATED_WARNING_HEADER:)
     <ClInclude Include="..\\..\\..\\..\\include\\$(project.header)" />
 .endif
 .for header where scope = "public"
-    <ClInclude Include="..\\..\\..\\..\\include\\$(name:c).h" />
+    <ClInclude Include="..\\..\\..\\..\\include\\$(name:$(project.filename_prettyprint)).$(project.header_ext)" />
 .endfor
 .for extra
     <ClInclude Include="..\\..\\..\\..\\src\\$(name)" />
@@ -319,7 +319,7 @@ $(project.GENERATED_WARNING_HEADER:)
   </ItemGroup>
   <ItemGroup>
 .for class
-    <ClCompile Include="..\\..\\..\\..\\src\\$(name:c).c">
+    <ClCompile Include="..\\..\\..\\..\\src\\$(name:$(project.filename_prettyprint)).c">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
 .endfor
@@ -346,13 +346,13 @@ $(project.GENERATED_WARNING_HEADER:)
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
 .for class
-    <ClCompile Include="..\\..\\..\\..\\src\\$(name:c).c">
+    <ClCompile Include="..\\..\\..\\..\\src\\$(name:$(project.filename_prettyprint)).c">
       <Filter>src</Filter>
     </ClCompile>
 .endfor
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\\..\\..\\..\\include\\$(project.prefix)_library.h">
+    <ClInclude Include="..\\..\\..\\..\\include\\$(project.prefix)_library.$(project.header_ext)">
       <Filter>include</Filter>
     </ClInclude>
 .if file.exists ("include/$(project.prelude)")
@@ -366,7 +366,7 @@ $(project.GENERATED_WARNING_HEADER:)
     </ClInclude>
 .endif
 .for header where scope = "public"
-    <ClInclude Include="..\\..\\..\\..\\include\\$(name:c).h">
+    <ClInclude Include="..\\..\\..\\..\\include\\$(name:$(project.filename_prettyprint)).$(project.header_ext)">
       <Filter>include</Filter>
     </ClInclude>
 .endfor

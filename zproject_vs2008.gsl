@@ -281,7 +281,7 @@ $(project.GENERATED_WARNING_HEADER:)
   <Files>
     <Filter Name="Source Files" Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 .for class
-      <File RelativePath="..\\..\\..\\..\\src\\$(name:c).c">
+      <File RelativePath="..\\..\\..\\..\\src\\$(name:$(project.filename_prettyprint)).$(project.source_ext)">
         <FileConfiguration Name="Release|Win32">
           <Tool Name="VCCLCompilerTool" CompileAs="2" />
         </FileConfiguration>
@@ -316,9 +316,9 @@ $(project.GENERATED_WARNING_HEADER:)
 .endfor
 .if count (class)
 .   if project.use_cxx
-      <File RelativePath="..\\..\\..\\..\\src\\$(project.prefix)_private_selftest.cc">
+      <File RelativePath="..\\..\\..\\..\\src\\$(project.prefix)_private_selftest.$(project.source_ext)">
 .   else
-      <File RelativePath="..\\..\\..\\..\\src\\$(project.prefix)_private_selftest.c">
+      <File RelativePath="..\\..\\..\\..\\src\\$(project.prefix)_private_selftest.$(project.source_ext)">
 .   endif
         <FileConfiguration Name="Release|Win32">
           <Tool Name="VCCLCompilerTool" CompileAs="2" />
@@ -356,12 +356,12 @@ $(project.GENERATED_WARNING_HEADER:)
     <Filter Name="Header Files">
       <File RelativePath="..\\..\\..\\..\\builds\\msvc\\platform.h" />
 .for class where scope = "private"
-      <File RelativePath="..\\..\\..\\..\\src\\$(name:c).h" />
+      <File RelativePath="..\\..\\..\\..\\src\\$(name:$(project.filename_prettyprint)).$(project.header_ext)" />
 .endfor
 .for class where scope = "public"
-      <File RelativePath="..\\..\\..\\..\\include\\$(name:c).h" />
+      <File RelativePath="..\\..\\..\\..\\include\\$(name:$(project.filename_prettyprint)).$(project.header_ext)" />
 .endfor
-      <File RelativePath="..\\..\\..\\..\\include\\$(project.prefix)_library.h" />
+      <File RelativePath="..\\..\\..\\..\\include\\$(project.prefix)_library.$(project.header_ext)" />
 .if file.exists ("include/$(project.prelude)")
       <File RelativePath="..\\..\\..\\..\\include\\$(project.prelude)" />
 .endif
@@ -369,7 +369,7 @@ $(project.GENERATED_WARNING_HEADER:)
       <File RelativePath="..\\..\\..\\..\\include\\$(project.header:)" />
 .endif
 .for header where scope = "public"
-      <File RelativePath="..\\..\\..\\..\\include\\$(name:c).h" />
+      <File RelativePath="..\\..\\..\\..\\include\\$(name:$(project.filename_prettyprint)).$(project.header_ext)" />
 .endfor
 .for extra
       <File RelativePath="..\\..\\..\\..\\src\\$(name)" />
