@@ -356,7 +356,7 @@ $(project.GENERATED_WARNING_HEADER:)
     <Filter Name="Header Files">
       <File RelativePath="..\\..\\..\\..\\builds\\msvc\\platform.h" />
 .for class where scope = "private"
-      <File RelativePath="..\\..\\..\\..\\src\\$(name:$(project.filename_prettyprint)).$(project.headerext)" />
+      <File RelativePath="..\\..\\..\\..\\src\\$(name:$(project.filename_prettyprint)).$(project.header_ext)" />
 .endfor
 .for class where scope = "public"
       <File RelativePath="..\\..\\..\\..\\include\\$(name:$(project.filename_prettyprint)).$(project.header_ext)" />
