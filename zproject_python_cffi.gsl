@@ -380,9 +380,10 @@ function generate_binding
     >    ffibuilder.compile (verbose=True)
     >    ffidestructorbuilder.compile (verbose=True)
 
-    output "bindings/python_cffi/$(project.name:c)_cffi/_cdefs.inc"
+    directory.create ("api/")
+    output "api/python_cffi.slurp"
     >$(project.GENERATED_WARNING_HEADER:)
-    ># This file is intended to be included while generating cffi binding for top level library
+    ># Python cffi compatible file slurp
     >
     >$(project.name:c)_cdefs = list ()
     ># Custom setup for $(project.name)
@@ -399,11 +400,9 @@ function generate_binding
     >$(file.slurp('src/python_cffi.inc')?'')
     >
     >#Import definitions from dependent projects
-    for project.use
-        if file.exists ('../$(use.project:c)/bindings/python_cffi/$(use.project:c)_cffi/_cdefs.inc')
-            >$(file.slurp('../$(use.project:c)/bindings/python_cffi/$(use.project:c)_cffi/_cdefs.inc'))
-            >$(project.name:c)_cdefs.extend ($(use.project)_cdefs)
-        endif
+    for project.use where defined (use.python_cffi_slurp)
+        >$(file.slurp(use.python_cffi_slurp))
+        >$(project.name:c)_cdefs.extend ($(use.project)_cdefs)
     endfor
     >
     >$(project.name:c)_cdefs.append ('''

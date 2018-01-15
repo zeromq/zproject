@@ -1648,11 +1648,18 @@ systemdsystemunit_DATA += src/$(bin.name)@.timer
 endif #WITH_SYSTEMD_UNITS
 .   endif
 .endfor
+# copy&paste from zproject_redhat.gsl
+.for project.target where ( target.name = "*" | target.name = "python_cffi" > 0 )
+.   python_cffi = 1
+.endfor
 .for class where defined (class.api)
 .   if first ()
 # Install api files into /usr/local/share/zproject
 apidir = @datadir@/zproject/$(project.name)
 dist_api_DATA = \\
+.       if python_cffi ?= 1
+    api/python_cffi.slurp \\
+.       endif
 .   endif
 .# Install files that the api includes
 .   for class.include
