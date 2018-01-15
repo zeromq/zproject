@@ -23,6 +23,10 @@ for project.class
             class.api = "api/$(class.name:c).api"
         elsif file.exists ("api/$(class.name:c).xml")
             class.api = "api/$(class.name:c).xml"
+        elsif file.exists ("/usr/local/share/zproject/$(class.name:c).api")
+            class.api = "/usr/local/share/zproject/$(class.name:c).api"
+        elsif file.exists ("/usr/share/zproject/$(class.name:c).api")
+            class.api = "/usr/share/zproject/$(class.name:c).api"
         endif
     endif
 endfor
