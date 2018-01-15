@@ -1648,7 +1648,7 @@ systemdsystemunit_DATA += src/$(bin.name)@.timer
 endif #WITH_SYSTEMD_UNITS
 .   endif
 .endfor
-# copy&paste from zproject_redhat.gsl
+.# copy&paste from zproject_redhat.gsl
 .for project.target where ( target.name = "*" | target.name = "python_cffi" > 0 )
 .   python_cffi = 1
 .endfor
