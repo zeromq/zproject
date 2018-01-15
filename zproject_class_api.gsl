@@ -10,6 +10,11 @@
 #   License, v. 2.0. If a copy of the MPL was not distributed with this
 #   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# copy&paste from zproject_redhat.gsl
+for project.target where ( target.name = "*" | target.name = "python_cffi" > 0 )
+   python_cffi = 1
+endfor
+
 # Resolve filename for each class API (undefined if the file is not found)
 for project.class
     class.private ?= "0"
@@ -30,6 +35,19 @@ for project.class
         endif
     endif
 endfor
+
+if python_cffi ?= 1
+# Resolve python_cffi slurps
+    for project.use
+        if file.exists ("../$(use.project:c)/api/python_cffi.slurp")
+            use.python_cffi_slurp = "../$(use.project:c)/api/$(use.project:c).slurp"
+        elsif file.exists ("/usr/local/share/zproject/$(use.project:c)/python_cffi.slurp")
+            use.python_cffi_slurp = "/usr/local/share/zproject/$(use.project:c)/python_cffi.slurp"
+        elsif file.exists ("/usr/share/zproject/$(use.project:c)/python_cffi.slurp")
+            use.python_cffi_slurp = "/usr/share/zproject/$(use.project:c)/python_cffi.slurp"
+        endif
+    endfor
+endif
 
 # Replace each class item with the class model from its API file (if any)
 for project.class where defined (class.api)
