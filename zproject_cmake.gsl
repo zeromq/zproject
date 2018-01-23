@@ -277,8 +277,8 @@ endif()
 IF (NOT MSVC)
   # avoid building everything twice for shared + static
   # only on *nix, as Windows needs different preprocessor defines in static builds
-  add_library (objects OBJECT ${$(project.linkname)_sources})
-  set_property(TARGET objects PROPERTY POSITION_INDEPENDENT_CODE ON)
+  add_library ($(project.linkname)_objects OBJECT ${$(project.linkname)_sources})
+  set_property(TARGET $(project.linkname)_objects PROPERTY POSITION_INDEPENDENT_CODE ON)
 ENDIF (NOT MSVC)
 
 # shared
@@ -286,7 +286,7 @@ if ($(PROJECT.PREFIX)_BUILD_SHARED)
   IF (MSVC)
     add_library($(project.linkname) SHARED ${$(project.linkname)_sources})
   ELSE (MSVC)
-    add_library($(project.linkname) SHARED $<TARGET_OBJECTS:objects>)
+    add_library($(project.linkname) SHARED $<TARGET_OBJECTS:$(project.linkname)_objects>)
   ENDIF (MSVC)
 
   set_target_properties ($(project.linkname) PROPERTIES
