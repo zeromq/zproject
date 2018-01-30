@@ -397,7 +397,16 @@ pipeline {
                         retry($(project.jenkins_use_test_retry)) {
 .       endif
                         timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                         script {
+                          try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make check'
+                          }
+                          catch (Exception e) {
+                            dir("..") {
+                                archiveArtifacts artifacts: "**/test-suite.log", allowEmpty: true
+                            }
+                          }
+                         }
                         }
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                         }
@@ -432,7 +441,16 @@ pipeline {
                         retry($(project.jenkins_use_test_retry)) {
 .       endif
                         timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                         script {
+                          try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make check'
+                          }
+                          catch (Exception e) {
+                            dir("..") {
+                                archiveArtifacts artifacts: "**/test-suite.log", allowEmpty: true
+                            }
+                          }
+                         }
                         }
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                         }
@@ -467,7 +485,16 @@ pipeline {
                         retry($(project.jenkins_use_test_retry)) {
 .       endif
                         timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                         script {
+                          try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
+                          }
+                          catch (Exception e) {
+                            dir("..") {
+                                archiveArtifacts artifacts: "**/test-suite.log", allowEmpty: true
+                            }
+                          }
+                         }
                         }
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                         }
@@ -502,7 +529,16 @@ pipeline {
                         retry($(project.jenkins_use_test_retry)) {
 .       endif
                         timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                         script {
+                          try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
+                          }
+                          catch (Exception e) {
+                            dir("..") {
+                                archiveArtifacts artifacts: "**/test-suite.log", allowEmpty: true
+                            }
+                          }
+                         }
                         }
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                         }
@@ -537,7 +573,16 @@ pipeline {
                         retry($(project.jenkins_use_test_retry)) {
 .       endif
                         timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                         script {
+                          try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make distcheck'
+                          }
+                          catch (Exception e) {
+                            dir("..") {
+                                archiveArtifacts artifacts: "**/test-suite.log", allowEmpty: true
+                            }
+                          }
+                         }
                         }
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                         }
@@ -572,7 +617,16 @@ pipeline {
                         retry($(project.jenkins_use_test_retry)) {
 .       endif
                         timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                         script {
+                          try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make distcheck'
+                          }
+                          catch (Exception e) {
+                            dir("..") {
+                                archiveArtifacts artifacts: "**/test-suite.log", allowEmpty: true
+                            }
+                          }
+                         }
                         }
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                         }
