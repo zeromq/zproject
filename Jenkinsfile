@@ -200,17 +200,19 @@ pipeline {
                       dir("tmp/test-check-withDRAFT") {
                         deleteDir()
                         unstash 'built-draft'
-                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
-                         script {
-                          try {
+                        script {
+                         def RETRY_NUMBER = 0
+                          timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                           try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" check'
-                          }
-                          catch (Exception e) {
-                            sh 'D="`pwd`"; B="`basename "$D"`" ; tar czf test-suite_"$B".tgz `find . -name '*.trs'` `find . -name '*.log'`'
-                            archiveArtifacts artifacts: "**/test-suite*.tgz", allowEmpty: true
+                           }
+                           catch (Exception e) {
+                            currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
+                            sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
                             throw e
+                           }
                           }
-                         }
                         }
                         sh 'echo "Are GitIgnores good after make check with drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
                         script {
@@ -227,17 +229,19 @@ pipeline {
                       dir("tmp/test-check-withoutDRAFT") {
                         deleteDir()
                         unstash 'built-nondraft'
-                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
-                         script {
-                          try {
+                        script {
+                         def RETRY_NUMBER = 0
+                          timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                           try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" check'
-                          }
-                          catch (Exception e) {
-                            sh 'D="`pwd`"; B="`basename "$D"`" ; tar czf test-suite_"$B".tgz `find . -name '*.trs'` `find . -name '*.log'`'
-                            archiveArtifacts artifacts: "**/test-suite*.tgz", allowEmpty: true
+                           }
+                           catch (Exception e) {
+                            currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
+                            sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
                             throw e
+                           }
                           }
-                         }
                         }
                         sh 'echo "Are GitIgnores good after make check without drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
                         script {
@@ -254,17 +258,19 @@ pipeline {
                       dir("tmp/test-memcheck-withDRAFT") {
                         deleteDir()
                         unstash 'built-draft'
-                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
-                         script {
-                          try {
+                        script {
+                         def RETRY_NUMBER = 0
+                          timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                           try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose'
-                          }
-                          catch (Exception e) {
-                            sh 'D="`pwd`"; B="`basename "$D"`" ; tar czf test-suite_"$B".tgz `find . -name '*.trs'` `find . -name '*.log'`'
-                            archiveArtifacts artifacts: "**/test-suite*.tgz", allowEmpty: true
+                           }
+                           catch (Exception e) {
+                            currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
+                            sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
                             throw e
+                           }
                           }
-                         }
                         }
                         sh 'echo "Are GitIgnores good after make memcheck with drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
                         script {
@@ -281,17 +287,19 @@ pipeline {
                       dir("tmp/test-memcheck-withoutDRAFT") {
                         deleteDir()
                         unstash 'built-nondraft'
-                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
-                         script {
-                          try {
+                        script {
+                         def RETRY_NUMBER = 0
+                          timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                           try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose'
-                          }
-                          catch (Exception e) {
-                            sh 'D="`pwd`"; B="`basename "$D"`" ; tar czf test-suite_"$B".tgz `find . -name '*.trs'` `find . -name '*.log'`'
-                            archiveArtifacts artifacts: "**/test-suite*.tgz", allowEmpty: true
+                           }
+                           catch (Exception e) {
+                            currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
+                            sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
                             throw e
+                           }
                           }
-                         }
                         }
                         sh 'echo "Are GitIgnores good after make memcheck without drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
                         script {
@@ -308,17 +316,19 @@ pipeline {
                       dir("tmp/test-distcheck-withDRAFT") {
                         deleteDir()
                         unstash 'built-draft'
-                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
-                         script {
-                          try {
+                        script {
+                         def RETRY_NUMBER = 0
+                          timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                           try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=yes --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" distcheck'
-                          }
-                          catch (Exception e) {
-                            sh 'D="`pwd`"; B="`basename "$D"`" ; tar czf test-suite_"$B".tgz `find . -name '*.trs'` `find . -name '*.log'`'
-                            archiveArtifacts artifacts: "**/test-suite*.tgz", allowEmpty: true
+                           }
+                           catch (Exception e) {
+                            currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
+                            sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
                             throw e
+                           }
                           }
-                         }
                         }
                         sh 'echo "Are GitIgnores good after make distcheck with drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
                         script {
@@ -335,17 +345,19 @@ pipeline {
                       dir("tmp/test-distcheck-withoutDRAFT") {
                         deleteDir()
                         unstash 'built-nondraft'
-                        timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
-                         script {
-                          try {
+                        script {
+                         def RETRY_NUMBER = 0
+                          timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                           try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" distcheck'
-                          }
-                          catch (Exception e) {
-                            sh 'D="`pwd`"; B="`basename "$D"`" ; tar czf test-suite_"$B".tgz `find . -name '*.trs'` `find . -name '*.log'`'
-                            archiveArtifacts artifacts: "**/test-suite*.tgz", allowEmpty: true
+                           }
+                           catch (Exception e) {
+                            currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
+                            sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
                             throw e
+                           }
                           }
-                         }
                         }
                         sh 'echo "Are GitIgnores good after make distcheck without drafts? (should have no output below)"; git status -s || if [ "${params.REQUIRE_GOOD_GITIGNORE}" = false ]; then echo "WARNING GitIgnore tests found newly changed or untracked files" >&2 ; exit 0 ; else echo "FAILED GitIgnore tests" >&2 ; exit 1; fi'
                         script {
