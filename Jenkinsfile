@@ -186,7 +186,7 @@ pipeline {
                             sh 'rm -f cppcheck.xml'
                             // This make target should produce a cppcheck.xml if tool is available
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make cppcheck'
-                            archiveArtifacts artifacts: '**/cppcheck.xml', allowEmpty: true
+                            archiveArtifacts artifacts: '**/cppcheck.xml', allowEmptyArchive: true
                             sh 'rm -f cppcheck.xml'
                             script {
                                 if ( params.DO_CLEANUP_AFTER_BUILD ) {
@@ -211,7 +211,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -240,7 +240,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -269,7 +269,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -298,7 +298,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -327,7 +327,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -356,7 +356,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
