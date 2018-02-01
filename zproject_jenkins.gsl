@@ -405,18 +405,20 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-check-withDRAFT") {
-.           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
-.           endif
-                        deleteDir()
 .       endif
-                        unstash 'built-draft'
                         script {
                          def RETRY_NUMBER = 0
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                          retry($(project.jenkins_use_test_retry)) {
                           RETRY_NUMBER++
 .       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-draft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" check'
@@ -452,18 +454,20 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-check-withoutDRAFT") {
-.           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
-.           endif
-                        deleteDir()
 .       endif
-                        unstash 'built-nondraft'
                         script {
                          def RETRY_NUMBER = 0
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                          retry($(project.jenkins_use_test_retry)) {
                           RETRY_NUMBER++
 .       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-nondraft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" check'
@@ -499,18 +503,20 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-memcheck-withDRAFT") {
-.           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
-.           endif
-                        deleteDir()
 .       endif
-                        unstash 'built-draft'
                         script {
                          def RETRY_NUMBER = 0
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                          retry($(project.jenkins_use_test_retry)) {
                           RETRY_NUMBER++
 .       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-draft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose'
@@ -546,18 +552,20 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-memcheck-withoutDRAFT") {
-.           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
-.           endif
-                        deleteDir()
 .       endif
-                        unstash 'built-nondraft'
                         script {
                          def RETRY_NUMBER = 0
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                          retry($(project.jenkins_use_test_retry)) {
                           RETRY_NUMBER++
 .       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-nondraft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose'
@@ -593,18 +601,20 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-distcheck-withDRAFT") {
-.           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
-.           endif
-                        deleteDir()
 .       endif
-                        unstash 'built-draft'
                         script {
                          def RETRY_NUMBER = 0
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                          retry($(project.jenkins_use_test_retry)) {
                           RETRY_NUMBER++
 .       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-draft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=yes --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" distcheck'
@@ -640,18 +650,20 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-distcheck-withoutDRAFT") {
-.           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
-.           endif
-                        deleteDir()
 .       endif
-                        unstash 'built-nondraft'
                         script {
                          def RETRY_NUMBER = 0
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                          retry($(project.jenkins_use_test_retry)) {
                           RETRY_NUMBER++
 .       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-nondraft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" distcheck'
