@@ -181,7 +181,7 @@ pipeline {
             name: 'USE_TEST_INSTALL_DESTDIR')
         booleanParam (
 .  if ( !(defined(project.jenkins_test_cppcheck)) | (project.jenkins_test_cppcheck ?= 0) )
-. # cppcheck is an external tool that may be not installed in general case
+. # cppcheck is an external tool that may be not installed in general case, and takes a while to run anyhow
             defaultValue: false,
 .  else
             defaultValue: true,
@@ -365,8 +365,10 @@ pipeline {
 .       endif
                             deleteDir()
                             unstash 'prepped'
-                            sh 'cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>cppcheck.xml'
-                            archiveArtifacts artifacts: '**/cppcheck.xml'
+                            sh 'rm -f cppcheck.xml'
+                            // This make target should produce a cppcheck.xml if tool is available
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make cppcheck'
+                            archiveArtifacts artifacts: '**/cppcheck.xml', allowEmpty: true
                             sh 'rm -f cppcheck.xml'
 .       if !(isSingle_jenkins_agent (project, 0))
                             script {

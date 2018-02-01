@@ -443,6 +443,11 @@ AC_C_BIGENDIAN
 AX_PROJECT_LOCAL_HOOK
 
 .endif
+# See if cppcheck is in PATH; this variable unblocks the "cppcheck" recipe
+# (note that "make cppcheck.xml" can be used - and perhaps fail - regardless)
+AC_CHECK_PROG([WITH_CPPCHECK], [cppcheck], [true], [false])
+AM_CONDITIONAL(WITH_CPPCHECK, $WITH_CPPCHECK)
+
 # Code coverage
 AC_MSG_CHECKING([whether to enable GCov])
 AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
@@ -1839,6 +1844,28 @@ coverage: src/$(project.prefix)_selftest
 \t@echo "call make clean && configure --with-gcov to enable code coverage"
 \t@exit 1
 endif
+
+# Note: analysis is not a target executed by default, so there is no
+# safety-net for the "cppcheck.xml" recipe; there is one for the wrapper.
+# A developer is expected to install tools in build environment, if needed.
+# The results can be used to produce some statistics how project quality
+# changes over many builds (with a relevant Jenkins plugin, for example).
+if WITH_CPPCHECK
+cppcheck: cppcheck.xml
+else
+cppcheck:
+\t@echo "NOT ENABLED: cppcheck static analysis. Please install the toolkit and reconfigure, and/or make cppcheck.xml directly."
+endif
+
+cppcheck.xml:
+\t@echo "Performing cppcheck static analysis..."
+.if project.use_cxx
+\tcppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>"$@"
+.else
+\tcppcheck --enable=all --inconclusive --xml --xml-version=2 . 2>"$@"
+.endif
+\t@echo "The cppcheck static analysis is done"
+
 .insert_snippet ("Makemodule")
 
 $(project.GENERATED_WARNING_HEADER:)

@@ -183,8 +183,10 @@ pipeline {
                         dir("tmp/test-cppcheck") {
                             deleteDir()
                             unstash 'prepped'
-                            sh 'cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>cppcheck.xml'
-                            archiveArtifacts artifacts: '**/cppcheck.xml'
+                            sh 'rm -f cppcheck.xml'
+                            // This make target should produce a cppcheck.xml if tool is available
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make cppcheck'
+                            archiveArtifacts artifacts: '**/cppcheck.xml', allowEmpty: true
                             sh 'rm -f cppcheck.xml'
                             script {
                                 if ( params.DO_CLEANUP_AFTER_BUILD ) {
