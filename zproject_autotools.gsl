@@ -479,6 +479,19 @@ else
     AC_MSG_RESULT([no])
 fi
 
+# See if clang-format is in PATH; the result unblocks the relevant recipes
+WITH_CLANG_FORMAT=""
+AS_IF([test x"$CLANG_FORMAT" = x],
+    [AC_PATH_PROG([CLANG_FORMAT], [clang-format], [])],
+    [AC_CHECK_PROG([WITH_CLANG_FORMAT], [$CLANG_FORMAT], [true], [fail])])
+AS_IF([test x"$CLANG_FORMAT" != x && test x"$WITH_CLANG_FORMAT" = x],
+    [AS_IF([test -x "$CLANG_FORMAT"],
+        [WITH_CLANG_FORMAT=true],
+        [AC_CHECK_PROG([WITH_CLANG_FORMAT], [$CLANG_FORMAT], [true], [false])])])
+AS_IF([test "$WITH_CLANG_FORMAT" = fail],
+    [AC_MSG_ERROR([Caller explicitly referenced CLANG_FORMAT=$CLANG_FORMAT which was not found])])
+AM_CONDITIONAL([WITH_CLANG_FORMAT], [$WITH_CLANG_FORMAT])
+
 # Set pkgconfigdir
 AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
     [Path to the pkgconfig directory [[LIBDIR/pkgconfig]]]),
@@ -1262,6 +1275,11 @@ echo "    - 'make memcheck'      run the project's selftest with valgrind to"
 echo "                           check for memory leaks"
 echo "    - 'make coverage'      generate project's selftest coverage report"
 echo "                           expects --with-gcov option for configure"
+echo "    - 'make clang-format-check'   check if project sources conform"
+echo "                           to style requirements"
+echo "    - 'make clang-format'         modify project sources to conform"
+echo "                           to style requirements"
+echo "    - 'make clang-format-diff'    modify as above and print 'git diff'"
 echo
 ])
 
@@ -1837,6 +1855,57 @@ coverage: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\
 else
 coverage: src/$(project.prefix)_selftest
 \t@echo "call make clean && configure --with-gcov to enable code coverage"
+\t@exit 1
+endif
+
+if WITH_CLANG_FORMAT
+ALL_SOURCE_FILES = \$(wildcard \\
+\t\$(top_srcdir)/src/*.c \\
+\t\$(top_srcdir)/src/*.cc \\
+\t\$(top_srcdir)/src/*.cpp \\
+\t\$(top_srcdir)/src/*.h \\
+\t\$(top_srcdir)/src/*.hpp \\
+\t\$(top_srcdir)/tests/*.c \\
+\t\$(top_srcdir)/tests/*.cc \\
+\t\$(top_srcdir)/tests/*.cpp \\
+\t\$(top_srcdir)/tests/*.h \\
+\t\$(top_srcdir)/tests/*.hpp \\
+\t\$(top_srcdir)/perf/*.c \\
+\t\$(top_srcdir)/perf/*.cc \\
+\t\$(top_srcdir)/perf/*.cpp \\
+\t\$(top_srcdir)/perf/*.h \\
+\t\$(top_srcdir)/perf/*.hpp \\
+\t\$(top_srcdir)/tools/*.c \\
+\t\$(top_srcdir)/tools/*.cc \\
+\t\$(top_srcdir)/tools/*.cpp \\
+\t\$(top_srcdir)/tools/*.h \\
+\t\$(top_srcdir)/tools/*.hpp \\
+\t\$(top_srcdir)/include/*.h \\
+ )
+
+# Check if any sources need to be fixed, report the filenames and an error code
+clang-format-check: \$(ALL_SOURCE_FILES)
+\t@FAILED=0 ; IFS=";" ; IDS="`printf '\\n\\b'`" ; export IFS IDS; \\
+\t for FILE in \$(ALL_SOURCE_FILES) ; do \\
+\t\ttest -s \$\$FILE || continue ; \\
+\t\t\$(CLANG_FORMAT) -style=file -output-replacements-xml "\$\$FILE" | grep "<replacement " >/dev/null && \\
+\t\t{ echo "\$\$FILE is not correctly formatted" >&2 ; FAILED=1; } ; \\
+\t done; \\
+\t if test "\$\$FAILED" != 0 ; then \\
+\t\texit 1 ; \\
+\t fi
+
+# Change source formatting
+clang-format: \$(ALL_SOURCE_FILES)
+\t\$(CLANG_FORMAT) -style=file -i \$(ALL_SOURCE_FILES)
+
+# Change source formatting AND report the diff
+clang-format-diff: clang-format
+\tgit diff \$(ALL_SOURCE_FILES)
+
+else
+clang-format clang-format-check clang-format-diff:
+\t@echo "Install the clang-format program, reconfigure and re-run this request"
 \t@exit 1
 endif
 .insert_snippet ("Makemodule")
