@@ -180,11 +180,12 @@ pipeline {
             description: 'If attempting a "make install" check in this run, what DESTDIR to specify? (absolute path, defaults to "BUILD_DIR/tmp/_inst")',
             name: 'USE_TEST_INSTALL_DESTDIR')
         booleanParam (
-.  if ( !(defined(project.jenkins_test_cppcheck)) | (project.jenkins_test_cppcheck ?= 0) )
-. # cppcheck is an external tool that may be not installed in general case
-            defaultValue: false,
-.  else
+.  if ( !(defined(project.jenkins_test_cppcheck)) | (project.jenkins_test_cppcheck ?= 1) )
+. # if nothing was set, try to do the cppcheck (it should not be fatal if the tool is not there)
             defaultValue: true,
+.  else
+. # cppcheck is an external tool that may be not installed in general case, and takes a while to run - this project's devs want it off by default
+            defaultValue: false,
 .  endif
             description: 'Attempt "cppcheck" analysis before this run? (Note: corresponding tools are required in the build environment)',
             name: 'DO_CPPCHECK')
@@ -364,9 +365,27 @@ pipeline {
                             sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .       endif
                             deleteDir()
-                            unstash 'prepped'
-                            sh 'cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>cppcheck.xml'
-                            archiveArtifacts artifacts: '**/cppcheck.xml'
+                            script {
+                                // We need a configured source codebase to run
+                                // "make", any variant will do. Save some time
+                                // by using a build tree (if exists), but can
+                                // fall back to running the configure script
+                                // explicitly.
+                                if ( params.DO_BUILD_WITH_DRAFT_API ) {
+                                    unstash 'built-draft'
+                                } else if ( params.DO_BUILD_WITHOUT_DRAFT_API ) {
+                                    unstash 'built-nondraft'
+                                } else if ( params.DO_BUILD_DOCS || params.DO_DIST_DOCS ) {
+                                    unstash 'built-docs'
+                                } else {
+                                    unstash 'prepped'
+                                    sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=no --with-docs=no'
+                                }
+                            }
+                            sh 'rm -f cppcheck.xml'
+                            // This make target should produce a cppcheck.xml if tool is available
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make cppcheck'
+                            archiveArtifacts artifacts: '**/cppcheck.xml', allowEmptyArchive: true
                             sh 'rm -f cppcheck.xml'
 .       if !(isSingle_jenkins_agent (project, 0))
                             script {
@@ -387,18 +406,20 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-check-withDRAFT") {
-.           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
-.           endif
-                        deleteDir()
 .       endif
-                        unstash 'built-draft'
                         script {
                          def RETRY_NUMBER = 0
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                          retry($(project.jenkins_use_test_retry)) {
                           RETRY_NUMBER++
 .       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-draft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" check'
@@ -406,7 +427,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\\$D"`" ; [ "\${RETRY_NUMBER}" -gt 0 ] && T="_try-\${RETRY_NUMBER}" || T="" ; tar czf "test-suite_\${BUILD_TAG}_\\$\{B}\\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -434,18 +455,20 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-check-withoutDRAFT") {
-.           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
-.           endif
-                        deleteDir()
 .       endif
-                        unstash 'built-nondraft'
                         script {
                          def RETRY_NUMBER = 0
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                          retry($(project.jenkins_use_test_retry)) {
                           RETRY_NUMBER++
 .       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-nondraft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" check'
@@ -453,7 +476,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\\$D"`" ; [ "\${RETRY_NUMBER}" -gt 0 ] && T="_try-\${RETRY_NUMBER}" || T="" ; tar czf "test-suite_\${BUILD_TAG}_\\$\{B}\\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -481,18 +504,20 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-memcheck-withDRAFT") {
-.           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
-.           endif
-                        deleteDir()
 .       endif
-                        unstash 'built-draft'
                         script {
                          def RETRY_NUMBER = 0
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                          retry($(project.jenkins_use_test_retry)) {
                           RETRY_NUMBER++
 .       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-draft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose'
@@ -500,7 +525,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\\$D"`" ; [ "\${RETRY_NUMBER}" -gt 0 ] && T="_try-\${RETRY_NUMBER}" || T="" ; tar czf "test-suite_\${BUILD_TAG}_\\$\{B}\\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -528,18 +553,20 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-memcheck-withoutDRAFT") {
-.           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
-.           endif
-                        deleteDir()
 .       endif
-                        unstash 'built-nondraft'
                         script {
                          def RETRY_NUMBER = 0
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                          retry($(project.jenkins_use_test_retry)) {
                           RETRY_NUMBER++
 .       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-nondraft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose'
@@ -547,7 +574,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\\$D"`" ; [ "\${RETRY_NUMBER}" -gt 0 ] && T="_try-\${RETRY_NUMBER}" || T="" ; tar czf "test-suite_\${BUILD_TAG}_\\$\{B}\\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -575,18 +602,20 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-distcheck-withDRAFT") {
-.           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
-.           endif
-                        deleteDir()
 .       endif
-                        unstash 'built-draft'
                         script {
                          def RETRY_NUMBER = 0
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                          retry($(project.jenkins_use_test_retry)) {
                           RETRY_NUMBER++
 .       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-draft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=yes --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" distcheck'
@@ -594,7 +623,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\\$D"`" ; [ "\${RETRY_NUMBER}" -gt 0 ] && T="_try-\${RETRY_NUMBER}" || T="" ; tar czf "test-suite_\${BUILD_TAG}_\\$\{B}\\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -622,18 +651,20 @@ pipeline {
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-distcheck-withoutDRAFT") {
-.           if project.jenkins_use_deleteDir_rm_first ?= 1
-                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
-.           endif
-                        deleteDir()
 .       endif
-                        unstash 'built-nondraft'
                         script {
                          def RETRY_NUMBER = 0
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                          retry($(project.jenkins_use_test_retry)) {
                           RETRY_NUMBER++
 .       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-nondraft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" distcheck'
@@ -641,7 +672,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\\$D"`" ; [ "\${RETRY_NUMBER}" -gt 0 ] && T="_try-\${RETRY_NUMBER}" || T="" ; tar czf "test-suite_\${BUILD_TAG}_\\$\{B}\\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }

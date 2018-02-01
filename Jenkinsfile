@@ -182,9 +182,27 @@ pipeline {
                     steps {
                         dir("tmp/test-cppcheck") {
                             deleteDir()
-                            unstash 'prepped'
-                            sh 'cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>cppcheck.xml'
-                            archiveArtifacts artifacts: '**/cppcheck.xml'
+                            script {
+                                // We need a configured source codebase to run
+                                // "make", any variant will do. Save some time
+                                // by using a build tree (if exists), but can
+                                // fall back to running the configure script
+                                // explicitly.
+                                if ( params.DO_BUILD_WITH_DRAFT_API ) {
+                                    unstash 'built-draft'
+                                } else if ( params.DO_BUILD_WITHOUT_DRAFT_API ) {
+                                    unstash 'built-nondraft'
+                                } else if ( params.DO_BUILD_DOCS || params.DO_DIST_DOCS ) {
+                                    unstash 'built-docs'
+                                } else {
+                                    unstash 'prepped'
+                                    sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=no --with-docs=no'
+                                }
+                            }
+                            sh 'rm -f cppcheck.xml'
+                            // This make target should produce a cppcheck.xml if tool is available
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make cppcheck'
+                            archiveArtifacts artifacts: '**/cppcheck.xml', allowEmptyArchive: true
                             sh 'rm -f cppcheck.xml'
                             script {
                                 if ( params.DO_CLEANUP_AFTER_BUILD ) {
@@ -198,10 +216,10 @@ pipeline {
                     when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_CHECK ) } }
                     steps {
                       dir("tmp/test-check-withDRAFT") {
-                        deleteDir()
-                        unstash 'built-draft'
                         script {
                          def RETRY_NUMBER = 0
+                          deleteDir()
+                          unstash 'built-draft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" check'
@@ -209,7 +227,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -227,10 +245,10 @@ pipeline {
                     when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_CHECK ) } }
                     steps {
                       dir("tmp/test-check-withoutDRAFT") {
-                        deleteDir()
-                        unstash 'built-nondraft'
                         script {
                          def RETRY_NUMBER = 0
+                          deleteDir()
+                          unstash 'built-nondraft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" check'
@@ -238,7 +256,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -256,10 +274,10 @@ pipeline {
                     when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
                     steps {
                       dir("tmp/test-memcheck-withDRAFT") {
-                        deleteDir()
-                        unstash 'built-draft'
                         script {
                          def RETRY_NUMBER = 0
+                          deleteDir()
+                          unstash 'built-draft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose'
@@ -267,7 +285,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -285,10 +303,10 @@ pipeline {
                     when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
                     steps {
                       dir("tmp/test-memcheck-withoutDRAFT") {
-                        deleteDir()
-                        unstash 'built-nondraft'
                         script {
                          def RETRY_NUMBER = 0
+                          deleteDir()
+                          unstash 'built-nondraft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose'
@@ -296,7 +314,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -314,10 +332,10 @@ pipeline {
                     when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_DISTCHECK ) } }
                     steps {
                       dir("tmp/test-distcheck-withDRAFT") {
-                        deleteDir()
-                        unstash 'built-draft'
                         script {
                          def RETRY_NUMBER = 0
+                          deleteDir()
+                          unstash 'built-draft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=yes --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" distcheck'
@@ -325,7 +343,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
@@ -343,10 +361,10 @@ pipeline {
                     when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_DISTCHECK ) } }
                     steps {
                       dir("tmp/test-distcheck-withoutDRAFT") {
-                        deleteDir()
-                        unstash 'built-nondraft'
                         script {
                          def RETRY_NUMBER = 0
+                          deleteDir()
+                          unstash 'built-nondraft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" distcheck'
@@ -354,7 +372,7 @@ pipeline {
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
                             sh """D="`pwd`"; B="`basename "\$D"`" ; [ "${RETRY_NUMBER}" -gt 0 ] && T="_try-${RETRY_NUMBER}" || T="" ; tar czf "test-suite_${BUILD_TAG}_\${B}\${T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
-                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmpty: true
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
                             throw e
                            }
                           }
