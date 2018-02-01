@@ -364,7 +364,23 @@ pipeline {
                             sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
 .       endif
                             deleteDir()
-                            unstash 'prepped'
+                            script {
+                                // We need a configured source codebase to run
+                                // "make", any variant will do. Save some time
+                                // by using a build tree (if exists), but can
+                                // fall back to running the configure script
+                                // explicitly.
+                                if ( params.DO_BUILD_WITH_DRAFT_API ) {
+                                    unstash 'built-draft'
+                                } else if ( params.DO_BUILD_WITHOUT_DRAFT_API ) {
+                                    unstash 'built-nondraft'
+                                } else if ( params.DO_BUILD_DOCS || params.DO_DIST_DOCS ) {
+                                    unstash 'built-docs'
+                                } else {
+                                    unstash 'prepped'
+                                    sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=no --with-docs=no'
+                                }
+                            }
                             sh 'rm -f cppcheck.xml'
                             // This make target should produce a cppcheck.xml if tool is available
                             sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make cppcheck'
