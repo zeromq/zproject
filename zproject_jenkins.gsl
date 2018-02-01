@@ -180,11 +180,12 @@ pipeline {
             description: 'If attempting a "make install" check in this run, what DESTDIR to specify? (absolute path, defaults to "BUILD_DIR/tmp/_inst")',
             name: 'USE_TEST_INSTALL_DESTDIR')
         booleanParam (
-.  if ( !(defined(project.jenkins_test_cppcheck)) | (project.jenkins_test_cppcheck ?= 0) )
-. # cppcheck is an external tool that may be not installed in general case, and takes a while to run anyhow
-            defaultValue: false,
-.  else
+.  if ( !(defined(project.jenkins_test_cppcheck)) | (project.jenkins_test_cppcheck ?= 1) )
+. # if nothing was set, try to do the cppcheck (it should not be fatal if the tool is not there)
             defaultValue: true,
+.  else
+. # cppcheck is an external tool that may be not installed in general case, and takes a while to run - this project's devs want it off by default
+            defaultValue: false,
 .  endif
             description: 'Attempt "cppcheck" analysis before this run? (Note: corresponding tools are required in the build environment)',
             name: 'DO_CPPCHECK')

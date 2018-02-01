@@ -403,9 +403,11 @@ zproject's `project.xml` contains an extensive description of the available conf
          path), or BUILD_DIR/tmp/_inst if the option is unspecified/empty.
 
          The test_cppcheck is different, as it calls the "cppcheck" tool
-         which may be not installed on a particular deployment, so by
-         default this option is disabled if not set explicitly. Same idea
-         goes for build_docs as it requires asciidoc and xmlto toolkits.
+         which may be not installed on a particular Jenkins deployment.
+         The `make cppcheck` recipe is safe to call in either case, so by
+         default this option is enabled if not set explicitly. Same idea
+         goes for build_docs as it requires asciidoc and xmlto toolkits,
+         except it is off by default to avoid churning CPUs with no tools.
          A further dist_docs enables preparation of a "dist" tarball from
          the workspace configured with docs, so you can forward it to the
          publishing helper job and avoid rebuilding manpages for packaging.
@@ -1381,4 +1383,4 @@ Before opening a pull request read our [contribution guidelines](https://github.
 
 ### This Document
 
-_This documentation was generated from zproject/README.txt using [Gitdown](https://github.com/zeromq/gitdown)_
+_This documentation was generated from Zproject/README.txt using [Gitdown](https://github.com/zeromq/gitdown)_
