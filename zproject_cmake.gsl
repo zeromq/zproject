@@ -528,6 +528,8 @@ add_custom_command(
     TARGET  distclean
 )
 
+include(ClangFormat)
+
 ########################################################################
 # summary
 ########################################################################
@@ -808,10 +810,15 @@ CONFIG_OPTS+=("$(add_cfgopt)")
 .endif
 CCACHE_BASEDIR=${PWD}
 export CCACHE_BASEDIR
-PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" .
-$CI_TIME make all VERBOSE=1 -j4
-$CI_TIME ctest -V
-$CI_TIME make install
+if [ "$DO_CLANG_FORMAT_CHECK" -eq "1" ] ; then
+    PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" . \\
+    && make clang-format-check || { make clang-format-diff && exit 1 ; }
+else
+    PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" .
+    $CI_TIME make all VERBOSE=1 -j4
+    $CI_TIME ctest -V
+    $CI_TIME make install
+fi
 [ -z "$CI_TIME" ] || echo "`date`: Builds completed without fatal errors!"
 
 echo "=== Are GitIgnores good after making the project '$BUILD_TYPE'? (should have no output below)"
@@ -819,4 +826,67 @@ git status -s || true
 echo "==="
 .close
 .chmod_x ("builds/cmake/ci_build.sh")
+.directory.create ('builds/cmake/Modules')
+.output "builds/cmake/Modules/ClangFormat.cmake"
+# additional target to perform clang-format run, requires clang-format
+
+# get all project files
+file(GLOB_RECURSE ALL_SOURCE_FILES 
+     RELATIVE ${CMAKE_CURRENT_BINARY_DIR} 
+     ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/*.h ${CMAKE_SOURCE_DIR}/src/*.hpp
+     ${CMAKE_SOURCE_DIR}/tests/*.cpp ${CMAKE_SOURCE_DIR}/tests/*.h ${CMAKE_SOURCE_DIR}/tests/*.hpp
+     ${CMAKE_SOURCE_DIR}/perf/*.cpp ${CMAKE_SOURCE_DIR}/perf/*.h ${CMAKE_SOURCE_DIR}/perf/*.hpp
+     ${CMAKE_SOURCE_DIR}/tools/*.cpp ${CMAKE_SOURCE_DIR}/tools/*.h ${CMAKE_SOURCE_DIR}/tools/*.hpp
+     ${CMAKE_SOURCE_DIR}/include/*.h
+    )
+
+if("${CLANG_FORMAT}" STREQUAL "")
+  set(CLANG_FORMAT "clang-format")
+endif()
+
+add_custom_target(
+        clang-format
+        COMMAND ${CLANG_FORMAT} -style=file -i ${ALL_SOURCE_FILES}
+)
+
+function(JOIN VALUES GLUE OUTPUT)
+  string (REPLACE ";" "${GLUE}" _TMP_STR "${VALUES}")
+  set (${OUTPUT} "${_TMP_STR}" PARENT_SCOPE)
+endfunction()
+
+configure_file(builds/cmake/clang-format-check.sh.in clang-format-check.sh @ONLY)
+
+add_custom_target(
+        clang-format-check
+        COMMAND chmod +x clang-format-check.sh
+        COMMAND ./clang-format-check.sh
+        COMMENT "Checking correct formatting according to .clang-format file using ${CLANG_FORMAT}"
+)
+
+add_custom_target(
+        clang-format-diff
+        COMMAND ${CLANG_FORMAT} -style=file -i ${ALL_SOURCE_FILES}
+        COMMAND git diff ${ALL_SOURCE_FILES}
+        COMMENT "Formatting with clang-format (using ${CLANG_FORMAT}) and showing differences with latest commit"
+)
+.close
+.output "builds/cmake/clang-format-check.sh.in"
+#!/bin/sh
+
+# Use clang-format tool to verify this codebase conforms to our style standards
+
+FAILED=0
+IFS=";"
+FILES="@ALL_SOURCE_FILES@"
+IDS=\$\(echo -en "\\n\\b")
+for FILE in $FILES
+do
+    @CLANG_FORMAT@ -style=file -output-replacements-xml "$FILE" | grep "<replacement " >/dev/null && \\
+    {
+      echo "$FILE is not correctly formatted" >&2
+      FAILED=1
+    }
+done
+if [ "$FAILED" -eq "1" ] ; then exit 1 ; fi
+.close
 .endmacro
