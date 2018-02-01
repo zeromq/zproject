@@ -693,6 +693,10 @@ CMAKE_OPTS+=("-DCMAKE_PREFIX_PATH:PATH=${BUILD_PREFIX}")
 CMAKE_OPTS+=("-DCMAKE_LIBRARY_PATH:PATH=${BUILD_PREFIX}/lib")
 CMAKE_OPTS+=("-DCMAKE_INCLUDE_PATH:PATH=${BUILD_PREFIX}/include")
 
+if [ "$CLANG_FORMAT" != "" ] ; then
+    CMAKE_OPTS+=("-DCLANG_FORMAT=${CLANG_FORMAT}")
+fi
+
 # Clone and build dependencies
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
 .for use where defined (use.tarball)
