@@ -1383,4 +1383,4 @@ Before opening a pull request read our [contribution guidelines](https://github.
 
 ### This Document
 
-_This documentation was generated from Zproject/README.txt using [Gitdown](https://github.com/zeromq/gitdown)_
+_This documentation was generated from zproject/README.txt using [Gitdown](https://github.com/zeromq/gitdown)_
