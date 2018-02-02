@@ -135,6 +135,15 @@ matrix:
         sources: *pkg_src_zeromq_ubuntu14
         packages:
         - *pkg_deps_common
+  - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1 CLANG_FORMAT=clang-format-5.0
+    os: linux
+    dist: trusty
+    addons:
+      apt:
+        sources:
+        - llvm-toolchain-trusty-5.0
+        packages:
+        - clang-5.0
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "android" ] ; then brew install binutils ; fi
