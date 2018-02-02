@@ -118,16 +118,16 @@ $(project.GENERATED_WARNING_HEADER:)
 //  Opaque class structures to allow forward references
 //  These classes are stable or legacy and built in all releases
 .for project.class where scope = "public" & !draft
-typedef struct _$(class.c_name)_t $(class.c_name)_t;
-#define $(CLASS.C_NAME)_T_DEFINED
+typedef struct _$(class.c_name:c)_t $(class.c_name:c)_t;
+#define $(CLASS.C_NAME:c)_T_DEFINED
 .endfor
 .for project.class where scope = "public" & draft
 .   if first ()
 //  Draft classes are by default not built in stable releases
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
-typedef struct _$(class.c_name)_t $(class.c_name)_t;
-#define $(CLASS.C_NAME)_T_DEFINED
+typedef struct _$(class.c_name:c)_t $(class.c_name:c)_t;
+#define $(CLASS.C_NAME:c)_T_DEFINED
 .   if last ()
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
@@ -434,9 +434,9 @@ $(project.GENERATED_WARNING_HEADER:)
 
 //  Opaque class structures to allow forward references
 .for class where scope = "private"
-#ifndef $(CLASS.C_NAME)_T_DEFINED
-typedef struct _$(class.c_name)_t $(class.c_name)_t;
-#define $(CLASS.C_NAME)_T_DEFINED
+#ifndef $(CLASS.C_NAME:c)_T_DEFINED
+typedef struct _$(class.c_name:c)_t $(class.c_name:c)_t;
+#define $(CLASS.C_NAME:c)_T_DEFINED
 #endif
 .endfor
 
