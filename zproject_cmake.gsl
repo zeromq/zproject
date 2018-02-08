@@ -325,7 +325,7 @@ if ($(PROJECT.PREFIX)_BUILD_STATIC)
   IF (MSVC)
     add_library($(project.linkname)-static STATIC ${$(project.linkname)_sources})
   ELSE (MSVC)
-    add_library($(project.linkname)-static STATIC $<TARGET_OBJECTS:objects>)
+    add_library($(project.linkname)-static STATIC $<TARGET_OBJECTS:$(project.linkname)_objects>)
   ENDIF (MSVC)
 
   set_target_properties($(project.linkname)-static PROPERTIES
