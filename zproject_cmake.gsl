@@ -33,6 +33,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 # Select flags
 SET(CMAKE_C_FLAGS_RELEASE "-O3")
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
+
 # Will be used to add flags to pkg-config useful when apps want to statically link
 set(pkg_config_libs_private "")
 
@@ -323,7 +325,7 @@ if ($(PROJECT.PREFIX)_BUILD_STATIC)
   IF (MSVC)
     add_library($(project.linkname)-static STATIC ${$(project.linkname)_sources})
   ELSE (MSVC)
-    add_library($(project.linkname)-static STATIC $<TARGET_OBJECTS:objects>)
+    add_library($(project.linkname)-static STATIC $<TARGET_OBJECTS:$(project.linkname)_objects>)
   ENDIF (MSVC)
 
   set_target_properties($(project.linkname)-static PROPERTIES
