@@ -60,10 +60,21 @@ function resolve_classfilename_option()
             project.header_ext = classfilename.header\-extension
         endif
 
-        if classfilename.use\-cxx ?= "true"
-            use_cxx = 1
-        elsif classfilename.use\-cxx ?= "false"
-            use_cxx = 0
+        if defined (classfilename.use\-cxx)
+            if classfilename.use\-cxx ?= "true"
+                use_cxx = 1
+            elsif classfilename.use\-cxx ?= "false"
+                use_cxx = 0
+            endif
+        endif
+
+
+        if defined (classfilename.keep\-tree)
+            if classfilename.keep\-tree ?= "true"
+                project.keep_tree = 1
+            elsif classfilename.keep\-tree ?= "false"
+                project.keep_tree = 0
+            endif
         endif
 
         return
@@ -74,6 +85,7 @@ project.filename_prettyprint = "c"
 project.header_ext = "h"
 project.source_ext = "c"
 project.use_cxx = project_use_cxx ()
+project.keep_tree = 0
 resolve_classfilename_option()
 project.name ?= "myproject"
 project.prefix ?= "$(project.name:c)"
