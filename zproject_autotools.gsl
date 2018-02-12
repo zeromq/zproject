@@ -1412,9 +1412,10 @@ AM_CPPFLAGS = \\
 project_libs =$(libs:)
 
 SUBDIRS = $(count (class)?? "doc"? "")
-SUBDIRS += $("include"? "")
+SUBDIRS += $(count (class)?? "include"? "")
 DIST_SUBDIRS = $(count (class)?? "doc"? "")
-DIST_SUBDIRS += $("include"? "")
+DIST_SUBDIRS += $(count (class)?? "include"? "")
+
 lib_LTLIBRARIES =
 bin_PROGRAMS =
 noinst_PROGRAMS =
