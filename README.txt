@@ -143,10 +143,11 @@ Model is described in `zproject_known_projects.xml` file:
 
 Exemple:
 ```classfilename
-<classfilename use-cxx = "true" pretty-print = "no" source-extension = "cpp" header-extension = "hpp" />
+<classfilename use-cxx = "true" keep-tree = "true" pretty-print = "no" source-extension = "cpp" header-extension = "hpp" />
 ```
 
 * use-cxx will force usage (or not) of c++.
+* keep-tree will keeping the include tree on the install, must be used with a conservative name format (ex: pretty-print = "no"). Currently only supported with autotool.
 * pretty-print define the type of class name format change in order to generate the filename. It use the pretty-print option of gsl (see Substituting Symbols and Expressions on https://github.com/imatix/gsl#expressions for more information).
 * source-extension define the filename extension for source files in this project.
 * header-extension define the filename extension for source files in this project.
