@@ -224,7 +224,7 @@ $(actor.name:c)_start ($(actor.name:c)_t *self)
 }
 
 
-//  Stop this actor. Return a value greater or equal to zero if stopping 
+//  Stop this actor. Return a value greater or equal to zero if stopping
 //  was successful. Otherwise -1.
 
 static int
@@ -415,7 +415,7 @@ $(VISIBILITY) void
 
 //  Structure of our class
 
-struct _$(class.c_name:c)_t {
+struct _$(class.c_name:)_t {
     int filler;     //  Declare class properties here
 };
 
@@ -423,10 +423,10 @@ struct _$(class.c_name:c)_t {
 //  --------------------------------------------------------------------------
 //  Create a new $(class.c_name)
 
-$(class.c_name:c)_t *
-$(class.c_name:c)_new (void)
+$(class.c_name:)_t *
+$(class.c_name:)_new (void)
 {
-    $(class.c_name:c)_t *self = ($(class.c_name:c)_t *) zmalloc (sizeof ($(class.c_name:c)_t));
+    $(class.c_name:)_t *self = ($(class.c_name:)_t *) zmalloc (sizeof ($(class.c_name:)_t));
     assert (self);
     //  Initialize class properties here
     return self;
@@ -437,11 +437,11 @@ $(class.c_name:c)_new (void)
 //  Destroy the $(class.c_name)
 
 void
-$(class.c_name:c)_destroy ($(class.c_name:c)_t **self_p)
+$(class.c_name:)_destroy ($(class.c_name:)_t **self_p)
 {
     assert (self_p);
     if (*self_p) {
-        $(class.c_name:c)_t *self = *self_p;
+        $(class.c_name:)_t *self = *self_p;
         //  Free class properties here
         //  Free object itself
         free (self);
@@ -467,15 +467,15 @@ $(class.c_name:c)_destroy ($(class.c_name:c)_t **self_p)
 #define SELFTEST_DIR_RW "src/selftest-rw"
 
 void
-$(class.c_name:c)_test (bool verbose)
+$(class.c_name:)_test (bool verbose)
 {
     printf (" * $(class.c_name): ");
 
     //  @selftest
     //  Simple create/destroy test
-    $(class.c_name:c)_t *self = $(class.c_name:c)_new ();
+    $(class.c_name:)_t *self = $(class.c_name:)_new ();
     assert (self);
-    $(class.c_name:c)_destroy (&self);
+    $(class.c_name:)_destroy (&self);
     //  @end
     printf ("OK\\n");
 }
