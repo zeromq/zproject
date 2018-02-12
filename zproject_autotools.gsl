@@ -1132,6 +1132,7 @@ AS_IF([test "x$enable_Werror" = "xyes" || test "x$enable_Werror" = "xauto"],
 AC_CONFIG_FILES([Makefile
 .   if count (class) > 0
                  doc/Makefile
+                 include/Makefile
                  src/$(project.libname).pc
 .   endif
 .   for project.main where defined (main->extra)
@@ -1411,7 +1412,10 @@ AM_CPPFLAGS = \\
 project_libs =$(libs:)
 
 SUBDIRS = $(count (class)?? "doc"? "")
+SUBDIRS += $(count (class)?? "include"? "")
 DIST_SUBDIRS = $(count (class)?? "doc"? "")
+DIST_SUBDIRS += $(count (class)?? "include"? "")
+
 lib_LTLIBRARIES =
 bin_PROGRAMS =
 noinst_PROGRAMS =
@@ -1467,6 +1471,49 @@ include \$(srcdir)/src/Makemodule-local.am # Optional project-local hook
 $(project.GENERATED_WARNING_HEADER:)
 .#
 .#  ===========================================================================
+.if count (class)
+.output "include/Makefile.am"
+$(project.GENERATED_WARNING_HEADER:)
+.if project.keep_tree
+nobase_include_HEADERS = \\
+.else
+include_HEADERS = \\
+.endif
+.if file.exists ("include/$(project.prelude)")
+    $(project.prelude) \\
+.endif
+.if count (class, class.c_name = project.name) = 0
+    $(project.header:) \\
+.endif
+.for header where scope = "public"
+    $(name:$(project.filename_prettyprint)).$(project.header_ext) \\
+.endfor
+.for class where scope = "public" & !draft
+    $(name:$(project.filename_prettyprint)).$(project.header_ext) \\
+.endfor
+    $(project.prefix)_library.$(project.header_ext)
+
+.if count (class, scope = "public" & draft)
+if ENABLE_DRAFTS
+.if project.keep_tree
+nobase_include_HEADERS += \\
+.else
+include_HEADERS += \\
+.endif
+.   for class where scope = "public" & draft
+    $(name:$(project.filename_prettyprint)).$(project.header_ext)$(last ()?? "\n"? " \\")
+.   endfor
+endif
+.endif
+
+.insert_snippet ("Makemodule")
+
+$(project.GENERATED_WARNING_HEADER:)
+.close
+.- Here, close "if count(class)"
+.endif
+
+.----------------------------Start src/Makemodule.am----------------------------
 .output "src/Makemodule.am"
 $(project.GENERATED_WARNING_HEADER:)
 .libs = ""
@@ -1488,30 +1535,8 @@ lib_LTLIBRARIES += src/$(project.libname).la
 pkgconfig_DATA = src/$(project.libname).pc
 
 .endif
+.------------Re-open if count (class)------------
 .if count (class)
-include_HEADERS = \\
-.if file.exists ("include/$(project.prelude)")
-    include/$(project.prelude) \\
-.endif
-.if count (class, class.c_name = project.name) = 0
-    include/$(project.header:) \\
-.endif
-.for header where scope = "public"
-    include/$(name:$(project.filename_prettyprint)).$(project.header_ext) \\
-.endfor
-.for class where scope = "public" & !draft
-    include/$(name:$(project.filename_prettyprint)).$(project.header_ext) \\
-.endfor
-    include/$(project.prefix)_library.$(project.header_ext)
-
-.if count (class, scope = "public" & draft)
-if ENABLE_DRAFTS
-include_HEADERS += \\
-.   for class where scope = "public" & draft
-    include/$(name:$(project.filename_prettyprint)).$(project.header_ext)$(last ()?? "\n"? " \\")
-.   endfor
-endif
-.endif
 src_$(project.libname)_la_SOURCES = \\
 .for class where !draft
 .   if file.exists ("src/$(name:$(project.filename_prettyprint)).$(project.source_ext)")
@@ -2123,7 +2148,7 @@ sub generate_manpage {
             $cat_text = "Program for ";
             last;
         }
-        elsif (/MAN3.*$name\\.3/) {
+        elsif (/MAN3.*$outp_basename\\.3/) {
 .if project.use_cxx
             $source = "$rootsrcdir/src/$name.$(project.source_ext)";
 .else
@@ -2259,11 +2284,11 @@ generate_manpage ($name, $outp, $rootsrcdir);
 .   man7 = "$(my.project.name).7"
 .   man3 = ""
 .   for my.project.class where scope = "public"
-.      man3 += " $(name:$(project.filename_prettyprint)).3"
+.      man3 += " $(name:c).3"
 .   endfor
 .   man1 = ""
 .   for my.project.main where scope = "public"
-.      man1 += " $(name:$(project.filename_prettyprint)).1"
+.      man1 += " $(name:c).1"
 .   endfor
 .endfunction
 .macro generate_man_pages
@@ -2333,23 +2358,23 @@ GENERATED_DOCS =
 \t@true
 
 .for project.class where scope = "public"
-GENERATED_DOCS += $(name:$(project.filename_prettyprint)).txt $(name:$(project.filename_prettyprint)).doc
+GENERATED_DOCS += $(name:c).txt $(name:c).doc
 .   if file.exists ("src/$(name:$(project.filename_prettyprint)).$(project.source_ext)")
-$(name:$(project.filename_prettyprint)).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).$(project.source_ext)
+$(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).$(project.source_ext)
 .   else
-$(name:$(project.filename_prettyprint)).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).c
+$(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).c
 .   endif
-\t"$\(srcdir)/mkman" "$(name:$(project.filename_prettyprint))" "$\(builddir)/$(name:$(project.filename_prettyprint)).txt" "$\(srcdir)/.."
+\t"$\(srcdir)/mkman" "$(name:$(project.filename_prettyprint))" "$\(builddir)/$(name:c).txt" "$\(srcdir)/.."
 
 .endfor
 .for project.main where scope = "public"
-GENERATED_DOCS += $(name:$(project.filename_prettyprint)).txt $(name:$(project.filename_prettyprint)).doc
+GENERATED_DOCS += $(name:c).txt $(name:c).doc
 .   if file.exists ("src/$(name:$(project.filename_prettyprint)).$(project.source_ext)")
-$(name:$(project.filename_prettyprint)).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).$(project.source_ext)
+$(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).$(project.source_ext)
 .   else
-$(name:$(project.filename_prettyprint)).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).c
+$(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).c
 .   endif
-\t"$\(srcdir)/mkman" "$(name:$(project.filename_prettyprint))" "$\(builddir)/$(name:$(project.filename_prettyprint)).txt" "$\(srcdir)/.."
+\t"$\(srcdir)/mkman" "$(name:$(project.filename_prettyprint))" "$\(builddir)/$(name:c).txt" "$\(srcdir)/.."
 
 .endfor
 
@@ -2377,12 +2402,12 @@ $(project.GENERATED_WARNING_HEADER:)
 
 # Ignore the source doc texts generated from program sources
 .for project.class where scope = "public"
-$(name:$(project.filename_prettyprint)).txt
-$(name:$(project.filename_prettyprint)).doc
+$(name:c).txt
+$(name:c).doc
 .endfor
 .for project.main where scope = "public"
-$(name:$(project.filename_prettyprint)).txt
-$(name:$(project.filename_prettyprint)).doc
+$(name:c).txt
+$(name:c).doc
 .endfor
 
 # Make sure to track the manually maintained project description
