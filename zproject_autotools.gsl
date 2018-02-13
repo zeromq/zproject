@@ -2370,11 +2370,11 @@ $(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).c
 .for project.main where scope = "public"
 GENERATED_DOCS += $(name).txt $(name).doc
 .   if file.exists ("src/$(name:$(project.filename_prettyprint)).$(project.source_ext)")
-$(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).$(project.source_ext)
+$(name).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).$(project.source_ext)
 .   else
-$(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).c
+$(name).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).c
 .   endif
-\t"$\(srcdir)/mkman" "$(name:$(project.filename_prettyprint))" "$\(builddir)/$(name:c).txt" "$\(srcdir)/.."
+\t"$\(srcdir)/mkman" "$(name:$(project.filename_prettyprint))" "$\(builddir)/$(name).txt" "$\(srcdir)/.."
 
 .endfor
 
