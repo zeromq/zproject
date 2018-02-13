@@ -2288,7 +2288,7 @@ generate_manpage ($name, $outp, $rootsrcdir);
 .   endfor
 .   man1 = ""
 .   for my.project.main where scope = "public"
-.      man1 += " $(name:c).1"
+.      man1 += " $(name).1"
 .   endfor
 .endfunction
 .macro generate_man_pages
@@ -2299,7 +2299,7 @@ $(project.GENERATED_WARNING_HEADER:)
 all-local: doc
 
 # Public programs ("main" tags in project.xml), auto-regenerated:
-MAN1 =$(man1:no)
+MAN1 =$(man1)
 # Public classes ("class" tags in project.xml), auto-regenerated:
 MAN3 =$(man3:no)
 # Project overview, written by a human after initial skeleton:
@@ -2368,7 +2368,7 @@ $(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).c
 
 .endfor
 .for project.main where scope = "public"
-GENERATED_DOCS += $(name:c).txt $(name:c).doc
+GENERATED_DOCS += $(name).txt $(name).doc
 .   if file.exists ("src/$(name:$(project.filename_prettyprint)).$(project.source_ext)")
 $(name:c).txt: $\(top_srcdir)/src/$(name:$(project.filename_prettyprint)).$(project.source_ext)
 .   else
@@ -2406,8 +2406,8 @@ $(name:c).txt
 $(name:c).doc
 .endfor
 .for project.main where scope = "public"
-$(name:c).txt
-$(name:c).doc
+$(name).txt
+$(name).doc
 .endfor
 
 # Make sure to track the manually maintained project description
