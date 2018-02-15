@@ -305,7 +305,7 @@ endfunction
 #   semantic or C-specific attributes of the method itself.
 #
 function resolve_c_class (class)
-    my.class.c_name ?= "$(my.class.name:$(project.filename_prettyprint))"
+    my.class.c_name ?= "$(my.class.name:c)"
     my.class.description ?= "$(string.trim (my.class.?""):left)"
     if !defined (my.class.selftest)
         my.class.selftest ?= 1
@@ -645,7 +645,7 @@ for project.class
     else
         # If there is no API model for this class,
         # all we can do is resolve the name and state
-        class.c_name = "$(class.name:$(project.filename_prettyprint))"
+        class.c_name = "$(class.name:c)"
         set_state (class, "draft")
     endif
 endfor

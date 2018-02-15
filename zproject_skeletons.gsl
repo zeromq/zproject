@@ -355,7 +355,7 @@ extern "C" {
 
 .   if class.c_name = project.name
 //  Include the library file with typdefs, public includes and public constants
-#include "$(class.c_name)_library.$(project.headerext)"
+#include "$(class.name)_library.$(project.headerext)"
 
 .   endif
 //  @interface
