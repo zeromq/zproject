@@ -159,13 +159,13 @@ typedef struct _$(class.c_name:)_t $(class.c_name:)_t;
 #include "$(header.name:$(project.filename_prettyprint)).$(project.header_ext)"
 .endfor
 .for class where scope = "public" & class.c_name <> "$(project.name)" & !draft
-#include "$(class.c_name:$(project.filename_prettyprint)).$(project.header_ext)"
+#include "$(class.name:$(project.filename_prettyprint)).$(project.header_ext)"
 .endfor
 .for class where scope = "public" & class.c_name <> "$(project.name)" & draft
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
-#include "$(class.c_name:$(project.filename_prettyprint)).$(project.header_ext)"
+#include "$(class.name:$(project.filename_prettyprint)).$(project.header_ext)"
 .   if last ()
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
@@ -459,7 +459,7 @@ $(VISIBILITY) $(c_method_signature (method):)\
 .endfor
 
 .for class where scope = "private"
-#include "$(class.c_name:$(project.filename_prettyprint)).$(project.header_ext)"
+#include "$(class.name:$(project.filename_prettyprint)).$(project.header_ext)"
 .endfor
 
 //  *** To avoid double-definitions, only define if building without draft ***
