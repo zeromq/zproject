@@ -174,7 +174,7 @@ typedef struct _$(class.c_name:)_t $(class.c_name:)_t;
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 //  Self test for private classes
 $(PROJECT.PREFIX)_EXPORT void
-    $(project.prefix)_private_selftest (bool verbose);
+    $(project.prefix)_private_selftest (bool verbose, const char *subtest);
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 
 #endif
@@ -208,6 +208,7 @@ $(project.GENERATED_WARNING_HEADER:)
 typedef struct {
     const char *testname;
     void (*test) (bool);
+    const char *subtest;
 } test_item_t;
 
 static test_item_t
@@ -216,22 +217,31 @@ all_tests [] = {
 .   if first ()
 // Tests for stable public classes:
 .   endif
-    { "$(class.c_name)", $(class.c_name)_test },
+    { "$(class.c_name)", $(class.c_name)_test, NULL },
 .endfor
 .for class where draft & selftest & private ?<> 1
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 // Tests for draft public classes:
 .   endif
-    { "$(class.c_name)", $(class.c_name)_test },
+    { "$(class.c_name)", $(class.c_name)_test, NULL },
 .   if last ()
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
 .endfor
+.for class where selftest & private ?= 1
+.   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
-    { "private_classes", $(project.prefix)_private_selftest },
+// Tests for stable/draft private classes:
+// Now built only with --enable-drafts, so even stable builds are hidden behind the flag
+.   endif
+    { "$(class.c_name)", NULL, "$(class.c_name)_test" },
+.   if last ()
+    { "private_classes", NULL, "$ALL" }, // compat option for older projects
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
-    {0, 0}          //  Sentinel
+.   endif
+.endfor
+    {0, 0, 0}          //  Sentinel
 };
 
 //  -------------------------------------------------------------------------
@@ -243,7 +253,7 @@ test_item_t *
 test_available (const char *testname)
 {
     test_item_t *item;
-    for (item = all_tests; item->test; item++) {
+    for (item = all_tests; item->testname; item++) {
         if (streq (testname, item->testname))
             return item;
     }
@@ -259,8 +269,14 @@ test_runall (bool verbose)
 {
     test_item_t *item;
     printf ("Running $(project.name) selftests...\\n");
-    for (item = all_tests; item->test; item++)
-        item->test (verbose);
+    for (item = all_tests; item->test; item++) {
+        if (streq (item->testname, "private_classes"))
+            continue;
+        if (!item->subtest)
+            item->test (verbose);
+        else
+            $(project.prefix)_private_selftest (verbose, item->subtest);
+    }
 
     printf ("Tests passed OK\\n");
 }
@@ -295,7 +311,7 @@ main (int argc, char **argv)
         if (streq (argv [argn], "--list")
         ||  streq (argv [argn], "-l")) {
             puts ("Available tests:");
-.for class where selftest & private ?<> 1
+.for class where selftest
             puts ("    $(class.c_name)\\t\\t- \
 .   if class.draft
 draft\
@@ -342,7 +358,10 @@ stable\
 
     if (test) {
         printf ("Running $(project.name) test '%s'...\\n", test->testname);
-        test->test (verbose);
+        if (!test->subtest)
+            test->test (verbose);
+        else
+            $(project.prefix)_private_selftest (verbose, test->subtest);
     }
     else
         test_runall (verbose);
@@ -382,20 +401,22 @@ $(project.GENERATED_WARNING_HEADER:)
 //
 
 void
-$(project.prefix)_private_selftest (bool verbose)
+$(project.prefix)_private_selftest (bool verbose, const char *subtest)
 {
 .for class where !draft & selftest & private ?= 1
 .   if first ()
 // Tests for stable private classes:
 .   endif
-    $(class.c_name)_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "$(class.c_name)_test"))
+        $(class.c_name)_test (verbose);
 .endfor
 .for class where draft & selftest & private ?= 1
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 // Tests for draft private classes:
 .   endif
-    $(class.c_name)_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "$(class.c_name)_test")
+        $(class.c_name)_test (verbose);
 .   if last ()
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
@@ -500,7 +521,7 @@ $(PROJECT.PREFIX)_PRIVATE $(c_method_signature (method):)\
 
 //  Self test for private classes
 $(PROJECT.PREFIX)_PRIVATE void
-    $(project.prefix)_private_selftest (bool verbose);
+    $(project.prefix)_private_selftest (bool verbose, const char *subtest);
 
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 
