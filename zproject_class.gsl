@@ -206,9 +206,11 @@ $(project.GENERATED_WARNING_HEADER:)
 #include "$(project.prefix)_classes.$(project.header_ext)"
 
 typedef struct {
-    const char *testname;
-    void (*test) (bool);
-    const char *subtest;
+    const char *testname;           // test name, can be called from command line this way
+    void (*test) (bool);            // function to run the test (or NULL for private tests)
+    bool stable;                    // true if class is declared as stable
+    bool pub;                       // true if class is declared as public
+    const char *subtest;            // name of private subtest to run
 } test_item_t;
 
 static test_item_t
@@ -217,14 +219,14 @@ all_tests [] = {
 .   if first ()
 // Tests for stable public classes:
 .   endif
-    { "$(class.c_name)", $(class.c_name)_test, NULL },
+    { "$(class.c_name)", $(class.c_name)_test, true, true, NULL },
 .endfor
 .for class where draft & selftest & private ?<> 1
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 // Tests for draft public classes:
 .   endif
-    { "$(class.c_name)", $(class.c_name)_test, NULL },
+    { "$(class.c_name)", $(class.c_name)_test, false, true, NULL },
 .   if last ()
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
@@ -235,9 +237,13 @@ all_tests [] = {
 // Tests for stable/draft private classes:
 // Now built only with --enable-drafts, so even stable builds are hidden behind the flag
 .   endif
-    { "$(class.c_name)", NULL, "$(class.c_name)_test" },
+.   if class.draft = 1
+    { "$(class.c_name)", NULL, false, false, "$(class.c_name)_test" },
+.   else
+    { "$(class.c_name)", NULL, true, false, "$(class.c_name)_test" },
+.   endif
 .   if last ()
-    { "private_classes", NULL, "$ALL" }, // compat option for older projects
+    { "private_classes", NULL, false, false, "$ALL" }, // compat option for older projects
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
 .endfor
@@ -269,7 +275,7 @@ test_runall (bool verbose)
 {
     test_item_t *item;
     printf ("Running $(project.name) selftests...\\n");
-    for (item = all_tests; item->test; item++) {
+    for (item = all_tests; item->testname; item++) {
         if (streq (item->testname, "private_classes"))
             continue;
         if (!item->subtest)
@@ -279,6 +285,31 @@ test_runall (bool verbose)
     }
 
     printf ("Tests passed OK\\n");
+}
+
+static void
+test_list (void)
+{
+    test_item_t *item;
+    puts ("Available tests:");
+    for (item = all_tests; item->testname; item++)
+        printf ("    %-40s - %s\t%s\\n",
+            item->testname,
+            item->stable ? "stable" : "draft",
+            item->pub ? "public" : "private"
+        );
+}
+
+static void
+test_number (void)
+{
+    int n = 0;
+    test_item_t *item;
+    for (item = all_tests; item->testname; item++) {
+        if (! streq (item->testname, "private_classes"))
+            n++;
+    }
+    printf ("%d\\n", n);
 }
 
 int
@@ -304,23 +335,13 @@ main (int argc, char **argv)
         else
         if (streq (argv [argn], "--number")
         ||  streq (argv [argn], "-n")) {
-            puts ("$(count (project.class))");
+            test_number ();
             return 0;
         }
         else
         if (streq (argv [argn], "--list")
         ||  streq (argv [argn], "-l")) {
-            puts ("Available tests:");
-.for class where selftest
-            puts ("    $(class.c_name)\\t\\t- \
-.   if class.draft
-draft\
-.   else
-stable\
-.   endif
-");
-.endfor
-            puts ("    private_classes\\t- draft");
+            test_list ();
             return 0;
         }
         else
