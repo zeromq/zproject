@@ -300,6 +300,18 @@ test_list (void)
         );
 }
 
+static void
+test_number (void)
+{
+    int n = 0;
+    test_item_t *item;
+    for (item = all_tests; item->testname; item++) {
+        if (! streq (item->testname, "private_classes"))
+            n++;
+    }
+    printf ("%d\\n", n);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -323,7 +335,7 @@ main (int argc, char **argv)
         else
         if (streq (argv [argn], "--number")
         ||  streq (argv [argn], "-n")) {
-            puts ("$(count (project.class))");
+            test_number ();
             return 0;
         }
         else
