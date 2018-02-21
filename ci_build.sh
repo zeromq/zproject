@@ -91,6 +91,6 @@ case "$BUILD_TYPE" in
     ;;
 esac
 
-echo "=== Are GitIgnores good after making zproject '$BUILD_TYPE'? (should have no output below)"
-git status -s || true
+echo "=== Are GitIgnores good after making zproject '$BUILD_TYPE'?"
+make check-gitignore
 echo "==="
