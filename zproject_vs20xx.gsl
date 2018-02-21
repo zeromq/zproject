@@ -323,6 +323,11 @@ $(project.GENERATED_WARNING_HEADER:)
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
 .endfor
+.if count (class)
+    <ClCompile Include="..\\..\\..\\..\\src\\$(project.prefix)_private_selftest.$(project.source_ext)">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+.endif
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\\..\\resource.rc" />
@@ -350,6 +355,11 @@ $(project.GENERATED_WARNING_HEADER:)
       <Filter>src</Filter>
     </ClCompile>
 .endfor
+.if count (class)
+    <ClCompile Include="..\\..\\..\\..\\src\\$(project.prefix)_private_selftest.$(project.source_ext)">
+      <Filter>src</Filter>
+    </ClCompile>
+.endif
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\\..\\..\\..\\include\\$(project.prefix)_library.$(project.header_ext)">
