@@ -1935,6 +1935,41 @@ cppcheck.xml:
 .endif
 \t@echo "The cppcheck static analysis is done"
 
+# Note: this recipe tests that the Git-based workspace reports no changed
+# or untracked files - meaning there are no unexpected behaviors in the
+# recipes (when checking after a build), and nothing was missed while
+# updating the project structure (when checking in the midst of development
+# or after regenerating the zproject skeletons), for example. For best
+# results, developers are advised to also run this after executing their
+# tests, to make sure they are stateless and clean as well. Caller may
+# export envvar (or pass make argument) CI_REQUIRE_GOOD_GITIGNORE=false
+# to explicitly disable fatality of this check, while still logging it.
+
+# This recipe is "stateless" by itself, not causing any workspace changes:
+check-gitignore:
+\t@(if which git >/dev/null 2>&1 ; then \\
+\t    RES=0; \\
+\t    echo "Checking for untracked and not-ignored files in the workspace (should have no output below)..."; \\
+\t    git status -s | egrep '^\\?\\? ' && RES=1 ; \\
+\t    echo "Checking for modified tracked files in the workspace (should have no output below)..."; \\
+\t    git status -s | egrep '^ *M ' && RES=1 && git diff | cat ; \\
+\t    if [ "$$RES" = 0 ]; then \\
+\t        echo "PASS: $@"; exit 0 ; \\
+\t    else \\
+\t        if [ x"\$(CI_REQUIRE_GOOD_GITIGNORE)" = xfalse ] ; then \\
+\t            echo "WARNING: $@ found newly changed or untracked and not-ignored files (not a test failure due to CI_REQUIRE_GOOD_GITIGNORE==false)"; exit 0 ; \\
+\t        fi; \\
+\t        echo "FAIL: $@ (see workspace checks above)"; exit 1; \\
+\t    fi; \\
+\t  else \\
+\t    echo "SKIP: $@ (no git)"; exit 0 ; \\
+\t  fi )
+
+# This calls the recipe above after building the project products and
+# the selftest binary, and preparing the workspace for self-testing:
+check-gitignore-all: all src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
+\t$@\$(MAKE) check-gitignore
+
 .insert_snippet ("Makemodule")
 
 $(project.GENERATED_WARNING_HEADER:)

@@ -46,11 +46,13 @@ sudo: false
 # Set CI_TIME=true to enable build-step profiling in Travis
 # Set CI_TRACE=true to enable shell script tracing in Travis
 # Set CI_CONFIG_QUIET=true to enable "configure --quiet" (only report stderr)
+# Set CI_REQUIRE_GOOD_GITIGNORE=false to NOT fail if "git status -s" is not clean
 env:
   global:
     - CI_TIME=false
     - CI_TRACE=false
     - CI_CONFIG_QUIET=true
+    - CI_REQUIRE_GOOD_GITIGNORE=false
     # tokens to deploy releases on OBS and create/delete temporary branch on Github.
     # 1) Create a token on https://github.com/settings/tokens/new with "public_repo"
     #    capability and encrypt it with travis encrypt --org -r <org>/<repo> GH_TOKEN="<token>"
@@ -456,8 +458,8 @@ default|default-Werror|default-with-docs|valgrind)
     fi
     $CI_TIME make VERBOSE=1 all
 
-    echo "=== Are GitIgnores good after 'make all' with drafts? (should have no output below)"
-    git status -s || true
+    echo "=== Are GitIgnores good after 'make all' with drafts?"
+    make check-gitignore
     echo "==="
 
 .   if travis_distcheck ?= 0
@@ -467,8 +469,8 @@ default|default-Werror|default-with-docs|valgrind)
         export DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=yes ${CONFIG_OPTS[@]}"
         $CI_TIME make VERBOSE=1 DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" distcheck
 
-        echo "=== Are GitIgnores good after 'make distcheck' with drafts? (should have no output below)"
-        git status -s || true
+        echo "=== Are GitIgnores good after 'make distcheck' with drafts?"
+        make check-gitignore
         echo "==="
     )
 .   endif
@@ -495,8 +497,8 @@ default|default-Werror|default-with-docs|valgrind)
     ) || exit 1
     [ -z "$CI_TIME" ] || echo "`date`: Builds completed without fatal errors!"
 
-    echo "=== Are GitIgnores good after 'make distcheck' without drafts? (should have no output below)"
-    git status -s || true
+    echo "=== Are GitIgnores good after 'make distcheck' without drafts?"
+    make check-gitignore
     echo "==="
 
     if [ "$HAVE_CCACHE" = yes ]; then
