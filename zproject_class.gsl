@@ -172,9 +172,18 @@ typedef struct _$(class.c_name:)_t $(class.c_name:)_t;
 .endfor
 
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //  Self test for private classes
 $(PROJECT.PREFIX)_EXPORT void
     $(project.prefix)_private_selftest (bool verbose, const char *subtest);
+
+#ifdef __cplusplus
+}
+#endif
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 
 #endif
