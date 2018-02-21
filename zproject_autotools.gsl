@@ -1863,6 +1863,17 @@ coverage: src/$(project.prefix)_selftest
 \t@exit 1
 endif
 
+# A series of tests that the codebase and recipes are pretty, easy
+# to maintain and with predictable behavior. These generally are not
+# expected to directly expose functional issues in the code, but
+# still - there can be many reasons for failing such tests, and
+# many lurking issues uncoverable by making code stylish again.
+CHECK_STYLE_DEPS = check-gitignore
+if WITH_CLANG_FORMAT
+CHECK_STYLE_DEPS += clang-format-check
+endif
+check-style: \$(CHECK_STYLE_DEPS)
+
 if WITH_CLANG_FORMAT
 ALL_SOURCE_FILES = \$(wildcard \\
 \t\$(top_srcdir)/src/*.c \\
