@@ -46,9 +46,9 @@ if !file.exists (".gitignore")
     >core
     >
     > # Distcheck workspace and archives
-    >$(project.name)-$(->version.major).$(->version.minor).$(->version.patch)/
-    >$(project.name)-$(->version.major).$(->version.minor).$(->version.patch).tar.gz
-    >$(project.name)-$(->version.major).$(->version.minor).$(->version.patch).zip
+    >$(project.name)-*/
+    >$(project.name)-*.tar.gz
+    >$(project.name)-*.zip
     >
     ># Man pages
     >doc/*.1
