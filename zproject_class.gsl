@@ -320,7 +320,7 @@ test_number (void)
     int n = 0;
     test_item_t *item;
     for (item = all_tests; item->testname; item++) {
-        if (! strcmp (item->testname, "private_classes") == 0)
+        if (strcmp (item->testname, "private_classes") == 0)
             n++;
     }
     printf ("%d\\n", n);
