@@ -28,9 +28,9 @@ src/zproject_selftest
 core
 
  # Distcheck workspace and archives
-zproject-1.1.0/
-zproject-1.1.0.tar.gz
-zproject-1.1.0.zip
+zproject-*/
+zproject-*.tar.gz
+zproject-*.zip
 
 # Man pages
 doc/*.1

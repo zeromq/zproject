@@ -98,5 +98,5 @@ fi
 [ -z "$CI_TIME" ] || echo "`date`: Builds completed without fatal errors!"
 
 echo "=== Are GitIgnores good after making the project '$BUILD_TYPE'? (should have no output below)"
-make check-gitignore
+git status -s || true
 echo "==="
