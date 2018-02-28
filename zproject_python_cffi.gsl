@@ -214,6 +214,14 @@ function generate_binding
     >$(project.GENERATED_WARNING_HEADER:)
     >from . import utils
     for class where defined (class.api) & class.private = "0"
+        for constant
+    >$(NAME:c) = $(value)\
+            if defined (constant.description)
+                > # $(constant.description:no)
+            else
+                >
+            endif
+        endfor
     >from .$(class.python_name:) import *
     endfor
 
