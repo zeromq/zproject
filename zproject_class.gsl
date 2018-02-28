@@ -259,7 +259,7 @@ all_tests [] = {
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
 .endfor
-    {0, 0, 0}          //  Sentinel
+    {NULL, NULL, 0, 0, NULL}          //  Sentinel
 };
 
 //  -------------------------------------------------------------------------
