@@ -363,7 +363,7 @@ default|default-Werror|default-with-docs|valgrind)
 .       if ! defined (use.repository) & ! defined (use.tarball)
         echo "WARNING: Can not build prerequisite '$(use.project)'" >&2
         echo "because neither tarball nor repository sources are known for it," >&2
-        echo "and it was not isntalled as a package; this may cause the test to fail!" >&2
+        echo "and it was not installed as a package; this may cause the test to fail!" >&2
 .       else
         BASE_PWD=${PWD}
 .           if defined (use.tarball)
