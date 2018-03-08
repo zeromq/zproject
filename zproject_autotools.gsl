@@ -1449,6 +1449,9 @@ EXTRA_DIST += \\
 .for class where scope = "private"
     src/$(name:$(project.filename_prettyprint)).$(project.header_ext) \\
 .endfor
+.for header where scope = "private"
+    src/$(name:$(project.filename_prettyprint)).$(project.header_ext) \\
+.endfor
 .if file.exists ("LICENSE")
     LICENSE \\
 .endif
