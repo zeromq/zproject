@@ -1991,6 +1991,10 @@ ALL_SOURCE_FILES = \$(wildcard \\
 
 # Check if any sources need to be fixed, report the filenames and an error code
 clang-format-check: \$(ALL_SOURCE_FILES)
+\t@if test -z "\$(CLANG_FORMAT)" ; then \\
+\t\techo "FAILURE: CLANG_FORMAT program was not specified or found" >&2 ; \\
+\t\texit 1 ; \\
+\tfi
 \t@FAILED=0 ; IFS=";" ; IDS="`printf '\\n\\b'`" ; export IFS IDS; \\
 \t for FILE in \$(ALL_SOURCE_FILES) ; do \\
 \t\ttest -s \$\$FILE || continue ; \\
@@ -2003,6 +2007,10 @@ clang-format-check: \$(ALL_SOURCE_FILES)
 
 # Change source formatting
 clang-format: \$(ALL_SOURCE_FILES)
+\t@if test -z "\$(CLANG_FORMAT)" ; then \\
+\t\techo "FAILURE: CLANG_FORMAT program was not specified or found" >&2 ; \\
+\t\texit 1 ; \\
+\tfi
 \t\$(CLANG_FORMAT) -style=file -i \$(ALL_SOURCE_FILES)
 
 # Change source formatting AND report the diff
@@ -2018,8 +2026,10 @@ clang-format-check-CI:
 \t  echo "SUCCESS : Style checks have passed" >&2 ; \\
 \telse \\
 \t  echo "" >&2 ; \\
-\t  echo "Style mismatches were found by clang-format; detailing below:" >&2 ; \\
-\t  \$(MAKE) VERBOSE=1 clang-format-diff ; \\
+\t  if test -n "\$(CLANG_FORMAT)" ; then \\
+\t    echo "Style mismatches were found by clang-format; detailing below:" >&2 ; \\
+\t    \$(MAKE) VERBOSE=1 clang-format-diff ; \\
+\t  fi ; \\
 \t  if test x"\$(CI_REQUIRE_GOOD_CLANG_FORMAT)" = xtrue ; then \\
 \t    echo "FAILED : Style checks have failed and CI_REQUIRE_GOOD_CLANG_FORMAT==true" >&2 ; \\
 \t    exit 1 ; \\
