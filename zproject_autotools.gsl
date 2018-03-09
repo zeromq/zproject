@@ -1925,6 +1925,7 @@ ALL_SOURCE_FILES = \$(wildcard \\
 \t\$(top_srcdir)/tools/*.h \\
 \t\$(top_srcdir)/tools/*.hpp \\
 \t\$(top_srcdir)/include/*.h \\
+\t\$(top_srcdir)/include/*.hpp \\
  )
 
 # Check if any sources need to be fixed, report the filenames and an error code
