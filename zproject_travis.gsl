@@ -47,12 +47,14 @@ sudo: false
 # Set CI_TRACE=true to enable shell script tracing in Travis
 # Set CI_CONFIG_QUIET=true to enable "configure --quiet" (only report stderr)
 # Set CI_REQUIRE_GOOD_GITIGNORE=false to NOT fail if "git status -s" is not clean
+# Set CI_REQUIRE_GOOD_CLANG_FORMAT=true to fail if "clang-format" check is not clean
 env:
   global:
     - CI_TIME=false
     - CI_TRACE=false
     - CI_CONFIG_QUIET=true
     - CI_REQUIRE_GOOD_GITIGNORE=false
+    - CI_REQUIRE_GOOD_CLANG_FORMAT=false
     # tokens to deploy releases on OBS and create/delete temporary branch on Github.
     # 1) Create a token on https://github.com/settings/tokens/new with "public_repo"
     #    capability and encrypt it with travis encrypt --org -r <org>/<repo> GH_TOKEN="<token>"
@@ -464,14 +466,8 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
             exit $?
             ;;
         clang-format-check)
-            RES=0
-            $CI_TIME make VERBOSE=1 clang-format-check || {
-                RES=$?
-                echo "" >&2
-                echo "Style mismatches were found by clang-format; detailing below:" >&2
-                $CI_TIME make VERBOSE=1 clang-format-diff || RES=$?
-            }
-            exit $RES
+            $CI_TIME make VERBOSE=1 clang-format-check-CI
+            exit $?
             ;;
     esac
     $CI_TIME make VERBOSE=1 all
