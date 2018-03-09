@@ -415,6 +415,14 @@ zproject's `project.xml` contains an extensive description of the available conf
          the workspace configured with docs, so you can forward it to the
          publishing helper job and avoid rebuilding manpages for packaging.
 
+         Similarly, a test_check_clang_format requires an external tool,
+         the clang-format-5.0 (or newer) to process the codebase and decide
+         if it is stylish. By default the test is enabled but not required
+         to pass (is just informative) and will run if the tool is available
+         in the build system. Eventually, a project should define and uphold
+         its coding style -- then this test can become one of requirements
+         for new pull requests.
+
          The triggers_pollSCM option sets up the pipeline-generated job
          for regular polling of the original SCM repository, using the
          Jenkins cron syntax. The default is approximately every 5 minutes
@@ -464,6 +472,9 @@ zproject's `project.xml` contains an extensive description of the available conf
         <option name = "test_install" value = "0" />
         <option name = "test_install_DESTDIR" value = "/tmp/proto-area" />
         <option name = "test_cppcheck" value = "1" />
+        <option name = "test_check_clang_format" value = "1" />
+        <option name = "use_clang_format_prog" value = "clang-format-5.0" />
+        <option name = "require_good_clang_format" value = "0" />
     </target>
     -->
     <target name = "jenkins" >
@@ -1387,4 +1398,4 @@ Before opening a pull request read our [contribution guidelines](https://github.
 
 ### This Document
 
-_This documentation was generated from zproject/README.txt using [Gitdown](https://github.com/zeromq/gitdown)_
+_This documentation was generated from Zproject/README.txt using [Gitdown](https://github.com/zeromq/gitdown)_
