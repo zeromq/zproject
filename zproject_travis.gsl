@@ -149,6 +149,7 @@ matrix:
         - llvm-toolchain-trusty-5.0
         packages:
         - clang-5.0
+        - clang-format-5.0
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "android" ] ; then brew install binutils ; fi
