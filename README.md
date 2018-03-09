@@ -220,7 +220,10 @@ zproject's `project.xml` contains an extensive description of the available conf
 
     <!--
         Includes are processed first, so XML in included files will be
-        part of the XML tree
+        part of the XML tree. This file can provide content of such tags
+        as <license> (detailed text to put in generated file headers)
+        and <starting_year> (a number to put in packaging copyright
+        summaries).
     -->
     <include filename = "license.xml" />
 
