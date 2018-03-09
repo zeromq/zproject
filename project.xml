@@ -39,6 +39,7 @@
 <project script = "zproject.gsl" name = "zproject"
     email = "zeromq-dev@lists.zeromq.org"
     license = "MPLv2"
+    starting_year = "2014"
     url = "https://github.com/zeromq/zproject"
     repository = "https://github.com/zeromq/zproject">
 
