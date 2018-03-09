@@ -368,6 +368,67 @@ WantedBy=timers.target
 .  endif
 .endif
 .endfor
+.if !file.exists (".clang-format")
+. output ".clang-format"
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+BasedOnStyle: LLVM
+IndentWidth: 4
+UseTab: Never
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterClass: true
+    AfterControlStatement: false
+    AfterEnum: true
+    AfterFunction: true
+    AfterNamespace: true
+    AfterObjCDeclaration: true
+    AfterStruct: true
+    AfterUnion: true
+    BeforeCatch: true
+    BeforeElse: false
+    IndentBraces: false
+
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AllowShortIfStatementsOnASingleLine: false
+IndentCaseLabels: true
+BinPackArguments: true
+BinPackParameters: false
+AlignTrailingComments: true
+AllowShortBlocksOnASingleLine: false
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortFunctionsOnASingleLine: InlineOnly
+AlwaysBreakTemplateDeclarations: false
+ColumnLimit: 80
+MaxEmptyLinesToKeep: 2
+KeepEmptyLinesAtTheStartOfBlocks: false
+ContinuationIndentWidth: 2
+PointerAlignment: Right
+ReflowComments: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: Always
+SpaceInEmptyParentheses: false
+SpacesInAngles: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+Standard: Cpp11
+
+SortIncludes: false
+
+FixNamespaceComments: false
+BreakBeforeBinaryOperators: NonAssignment
+SpaceAfterTemplateKeyword: true
+AlignAfterOpenBracket: Align
+AlignOperands: true
+BreakConstructorInitializers: AfterColon
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+SpaceAfterCStyleCast: true
+BreakBeforeTernaryOperators: true
+.else
+.   echo "NOT regenerating an existing .clang-format file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.endif
 .output "configure.ac"
 $(project.GENERATED_WARNING_HEADER:)
 
