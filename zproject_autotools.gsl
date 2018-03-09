@@ -1991,6 +1991,10 @@ ALL_SOURCE_FILES = \$(wildcard \\
 
 # Check if any sources need to be fixed, report the filenames and an error code
 clang-format-check: \$(ALL_SOURCE_FILES)
+\t@if test -z "\$(CLANG_FORMAT)" ; then \\
+\t\techo "FAILURE: CLANG_FORMAT program was not specified or found" >&2 ; \\
+\t\texit 1 ; \\
+\tfi
 \t@FAILED=0 ; IFS=";" ; IDS="`printf '\\n\\b'`" ; export IFS IDS; \\
 \t for FILE in \$(ALL_SOURCE_FILES) ; do \\
 \t\ttest -s \$\$FILE || continue ; \\
@@ -2003,16 +2007,48 @@ clang-format-check: \$(ALL_SOURCE_FILES)
 
 # Change source formatting
 clang-format: \$(ALL_SOURCE_FILES)
+\t@if test -z "\$(CLANG_FORMAT)" ; then \\
+\t\techo "FAILURE: CLANG_FORMAT program was not specified or found" >&2 ; \\
+\t\texit 1 ; \\
+\tfi
 \t\$(CLANG_FORMAT) -style=file -i \$(ALL_SOURCE_FILES)
 
 # Change source formatting AND report the diff
 clang-format-diff: clang-format
 \tgit diff \$(ALL_SOURCE_FILES)
 
+# A destructive (will change code in workspace) but informative check; this is
+# primarily intended for CI temporary workspaces where mutilation is acceptable.
+# The envvar/makearg CI_REQUIRE_GOOD_CLANG_FORMAT manages if this test is fatal.
+clang-format-check-CI:
+\t@echo "CI-checking code style ..." >&2
+\t@if \$(MAKE) clang-format-check ; then \\
+\t  echo "SUCCESS : Style checks have passed" >&2 ; \\
+\telse \\
+\t  echo "" >&2 ; \\
+\t  if test -n "\$(CLANG_FORMAT)" ; then \\
+\t    echo "Style mismatches were found by clang-format; detailing below:" >&2 ; \\
+\t    \$(MAKE) VERBOSE=1 clang-format-diff ; \\
+\t  fi ; \\
+\t  if test x"\$(CI_REQUIRE_GOOD_CLANG_FORMAT)" = xtrue ; then \\
+\t    echo "FAILED : Style checks have failed and CI_REQUIRE_GOOD_CLANG_FORMAT==true" >&2 ; \\
+\t    exit 1 ; \\
+\t  fi ; \\
+\t  echo "WARNING : Style checks have failed, but the result is not-fatal because CI_REQUIRE_GOOD_CLANG_FORMAT!=true" >&2 ; \\
+\tfi
+
 else
 clang-format clang-format-check clang-format-diff:
 \t@echo "Install the clang-format program, reconfigure and re-run this request"
 \t@exit 1
+
+clang-format-check-CI:
+\t@echo "Install the clang-format program, reconfigure and re-run this request"
+\t@if test x"\$(CI_REQUIRE_GOOD_CLANG_FORMAT)" = xtrue ; then \\
+\t    echo "FAILED : Style checks have failed and CI_REQUIRE_GOOD_CLANG_FORMAT==true" >&2 ; \\
+\t    exit 1 ; \\
+\t fi ; \\
+\t echo "WARNING : Style checks have failed, but the result is not-fatal because CI_REQUIRE_GOOD_CLANG_FORMAT!=true" >&2
 endif
 
 # Note: analysis is not a target executed by default, so there is no
@@ -2496,7 +2532,7 @@ doc: $\(GENERATED_DOCS)
 
 else
 doc:
-	@echo "SKIPPING documentation generation and formatting (BUILD_DOC was not required and/or tools are missing)" >&2
+\t@echo "SKIPPING documentation generation and formatting (BUILD_DOC was not required and/or tools are missing)" >&2
 endif
 
 EXTRA_DIST += $\(MAN_TXT)
