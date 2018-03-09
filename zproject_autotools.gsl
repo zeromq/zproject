@@ -2532,7 +2532,7 @@ doc: $\(GENERATED_DOCS)
 
 else
 doc:
-	@echo "SKIPPING documentation generation and formatting (BUILD_DOC was not required and/or tools are missing)" >&2
+\t@echo "SKIPPING documentation generation and formatting (BUILD_DOC was not required and/or tools are missing)" >&2
 endif
 
 EXTRA_DIST += $\(MAN_TXT)
