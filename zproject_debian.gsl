@@ -187,7 +187,11 @@ Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: $(project.name)
 
 Files: *
+.if defined (project.starting_year)
+Copyright: $(project.starting_year)- $(project.name) Developers <$(project.email)>
+.else
 Copyright: 2015- $(project.name) Developers <$(project.email)>
+.endif
 License: $(project.name)_license
 .   for project.license
  $(string.replace(string.trim (license.), '\n\n|\n.\n'):block)
