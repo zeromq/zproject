@@ -101,11 +101,12 @@ $(project.GENERATED_WARNING_HEADER:)
 #   define $(PROJECT.PREFIX)_EXPORT
 #   define $(PROJECT.PREFIX)_PRIVATE
 #else
-#   define $(PROJECT.PREFIX)_EXPORT
 #   if (defined __GNUC__ && __GNUC__ >= 4) || defined __INTEL_COMPILER
 #       define $(PROJECT.PREFIX)_PRIVATE __attribute__ ((visibility ("hidden")))
+#       define $(PROJECT.PREFIX)_EXPORT __attribute__ ((visibility ("default")))
 #   else
 #       define $(PROJECT.PREFIX)_PRIVATE
+#       define $(PROJECT.PREFIX)_EXPORT
 #   endif
 #endif
 
