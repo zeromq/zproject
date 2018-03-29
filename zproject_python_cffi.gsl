@@ -217,7 +217,7 @@ function generate_binding
         for constant
     >$(NAME:c) = $(value)\
             if defined (constant.description)
-                > # $(constant.description:no)
+                > # $(constant.description)
             else
                 >
             endif
