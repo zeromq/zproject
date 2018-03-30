@@ -1497,6 +1497,8 @@ EXTRA_DIST += \\
 .if file.exists ("src/CMakeLists-local.txt")
     src/CMakeLists-local.txt \\
 .endif
+    builds/cmake/Modules/ClangFormat.cmake \\
+    builds/cmake/clang-format-check.sh.in \\
     CMakeLists.txt
 endif
 
