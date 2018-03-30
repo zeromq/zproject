@@ -56,7 +56,7 @@ if (NOT CMAKE_BUILD_TYPE)
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
         message(STATUS "git workspace root [${git_result}]: ${git_root}")
-        if ( "${git_result}" == "0" )
+        if ( "${git_result}" STREQUAL "0" )
             set (CMAKE_BUILD_TYPE Debug)
         else ()
             set (CMAKE_BUILD_TYPE Release)
@@ -530,7 +530,7 @@ add_custom_command(
     TARGET  distclean
 )
 
-include(ClangFormat)
+include(ClangFormat OPTIONAL)
 
 ########################################################################
 # summary
@@ -809,8 +809,19 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)
 fi
 .endfor
 
-# Build and check this project
 cd ../..
+
+# always install custom builds from dist if the autotools chain exists
+# to make sure that `make dist` doesn't omit any files required to build & test
+if [ -z "$DO_CLANG_FORMAT_CHECK" -a -f configure.ac ]; then
+    $CI_TIME ./autogen.sh
+    $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+    $CI_TIME make -j5 dist-gzip
+    $CI_TIME tar -xzf $(project.name)-$(->version.major).$(->version.minor).$(->version.patch).tar.gz
+    cd $(project.name)-$(->version.major).$(->version.minor).$(->version.patch)
+fi
+
+# Build and check this project
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of currently tested project..."
 .if count(add_config_opts) > 0
 # Custom additional options for this project
@@ -820,7 +831,7 @@ CONFIG_OPTS+=("$(add_cfgopt)")
 .endif
 CCACHE_BASEDIR=${PWD}
 export CCACHE_BASEDIR
-if [ "$DO_CLANG_FORMAT_CHECK" -eq "1" ] ; then
+if [ "$DO_CLANG_FORMAT_CHECK" = "1" ] ; then
     PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" . \\
     && make clang-format-check || { make clang-format-diff && exit 1 ; }
 else

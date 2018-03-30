@@ -34,6 +34,8 @@ DISTCLEANFILES =
 if ENABLE_DIST_CMAKEFILES
 EXTRA_DIST += \
     Findgsl.cmake \
+    builds/cmake/Modules/ClangFormat.cmake \
+    builds/cmake/clang-format-check.sh.in \
     CMakeLists.txt
 endif
 
