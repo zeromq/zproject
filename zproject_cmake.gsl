@@ -820,7 +820,7 @@ CONFIG_OPTS+=("$(add_cfgopt)")
 .endif
 CCACHE_BASEDIR=${PWD}
 export CCACHE_BASEDIR
-if [ "$DO_CLANG_FORMAT_CHECK" -eq "1" ] ; then
+if [ "$DO_CLANG_FORMAT_CHECK" = "1" ] ; then
     PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" . \\
     && make clang-format-check || { make clang-format-diff && exit 1 ; }
 else
