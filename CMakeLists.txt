@@ -196,7 +196,7 @@ add_custom_command(
     TARGET  distclean
 )
 
-include(ClangFormat)
+include(ClangFormat OPTIONAL)
 
 ########################################################################
 # summary
