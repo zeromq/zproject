@@ -809,8 +809,19 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)
 fi
 .endfor
 
-# Build and check this project
 cd ../..
+
+# always install custom builds from dist if the autotools chain exists
+# to make sure that `make dist` doesn't omit any files required to build & test
+if [ -z "$DO_CLANG_FORMAT_CHECK" -a -f configure.ac ]; then
+    $CI_TIME ./autogen.sh
+    $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+    $CI_TIME make -j5 dist-gzip
+    $CI_TIME tar -xzf $(project.name)-$(->version.major).$(->version.minor).$(->version.patch).tar.gz
+    cd $(project.name)-$(->version.major).$(->version.minor).$(->version.patch)
+fi
+
+# Build and check this project
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of currently tested project..."
 .if count(add_config_opts) > 0
 # Custom additional options for this project
