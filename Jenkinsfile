@@ -104,6 +104,10 @@ pipeline {
             defaultValue: true,
             description: 'When using temporary subdirs in build/test workspaces, wipe them after successful builds?',
             name: 'DO_CLEANUP_AFTER_BUILD')
+        booleanParam (
+            defaultValue: true,
+            description: 'When using temporary subdirs in build/test workspaces, wipe them after the whole job is done successfully?',
+            name: 'DO_CLEANUP_AFTER_JOB')
     }
     triggers {
         pollSCM 'H/5 * * * *'
@@ -526,6 +530,11 @@ pipeline {
 
                     //slackSend (color: "#008800", message: "Build ${env.JOB_NAME} is back to normal.")
                     //emailext (to: "qa@example.com", subject: "Build ${env.JOB_NAME} is back to normal.", body: "Build ${env.JOB_NAME} is back to normal.")
+                }
+                if ( params.DO_CLEANUP_AFTER_JOB ) {
+                    dir("tmp") {
+                        deleteDir()
+                    }
                 }
             }
         }
