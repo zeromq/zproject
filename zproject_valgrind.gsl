@@ -54,6 +54,16 @@ if !file.exists ("src/.valgrind.supp")
     >   fun:global_init
     >   ...
     >}
+    >{
+    >    <libgcrypt_init2>
+    >    Memcheck:Leak
+    >    match-leak-kinds: reachable
+    >    fun:malloc
+    >    ...
+    >    fun:call_init.part.0
+    >    fun:_dl_init
+    >    ...
+    >}
 else
     echo "NOT regenerating an existing src/.valgrind.supp file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 endif
