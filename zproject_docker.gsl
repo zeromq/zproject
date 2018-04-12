@@ -51,7 +51,7 @@ RUN sudo ldconfig
 .endfor
 WORKDIR /home/zmq
 RUN git clone --quiet git://github.com/zeromq/$(project.name:c).git $(project.name:c)
-WORKDIR /home/zmq/$(project.name:c) $(project.name:c)
+WORKDIR /home/zmq/$(project.name:c)
 RUN ./autogen.sh 2> /dev/null
 RUN ./configure --quiet --without-docs
 RUN make
