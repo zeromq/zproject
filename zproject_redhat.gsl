@@ -111,6 +111,7 @@ BuildRequires:  python3-setuptools
 .endif
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 .if project.has_main | count(project.bin) > 0
+Requires: $(project.libname)$(my.abi_ver) = %{version}-%{release}
 .for project.use where use.type ?= "runtime"
 .if defined(use.redhat_name)
 .   if !(use.redhat_name = '')
@@ -155,7 +156,7 @@ This package contains shared library for $(project.name): $(project.description)
 %package devel
 Summary:        $(project.description)
 Group:          System/Libraries
-Requires:       $(project.libname)$(my.abi_ver) = %{version}
+Requires:       $(project.libname)$(my.abi_ver) = %{version}-%{release}
 .for project.use
 .if defined(use.redhat_name)
 .   if !(use.redhat_name = '')
