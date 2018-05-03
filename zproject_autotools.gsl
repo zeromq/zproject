@@ -1557,9 +1557,17 @@ $(project.GENERATED_WARNING_HEADER:)
 .output "include/Makefile.am"
 $(project.GENERATED_WARNING_HEADER:)
 .if project.keep_tree
+. if project.pkgincludedir
+nobase_pkginclude_HEADERS = \\
+. else
 nobase_include_HEADERS = \\
+. endif
 .else
+. if project.pkgincludedir
+pkginclude_HEADERS = \\
+. else
 include_HEADERS = \\
+. endif
 .endif
 .if file.exists ("include/$(project.prelude)")
     $(project.prelude) \\
@@ -1578,9 +1586,17 @@ include_HEADERS = \\
 .if count (class, scope = "public" & draft)
 if ENABLE_DRAFTS
 .if project.keep_tree
+. if project.pkgincludedir
+nobase_pkginclude_HEADERS += \\
+. else
 nobase_include_HEADERS += \\
+. endif
 .else
+. if project.pkgincludedir
+pkginclude_HEADERS += \\
+. else
 include_HEADERS += \\
+. endif
 .endif
 .   for class where scope = "public" & draft
     $(name:$(project.filename_prettyprint)).$(project.header_ext)$(last ()?? "\n"? " \\")
