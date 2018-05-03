@@ -235,14 +235,30 @@ pipeline {
 .  endif
             description: 'When running tests, use this timeout (in minutes; be sure to leave enough for double-job of a distcheck too)',
             name: 'USE_TEST_TIMEOUT')
+        booleanParam (
+            defaultValue: false,
+            description: 'Try to collect CCACHE logs in the build workspace during this run, to analyze the build behavior?',
+            name: 'USE_CCACHE_LOGGING')
 .  if !(isSingle_jenkins_agent (project, 0))
         booleanParam (
+.    if ( !(defined(project.jenkins_do_cleanup_after_build)) | (project.jenkins_do_cleanup_after_build ?= 1) )
+. # if nothing was set, do the cleanup by default to reduce footprint on CI server
             defaultValue: true,
-            description: 'When using temporary subdirs in build/test workspaces, wipe them after successful builds?',
+.    else
+. # explicitly disabled for a particular project
+            defaultValue: false,
+.    endif
+            description: 'When using temporary subdirs in build/test workspaces, wipe them right after each successful build stage?',
             name: 'DO_CLEANUP_AFTER_BUILD')
 .  endif
         booleanParam (
+.    if ( !(defined(project.jenkins_do_cleanup_after_job)) | (project.jenkins_do_cleanup_after_job ?= 1) )
+. # if nothing was set, do the cleanup by default to reduce footprint on CI server
             defaultValue: true,
+.    else
+. # explicitly disabled for a particular project
+            defaultValue: false,
+.    endif
             description: 'When using temporary subdirs in build/test workspaces, wipe them after the whole job is done successfully?',
             name: 'DO_CLEANUP_AFTER_JOB')
     }
@@ -275,6 +291,7 @@ pipeline {
                             deleteDir()
                         }
                         sh './autogen.sh'
+                        sh 'rm -f ccache.log'
                         stash (name: 'prepped', includes: '**/*', excludes: '**/cppcheck.xml')
                     }
         }
@@ -292,8 +309,8 @@ pipeline {
                         deleteDir()
 .       endif
                         unstash 'prepped'
-                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=yes --enable-Werror="${params.ENABLE_WERROR}" --with-docs=no"""
-                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
+                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then rm -f ccache.log ; CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; ./configure --enable-drafts=yes --enable-Werror="${params.ENABLE_WERROR}" --with-docs=no"""
+                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; make -k -j4 || make"""
                         sh """ echo "Are GitIgnores good after make with drafts?"; make CI_REQUIRE_GOOD_GITIGNORE="${params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
                         stash (name: 'built-draft', includes: '**/*', excludes: '**/cppcheck.xml')
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -321,8 +338,8 @@ pipeline {
                         deleteDir()
 .       endif
                         unstash 'prepped'
-                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=no --enable-Werror="${params.ENABLE_WERROR}" --with-docs=no"""
-                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
+                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then rm -f ccache.log ; CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; ./configure --enable-drafts=no --enable-Werror="${params.ENABLE_WERROR}" --with-docs=no"""
+                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; make -k -j4 || make"""
                         sh """ echo "Are GitIgnores good after make without drafts?"; make CI_REQUIRE_GOOD_GITIGNORE="${params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
                         stash (name: 'built-nondraft', includes: '**/*', excludes: '**/cppcheck.xml')
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -350,15 +367,15 @@ pipeline {
                         deleteDir()
 .       endif
                         unstash 'prepped'
-                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=yes --with-docs=yes --enable-Werror=no'
+                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then rm -f ccache.log ; CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; ./configure --enable-drafts=yes --with-docs=yes --enable-Werror=no"""
                         script {
                             if ( params.DO_DIST_DOCS ) {
-                                sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make dist-gzip || exit ; DISTFILE="`ls -1tc *.tar.gz | head -1`" && [ -n "\$DISTFILE" ] && [ -s "\$DISTFILE" ] || exit ; mv -f "\$DISTFILE" __dist.tar.gz'
+                                sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; make dist-gzip || exit ; DISTFILE="`ls -1tc *.tar.gz | head -1`" && [ -n "\\\$DISTFILE" ] && [ -s "\\\$DISTFILE" ] || exit ; mv -f "\\\$DISTFILE" __dist.tar.gz"""
                                 archiveArtifacts artifacts: '__dist.tar.gz'
                                 sh "rm -f __dist.tar.gz"
                             }
                         }
-                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
+                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; make -k -j4 || make"""
                         sh """ echo "Are GitIgnores good after make with docs?"; make CI_REQUIRE_GOOD_GITIGNORE="${params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
                         stash (name: 'built-docs', includes: '**/*', excludes: '**/cppcheck.xml')
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -413,12 +430,12 @@ pipeline {
                                     unstash 'built-docs'
                                 } else {
                                     unstash 'prepped'
-                                    sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=no --enable-Werror="${params.ENABLE_WERROR}" --with-docs=no"""
+                                    sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then rm -f ccache.log ; CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; ./configure --enable-drafts=no --enable-Werror="${params.ENABLE_WERROR}" --with-docs=no"""
                                 }
                             }
                             sh 'rm -f cppcheck.xml'
                             // This make target should produce a cppcheck.xml if tool is available
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make cppcheck'
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; make cppcheck"""
                             archiveArtifacts artifacts: '**/cppcheck.xml', allowEmptyArchive: true
                             sh 'rm -f cppcheck.xml'
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -457,10 +474,10 @@ pipeline {
                                     unstash 'built-docs'
                                 } else {
                                     unstash 'prepped'
-                                    sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=no --enable-Werror="${params.ENABLE_WERROR}" --with-docs=no"""
+                                    sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then rm -f ccache.log ; CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; ./configure --enable-drafts=no --enable-Werror="${params.ENABLE_WERROR}" --with-docs=no"""
                                 }
                             }
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make clang-format-check-CI'
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; make clang-format-check-CI"""
 .       if !(isSingle_jenkins_agent (project, 0))
                             script {
                                 if ( params.DO_CLEANUP_AFTER_BUILD ) {
@@ -496,7 +513,7 @@ pipeline {
                           unstash 'built-draft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" check'
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" check"""
                            }
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
@@ -545,7 +562,7 @@ pipeline {
                           unstash 'built-nondraft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" check'
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" check"""
                            }
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
@@ -594,7 +611,7 @@ pipeline {
                           unstash 'built-draft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose'
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed (\\\$?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose"""
                            }
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
@@ -643,7 +660,7 @@ pipeline {
                           unstash 'built-nondraft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose'
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed (\\\$?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose"""
                            }
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
@@ -692,7 +709,7 @@ pipeline {
                           unstash 'built-draft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=yes --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" distcheck'
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=yes --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="\\\$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" distcheck"""
                            }
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
@@ -741,7 +758,7 @@ pipeline {
                           unstash 'built-nondraft'
                           timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
                            try {
-                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" distcheck'
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="\\\$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" distcheck"""
                            }
                            catch (Exception e) {
                             currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
@@ -784,7 +801,7 @@ pipeline {
                         retry($(project.jenkins_use_test_retry)) {
 .       endif
                         timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
-                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\\$\{LD_LIBRARY_PATH\}"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\$\{LD_LIBRARY_PATH}" DESTDIR="${params.USE_TEST_INSTALL_DESTDIR}/withDRAFT" install"""
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\$\{LD_LIBRARY_PATH\}"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\$\{LD_LIBRARY_PATH}" DESTDIR="${params.USE_TEST_INSTALL_DESTDIR}/withDRAFT" install"""
                         }
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                         }
@@ -820,7 +837,7 @@ pipeline {
                         retry($(project.jenkins_use_test_retry)) {
 .       endif
                         timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
-                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\\$\{LD_LIBRARY_PATH\}"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\$\{LD_LIBRARY_PATH}" DESTDIR="${params.USE_TEST_INSTALL_DESTDIR}/withoutDRAFT" install"""
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\$\{LD_LIBRARY_PATH\}"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\$\{LD_LIBRARY_PATH}" DESTDIR="${params.USE_TEST_INSTALL_DESTDIR}/withoutDRAFT" install"""
                         }
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                         }
@@ -856,7 +873,7 @@ pipeline {
                         retry($(project.jenkins_use_test_retry)) {
 .       endif
                         timeout (time: "${params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
-                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; LD_LIBRARY_PATH="`pwd`/src/.libs:\\$\{LD_LIBRARY_PATH\}"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\$\{LD_LIBRARY_PATH}" DESTDIR="${params.USE_TEST_INSTALL_DESTDIR}/withDOCS" install"""
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "${params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\$\{LD_LIBRARY_PATH\}"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\$\{LD_LIBRARY_PATH}" DESTDIR="${params.USE_TEST_INSTALL_DESTDIR}/withDOCS" install"""
                         }
 .       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
                         }
