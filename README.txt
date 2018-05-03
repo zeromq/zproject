@@ -147,7 +147,7 @@ Exemple:
 ```
 
 * use-cxx will force usage (or not) of c++.
-* keep-tree will keeping the include tree on the install, must be used with a conservative name format (ex: pretty-print = "no"). Currently only supported with autotool.
+* keep-tree will keep the include tree structure on the install (as opposed to flat delivery of include files basenames into the single-level target directory), must be used with a conservative name format (ex: pretty-print = "no"). Currently only supported with autotool.
 * pkgincludedir option chooses whether headers of this project should be dumped into the common system includedir (legacy default), or into an includedir/projname subdirectory?. Currently only supported with autotool.
 * pretty-print define the type of class name format change in order to generate the filename. It uses the pretty-print option of gsl (see Substituting Symbols and Expressions on https://github.com/imatix/gsl#expressions for more information).
 * source-extension define the filename extension for source files in this project.
