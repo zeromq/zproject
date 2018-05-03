@@ -241,12 +241,24 @@ pipeline {
             name: 'USE_CCACHE_LOGGING')
 .  if !(isSingle_jenkins_agent (project, 0))
         booleanParam (
+.    if ( !(defined(project.jenkins_do_cleanup_after_build)) | (project.jenkins_do_cleanup_after_build ?= 1) )
+. # if nothing was set, do the cleanup by default to reduce footprint on CI server
             defaultValue: true,
-            description: 'When using temporary subdirs in build/test workspaces, wipe them after successful builds?',
+.    else
+. # explicitly disabled for a particular project
+            defaultValue: false,
+.    endif
+            description: 'When using temporary subdirs in build/test workspaces, wipe them right after each successful build stage?',
             name: 'DO_CLEANUP_AFTER_BUILD')
 .  endif
         booleanParam (
+.    if ( !(defined(project.jenkins_do_cleanup_after_job)) | (project.jenkins_do_cleanup_after_job ?= 1) )
+. # if nothing was set, do the cleanup by default to reduce footprint on CI server
             defaultValue: true,
+.    else
+. # explicitly disabled for a particular project
+            defaultValue: false,
+.    endif
             description: 'When using temporary subdirs in build/test workspaces, wipe them after the whole job is done successfully?',
             name: 'DO_CLEANUP_AFTER_JOB')
     }
