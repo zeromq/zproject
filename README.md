@@ -451,6 +451,19 @@ zproject's `project.xml` contains an extensive description of the available conf
          should not. If this bites you, set use_deleteDir_rm_first=1 in
          the project, so the OS native "rm" is tried first.
 
+         The two options do_cleanup_after_build (for parallelized tests)
+         and do_cleanup_after_job control whether the pipeline would by
+         default remove the build/test subdirectory after successful end
+         of stage, and/or cleans the build workspace after the whole job
+         succeeded, respectively. If not set, cleanup is enabled for both
+         and in either case the active options are among build parameters.
+         You might want to keep the built sources to analyze the behavior
+         of your build recipes in a particular environment, thought at a
+         risk of using excessive disk space there. In case of failure the
+         workspace remains on disk to make an in-place analysis possible,
+         and would eat space until you clean it up manually or it would
+         expire according to your Jenkins old-build retention policies.
+
     <target name = "jenkins">
         <option name = "file" value = "Jenkinsfile" />
         <option name = "agent_docker" value = "zeromqorg/czmq" />
