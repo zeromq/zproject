@@ -149,9 +149,9 @@ Exemple:
 * use-cxx will force usage (or not) of c++.
 * keep-tree will keeping the include tree on the install, must be used with a conservative name format (ex: pretty-print = "no"). Currently only supported with autotool.
 * pkgincludedir option chooses whether headers of this project should be dumped into the common system includedir (legacy default), or into an includedir/projname subdirectory?. Currently only supported with autotool.
-* pretty-print define the type of class name format change in order to generate the filename. It use the pretty-print option of gsl (see Substituting Symbols and Expressions on https://github.com/imatix/gsl#expressions for more information).
+* pretty-print define the type of class name format change in order to generate the filename. It uses the pretty-print option of gsl (see Substituting Symbols and Expressions on https://github.com/imatix/gsl#expressions for more information).
 * source-extension define the filename extension for source files in this project.
-* header-extension define the filename extension for source files in this project.
+* header-extension define the filename extension for header files in this project.
 
 Default value :
 * pretty-print : substitute_non_alpha_to_make_c_identifier (c option)
