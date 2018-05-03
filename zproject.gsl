@@ -77,6 +77,14 @@ function resolve_classfilename_option()
             endif
         endif
 
+        if defined (classfilename.pkgincludedir)
+            if classfilename.pkgincludedir ?= "true"
+                project.pkgincludedir = 1
+            elsif classfilename.pkgincludedir ?= "false"
+                project.pkgincludedir = 0
+            endif
+        endif
+
         return
     endfor
 endfunction
@@ -86,6 +94,7 @@ project.header_ext = "h"
 project.source_ext = "c"
 project.use_cxx = project_use_cxx ()
 project.keep_tree = 0
+project.pkgincludedir = 0
 resolve_classfilename_option()
 project.name ?= "myproject"
 project.prefix ?= "$(project.name:c)"
