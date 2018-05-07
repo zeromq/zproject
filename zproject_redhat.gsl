@@ -111,6 +111,7 @@ BuildRequires:  python3-setuptools
 .endif
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 .if project.has_main | count(project.bin) > 0
+Requires: $(project.libname)$(my.abi_ver) = %{version}-%{release}
 .for project.use where use.type ?= "runtime"
 .if defined(use.redhat_name)
 .   if !(use.redhat_name = '')
@@ -155,7 +156,7 @@ This package contains shared library for $(project.name): $(project.description)
 %package devel
 Summary:        $(project.description)
 Group:          System/Libraries
-Requires:       $(project.libname)$(my.abi_ver) = %{version}
+Requires:       $(project.libname)$(my.abi_ver) = %{version}-%{release}
 .for project.use
 .if defined(use.redhat_name)
 .   if !(use.redhat_name = '')
@@ -200,6 +201,7 @@ This package contains development files for $(project.name): $(project.descripti
 Group: Python
 Summary: Python CFFI bindings for $(project.name)
 Requires: python >= %{py2_ver}.0, python < 3.0.0
+Requires: $(project.libname)$(my.abi_ver) = %{version}-%{release}
 
 %description -n python2-$(project.name)-cffi
 This package contains Python CFFI bindings for $(project.name)
@@ -214,6 +216,7 @@ This package contains Python CFFI bindings for $(project.name)
 Group: Python
 Summary: Python 3 CFFI bindings for $(project.name)
 Requires: python = %{py3_ver}
+Requires: $(project.libname)$(my.abi_ver) = %{version}-%{release}
 
 %description -n python3-$(project.name)-cffi
 This package contains Python 3 CFFI bindings for $(project.name)
