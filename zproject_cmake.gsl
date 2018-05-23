@@ -306,17 +306,20 @@ if ($(PROJECT.PREFIX)_BUILD_SHARED)
   )
 
   target_link_libraries($(project.linkname)
-    ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES}
+    PUBLIC ${MORE_LIBRARIES}
   )
 
   install(TARGETS $(project.linkname)
+    EXPORT $(project.linkname)-targets
     LIBRARY DESTINATION "lib${LIB_SUFFIX}" # .so file
     ARCHIVE DESTINATION "lib${LIB_SUFFIX}" # .lib file
     RUNTIME DESTINATION bin                # .dll file
   )
 
   target_include_directories($(project.linkname)
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>
   )
 endif()
 
@@ -336,17 +339,20 @@ if ($(PROJECT.PREFIX)_BUILD_STATIC)
   )
 
   target_link_libraries($(project.linkname)-static
-    ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES}
+    PUBLIC ${MORE_LIBRARIES}
   )
 
   install(TARGETS $(project.linkname)-static
+    EXPORT $(project.linkname)-targets
     LIBRARY DESTINATION "lib${LIB_SUFFIX}" # .so file
     ARCHIVE DESTINATION "lib${LIB_SUFFIX}" # .lib file
     RUNTIME DESTINATION bin                # .dll file
   )
 
   target_include_directories($(project.linkname)-static
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>
   )
   target_compile_definitions($(project.linkname)-static
     PUBLIC $(PROJECT.PREFIX)_STATIC
@@ -381,6 +387,34 @@ install(
     FILES "${SOURCE_DIR}/src/$(project.libname).pc"
     DESTINATION "lib${LIB_SUFFIX}/pkgconfig"
 )
+
+########################################################################
+# installer
+########################################################################
+include(CMakePackageConfigHelpers)
+if (WIN32)
+  set(CMAKECONFIG_INSTALL_DIR "CMake" CACHE STRING "install path for $(project.linkname)Config.cmake")
+else()
+  # GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
+  set(CMAKECONFIG_INSTALL_DIR "share/cmake/$(project.linkname)" CACHE STRING "install path for $(project.linkname)Config.cmake")
+endif()
+
+if (NOT CMAKE_VERSION VERSION_LESS 3.0)
+  export(EXPORT $(project.linkname)-targets
+         FILE "${CMAKE_CURRENT_BINARY_DIR}/$(project.linkname)Targets.cmake")
+endif()
+configure_package_config_file(builds/cmake/Config.cmake.in
+                              "${CMAKE_CURRENT_BINARY_DIR}/$(project.linkname)Config.cmake"
+                              INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/$(project.linkname)ConfigVersion.cmake
+                                 VERSION ${$(PROJECT.PREFIX)_VERSION}
+                                 COMPATIBILITY AnyNewerVersion)
+install(EXPORT $(project.linkname)-targets
+        FILE $(project.linkname)Targets.cmake
+        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/$(project.linkname)Config.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/$(project.linkname)ConfigVersion.cmake
+              DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
 .endif
 ########################################################################
@@ -913,5 +947,11 @@ do
     }
 done
 if [ "$FAILED" -eq "1" ] ; then exit 1 ; fi
+.close
+.output "builds/cmake/Config.cmake.in"
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
+check_required_components("@PROJECT_NAME@")
 .close
 .endmacro
