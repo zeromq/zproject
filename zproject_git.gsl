@@ -45,7 +45,7 @@ if !file.exists (".gitignore")
     >*.app
     >core
     >
-    > # Distcheck workspace and archives
+    ># Distcheck workspace and archives
     >$(project.name)-*/
     >$(project.name)-*.tar.gz
     >$(project.name)-*.zip
