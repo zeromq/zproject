@@ -21,7 +21,11 @@ register_target ("travis", "Travis CI scripts")
 # You can add hand-written code here.
 
 language:
+.if project.use_cxx
+- cpp
+.else
 - c
+.endif
 
 cache:
 - ccache
