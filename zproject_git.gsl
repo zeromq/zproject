@@ -145,6 +145,9 @@ if !file.exists (".gitignore")
     >*.bak
     >.test*
     >
+    ># Netbeans directory
+    >nbproject/
+    >
     ># editor backups
     >*~
 else
