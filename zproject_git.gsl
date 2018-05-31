@@ -123,7 +123,7 @@ if !file.exists (".gitignore")
     >src/app/obj/
     >src/app/local.properties
     >
-    ># Android -dependencies
+    ># Android - dependencies
     >src/app/jni/output
     >
     ># Python build directory
@@ -144,6 +144,9 @@ if !file.exists (".gitignore")
     >*.swp
     >*.bak
     >.test*
+    >
+    ># Netbeans directory
+    >nbproject/
     >
     ># editor backups
     >*~

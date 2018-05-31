@@ -27,7 +27,7 @@ src/zproject_selftest
 *.app
 core
 
- # Distcheck workspace and archives
+# Distcheck workspace and archives
 zproject-*/
 zproject-*.tar.gz
 zproject-*.zip
@@ -104,7 +104,7 @@ src/app/gen/
 src/app/obj/
 src/app/local.properties
 
-# Android -dependencies
+# Android - dependencies
 src/app/jni/output
 
 # Python build directory
@@ -125,6 +125,9 @@ bindings/qt/selftest/selftest
 *.swp
 *.bak
 .test*
+
+# Netbeans directory
+nbproject/
 
 # editor backups
 *~
