@@ -82,7 +82,6 @@ echo "Projects will be cloned to here: ${GITPROJECTS}"
 
 # user to get the zeromq projects on github
 ZEROMQ=zeromq
-IMATIX=imatix
 JEDISCT1=jedisct1
 
 function cleanRepositories() {
@@ -150,7 +149,7 @@ echo "Projects will be cloned to here: ${PWD}"
 #read -p "Press ENTER to continue: "
 
 # get required but not generated projects for zeromq stack
-test -d gsl       || git clone --depth 1 https://github.com/${IMATIX}/gsl             gsl
+test -d gsl       || git clone --depth 1 https://github.com/${ZEROMQ}/gsl             gsl
 test -d libsodium || git clone -b stable https://github.com/${JEDISCT1}/libsodium     libsodium
 test -d libzmq    || git clone --depth 1 https://github.com/${ZEROMQ}/libzmq          libzmq
 # get required projects for zeromq stack
