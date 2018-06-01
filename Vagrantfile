@@ -10,7 +10,7 @@ libpcre3-dev valgrind
 
 cd /vagrant
 if [ ! -d gsl ]; then
-    git clone https://github.com/imatix/gsl.git
+    git clone https://github.com/zeromq/gsl.git
 fi
 cd gsl/src
 make
