@@ -1,7 +1,7 @@
 #   Generate continuous integration test files
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -564,7 +564,7 @@ fi
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scripting-language >/dev/null 2>&1) || \\
        (command -v brew >/dev/null 2>&1 && brew ls --versions gsl >/dev/null 2>&1)); then
     cd "$REPO_DIR/.."
-    git clone https://github.com/imatix/gsl.git gsl
+    git clone https://github.com/zeromq/gsl.git gsl
     cd gsl/src
     make
     PATH="`pwd`:$PATH"
