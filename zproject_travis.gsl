@@ -171,7 +171,9 @@ matrix:
         - *pkg_deps_common
   - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1 CLANG_FORMAT=clang-format-5.0
 # For non-cmake users, there is an autotools solution with a bit more overhead
-# to have dependencies ready and pass configure script before making this check):
+# to have dependencies ready and pass configure script before making this check).
+# Note that the autotools variant will also require dependencies preinstalled to
+# pass its configure script:
 #  - env: BUILD_TYPE=clang-format-check CLANG_FORMAT=clang-format-5.0
     os: linux
     dist: trusty
@@ -182,6 +184,7 @@ matrix:
         packages:
         - clang-5.0
         - clang-format-5.0
+#autotools#        - *pkg_deps_prereqs
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "android" ] ; then brew install binutils ; fi
