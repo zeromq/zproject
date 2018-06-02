@@ -76,8 +76,10 @@ env:
 #   - BUILD_TYPE=android
 #   - BUILD_TYPE=check-py
 
-pkg_deps_prereqs: &pkg_deps_prereqs
+# Prerequisite packages provided by OS distro and used "as is"
+pkg_deps_prereqs_distro: &pkg_deps_prereqs_distro
 .      for use
+.       if ! defined (use.repository) & ! defined (use.tarball)
 .         if defined (use.debian_name)
 .             if !(use.debian_name = '')
     - $(use.debian_name)
@@ -89,7 +91,31 @@ pkg_deps_prereqs: &pkg_deps_prereqs
 .         else
     - $(string.replace (use.project, "_|-"))-dev
 .         endif
+.       endif
 .      endfor
+
+# Prerequisite packages that may be built from source or used from
+# prebuilt packages of that source (usually not from an OS distro)
+pkg_deps_prereqs_source: &pkg_deps_prereqs_source
+.      for use
+.       if defined (use.repository) | defined (use.tarball)
+.         if defined (use.debian_name)
+.             if !(use.debian_name = '')
+    - $(use.debian_name)
+.             else
+.                 echo "WARNING: debian_name=='' for $(use.project) - not added to .travis.yml"
+.             endif
+.         elsif defined (use.libname)
+    - $(string.replace (use.libname, "_|-"):lower)-dev
+.         else
+    - $(string.replace (use.project, "_|-"))-dev
+.         endif
+.       endif
+.      endfor
+
+pkg_deps_prereqs: &pkg_deps_prereqs
+    - *pkg_deps_prereqs_source
+    - *pkg_deps_prereqs_distro
 
 pkg_deps_doctools: &pkg_deps_doctools
     - asciidoc
@@ -145,7 +171,9 @@ matrix:
         - *pkg_deps_common
   - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1 CLANG_FORMAT=clang-format-5.0
 # For non-cmake users, there is an autotools solution with a bit more overhead
-# to have dependencies ready and pass configure script before making this check):
+# to have dependencies ready and pass configure script before making this check).
+# Note that the autotools variant will also require dependencies preinstalled to
+# pass its configure script:
 #  - env: BUILD_TYPE=clang-format-check CLANG_FORMAT=clang-format-5.0
     os: linux
     dist: trusty
@@ -156,6 +184,7 @@ matrix:
         packages:
         - clang-5.0
         - clang-format-5.0
+#autotools#        - *pkg_deps_prereqs
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "android" ] ; then brew install binutils ; fi
