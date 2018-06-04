@@ -134,7 +134,6 @@ function python_c_method_call (class, method)
     if  (count (my.method.argument)) = 2 \
        & !my.method.singleton \
        & count (my.method.argument, argument.c_type?="zlist_t **")
-            echo "$(my.method.c_name): $(argument.c_type?"")"
             my.out += "foo = utils.to_strings (argv_p)\n"
             my.out += "        if foo is not None:\n"
             my.out += "            foo_p = utils.ffi.new(\"struct _zlist_t *[1]\")\n"
