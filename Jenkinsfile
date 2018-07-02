@@ -562,7 +562,7 @@ pipeline {
                 if ( params.DO_CLEANUP_AFTER_FAILED_JOB ) {
                     deleteDir()
                 } else {
-                    sh """ echo "NOTE: BUILD AREA OF WORKSPACE `pwd` REMAINS FOR POST-MORTEMS ON `hostname` AND CONSUMES `du -hs . | awk '{print $1}'` !" """
+                    sh """ echo "NOTE: BUILD AREA OF WORKSPACE `pwd` REMAINS FOR POST-MORTEMS ON `hostname` AND CONSUMES `du -hs . | awk '{print \$1}'` !" """
                 }
             }
         }
