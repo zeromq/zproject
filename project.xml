@@ -281,6 +281,8 @@
          of stage, and/or cleans the build workspace after the whole job
          succeeded, respectively. If not set, cleanup is enabled for both
          and in either case the active options are among build parameters.
+         In opposite fashion, a do_cleanup_after_failed_build is disabled
+         by default to allow post-mortem inspection of errors on CI server.
          You might want to keep the built sources to analyze the behavior
          of your build recipes in a particular environment, thought at a
          risk of using excessive disk space there. In case of failure the
