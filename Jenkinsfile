@@ -559,10 +559,12 @@ pipeline {
             //emailext (to: "qa@example.com", subject: "Build ${env.JOB_NAME} failed!", body: "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} ${currentBuild.result}\nSee ${env.BUILD_URL}")
 
             dir("tmp") {
-                if ( params.DO_CLEANUP_AFTER_FAILED_JOB ) {
-                    deleteDir()
-                } else {
-                    sh """ echo "NOTE: BUILD AREA OF WORKSPACE `pwd` REMAINS FOR POST-MORTEMS ON `hostname` AND CONSUMES `du -hs . | awk '{print $1}'` !" """
+                script {
+                    if ( params.DO_CLEANUP_AFTER_FAILED_JOB ) {
+                        deleteDir()
+                    } else {
+                        sh """ echo "NOTE: BUILD AREA OF WORKSPACE `pwd` REMAINS FOR POST-MORTEMS ON `hostname` AND CONSUMES `du -hs . | awk '{print \$1}'` !" """
+                    }
                 }
             }
         }
