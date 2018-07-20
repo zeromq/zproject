@@ -14,6 +14,7 @@ register_target ("vs2010", "Microsoft Visual Studio 2010")
 register_target ("vs2012", "Microsoft Visual Studio 2012")
 register_target ("vs2013", "Microsoft Visual Studio 2013")
 register_target ("vs2015", "Microsoft Visual Studio 2015")
+register_target ("vs2017", "Microsoft Visual Studio 2017")
 
 .macro generate_vs20xx_main (path)
 .directory.create (my.path)
@@ -222,7 +223,7 @@ call :done
 
 .##########################################################################
 
-.macro generate_vs20xx_build (path, level)
+.macro generate_vs20xx_build (path, level, toolset)
 .directory.create ("$(my.path)/$(project.libname)")
 .# change terminator for Windows file (CR+LF)
 .terminator="\r\n"
@@ -235,7 +236,7 @@ $(project.GENERATED_WARNING_HEADER:)
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0C4A2E28-8C9E-4B27-85D9-BB679AD84AC7}</ProjectGuid>
     <ProjectName>$(project.libname)</ProjectName>
-    <PlatformToolset>v$(my.level)0</PlatformToolset>
+    <PlatformToolset>v$(my.toolset)</PlatformToolset>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugDLL|Win32">
@@ -443,11 +444,11 @@ $(project.GENERATED_WARNING_HEADER:)
 <!--
 $(project.GENERATED_WARNING_HEADER:)
 -->
-<Project DefaultTargets="Build" ToolsVersion="$(my.level).0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A5497C4B-1CD1-4779-9458-$(string.hash(main.name))}</ProjectGuid>
     <ProjectName>$(main.name)</ProjectName>
-    <PlatformToolset>v$(my.level)0</PlatformToolset>
+    <PlatformToolset>v$(my.toolset)</PlatformToolset>
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
@@ -501,7 +502,7 @@ $(project.GENERATED_WARNING_HEADER:)
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Configuration">
-    <PlatformToolset>v$(my.level)0</PlatformToolset>
+    <PlatformToolset>v$(my.toolset)</PlatformToolset>
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <Import Project="$\(VCTargetsPath)\\Microsoft.Cpp.Default.props" />
@@ -678,6 +679,7 @@ SET solution=$(project.name:c).sln
 SET version=$(my.level)
 SET log=build.log
 SET tools=Microsoft Visual Studio %version%.0\\VC\\vcvarsall.bat
+if "%version%" == "15" SET tools=Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat
 SET environment="%programfiles(x86)%\\%tools%"
 IF NOT EXIST %environment% SET environment="%programfiles%\\%tools%"
 IF NOT EXIST %environment% GOTO no_tools
@@ -1037,23 +1039,29 @@ $(project.GENERATED_WARNING_HEADER:)
 function target_vs2010
     generate_vs20xx_main ("builds/msvc")
     generate_vs20xx_props ("builds/msvc/properties")
-    generate_vs20xx_build ("builds/msvc/vs2010", "10")
+    generate_vs20xx_build ("builds/msvc/vs2010", "10", "100")
 endfunction
 
 function target_vs2012
     generate_vs20xx_main ("builds/msvc")
     generate_vs20xx_props ("builds/msvc/properties")
-    generate_vs20xx_build ("builds/msvc/vs2012", "11")
+    generate_vs20xx_build ("builds/msvc/vs2012", "11", "110")
 endfunction
 
 function target_vs2013
     generate_vs20xx_main ("builds/msvc")
     generate_vs20xx_props ("builds/msvc/properties")
-    generate_vs20xx_build ("builds/msvc/vs2013", "12")
+    generate_vs20xx_build ("builds/msvc/vs2013", "12", "120")
 endfunction
 
 function target_vs2015
     generate_vs20xx_main ("builds/msvc")
     generate_vs20xx_props ("builds/msvc/properties")
-    generate_vs20xx_build ("builds/msvc/vs2015", "14")
+    generate_vs20xx_build ("builds/msvc/vs2015", "14", "140")
+endfunction
+
+function target_vs2017
+    generate_vs20xx_main ("builds/msvc")
+    generate_vs20xx_props ("builds/msvc/properties")
+    generate_vs20xx_build ("builds/msvc/vs2017", "15", "141")
 endfunction
