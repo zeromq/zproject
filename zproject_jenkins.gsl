@@ -229,7 +229,7 @@ pipeline {
             name: 'CLANG_FORMAT')
         string (
 .  if ( !(defined(project.jenkins_use_test_timeout)) | project.jenkins_use_test_timeout ?= "" )
-            defaultValue: "10",
+            defaultValue: "30",
 .  else
             defaultValue: "$(project.jenkins_use_test_timeout)",
 .  endif
