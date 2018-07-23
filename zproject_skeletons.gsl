@@ -177,7 +177,7 @@ struct _$(actor.name:c)_t {
 static $(actor.name:c)_t *
 $(actor.name:c)_new (zsock_t *pipe, void *args)
 {
-    $(actor.name:c)_t *self = ($(actor.name:c)_t *) malloc (sizeof ($(actor.name:c)_t));
+    $(actor.name:c)_t *self = ($(actor.name:c)_t *) zmalloc (sizeof ($(actor.name:c)_t));
     assert (self);
 
     self->pipe = pipe;
@@ -426,7 +426,7 @@ struct _$(class.c_name:)_t {
 $(class.c_name:)_t *
 $(class.c_name:)_new (void)
 {
-    $(class.c_name:)_t *self = ($(class.c_name:)_t *) malloc (sizeof ($(class.c_name:)_t));
+    $(class.c_name:)_t *self = ($(class.c_name:)_t *) zmalloc (sizeof ($(class.c_name:)_t));
     assert (self);
     //  Initialize class properties here
     return self;
