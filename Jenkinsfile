@@ -101,7 +101,7 @@ pipeline {
             description: 'The clang-format program (v5+) to use for this build, e.g. clang-format-5.0; an empty value means configure-time guesswork',
             name: 'CLANG_FORMAT')
         string (
-            defaultValue: "10",
+            defaultValue: "30",
             description: 'When running tests, use this timeout (in minutes; be sure to leave enough for double-job of a distcheck too)',
             name: 'USE_TEST_TIMEOUT')
         booleanParam (
