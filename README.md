@@ -433,8 +433,9 @@ zproject's `project.xml` contains an extensive description of the available conf
          The use_test_timeout option sets up the default timeout for test
          steps (further configurable at run-time as a build argument).
          Generally unit tests should not take pathologically long, so the
-         default of 10 minutes should commonly suffice even for distchecks.
-         If your selftests are known to take a lot of time, set this option.
+         default of 30 minutes should commonly suffice even for distchecks.
+         If your selftests are known to take a lot of time, perhaps due to
+         using an occasionally overloaded Jenkins CI farm, set this option.
 
          A use_test_retry option allows to retry each failing test step
          for the specified amount of attempts; it is deemed good if the
@@ -479,7 +480,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         <option name = "dist_docs" value = "1" />
         <option name = "require_gitignore" value = "0" />
         <option name = "use_deleteDir_rm_first" value = "1" />
-        <option name = "use_test_timeout" value = "30" />
+        <option name = "use_test_timeout" value = "60" />
         <option name = "use_test_retry" value = "3" />
         <option name = "test_check" value = "0" />
         <option name = "test_memcheck" value = "0" />
