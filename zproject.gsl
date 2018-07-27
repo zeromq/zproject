@@ -119,6 +119,8 @@ endif
 project->license. ?= "Copyright (c) the Authors"
 
 project.has_main = (count (main) > 0)
+project.has_bin = (count (bin) > 0)
+project.has_classes = (count (class) > 0)
 project.exports_classes = (count (class, !defined (class.private)) > 0)
 project.generated_warning_header ?= "\
 ################################################################################

@@ -110,7 +110,7 @@ BuildRequires:  python3-setuptools
 %endif
 .endif
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-.if project.has_main | count(project.bin) > 0
+.if project.has_main | project.has_bin
 .for project.use where use.type ?= "runtime"
 .if defined(use.redhat_name)
 .   if !(use.redhat_name = '')
@@ -128,13 +128,19 @@ Requires: $(string.replace (use.project, "_|-"))
 
 %description
 $(project.name) $(project.description).
-
 .if defined (project->abi)
 .   my.abi_ver = project->abi.current - project->abi.age
 .else
 .   my.abi_ver = 0
 .endif
-.if project.exports_classes
+.if project.exports_classes | ( project.has_classes & project.has_main )
+.# NOTE: Now for at least some compilers the symbol visibility seems to
+.# be managed in the shared library files, not the "exportedness" - so
+.# the delivered compiled binary files can use and do require those libs
+.# packaged even if all classes are marked private - should have at least
+.# one though. Also note that "bin" files are not necessarily compiled,
+.# e.g. helper scripts, so are not covered in this clause.
+
 %package -n $(project.libname)$(my.abi_ver)
 Group:          System/Libraries
 Summary:        $(project.description) shared library
@@ -151,6 +157,10 @@ This package contains shared library for $(project.name): $(project.description)
 %doc COPYING
 .endif
 %{_libdir}/$(project.libname).so.*
+.endif
+.if project.exports_classes
+.# NOTE: The development libs/headers make sense if any class was not
+.# marked private - different from just the lib package above.
 
 %package devel
 Summary:        $(project.description)
@@ -298,7 +308,7 @@ export PKG_CONFIG_PATH=`pwd`
 python3 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
 %endif
 .endif
-.if has_main | count(project.bin) > 0
+.if has_main | project.has_bin
 %files
 %defattr(-,root,root)
 .if file.exists ('README.md')
