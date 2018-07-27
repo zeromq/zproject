@@ -46,7 +46,6 @@ Requires: generator-scripting-language
 %description
 zproject project.
 
-
 %prep
 
 %setup -q
