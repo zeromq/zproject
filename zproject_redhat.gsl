@@ -110,7 +110,7 @@ BuildRequires:  python3-setuptools
 %endif
 .endif
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-.if project.has_main | count(project.bin) > 0
+.if project.has_main | project.has_bin
 .for project.use where use.type ?= "runtime"
 .if defined(use.redhat_name)
 .   if !(use.redhat_name = '')
@@ -298,7 +298,7 @@ export PKG_CONFIG_PATH=`pwd`
 python3 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
 %endif
 .endif
-.if has_main | count(project.bin) > 0
+.if has_main | project.has_bin
 %files
 %defattr(-,root,root)
 .if file.exists ('README.md')

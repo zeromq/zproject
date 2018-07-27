@@ -111,7 +111,7 @@ Description: $(project.name) development tools
  $(project.description)
 .endif
 
-.if project.has_main | count(project.bin) > 0
+.if project.has_main | project.has_bin
 Package: $(string.replace (project.name, "_|-"):lower)
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
@@ -138,7 +138,7 @@ Architecture: any
 Section: debug
 Priority: optional
 Depends:
-.if project.has_main | count(project.bin) > 0
+.if project.has_main | project.has_bin
     $(string.replace (project.name, "_|-"):lower) (= ${binary:Version}),
 .elsif project.exports_classes
 .if defined (project->abi)
@@ -311,7 +311,7 @@ override_dh_auto_configure:
 		--with autoreconf
 .chmod_x ("packaging/debian/rules")
 .discover_manpages(project)
-.if project.has_main | count(project.bin) > 0
+.if project.has_main | project.has_bin
 .   output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).manpages")
 .   for project.main where scope = "public" & project.has_main & man1 ?<> ""
 debian/tmp/usr/share/man/man1/$(main.name).1
