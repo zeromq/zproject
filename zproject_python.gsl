@@ -157,6 +157,9 @@ endfunction
 
 function method_annotation (method)
     fn = "lib.$(class.name:c)_$(method.name:c)"
+    if method.private ?= 1
+        fn="#lib.$(class.name:c)_$(method.name:c)"
+    endif
     for my.method.return
         restype = return.python_type
     endfor
