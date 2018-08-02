@@ -145,13 +145,21 @@ function resolve_scope (item)
     endif
 endfunction
 
+project.has_czmq = 0
 for use
     resolve_project_dependency (use)
+    if use.prefix = "czmq"
+        project.has_czmq = 1
+    endif
 endfor
 
 for main
     resolve_scope (main)
 endfor
+
+if count (actor) > 0 & project.has_czmq = 0
+    abort "E: Cannot use actors without czmq dependency"
+endif
 
 for actor
     actor.selftest ?= 1

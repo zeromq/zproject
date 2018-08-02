@@ -82,6 +82,28 @@ $(project.GENERATED_WARNING_HEADER:)
 #define $(PROJECT.PREFIX)_VERSION \\
     $(PROJECT.PREFIX)_MAKE_VERSION($(PROJECT.PREFIX)_VERSION_MAJOR, $(PROJECT.PREFIX)_VERSION_MINOR, $(PROJECT.PREFIX)_VERSION_PATCH)
 
+// czmq_prelude.h bits
+.if project.prefix <> "czmq" & project.has_czmq <> 1
+#if !defined (__WINDOWS__)
+#   if (defined WIN32 || defined _WIN32 || defined WINDOWS || defined _WINDOWS)
+#       undef __WINDOWS__
+#       define __WINDOWS__
+#   endif
+#endif
+.endif
+
+// Windows MSVS doesn't have stdbool
+#if (defined (_MSC_VER) && !defined (true))
+#   if (!defined (__cplusplus) && (!defined (true)))
+#       define true 1
+#       define false 0
+        typedef char bool;
+#   endif
+#else
+#   include <stdbool.h>
+#endif
+// czmq_prelude.h bits
+
 #if defined (__WINDOWS__)
 #   if defined $(PROJECT.PREFIX)_STATIC
 #       define $(PROJECT.PREFIX)_EXPORT
@@ -214,17 +236,6 @@ $(project.GENERATED_WARNING_HEADER:)
 */
 
 #include "$(project.prefix)_classes.$(project.header_ext)"
-
-#ifndef streq
-/*
- *  Allow projects without czmq dependency:
- *  The generated code expects that czmq pulls in a few headers and macro
- *  definitions. This is a minimal fix for the generated selftest file in
- *  C++ mode.
- */
-#include <string.h>
-#define streq(s1,s2)    (!strcmp ((s1), (s2)))
-#endif
 
 typedef struct {
     const char *testname;           // test name, can be called from command line this way
@@ -508,6 +519,45 @@ typedef struct _$(class.c_name:)_t $(class.c_name:)_t;
 .endfor
 
 //  Internal API
+.if project.prefix <> "czmq" & project.has_czmq <> 1
+// common definitions and idioms from czmq_prelude.h, which are used in generated code
+#if ! defined(__CZMQ_PRELUDE_H_INCLUDED__)
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+
+#define streq(s1,s2)    (!strcmp ((s1), (s2)))
+#define strneq(s1,s2)   (strcmp ((s1), (s2)))
+//  Replacement for malloc() which asserts if we run out of heap, and
+//  which zeroes the allocated block.
+static inline void *
+safe_malloc (size_t size, const char *file, unsigned line)
+{
+//     printf ("%s:%u %08d\\n", file, line, (int) size);
+    void *mem = calloc (1, size);
+    if (mem == NULL) {
+        fprintf (stderr, "FATAL ERROR at %s:%u\\n", file, line);
+        fprintf (stderr, "OUT OF MEMORY (malloc returned NULL)\\n");
+        fflush (stderr);
+        abort ();
+    }
+    return mem;
+}
+
+//  Define _ZMALLOC_DEBUG if you need to trace memory leaks using e.g. mtrace,
+//  otherwise all allocations will claim to come from czmq_prelude.h. For best
+//  results, compile all classes so you see dangling object allocations.
+//  _ZMALLOC_PEDANTIC does the same thing, but its intention is to propagate
+//  out of memory condition back up the call stack.
+#if defined (_ZMALLOC_DEBUG) || defined (_ZMALLOC_PEDANTIC)
+#   define zmalloc(size) calloc(1,(size))
+#else
+#   define zmalloc(size) safe_malloc((size), __FILE__, __LINE__)
+#endif
+#endif
+.endif
+
 .for class where scope = "public"
 .   visibility = "$(PROJECT.PREFIX)_PRIVATE"
 .   for class.method where private
