@@ -83,7 +83,7 @@ $(project.GENERATED_WARNING_HEADER:)
     $(PROJECT.PREFIX)_MAKE_VERSION($(PROJECT.PREFIX)_VERSION_MAJOR, $(PROJECT.PREFIX)_VERSION_MINOR, $(PROJECT.PREFIX)_VERSION_PATCH)
 
 // czmq_prelude.h bits
-.if project.prefix <> "czmq"
+.if project.prefix <> "czmq" & project.has_czmq <> 1
 #if !defined (__WINDOWS__)
 #   if (defined WIN32 || defined _WIN32 || defined WINDOWS || defined _WINDOWS)
 #       undef __WINDOWS__
@@ -519,8 +519,7 @@ typedef struct _$(class.c_name:)_t $(class.c_name:)_t;
 .endfor
 
 //  Internal API
-
-.if project.prefix <> "czmq"
+.if project.prefix <> "czmq" & project.has_czmq <> 1
 // common definitions and idioms from czmq_prelude.h, which are used in generated code
 #if ! defined(__CZMQ_PRELUDE_H_INCLUDED__)
 #include <stdlib.h>

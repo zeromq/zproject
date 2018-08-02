@@ -145,8 +145,12 @@ function resolve_scope (item)
     endif
 endfunction
 
+project.has_czmq = 0
 for use
     resolve_project_dependency (use)
+    if use.prefix = "czmq"
+        project.has_czmq = 1
+    endif
 endfor
 
 for main
