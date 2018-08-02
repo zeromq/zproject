@@ -157,6 +157,10 @@ for main
     resolve_scope (main)
 endfor
 
+if count (actor) > 0 & project.has_czmq = 0
+    abort "E: Cannot use actors without czmq dependency"
+endif
+
 for actor
     actor.selftest ?= 1
     new class to project
