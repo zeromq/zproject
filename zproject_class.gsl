@@ -82,15 +82,14 @@ $(project.GENERATED_WARNING_HEADER:)
 #define $(PROJECT.PREFIX)_VERSION \\
     $(PROJECT.PREFIX)_MAKE_VERSION($(PROJECT.PREFIX)_VERSION_MAJOR, $(PROJECT.PREFIX)_VERSION_MINOR, $(PROJECT.PREFIX)_VERSION_PATCH)
 
-// czmq_prelude.h bits
 .if project.prefix <> "czmq" & project.has_czmq <> 1
+// czmq_prelude.h bits
 #if !defined (__WINDOWS__)
 #   if (defined WIN32 || defined _WIN32 || defined WINDOWS || defined _WINDOWS)
 #       undef __WINDOWS__
 #       define __WINDOWS__
 #   endif
 #endif
-.endif
 
 // Windows MSVS doesn't have stdbool
 #if (defined (_MSC_VER) && !defined (true))
@@ -103,6 +102,7 @@ $(project.GENERATED_WARNING_HEADER:)
 #   include <stdbool.h>
 #endif
 // czmq_prelude.h bits
+.endif
 
 #if defined (__WINDOWS__)
 #   if defined $(PROJECT.PREFIX)_STATIC
