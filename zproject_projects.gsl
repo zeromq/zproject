@@ -170,11 +170,17 @@ for actor
         class.selftest = actor.selftest
     endnew
     resolve_scope (actor)
+    if actor.name ?= project.name
+        abort "E: actors should be named differently from the project itself"
+    endif
 endfor
 
 for class
     resolve_scope (class)
     class.selftest ?= 1
+    if class.name ?= project.name
+        abort "E: classes should be named differently from the project itself"
+    endif
 endfor
 
 for constant
