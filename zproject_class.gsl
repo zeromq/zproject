@@ -581,6 +581,14 @@ $(VISIBILITY) $(c_method_signature (method):)\
 
 //  *** To avoid double-definitions, only define if building without draft ***
 #ifndef $(PROJECT.PREFIX)_BUILD_DRAFT_API
+.for constant where scope = "public" & draft
+.   if first ()
+
+//  *** Draft global constants, defined for internal use only ***
+.   endif
+#define $(CONSTANT.NAME)\
+                            $(constant.value)  //  $(constant.?'')
+.endfor
 .for class where draft = 0
 .   for constant where draft = 1
 .      if first ()
