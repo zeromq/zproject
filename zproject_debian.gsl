@@ -77,8 +77,8 @@ Build-Depends: debhelper (>= 9),
 .# packaged even if all classes are marked private - should have at least
 .# one though. Also note that "bin" files are not necessarily compiled,
 .# e.g. helper scripts, so are not covered in this clause.
-.if defined (project->abi)
 
+.if defined (project->abi)
 Package: $(string.replace (project.libname, "_|-"))$(project->abi.current - project->abi.age)
 .else
 Package: $(string.replace (project.libname, "_|-"))0

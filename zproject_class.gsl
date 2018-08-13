@@ -102,8 +102,8 @@ $(project.GENERATED_WARNING_HEADER:)
 #   include <stdbool.h>
 #endif
 // czmq_prelude.h bits
-.endif
 
+.endif
 #if defined (__WINDOWS__)
 #   if defined $(PROJECT.PREFIX)_STATIC
 #       define $(PROJECT.PREFIX)_EXPORT
@@ -555,9 +555,9 @@ safe_malloc (size_t size, const char *file, unsigned line)
 #else
 #   define zmalloc(size) safe_malloc((size), __FILE__, __LINE__)
 #endif
-#endif
-.endif
+#endif // __CZMQ_PRELUDE_H_INCLUDED__
 
+.endif
 .for class where scope = "public"
 .   visibility = "$(PROJECT.PREFIX)_PRIVATE"
 .   for class.method where private
