@@ -161,6 +161,10 @@ if count (actor) > 0 & project.has_czmq = 0
     abort "E: Cannot use actors without czmq dependency"
 endif
 
+if !defined(project.unique_class_name)
+    project.unique_class_name = 1
+endif
+
 for actor
     actor.selftest ?= 1
     new class to project
@@ -171,7 +175,11 @@ for actor
     endnew
     resolve_scope (actor)
     if actor.name ?= project.name
-        abort "E: actors should be named differently from the project itself"
+        if project.unique_class_name ?= 1
+            abort "E: actors should be named differently from the project itself"
+        else
+            echo "WARNING: actors should be named differently from the project itself"
+        endif
     endif
 endfor
 
@@ -179,7 +187,11 @@ for class
     resolve_scope (class)
     class.selftest ?= 1
     if class.name ?= project.name
-        abort "E: classes should be named differently from the project itself"
+        if project.unique_class_name ?= 1
+            abort "E: classes should be named differently from the project itself"
+        else
+            echo "WARNING: classes should be named differently from the project itself"
+        endif
     endif
 endfor
 
