@@ -161,6 +161,16 @@ if count (actor) > 0 & project.has_czmq = 0
     abort "E: Cannot use actors without czmq dependency"
 endif
 
+if !defined(project.unique_class_name)
+    # TODO: A sane default would be "1" to enforce this check
+    # However some projects are known to really use classes named
+    # same as project and do somehow survive, so enforcing this
+    # check right now would break them. So we'll issue warnings
+    # for now and enable it in a year or so :)
+    #project.unique_class_name = 1
+    project.unique_class_name = 0
+endif
+
 for actor
     actor.selftest ?= 1
     new class to project
@@ -170,11 +180,25 @@ for actor
         class.selftest = actor.selftest
     endnew
     resolve_scope (actor)
+    if actor.name ?= project.name
+        if project.unique_class_name ?= 1
+            abort "E: actors should be named differently from the project itself; set project.unique_class_name=0 to let generate this project, or better yet - fix it"
+        else
+            echo "WARNING: actors should be named differently from the project itself; set project.unique_class_name=0 to let generate this project, or better yet - fix it"
+        endif
+    endif
 endfor
 
 for class
     resolve_scope (class)
     class.selftest ?= 1
+    if class.name ?= project.name
+        if project.unique_class_name ?= 1
+            abort "E: classes should be named differently from the project itself; set project.unique_class_name=0 to let generate this project, or better yet - fix it"
+        else
+            echo "WARNING: classes should be named differently from the project itself; set project.unique_class_name=0 to let generate this project, or better yet - fix it"
+        endif
+    endif
 endfor
 
 for constant
