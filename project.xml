@@ -35,7 +35,7 @@
     description := A short description for your project (optional)
     email := The email address where to reach you (optional)
     repository := git repository holding project (optional)
-    unique_class_name := "0"|"1" (optional, defaults to 1) As a failsafe, forbid naming agents or classes same as the project itself (can cause conflicts in generated header filenames). Disable (set to 0) only in legacy projects that can not regenerate otherwise, and try to fix those.
+    unique_class_name := "0"|"1" (optional, defaults to 0) As a failsafe, forbid naming agents or classes same as the project itself (can cause conflicts in generated header filenames). Disable explicitly (set to 0) only in legacy projects that can not regenerate otherwise, and try to fix those.
 -->
 <project script = "zproject.gsl" name = "zproject"
     email = "zeromq-dev@lists.zeromq.org"

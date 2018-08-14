@@ -162,7 +162,13 @@ if count (actor) > 0 & project.has_czmq = 0
 endif
 
 if !defined(project.unique_class_name)
-    project.unique_class_name = 1
+    # TODO: A sane default would be "1" to enforce this check
+    # However some projects are known to really use classes named
+    # same as project and do somehow survive, so enforcing this
+    # check right now would break them. So we'll issue warnings
+    # for now and enable it in a year or so :)
+    #project.unique_class_name = 1
+    project.unique_class_name = 0
 endif
 
 for actor
