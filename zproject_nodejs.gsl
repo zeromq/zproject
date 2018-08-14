@@ -93,9 +93,13 @@ done
 
 BUILD_ROOT=`pwd`
 cd ../../..
+rm -rf tmp-deps
+mkdir -p tmp-deps
 
 .for project.use where !optional & defined (use.repository)
 #   Check dependent projects
+BASE_PWD=${PWD}
+cd tmp-deps
 if [ ! -d $(use.project) ]; then
     echo "I:    cloning $(use.repository) into `pwd`/$(use.project)..."
     git clone $QUIET $(use.repository)
@@ -104,6 +108,7 @@ if [ ! -f $(use.project)/builds/gyp/project.gyp ]; then
     echo "E:    `pwd`/$(use.project) out of date (builds/gyp/project.gyp missing)"
     exit
 fi
+cd ${BASE_PWD}
 
 .endfor
 

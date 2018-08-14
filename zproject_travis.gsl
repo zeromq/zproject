@@ -242,9 +242,14 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
     export LANG LC_ALL
 
     if [ -d "./tmp" ]; then
+        # Proto installation area for this project and its deps
         rm -rf ./tmp
     fi
-    mkdir -p tmp
+    if [ -d "./tmp-deps" ]; then
+        # Checkout/unpack and build area for dependencies
+        rm -rf ./tmp-deps
+    fi
+    mkdir -p tmp tmp-deps
     BUILD_PREFIX=$PWD/tmp
 
     PATH="`echo "$PATH" | sed -e 's,^/usr/lib/ccache/?:,,' -e 's,:/usr/lib/ccache/?:,,' -e 's,:/usr/lib/ccache/?$,,' -e 's,^/usr/lib/ccache/?$,,'`"
@@ -409,17 +414,19 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
         BASE_PWD=${PWD}
 .           if defined (use.tarball)
         echo "`date`: INFO: Building prerequisite '$(use.project)' from tarball..." >&2
+        cd ./tmp-deps
         $CI_TIME wget $(use.tarball)
         tar -xzf \$(basename "$(use.tarball)")
-        cd \$(basename "$(use.tarball)" .tar.gz)
+        cd \$(basename "$(use.tarball)" .tar.gz) || exit \$?
 .           elsif defined (use.repository)
         echo "`date`: INFO: Building prerequisite '$(use.project)' from Git repository..." >&2
+        cd ./tmp-deps
 .               if defined (use.release)
         $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
 .               else
         $CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
 .               endif
-        cd $(use.project)
+        cd ./$(use.project)
 .           endif
 .           if defined (use.builddir)
         cd ./$(use.builddir)
@@ -572,7 +579,9 @@ set -ex
 [ -n "${REPO_DIR-}" ] || exit 1
 
 # Verify all required dependencies with repos can be checked out
-cd "$REPO_DIR/.."
+rm -rf "$REPO_DIR/../tmp-deps"
+mkdir -p "$REPO_DIR/../tmp-deps"
+cd "$REPO_DIR/../tmp-deps"
 .for project.use where !optional & defined (use.repository)
 .   if defined (use.release)
 git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
@@ -584,7 +593,7 @@ cd -
 
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list zproject >/dev/null 2>&1) || \\
        (command -v brew >/dev/null 2>&1 && brew ls --versions zproject >/dev/null 2>&1)); then
-    cd "$REPO_DIR/.."
+    cd "$REPO_DIR/../tmp-deps"
     git clone --quiet --depth 1 https://github.com/zeromq/zproject zproject
     cd zproject
     PATH="`pwd`:$PATH"
@@ -592,7 +601,7 @@ fi
 
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scripting-language >/dev/null 2>&1) || \\
        (command -v brew >/dev/null 2>&1 && brew ls --versions gsl >/dev/null 2>&1)); then
-    cd "$REPO_DIR/.."
+    cd "$REPO_DIR/../tmp-deps"
     git clone https://github.com/zeromq/gsl.git gsl
     cd gsl/src
     make
