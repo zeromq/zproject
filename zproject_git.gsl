@@ -89,12 +89,7 @@ if !file.exists (".gitignore")
     >Testing/
     >
     ># Repositories downloaded by CI integration scripts
-.   for use where defined (use.repository) & ! defined (use.tarball)
-    >$(use.project)/
-.   endfor
-.   for use where defined (use.tarball)
-    >\$(basename "$(use.tarball)" .tar.gz)/
-.   endfor
+    >tmp-deps/
     >
     ># Travis build area
     >tmp/

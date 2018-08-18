@@ -27,10 +27,13 @@ cd "${REPO_DIR}" || exit
 PATH="`pwd`:$PATH"
 export PATH
 
+rm -rf tmp-deps
+mkdir tmp-deps
+
 echo "=== Install gitdown"
-git clone https://github.com/zeromq/gitdown.git gitdown
 mkdir -p ~/bin
-( cd gitdown && ./install-wrapper ~/bin ) || exit $?
+( cd tmp-deps && git clone https://github.com/zeromq/gitdown.git gitdown ) \
+&& ( cd tmp-deps/gitdown && ./install-wrapper ~/bin ) || exit $?
 PATH="$PATH:~/bin"
 export PATH
 which gitdown

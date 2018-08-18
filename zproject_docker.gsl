@@ -27,11 +27,11 @@ RUN chmod 0440 /etc/sudoers.d/zmq
 USER zmq
 
 .for use where !optional & defined (use.tarball)
-WORKDIR /home/zmq
+WORKDIR /home/zmq/tmp-deps
 RUN wget $(use.tarball)
 RUN tar -xzf \$(basename "$(use.tarball)")
 RUN rm \$(basename "$(use.tarball)")
-WORKDIR /home/zmq/\$(basename "$(use.tarball)" .tar.gz)
+WORKDIR /home/zmq/tmp-deps/\$(basename "$(use.tarball)" .tar.gz)
 RUN ./configure --quiet --without-docs
 RUN make
 RUN sudo make install
@@ -39,9 +39,9 @@ RUN sudo ldconfig
 
 .endfor
 .for use where !optional & !defined (use.tarball)
-WORKDIR /home/zmq
+WORKDIR /home/zmq/tmp-deps
 RUN git clone --quiet $(use.repository) $(use.project)
-WORKDIR /home/zmq/$(use.project)
+WORKDIR /home/zmq/tmp-deps/$(use.project)
 RUN ./autogen.sh 2> /dev/null
 RUN ./configure --quiet --without-docs
 RUN make

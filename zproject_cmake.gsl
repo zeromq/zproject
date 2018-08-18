@@ -706,9 +706,14 @@ LC_ALL=C
 export LANG LC_ALL
 
 if [ -d "./tmp" ]; then
+    # Proto installation area for this project and its deps
     rm -rf ./tmp
 fi
-mkdir -p tmp
+if [ -d "./tmp-deps" ]; then
+    # Checkout/unpack and build area for dependencies
+    rm -rf ./tmp-deps
+fi
+mkdir -p tmp tmp-deps
 BUILD_PREFIX=$PWD/tmp
 
 # Use tools from prerequisites we might have built
@@ -753,9 +758,10 @@ if \
        (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1) \\
 ; then
     BASE_PWD=${PWD}
+    cd tmp-deps
     wget $(use.tarball)
     tar -xzf \$(basename "$(use.tarball)")
-    cd \$(basename "$(use.tarball)" .tar.gz)
+    cd \$(basename "$(use.tarball)" .tar.gz) || exit \$?
 .   if defined (use.builddir)
     cd ./$(use.builddir)
 .   endif
@@ -799,12 +805,13 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
 .   endif
        (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
+    BASE_PWD=${PWD}
+    cd tmp-deps
 .   if defined (use.release)
     $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
 .   else
     $CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
 .   endif
-    BASE_PWD=${PWD}
 .   if defined (use.builddir)
     cd $(use.project)/$(use.builddir)
 .   else

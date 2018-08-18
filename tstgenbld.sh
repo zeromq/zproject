@@ -76,7 +76,7 @@ echo "Projects will be built and installed to here: ${BUILD_PREFIX}"
 
 # directory where git projects will be cloned will be ${GITPROJECTS}
 GITROOT=${PWD}
-GITPROJECTS=${GITROOT}/gitprojects
+GITPROJECTS=${GITROOT}/tmp-deps
 echo "Projects will be cloned to here: ${GITPROJECTS}"
 #read -p "Press ENTER to continue: "
 

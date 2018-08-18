@@ -149,8 +149,11 @@ export TOOLCHAIN_NAME="arm-linux-androideabi-$NDK_ABI_VER"
 export TOOLCHAIN_HOST="arm-linux-androideabi"
 export TOOLCHAIN_ARCH="arm"
 
+rm -rf /tmp/tmp-deps
+mkdir -p /tmp/tmp-deps
+
 .for use where defined (use.repository)
-export $(USE.PROJECT)_ROOT="/tmp/$(use.project)"
+export $(USE.PROJECT)_ROOT="/tmp/tmp-deps/$(use.project)"
 .   if defined (use.release)
 git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $$(USE.PROJECT)_ROOT
 .   else
