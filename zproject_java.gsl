@@ -428,7 +428,7 @@ android_build_env
 #   Build any dependent libraries
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-( cd ../../../../$(use.project)/bindings/jni/android; ./build.sh )
+( cd ../../../../tmp-deps/$(use.project)/bindings/jni/android; ./build.sh )
 .   endif
 .endfor
 
@@ -457,7 +457,7 @@ echo "********  Building $(project.name:c).jar for Android"
 unzip -q ../../build/libs/$(project.prefix)-jni-$(->version.major).$(->version.minor).$(->version.patch).jar
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-unzip -q -o ../../../../../$(use.project)/bindings/jni/android/$(use.project)-android.jar
+unzip -q -o ../../../../../tmp-deps/$(use.project)/bindings/jni/android/$(use.project)-android.jar
 .   endif
 .endfor
 
