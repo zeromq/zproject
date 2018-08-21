@@ -873,8 +873,8 @@ CONFIG_OPTS+=("$(add_cfgopt)")
 CCACHE_BASEDIR=${PWD}
 export CCACHE_BASEDIR
 if [ "$DO_CLANG_FORMAT_CHECK" = "1" ] ; then
-    PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" . \\
-    && make clang-format-check || { make clang-format-diff && exit 1 ; }
+    { PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" . \\
+      && make clang-format-check-CI ; exit $? ; }
 else
     PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" .
     $CI_TIME make all VERBOSE=1 -j4
@@ -930,6 +930,13 @@ add_custom_target(
 )
 
 add_custom_target(
+        clang-format-check-CI
+        COMMAND chmod +x clang-format-check.sh
+        COMMAND ./clang-format-check.sh --CI
+        COMMENT "Checking correct formatting according to .clang-format file using ${CLANG_FORMAT}"
+)
+
+add_custom_target(
         clang-format-diff
         COMMAND ${CLANG_FORMAT} -style=file -i ${ALL_SOURCE_FILES}
         COMMAND git diff ${ALL_SOURCE_FILES}
@@ -945,6 +952,7 @@ FAILED=0
 IFS=";"
 FILES="@ALL_SOURCE_FILES@"
 IDS=\$\(echo -en "\\n\\b")
+[ -n "\$MAKE" ] || MAKE=make
 for FILE in $FILES
 do
     @CLANG_FORMAT@ -style=file -output-replacements-xml "$FILE" | grep "<replacement " >/dev/null && \\
@@ -953,7 +961,19 @@ do
       FAILED=1
     }
 done
-if [ "$FAILED" -eq "1" ] ; then exit 1 ; fi
+if [ "\$FAILED" -eq "1" ] ; then
+    if [ "\$1" = "--CI" ] ; then
+        echo "Style mismatches were found by clang-format; detailing below:" >&2
+        \$\{MAKE} clang-format-diff
+        if test x"\$\{CI_REQUIRE_GOOD_CLANG_FORMAT}" = xtrue ; then
+            echo "FAILED : Style checks have failed and CI_REQUIRE_GOOD_CLANG_FORMAT==true" >&2
+            exit 1
+        fi
+        echo "WARNING : Style checks have failed, but the result is not-fatal because CI_REQUIRE_GOOD_CLANG_FORMAT!=true" >&2
+        exit 0
+    fi
+    exit 1
+fi
 .close
 .output "builds/cmake/Config.cmake.in"
 @PACKAGE_INIT@
