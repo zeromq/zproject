@@ -56,6 +56,8 @@ project.Makefile
 *.mk
 out/
 Makefile
+tmp-deps/
+.#TODO: Remove this for if tmp-deps/ works for this
 .for project.use where !optional
 $(use.project)/
 .endfor
@@ -191,10 +193,13 @@ $(project.GENERATED_WARNING_HEADER:)
       'dependencies': [
 .   for project.use where !optional
 .       use.gypfile = "../$(use.project)/$(my.targetdir)/project.gyp"
+.       if ! file.exists (gypfile)
+.           use.gypfile = "../tmp-deps/$(use.project)/$(my.targetdir)/project.gyp"
+.       endif
 .       if file.exists (gypfile)
         '../../$(gypfile):$(use.libname)',
 .       else
-.           echo "E: please checkout $(use.project) into ../$(use.project)"
+.           echo "E: please checkout $(use.project) into ../tmp-deps/$(use.project) or ../$(use.project)"
 .       endif
 .   endfor
       ],
