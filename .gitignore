@@ -71,11 +71,13 @@ install_manifest.txt
 Testing/
 
 # Repositories downloaded by CI integration scripts
-gsl/
-gitdown/
+tmp-deps/
+###gsl/
+###gitdown/
 
-# Manually tracked: the czmq source is pulled as a test target
-czmq/
+### Manually tracked: the czmq source is pulled as a test target
+###libzmq/
+###czmq/
 
 # Travis build area
 tmp/
