@@ -103,11 +103,13 @@ BASE_PWD=${PWD}
 cd tmp-deps
 if [ ! -d $(use.project) ]; then
     echo "I:    cloning $(use.repository) into `pwd`/$(use.project)..."
-    git clone $QUIET $(use.repository)
+.# TODO: Should there be a use of "release" (git branch) like elsewhere?
+    git clone $QUIET $(use.repository) || exit
 fi
 if [ ! -f $(use.project)/builds/gyp/project.gyp ]; then
-    echo "E:    `pwd`/$(use.project) out of date (builds/gyp/project.gyp missing)"
-    exit
+.# Note: We removed tmp-deps before, so the checkout is assumed most-recent and clean
+    echo "E:    `pwd`/$(use.project) out of date (builds/gyp/project.gyp missing)" >&2
+    exit 1
 fi
 cd ${BASE_PWD}
 
