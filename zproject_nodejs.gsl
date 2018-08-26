@@ -26,7 +26,6 @@ Makefile
 logs
 *.log
 npm-debug.log*
-tmp-deps/
 .for project.use where !optional
 $(use.project)/
 .endfor
@@ -94,24 +93,20 @@ done
 
 BUILD_ROOT=`pwd`
 cd ../../..
-rm -rf tmp-deps
-mkdir -p tmp-deps
+# Note: here we go to parent directory that contains current project,
+# so the checkout is nearby, same as expected for usual developer work
 
 .for project.use where !optional & defined (use.repository)
 #   Check dependent projects
-BASE_PWD=${PWD}
-cd tmp-deps
 if [ ! -d $(use.project) ]; then
     echo "I:    cloning $(use.repository) into `pwd`/$(use.project)..."
 .# TODO: Should there be a use of "release" (git branch) like elsewhere?
     git clone $QUIET $(use.repository) || exit
 fi
 if [ ! -f $(use.project)/builds/gyp/project.gyp ]; then
-.# Note: We removed tmp-deps before, so the checkout is assumed most-recent and clean
     echo "E:    `pwd`/$(use.project) out of date (builds/gyp/project.gyp missing)" >&2
     exit 1
 fi
-cd ${BASE_PWD}
 
 .endfor
 
@@ -154,11 +149,12 @@ $(project.GENERATED_WARNING_HEADER:)
       'target_name': '$(project.name)',
       'sources': [
 .   for project.use where !optional
-.       if file.exists ("../tmp-deps/$(use.project)/$(topdir)/binding.cc")
-          '../../../tmp-deps/$(use.project)/$(topdir)/binding.cc',
+.# Note: the file.exists() paths are relative to current project.xml during zproject regen
+.       if file.exists ("../$(use.project)/$(topdir)/binding.cc")
+          '../../../$(use.project)/$(topdir)/binding.cc',
 .       else
-.           if !file.exists ("../tmp-deps/$(use.project)")
-.               abort "E: please checkout $(use.project) into ../../../tmp-deps/$(use.project)"
+.           if !file.exists ("../$(use.project)")
+.               abort "E: please checkout $(use.project) into ../../../$(use.project)"
 .           endif
 .       endif
 .   endfor
@@ -167,7 +163,7 @@ $(project.GENERATED_WARNING_HEADER:)
       'include_dirs': [
           "<!(node -e \\"require('nan')\\")",
 .   for project.use where !optional
-          '../../../tmp-deps/$(use.project)/include',
+          '../../../$(use.project)/include',
 .   endfor
           '../../include'
       ],
@@ -251,11 +247,11 @@ $(project.GENERATED_WARNING_HEADER:)
 #define $(PROJECT.PREFIX)_BUILD_DRAFT_API
 
 .   for project.use where !optional
-.       if file.exists ("../tmp-deps/$(use.project)/$(topdir)/binding.h")
-#include "../../../tmp-deps/$(use.project)/$(topdir)/binding.h"
+.       if file.exists ("../$(use.project)/$(topdir)/binding.h")
+#include "../../../$(use.project)/$(topdir)/binding.h"
 .       else
-.           if !file.exists ("../tmp-deps/$(use.project)")
-.               abort "E: please checkout $(use.project) into ../tmp-deps/$(use.project)"
+.           if !file.exists ("../$(use.project)")
+.               abort "E: please checkout $(use.project) into ../$(use.project)"
 .           endif
 .       endif
 .   endfor
