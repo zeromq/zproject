@@ -268,8 +268,14 @@ $(project.GENERATED_WARNING_HEADER:)
     <ClCompile>
       <AdditionalIncludeDirectories>..\\..\\..\\..\\..\\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$\(JAVA_HOME)\\include;$\(JAVA_HOME)\\include\\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-.for project.use where file.exists ("../$(use.project)/include")
+.for project.use
+.   if file.exists ("../$(use.project)/include")
       <AdditionalIncludeDirectories>..\\..\\..\\..\\..\\..\\$(use.project)\\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+.   else
+.       if use.optional ?= 0
+.           abort "E: please checkout $(use.project) into ../$(use.project)"
+.       endif
+.   endif
 .endfor
       <CompileAs>CompileAsC</CompileAs>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
