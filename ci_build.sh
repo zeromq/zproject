@@ -29,8 +29,10 @@ esac
 
 case "$BUILD_TYPE" in
 "default"|"distcheck")
-    mkdir tmp
+    rm -rf tmp tmp-deps
+    mkdir -p tmp tmp-deps
     BUILD_PREFIX="$PWD/tmp"
+    BASE_PWD="`pwd`"
 
     CCACHE_PATH="$PATH"
     CCACHE_DIR="${HOME}/.ccache"
@@ -40,6 +42,7 @@ case "$BUILD_TYPE" in
     if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scripting-language >/dev/null 2>&1) || \
            (command -v brew >/dev/null 2>&1 && brew ls --versions gsl >/dev/null 2>&1)); then
         [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies: gsl..."
+        cd tmp-deps
         $CI_TIME git clone --depth 1 https://github.com/zeromq/gsl.git gsl
         ( cd gsl/src && \
           CCACHE_BASEDIR=${PWD} && \
@@ -47,6 +50,7 @@ case "$BUILD_TYPE" in
           $CI_TIME make -j4 && \
           DESTDIR="${BUILD_PREFIX}" $CI_TIME make install \
         ) || exit 1
+        cd "$BASE_PWD"
     fi
 
     [ -z "$CI_TIME" ] || echo "`date`: Starting build of zproject..."
@@ -70,6 +74,9 @@ case "$BUILD_TYPE" in
     # Make sure to prefer use of just-built and locally installed copy of gsl
     if [ "$BUILD_TYPE" == "default" ] ; then
     ( [ -z "$CI_TIME" ] || echo "`date`: Starting test of zproject (and gsl) by reconfiguring czmq..."
+      cd tmp-deps
+      # Note: libzmq is required to generate GYP files for czmq
+      $CI_TIME git clone --depth 1 https://github.com/zeromq/libzmq.git libzmq
       $CI_TIME git clone --depth 1 https://github.com/zeromq/czmq.git czmq
       PATH="${BUILD_PREFIX}/bin:$PATH"; export PATH; \
       cd czmq && \
