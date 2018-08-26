@@ -26,6 +26,7 @@ Makefile
 logs
 *.log
 npm-debug.log*
+tmp-deps/
 .for project.use where !optional
 $(use.project)/
 .endfor
@@ -151,8 +152,12 @@ $(project.GENERATED_WARNING_HEADER:)
       'target_name': '$(project.name)',
       'sources': [
 .   for project.use where !optional
-.       if file.exists ("../$(use.project)/$(topdir)/binding.cc")
-          '../../../$(use.project)/$(topdir)/binding.cc',
+.       if file.exists ("../tmp-deps/$(use.project)/$(topdir)/binding.cc")
+          '../../../tmp-deps/$(use.project)/$(topdir)/binding.cc',
+.       else
+.           if !file.exists ("../tmp-deps/$(use.project)")
+.               abort "E: please checkout $(use.project) into ../../../tmp-deps/$(use.project)"
+.           endif
 .       endif
 .   endfor
           'binding.cc'
@@ -160,7 +165,7 @@ $(project.GENERATED_WARNING_HEADER:)
       'include_dirs': [
           "<!(node -e \\"require('nan')\\")",
 .   for project.use where !optional
-          '../../../$(use.project)/include',
+          '../../../tmp-deps/$(use.project)/include',
 .   endfor
           '../../include'
       ],
@@ -244,8 +249,12 @@ $(project.GENERATED_WARNING_HEADER:)
 #define $(PROJECT.PREFIX)_BUILD_DRAFT_API
 
 .   for project.use where !optional
-.       if file.exists ("../$(use.project)/$(topdir)/binding.h")
-#include "../../../$(use.project)/$(topdir)/binding.h"
+.       if file.exists ("../tmp-deps/$(use.project)/$(topdir)/binding.h")
+#include "../../../tmp-deps/$(use.project)/$(topdir)/binding.h"
+.       else
+.           if !file.exists ("../tmp-deps/$(use.project)")
+.               abort "E: please checkout $(use.project) into ../tmp-deps/$(use.project)"
+.           endif
 .       endif
 .   endfor
 #include "$(project.header)"
