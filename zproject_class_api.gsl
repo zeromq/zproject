@@ -41,6 +41,8 @@ if python_cffi ?= 1
     for project.use
         if file.exists ("../$(use.project:c)/api/python_cffi.slurp")
             use.python_cffi_slurp = "../$(use.project:c)/api/python_cffi.slurp"
+        elsif file.exists ("tmp-deps/$(use.project:c)/api/python_cffi.slurp")
+            use.python_cffi_slurp = "tmp-deps/$(use.project:c)/api/python_cffi.slurp"
         elsif file.exists ("/usr/local/share/zproject/$(use.project:c)/python_cffi.slurp")
             use.python_cffi_slurp = "/usr/local/share/zproject/$(use.project:c)/python_cffi.slurp"
         elsif file.exists ("/usr/share/zproject/$(use.project:c)/python_cffi.slurp")

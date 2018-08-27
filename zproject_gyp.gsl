@@ -192,14 +192,20 @@ $(project.GENERATED_WARNING_HEADER:)
       ],
       'dependencies': [
 .   for project.use where !optional
-.       use.gypfile = "../$(use.project)/$(my.targetdir)/project.gyp"
+.       prjdir = "../$(use.project)"
+.       gypfile = "$(prjdir)/$(my.targetdir)/project.gyp"
 .       if ! file.exists (gypfile)
-.           use.gypfile = "../tmp-deps/$(use.project)/$(my.targetdir)/project.gyp"
+.           prjdir_tmp = "../tmp-deps/$(use.project)"
+.           gypfile_tmp = "$(prjdir_tmp)/$(my.targetdir)/project.gyp"
 .       endif
-.       if file.exists (gypfile)
+.       if (file.exists (gypfile) | file.exists (gypfile_tmp))
+.# Note: Use the location expected in usual, non-CI workflows
         '../../$(gypfile):$(use.libname)',
 .       else
-.           echo "E: please checkout $(use.project) into ../tmp-deps/$(use.project) or ../$(use.project)"
+.# Note: Simply missing file with a properly checked out code is ok, it just is not there
+.           if (!file.exists (prjdir) & !file.exists (prjdir_tmp))
+.               abort "E: please checkout $(use.project) into $(prjdir_tmp) or $(prjdir)"
+.           endif
 .       endif
 .   endfor
       ],
