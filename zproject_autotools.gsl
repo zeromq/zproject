@@ -1397,8 +1397,8 @@ $(main.name).cfg
 .for project.bin where ( defined(bin.service) & bin.service > 0 & ( !defined(bin.no_config) | bin.no_config ?= 0 ) )
 $(bin.name).cfg
 .endfor
-
 .if systemd ?= 1
+
 # + systemd service unit for daemons (if any):
 .   for project.main where ( defined(main.service) & main.service > 0 )
 .       if ( main.service ?= 1 | main.service ?= 3 )
