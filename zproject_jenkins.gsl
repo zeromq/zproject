@@ -285,13 +285,36 @@ pipeline {
     }
 .   endif
 .  endif
+.  if project.jenkins_use_checkout_explicit ?= 1 | project.jenkins_use_build_nonconcurrent ?= 1
+
+    // Jenkins tends to reschedule jobs that have not yet completed if they took
+    // too long, maybe this happens in combination with polling. Either way, if
+    // the server gets into this situation, the snowball of same builds grows as
+    // the build system lags more and more. Let the devs avoid it in a few ways.
+    options {
+.   if project.jenkins_use_build_nonconcurrent ?= 1
+        disableConcurrentBuilds()
+.   endif
+.   if project.jenkins_use_checkout_explicit ?= 1
+        // Jenkins community suggested that instead of a default checkout, we can do
+        // an explicit step for that. It is expected that either way Jenkins "should"
+        // record that a particular commit is being processed, but the explicit ways
+        // might work better. In either case it honors SCM settings like refrepo if
+        // set up in the Pipeline or MultiBranchPipeline job.
+        skipDefaultCheckout()
+.   endif
+    }
+.  endif
 .# TODO: Add a --enable-address-sanitizer=yes matrix
 // Note: your Jenkins setup may benefit from similar setup on side of agents:
 //        PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/bin:/bin:\$\{PATH}"
     stages {
-        stage ('prepare') {
+        stage ('pre-clean') {
 .       jenkins_agent (project, 0)
                     steps {
+.  if project.jenkins_use_earlymilestone ?= 1
+                        milestone ordinal: 20, label: "${env.JOB_NAME}@${env.BRANCH_NAME}"
+.  endif
                         dir("tmp") {
                             sh 'if [ -s Makefile ]; then make -k distclean || true ; fi'
                             sh 'chmod -R u+w .'
@@ -300,9 +323,30 @@ pipeline {
 .       endif
                             deleteDir()
                         }
+                        sh 'rm -f ccache.log cppcheck.xml'
+                    }
+        }
+.  if project.jenkins_use_checkout_explicit ?= 1
+        stage ('git') {
+.       jenkins_agent (project, 0)
+                    steps {
+                        retry(3) {
+                            checkout scm
+                        }
+.  if project.jenkins_use_earlymilestone ?= 1
+                        milestone ordinal: 30, label: "${env.JOB_NAME}@${env.BRANCH_NAME}"
+.  endif
+                    }
+        }
+.  endif
+        stage ('prepare') {
+.       jenkins_agent (project, 0)
+                    steps {
                         sh './autogen.sh'
-                        sh 'rm -f ccache.log'
                         stash (name: 'prepped', includes: '**/*', excludes: '**/cppcheck.xml')
+.  if project.jenkins_use_earlymilestone ?= 1
+                        milestone ordinal: 40, label: "${env.JOB_NAME}@${env.BRANCH_NAME}"
+.  endif
                     }
         }
         stage ('compile') {

@@ -255,6 +255,20 @@
          empty string disables polling, so you'd only run the job manually.
          Note that the most frequent working setting is "H/2", NOT a "H/1".
 
+         On the Jenkins setup used by generated projects, sometimes it was
+         re-scheduling the same commits over and over and even overlapping.
+         Usually this was linked to some lagginess of the build system or
+         its internet connection, but the result was a growing queue of
+         same (and redundant) builds. To remedy this, projects can set a
+         few experimental options now (and regenerate their Jenkinsfile):
+         * use_earlymilestone -- uses a milestone to cancel builds that
+            got to it later than the running one
+         * use_build_nonconcurrent -- sets a disableConcurrentBuilds option
+         * use_checkout_explicit -- sets a skipDefaultCheckout option and
+            defines a step to check out code explicitly; it is believed
+            this may better succeed in recording which commits are already
+            being processed by the server
+
          The use_test_timeout option sets up the default timeout for test
          steps (further configurable at run-time as a build argument).
          Generally unit tests should not take pathologically long, so the
