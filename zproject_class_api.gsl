@@ -79,6 +79,15 @@ function set_state (element, default)
     |  my.element.state = "deprecated" \
     |  my.element.private ?= 1
         my.element.draft = 0
+    elsif my.element.stable ?= 0 | my.element.stable ?= 1
+        echo "LEGACY HACK WARNING: Usage of 'stable' boolean attribute in $(name (my.element)) is deprecated, please choose a 'state' instead"
+        if my.element.stable ?= 0
+            my.element.draft = 1
+            my.element.state = "draft"
+        else
+            my.element.draft = 0
+            my.element.state = "stable"
+        endif
     elsif my.element.state = "draft"
         my.element.draft = 1
     else
