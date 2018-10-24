@@ -557,7 +557,7 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
     make check-gitignore
     echo "==="
 
-.   if travis_distcheck ?= 0
+.   if project.travis_distcheck ?= 0
     make check
 .   else
     (
@@ -581,7 +581,7 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
         $CI_TIME ./autogen.sh 2> /dev/null
         $CI_TIME ./configure --enable-drafts=no "${CONFIG_OPTS[@]}"
         $CI_TIME make VERBOSE=1 all || exit $?
-.   if travis_distcheck ?= 0
+.   if project.travis_distcheck ?= 0
         make check
 .   else
         (
