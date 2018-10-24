@@ -88,6 +88,10 @@ false
   matrix:
     - BUILD_TYPE=default
     - BUILD_TYPE=default-Werror
+.if project.travis_use_cmake ?= 0
+### Note: we don't use CMake
+#\
+.endif
     - BUILD_TYPE=cmake
 #   - BUILD_TYPE=android
 #   - BUILD_TYPE=check-py
@@ -129,7 +133,13 @@ pkg_deps_prereqs_source: &pkg_deps_prereqs_source
 .       endif
 .      endfor
 
+.if project.travis_use_pkg_deps_prereqs_source ?= 0
+# NOTE: Our forks are checked out and built without pkg dependencies in use
+.endif
 pkg_deps_prereqs: &pkg_deps_prereqs
+.if project.travis_use_pkg_deps_prereqs_source ?= 0
+#\
+.endif
     - *pkg_deps_prereqs_source
     - *pkg_deps_prereqs_distro
 
@@ -185,7 +195,7 @@ matrix:
         sources: *pkg_src_zeromq_ubuntu14
         packages:
         - *pkg_deps_common
-.if project.travis_clangformat_implem ?= "autotools"
+.if project.travis_clangformat_implem ?= "autotools" | ( !defined(project.travis_clangformat_implem) & project.travis_use_cmake ?= 0 )
 .   echo "TRAVIS: CLANG-FORMAT: implementation: autotools"
 ### Note: we don't use CMake
 #\
@@ -195,7 +205,7 @@ matrix:
 # to have dependencies ready and pass configure script before making this check).
 # Note that the autotools variant will also require dependencies preinstalled to
 # pass its configure script:
-.if !defined(project.travis_clangformat_implem) | project.travis_clangformat_implem ?= "cmake"
+.if project.travis_clangformat_implem ?= "cmake" | ( !defined(project.travis_clangformat_implem) & ( project.travis_use_cmake ?= 1 | !defined(project.travis_use_cmake) ) )
 .   echo "TRAVIS: CLANG-FORMAT: implementation: cmake"
 #\
 .endif
@@ -209,7 +219,7 @@ matrix:
         packages:
         - clang-5.0
         - clang-format-5.0
-.if !defined(project.travis_clangformat_implem) | project.travis_clangformat_implem ?= "cmake"
+.if project.travis_clangformat_implem ?= "cmake" | ( !defined(project.travis_clangformat_implem) & ( project.travis_use_cmake ?= 1 | !defined(project.travis_use_cmake) ) )
 #autotools#\
 .endif
         - *pkg_deps_prereqs
@@ -217,11 +227,11 @@ matrix:
 .   echo "TRAVIS: CLANG-FORMAT: allow-fail: 1"
 # Note: "env" lines below must exactly describe a matrix option defined above
   allow_failures:
-.if project.travis_clangformat_implem ?= "autotools"
+.   if project.travis_clangformat_implem ?= "autotools" | ( !defined(project.travis_clangformat_implem) & project.travis_use_cmake ?= 0 )
 #\
-.endif
+.   endif
   - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1 CLANG_FORMAT=clang-format-5.0
-.   if !defined(project.travis_clangformat_implem) | project.travis_clangformat_implem ?= "cmake"
+.   if project.travis_clangformat_implem ?= "cmake" | ( !defined(project.travis_clangformat_implem) & ( project.travis_use_cmake ?= 1 | !defined(project.travis_use_cmake) ) )
 #\
 .   endif
   - env: BUILD_TYPE=clang-format-check CLANG_FORMAT=clang-format-5.0
