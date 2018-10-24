@@ -195,7 +195,10 @@ zproject's `project.xml` contains an extensive description of the available conf
         redhat              Packaging for RedHat
         ruby                Ruby binding
         travis              Travis CI scripts
-            <option name="distcheck" value="0" /> will disable run of make distcheck in Travis CI
+            <option name="distcheck" value="0" /> "false" will disable run of make distcheck in Travis CI (default: true)
+            <option name="clangformat_allow_failures" value="0" /> "true" will generate the option allowing non-fatal failure of clang-format test in Travis CI (default: true)
+            <option name="clangformat_require_good" value="0" /> "true" will generate the option allowing to report and not ignore failure of clang-format test in Travis CI (otherwise "false" hides the failure, devs must look in test logs) (default: same as allow_failures)
+            <option name="clangformat_implem" value="cmake|autotools" /> will pick one of two implems of the clang-format test in Travis CI (cmake is default and faster if available, since autotools needs to configure first)
         vs2008              Microsoft Visual Studio 2008
         vs2010              Microsoft Visual Studio 2010
         vs2012              Microsoft Visual Studio 2012
