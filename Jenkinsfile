@@ -127,15 +127,19 @@ pipeline {
 // Note: your Jenkins setup may benefit from similar setup on side of agents:
 //        PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/bin:/bin:${PATH}"
     stages {
-        stage ('prepare') {
+        stage ('pre-clean') {
                     steps {
                         dir("tmp") {
                             sh 'if [ -s Makefile ]; then make -k distclean || true ; fi'
                             sh 'chmod -R u+w .'
                             deleteDir()
                         }
+                        sh 'rm -f ccache.log cppcheck.xml'
+                    }
+        }
+        stage ('prepare') {
+                    steps {
                         sh './autogen.sh'
-                        sh 'rm -f ccache.log'
                         stash (name: 'prepped', includes: '**/*', excludes: '**/cppcheck.xml')
                     }
         }
