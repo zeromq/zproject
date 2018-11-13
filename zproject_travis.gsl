@@ -75,6 +75,14 @@ true
 false
 .   endif
 .endif
+    - CI_TEST_DISTCHECK=\
+.if !defined(project.travis_distcheck) | project.travis_distcheck ?= 1
+.# 1 = required, is default if nothing is set
+true
+.else
+.# 0 = skip, 2 = allowed fail (in a special test case, skip in others)
+false
+.endif
     # tokens to deploy releases on OBS and create/delete temporary branch on Github.
     # 1) Create a token on https://github.com/settings/tokens/new with "public_repo"
     #    capability and encrypt it with travis encrypt --org -r <org>/<repo> GH_TOKEN="<token>"
@@ -88,6 +96,9 @@ false
   matrix:
     - BUILD_TYPE=default
     - BUILD_TYPE=default-Werror
+.if project.travis_distcheck ?= 2
+    - BUILD_TYPE=default CI_TEST_DISTCHECK=true
+.endif
 .if project.travis_use_cmake ?= 0
 ### Note: we don't use CMake
 #\
@@ -223,18 +234,24 @@ matrix:
 #autotools#\
 .endif
         - *pkg_deps_prereqs
-.if project.travis_clangformat_allow_failures ?= 1
-.   echo "TRAVIS: CLANG-FORMAT: allow-fail: 1"
+.if project.travis_clangformat_allow_failures ?= 1 | project.travis_distcheck ?= 2
 # Note: "env" lines below must exactly describe a matrix option defined above
   allow_failures:
-.   if project.travis_clangformat_implem ?= "autotools" | ( !defined(project.travis_clangformat_implem) & project.travis_use_cmake ?= 0 )
-#\
+.   if project.travis_distcheck ?= 2
+.   echo "TRAVIS: DISTCHECK: allow-fail: true"
+  - env: BUILD_TYPE=default CI_TEST_DISTCHECK=true
 .   endif
+.   if project.travis_clangformat_allow_failures ?= 1
+.   echo "TRAVIS: CLANG-FORMAT: allow-fail: true"
+.       if project.travis_clangformat_implem ?= "autotools" | ( !defined(project.travis_clangformat_implem) & project.travis_use_cmake ?= 0 )
+#\
+.       endif
   - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1 CLANG_FORMAT=clang-format-5.0
-.   if project.travis_clangformat_implem ?= "cmake" | ( !defined(project.travis_clangformat_implem) & ( project.travis_use_cmake ?= 1 | !defined(project.travis_use_cmake) ) )
+.       if project.travis_clangformat_implem ?= "cmake" | ( !defined(project.travis_clangformat_implem) & ( project.travis_use_cmake ?= 1 | !defined(project.travis_use_cmake) ) )
 #\
-.   endif
+.       endif
   - env: BUILD_TYPE=clang-format-check CLANG_FORMAT=clang-format-5.0
+.   endif
 .endif
 
 before_install:
@@ -567,18 +584,18 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
     make check-gitignore
     echo "==="
 
-.   if project.travis_distcheck ?= 0
-    make check
-.   else
+    if [ "$CI_TEST_DISTCHECK" = false ]; then
+        make check
+    else
     (
-        export DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=yes ${CONFIG_OPTS[@]}"
-        $CI_TIME make VERBOSE=1 DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" distcheck
-
-        echo "=== Are GitIgnores good after 'make distcheck' with drafts?"
-        make check-gitignore
-        echo "==="
+        export DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=yes ${CONFIG_OPTS[@]}" && \\
+        $CI_TIME make VERBOSE=1 DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" distcheck || exit $?
     )
-.   endif
+    fi
+
+    echo "=== Are GitIgnores good after 'make (dist)check' with drafts?"
+    make check-gitignore
+    echo "==="
 
     # Build and check this project without DRAFT APIs
     echo ""
@@ -591,18 +608,18 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
         $CI_TIME ./autogen.sh 2> /dev/null
         $CI_TIME ./configure --enable-drafts=no "${CONFIG_OPTS[@]}"
         $CI_TIME make VERBOSE=1 all || exit $?
-.   if project.travis_distcheck ?= 0
-        make check
-.   else
+        if [ "$CI_TEST_DISTCHECK" = false ]; then
+            make check
+        else
         (
             export DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no ${CONFIG_OPTS[@]}" && \\
             $CI_TIME make VERBOSE=1 DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" distcheck || exit $?
         )
-.   endif
+        fi
     ) || exit 1
     [ -z "$CI_TIME" ] || echo "`date`: Builds completed without fatal errors!"
 
-    echo "=== Are GitIgnores good after 'make distcheck' without drafts?"
+    echo "=== Are GitIgnores good after 'make (dist)check' without drafts?"
     make check-gitignore
     echo "==="
 
