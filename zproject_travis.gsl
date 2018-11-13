@@ -57,7 +57,12 @@ env:
     - CI_TIME=false
     - CI_TRACE=false
     - CI_CONFIG_QUIET=true
-    - CI_REQUIRE_GOOD_GITIGNORE=false
+    - CI_REQUIRE_GOOD_GITIGNORE=\
+.if project.travis_require_gitignore ?= 1
+true
+.else
+false
+.endif
     - CI_REQUIRE_GOOD_CLANG_FORMAT=\
 .if defined(project.travis_clangformat_require_good)
 .   echo "TRAVIS: CLANG-FORMAT: require-good: " + project.travis_clangformat_require_good
