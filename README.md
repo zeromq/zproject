@@ -195,7 +195,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         redhat              Packaging for RedHat
         ruby                Ruby binding
         travis              Travis CI scripts
-            <option name="distcheck" value="0" /> "0" will disable run of make distcheck in Travis CI (default: 1)
+            <option name="distcheck" value="0" /> "0" will disable run of make distcheck in Travis CI, "2" will enable it as a special testcase allowed to fail (default: 1 to enable and require to pass)
             <option name="use_pkg_deps_prereqs_source" value="0" /> "0" will disable use of use_pkg_deps_prereqs_source list in Travis CI and so cause rebuild of everything from scratch (default: 1, recently packaged prereqs must exist then)
             <option name="use_cmake" value="0" /> "0" will disable use of CMake recipes in Travis CI (default: 1)
             <option name="require_gitignore" value="1" /> "1" will require that the workspace is clean with regard to .gitignore settings after build (default: 0)
@@ -675,6 +675,7 @@ Model is described in `zproject_known_projects.xml` file:
 
     <use project = "libcurl"
         repository = "https://github.com/curl/curl.git"
+        debian_name = "libcurl4-openssl-dev"
         test = "curl_easy_init"
         header = "curl/curl.h" />
 
