@@ -674,6 +674,7 @@ Model is described in `zproject_known_projects.xml` file:
 
     <use project = "libcurl"
         repository = "https://github.com/curl/curl.git"
+        debian_name = "libcurl4-openssl-dev"
         test = "curl_easy_init"
         header = "curl/curl.h" />
 
