@@ -969,6 +969,9 @@ pipeline {
                             def GIT_COMMIT = sh(returnStdout: true, script: 'git rev-parse --verify HEAD').trim()
                             def DIST_ARCHIVE = ""
                             if ( params.DO_DIST_DOCS ) { DIST_ARCHIVE = env.BUILD_URL + "artifact/__dist.tar.gz" }
+.  if project.jenkins_use_deploymilestone ?= 1
+                            milestone ordinal: 100, label: "${env.JOB_NAME}@${env.BRANCH_NAME}"
+.  endif
                             build job: "\$\{myDEPLOY_JOB_NAME}", parameters: [
                                 string(name: 'DEPLOY_GIT_URL', value: "\$\{GIT_URL}"),
                                 string(name: 'DEPLOY_GIT_BRANCH', value: env.BRANCH_NAME),
