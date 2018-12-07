@@ -868,7 +868,7 @@ $(jni_shim_signature_c:))
 .       endif
 .       my.return = "    return return_string_;\n"
 .#
-.   elsif ->return.jni_is_class = 1 | ->return.type = "anything"
+.   elsif ->return.jni_is_class = 1 | ->return.type = "anything" | ->return.type = "sockish"
     jlong $(c_name)_ = (jlong) (intptr_t) $(class.c_name)_$(c_name) ($(jni_native_invocation_c));
 .       my.return = "    return $(c_name)_;\n"
 .   else
