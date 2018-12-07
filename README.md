@@ -445,6 +445,9 @@ zproject's `project.xml` contains an extensive description of the available conf
          few experimental options now (and regenerate their Jenkinsfile):
          * use_earlymilestone -- uses a milestone to cancel builds that
             got to it later than the running one
+         * use_deploymilestone -- uses a milestone to cancel builds that
+            got to the 'deploy if appropriate' phase later than the
+            running one
          * use_build_nonconcurrent -- sets a disableConcurrentBuilds option
          * use_checkout_explicit -- sets a skipDefaultCheckout option and
             defines a step to check out code explicitly; it is believed
