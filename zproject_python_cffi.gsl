@@ -4,7 +4,7 @@
 #   of FFI function bindings on which to base idiomatic Python classes.
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -27,31 +27,82 @@ function register_type (struct, pointer)
     endif
 endfunction
 
+# Resolve missing or implicit python cffi details in the given container.
+#
+# Here, "container" refers to an <argument/> or <return/> in the model XML.
+# In other words, a container fully describes any value / variable reference
+# that can be passed to or returned from a method.
+#
 function resolve_container (container)
+    # Resolve semantic attributes for python cffi binding.
+    #
+    # After this function, these should all be fully resolved to a value.
+    #
+
+    # Resolve language-specific attributes for the python language.
+    #
+    my.container.python_name ?= "$(my.container.name:c)"
+
+    my.py_arg_pass = my.container.python_name
+
+    # Resolve the `py_type` for this `type`, finish tweaking semantic attributes.
+    #
     if my.container.variadic
     elsif my.container.type = "nothing"
     elsif my.container.type = "anything" | my.container.type = "sockish"
+        my.py_arg_pass = "$(my.container.python_name:)._p"
     elsif my.container.type = "boolean"
     elsif my.container.type = "byte"
     elsif my.container.type = "integer" | my.container.type = "file_size" | my.container.type = "time"
     elsif my.container.type = "number"
+        if my.container.size = 1
+        elsif my.container.size = 2
+        elsif my.container.size = 4
+        elsif my.container.size = 8
+        endif
     elsif my.container.type = "size"
     elsif my.container.type = "real"
     elsif my.container.type = "buffer"
     elsif my.container.type = "FILE"
-    elsif my.container.type = "string" | my.container.type = "format"
+    elsif my.container.type = "string"
+        my.py_arg_pass = "utils.to_bytes($(my.container.python_name:))"
+    elsif my.container.type = "format"
     elsif my.container.callback
     else
         register_type ("$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
+        my.py_arg_pass = "$(my.container.python_name:)._p"
     endif
+
+    my.container.py_arg_pass ?= my.py_arg_pass
 endfunction
 
 function resolve_method (method)
     my.method.python_name = "$(my.method.name:c)"
+    # Test if method name violates python 2 syntax
+    if regexp.match ("^(and|del|from|not|while|as|elif|global|or|with|assert|\
+                        else|if|pass|yield|break|except|import|print|class|\
+                        exec|in|raise|continue|finally|is|return|def|for|\
+                        lambda|try)$", my.method.python_name)
+        my.method.python_name = "$(my.method.python_name)_py"
+    endif
+    # Prepend python self argument to non singleton classes
+    if (!my.method.singleton & count (my.method.argument, argument.name = 'self') = 0) | my.method.is_constructor
+        new argument to my.method
+            argument.python_name = 'self'
+            argument.type = 'nothing'
+            argument.py_arg_pass = 'self._p'
+            argument.variadic = 0
+            argument.order = 0
+        endnew
+    endif
     if regexp.match ("^(is|from)$", my.method.python_name) # matches keyword
         my.method.python_name += "_"
     endif
-    for my.method.argument where !argument.variadic
+    # Add order to arguments so we can place python self argument first
+    ORDERNO = 1
+    for my.method.argument
+        argument.order ?= ORDERNO
+        ORDERNO += 1
         resolve_container (argument)
     endfor
     for my.method.return as ret
@@ -60,7 +111,7 @@ function resolve_method (method)
 endfunction
 
 function resolve_class (class)
-    register_type("$(class.c_name)_t", "$(class.c_name)_p")
+    my.class.python_name ?= "$(class.name:Pascal)"
     for my.class.callback_type as method
         resolve_method (method)
     endfor
@@ -73,20 +124,67 @@ function resolve_class (class)
     for my.class.method
         resolve_method (method)
     endfor
+    register_type("$(class.c_name)_t", "$(class.c_name)_p")
+endfunction
+
+function python_c_method_call (class, method)
+
+    my.out = ""
+#   handle zproto's set strings methods
+    if  (count (my.method.argument)) = 2 \
+       & !my.method.singleton \
+       & count (my.method.argument, argument.c_type?="zlist_t **")
+            my.out += "foo = utils.to_strings (argv_p)\n"
+            my.out += "        if foo is not None:\n"
+            my.out += "            foo_p = utils.ffi.new(\"struct _zlist_t *[1]\")\n"
+            my.out += "            foo_p [0] = foo\n"
+            my.out += "            utils.lib.dproto_set_argv(self._p, foo_p)\n"
+            my.out += "            return\n"
+            my.out += "\n        "
+    endif
+
+    my.out += "utils.lib.$(my.class.c_name)_$(my.method.c_name)("
+    for my.method.argument by argument.order
+        if first() & my.method.is_constructor
+            next
+        endif
+        if !argument.variadic
+            my.out += (argument.py_arg_pass?"") + (last() ?? '' ? ', ')
+        endif
+    endfor
+    my.out += ")"
+
+    return my.out
+endfunction
+
+function python_method_signature (method)
+    if my.method.is_constructor & my.method.name = 'new'
+        my.out = "def __init__("
+    else
+        my.out = "def $(my.method.python_name)("
+    endif
+    for my.method.argument by argument.order
+        if !argument.variadic
+            my.out += (argument.python_name?"") + (last() ?? '' ? ', ')
+        endif
+    endfor
+    my.out += "):"
+
+    return my.out
 endfunction
 
 function generate_cdefs (project)
     for my.project->python_types.type as t
         >typedef struct _$(t.name:c) $(t.name:c);
     endfor
-    for class where defined (class.api) & class.private = "0"
+    for c_class where defined (class.api) & class.private = "0" as class
         for class.callback_type
             >// $(callback_type.description:no,block)
             >$(c_callback_typedef (callback_type):)
             >
         endfor
     endfor
-    for class where defined (class.api) & class.private = "0"
+    for c_class where defined (class.api) & class.private = "0" as class
         >// CLASS: $(class.name)
         for class. as f
             if class(f) = "XML item" & (name(f) = 'constructor' | name(f) = 'destructor')
@@ -113,21 +211,25 @@ function generate_binding
     directory.create ("bindings/python_cffi/$(project.name:c)_cffi")
     output "bindings/python_cffi/$(project.name:c)_cffi/__init__.py"
     >$(project.GENERATED_WARNING_HEADER:)
-    >try:
-    >    from . import native
-    >    lib = native.lib
-    >    ffi = native.ffi
-    >except ImportError:
-    >    from . import dlopen
-    >    lib = dlopen.lib
-    >    ffi = dlopen.ffi
-    >
+    >from . import utils
+    for class where defined (class.api) & class.private = "0"
+        for constant
+    >$(NAME:c) = $(value)\
+            if defined (constant.description)
+                > # $(constant.description)
+            else
+                >
+            endif
+        endfor
+    >from .$(class.python_name:) import *
+    endfor
 
     output "bindings/python_cffi/$(project.name:c)_cffi/dlopen.py"
     >$(project.GENERATED_WARNING_HEADER:)
     >from __future__ import print_function
     >import os
     >import sys
+    >from ctypes.util import find_library
     >
     >import cffi
     >ffi = cffi.FFI()
@@ -172,14 +274,14 @@ function generate_binding
     >
     >def pkgconfig_kwargs (libs):
     >    """If pkg-config is available, then return kwargs for set_source based on pkg-config output
-    >    
+    >
     >    It setup include_dirs, library_dirs, libraries and define_macros
     >    """
     >
     >    # make API great again!
     >    if isinstance (libs, (str, bytes)):
     >        libs = (libs, )
-    >    
+    >
     >    # drop starting -I -L -l from cflags
     >    def dropILl (string):
     >        def _dropILl (string):
@@ -260,12 +362,35 @@ function generate_binding
     >for item in $(project.name:c)_cdefs:
     >    ffibuilder.cdef(item)
     >
+    >ffidestructorbuilder = cffi.FFI ()
+    >ffidestructorbuilder.cdef('''
+    for class where defined (class.api) & class.private = "0" & count (class.destructor) > 0
+    >void
+    >   $(class.name:c)_destroy_py (void *self);
+    >
+    endfor
+    >''')
+    >
+    >ffidestructorbuilder.set_source ("$(project.name:c)_cffi.destructors", '''
+    >#include <$(project.header)>
+    for class where defined (class.api) & class.private = "0" & count (class.destructor) > 0
+    >void
+    >$(class.name:c)_destroy_py (void *self)
+    >{
+    >   $(class.name:c)_destroy (($(class.name:c)_t **) &self);
+    >}
+    >
+    endfor
+    >''', **kwargs)
+    >
     >if __name__ == "__main__":
     >    ffibuilder.compile (verbose=True)
+    >    ffidestructorbuilder.compile (verbose=True)
 
-    output "bindings/python_cffi/$(project.name:c)_cffi/_cdefs.inc"
+    directory.create ("api/")
+    output "api/python_cffi.slurp"
     >$(project.GENERATED_WARNING_HEADER:)
-    ># This file is intended to be included while generating cffi binding for top level library
+    ># Python cffi compatible file slurp
     >
     >$(project.name:c)_cdefs = list ()
     ># Custom setup for $(project.name)
@@ -282,11 +407,9 @@ function generate_binding
     >$(file.slurp('src/python_cffi.inc')?'')
     >
     >#Import definitions from dependent projects
-    for project.use
-        if file.exists ('../$(use.project:c)/bindings/python_cffi/$(use.project:c)_cffi/_cdefs.inc')
-            >$(file.slurp('../$(use.project:c)/bindings/python_cffi/$(use.project:c)_cffi/_cdefs.inc'))
-            >$(project.name:c)_cdefs.extend ($(use.project)_cdefs)
-        endif
+    for project.use where defined (use.python_cffi_slurp)
+        >$(file.slurp(use.python_cffi_slurp))
+        >$(project.name:c)_cdefs.extend ($(use.project)_cdefs)
     endfor
     >
     >$(project.name:c)_cdefs.append ('''
@@ -301,7 +424,7 @@ function generate_binding
     >#$(project.name) cffi bindings
     >
     >This package contains low level python bindings for $(project.name) based on cffi library.
-    >Module is compatible with 
+    >Module is compatible with
     > * The “in-line”, “ABI mode”, which simply **dlopen** main library and parse C declaration on runtime
     > * The “out-of-line”, “API mode”, which build C **native** Python extension
     >
@@ -319,15 +442,115 @@ function generate_binding
     >
     >See ML thread about topic https://groups.google.com/forum/#!topic/python-cffi/JtAKU-g9Exg
     >
-    >The solution is to include all the definitions of dependant modules, so we will have an access
-    >to underlying functions directly from top level module. It is a sort of static linking, but
-    >the only way to ensure the cffi bindings will work accross multiple C libraries. And this is the
-    >reason you need to have a checkout at the same level as the project.
+    >This is the reason the Lib and CompiledFFi objects are referenced from utils module and dynamically
+    >accessed on each call. Calling `lower.utils.rebind (higher.utils.lib, higher.utils.ffi)' you can
+    >change instance used by lower module and enforce all Python classes will use single instance.
+endfunction
+
+function generate_classes ()
+    for class where defined (class.api) & class.private = "0"
+        output "bindings/python_cffi/$(project.name:c)_cffi/$(class.python_name:).py"
+        >$(project.GENERATED_WARNING_HEADER:)
+        >from . import utils
+        >from . import destructors
+        >lib$(project.name:c)_destructors = destructors.lib
+        >
+        >class $(class.name:Pascal)(object):
+        >    """
+        >    $(string.trim (class.?""):left)
+        >    """
+        >
+        for class.constructor
+            if constructor.name = 'new'
+                >    $(python_method_signature (constructor):)
+                >        """
+                >        $(constructor.description:no,block)
+                >        """
+                >        p = $(python_c_method_call (class, constructor))
+                >        if p == utils.ffi.NULL:
+                >            raise MemoryError("Could not allocate person")
+                >
+                for class.destructor
+                    >        # ffi.gc returns a copy of the cdata object which will have the
+                    >        # destructor called when the Python object is GC'd:
+                    >        # https://cffi.readthedocs.org/en/latest/using.html#ffi-interface
+                    >        self._p = utils.ffi.gc(p, lib$(project.name:c)_destructors.$(class.c_name)_destroy_py)
+                endfor
+                >
+            endif
+        endfor
+        for class.actor
+            >        """
+            >        $(actor.description:no,block)
+            >        """
+            >
+        endfor
+        for class.method
+            >    $(python_method_signature (method):)
+            >        """
+            >        $(method.description:no,block)
+            >        """
+            if count (method.return, return.c_type="void")
+                >        $(python_c_method_call (class, method))
+            else
+                >        return $(python_c_method_call (class, method))
+            endif
+            >
+        endfor
+        >$(project.GENERATED_WARNING_HEADER:)
+        close
+    endfor
+
+    output "bindings/python_cffi/$(project.name:c)_cffi/utils.py"
+    >$(project.GENERATED_WARNING_HEADER:)
+    >try:
+    >    from . import native
+    >    lib = native.lib
+    >    ffi = native.ffi
+    >except ImportError:
+    >    from . import dlopen
+    >    lib = dlopen.lib
+    >    ffi = dlopen.ffi
     >
-    >The advantage is there are no python dependencies between modules.
+    >def rebind (_lib, _ffi):
+    >    """Rebind Lib and CompiledFFi objects for given package. Lib object MUST expose all functions
+    >       required by the classes. This is default for zproject based projects"""
+    >    global lib
+    >    global ffi
+    >    lib = _lib
+    >    ffi = _ffi
+    >
+    >try:
+    >    text_type = unicode  # Python 2
+    >    binary_type = str
+    >except NameError:
+    >    text_type = str      # Python 3
+    >    binary_type = bytes
+    >
+    >
+    >def to_bytes(s):
+    >    return s if isinstance(s, binary_type) else text_type(s).encode("utf-8")
+    >
+    >
+    >def to_unicode(s):
+    >    return s if isinstance(s, text_type) else binary_type(s).decode("utf-8")
+    >
+    >
+    >def to_strings (s):
+    >    """Convert Python native list types to zlist_t of strings"""
+    >    if issubclass (s.__class__, (list, set, frozenset, tuple)):
+    >        foo = lib.zlist_new ()
+    >        lib.zlist_autofree (foo)
+    >        for item in s:
+    >            lib.zlist_append (foo, to_bytes (item))
+    >        return foo
+    >    return None
+    >$(project.GENERATED_WARNING_HEADER:)
+    close
 endfunction
 
     if count (class, defined (class.api) & class.private = "0")
+        save_c_class_state ()
         # Container for UDTs used by this module
         new python_types
         endnew
@@ -335,6 +558,7 @@ endfunction
             resolve_class (class)
         endfor
         generate_binding ()
+        generate_classes ()
 
         output "bindings/python_cffi/setup.py"
         >$(project.GENERATED_WARNING_HEADER:)
@@ -347,10 +571,15 @@ endfunction
         >    description = """Python cffi bindings of: $(project.description)""",
         >    packages = ["$(project.name:c)_cffi", ],
         >    setup_requires=["cffi"],
-        >    cffi_modules=["$(project.name:c)_cffi/build.py:ffibuilder"],
+        >    cffi_modules=[
+        >           "$(project.name:c)_cffi/build.py:ffibuilder",
+        >           "$(project.name:c)_cffi/build.py:ffidestructorbuilder"
+        >    ],
         >    install_requires=["cffi"],
         >)
-    endif
+        >$(project.GENERATED_WARNING_HEADER:)
 
+        restore_c_class_state ()
+    endif
 
 endfunction

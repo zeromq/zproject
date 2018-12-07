@@ -1,7 +1,7 @@
 #   Generate continuous integration test files
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -21,7 +21,11 @@ register_target ("travis", "Travis CI scripts")
 # You can add hand-written code here.
 
 language:
+.if project.use_cxx
+- cpp
+.else
 - c
+.endif
 
 cache:
 - ccache
@@ -46,11 +50,44 @@ sudo: false
 # Set CI_TIME=true to enable build-step profiling in Travis
 # Set CI_TRACE=true to enable shell script tracing in Travis
 # Set CI_CONFIG_QUIET=true to enable "configure --quiet" (only report stderr)
+# Set CI_REQUIRE_GOOD_GITIGNORE=false to NOT fail if "git status -s" is not clean
+# Set CI_REQUIRE_GOOD_CLANG_FORMAT=true to fail if "clang-format" check is not clean
 env:
   global:
     - CI_TIME=false
     - CI_TRACE=false
     - CI_CONFIG_QUIET=true
+    - CI_REQUIRE_GOOD_GITIGNORE=\
+.if project.travis_require_gitignore ?= 1
+true
+.else
+false
+.endif
+    - CI_REQUIRE_GOOD_CLANG_FORMAT=\
+.if defined(project.travis_clangformat_require_good)
+.   echo "TRAVIS: CLANG-FORMAT: require-good: " + project.travis_clangformat_require_good
+.   if project.travis_clangformat_require_good ?= 1
+true
+.   else
+false
+.   endif
+.else
+.   if project.travis_clangformat_allow_failures ?= 1
+.   echo "TRAVIS: CLANG-FORMAT: require-good: " + 1 + " (default from allow_failed)"
+true
+.   else
+.   echo "TRAVIS: CLANG-FORMAT: require-good: " + 0 + " (default from allow_failed)"
+false
+.   endif
+.endif
+    - CI_TEST_DISTCHECK=\
+.if !defined(project.travis_distcheck) | project.travis_distcheck ?= 1
+.# 1 = required, is default if nothing is set
+true
+.else
+.# 0 = skip, 2 = allowed fail (in a special test case, skip in others)
+false
+.endif
     # tokens to deploy releases on OBS and create/delete temporary branch on Github.
     # 1) Create a token on https://github.com/settings/tokens/new with "public_repo"
     #    capability and encrypt it with travis encrypt --org -r <org>/<repo> GH_TOKEN="<token>"
@@ -64,12 +101,21 @@ env:
   matrix:
     - BUILD_TYPE=default
     - BUILD_TYPE=default-Werror
+.if project.travis_distcheck ?= 2
+    - BUILD_TYPE=default CI_TEST_DISTCHECK=true
+.endif
+.if project.travis_use_cmake ?= 0
+### Note: we don't use CMake
+#\
+.endif
     - BUILD_TYPE=cmake
 #   - BUILD_TYPE=android
 #   - BUILD_TYPE=check-py
 
-pkg_deps_prereqs: &pkg_deps_prereqs
+# Prerequisite packages provided by OS distro and used "as is"
+pkg_deps_prereqs_distro: &pkg_deps_prereqs_distro
 .      for use
+.       if ! defined (use.repository) & ! defined (use.tarball)
 .         if defined (use.debian_name)
 .             if !(use.debian_name = '')
     - $(use.debian_name)
@@ -81,7 +127,37 @@ pkg_deps_prereqs: &pkg_deps_prereqs
 .         else
     - $(string.replace (use.project, "_|-"))-dev
 .         endif
+.       endif
 .      endfor
+
+# Prerequisite packages that may be built from source or used from
+# prebuilt packages of that source (usually not from an OS distro)
+pkg_deps_prereqs_source: &pkg_deps_prereqs_source
+.      for use
+.       if defined (use.repository) | defined (use.tarball)
+.         if defined (use.debian_name)
+.             if !(use.debian_name = '')
+    - $(use.debian_name)
+.             else
+.                 echo "WARNING: debian_name=='' for $(use.project) - not added to .travis.yml"
+.             endif
+.         elsif defined (use.libname)
+    - $(string.replace (use.libname, "_|-"):lower)-dev
+.         else
+    - $(string.replace (use.project, "_|-"))-dev
+.         endif
+.       endif
+.      endfor
+
+.if project.travis_use_pkg_deps_prereqs_source ?= 0
+# NOTE: Our forks are checked out and built without pkg dependencies in use
+.endif
+pkg_deps_prereqs: &pkg_deps_prereqs
+.if project.travis_use_pkg_deps_prereqs_source ?= 0
+#\
+.endif
+    - *pkg_deps_prereqs_source
+    - *pkg_deps_prereqs_distro
 
 pkg_deps_doctools: &pkg_deps_doctools
     - asciidoc
@@ -103,7 +179,7 @@ pkg_src_zeromq_ubuntu14: &pkg_src_zeromq_ubuntu14
 # is needed for C++11 support; docker envs are usually faster to start up
 addons:
   apt:
-    sources: *pkg_src_zeromq_ubuntu12
+    sources: *pkg_src_zeromq_ubuntu14
     packages: &pkg_deps_common
     - *pkg_deps_devtools
     - *pkg_deps_prereqs
@@ -114,7 +190,7 @@ matrix:
     os: linux
     addons:
       apt:
-        sources: *pkg_src_zeromq_ubuntu12
+        sources: *pkg_src_zeromq_ubuntu14
         packages:
         - *pkg_deps_common
         - *pkg_deps_doctools
@@ -135,9 +211,56 @@ matrix:
         sources: *pkg_src_zeromq_ubuntu14
         packages:
         - *pkg_deps_common
+.if project.travis_clangformat_implem ?= "autotools" | ( !defined(project.travis_clangformat_implem) & project.travis_use_cmake ?= 0 )
+.   echo "TRAVIS: CLANG-FORMAT: implementation: autotools"
+### Note: we don't use CMake
+#\
+.endif
+  - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1 CLANG_FORMAT=clang-format-5.0
+# For non-cmake users, there is an autotools solution with a bit more overhead
+# to have dependencies ready and pass configure script before making this check).
+# Note that the autotools variant will also require dependencies preinstalled to
+# pass its configure script:
+.if project.travis_clangformat_implem ?= "cmake" | ( !defined(project.travis_clangformat_implem) & ( project.travis_use_cmake ?= 1 | !defined(project.travis_use_cmake) ) )
+.   echo "TRAVIS: CLANG-FORMAT: implementation: cmake"
+#\
+.endif
+  - env: BUILD_TYPE=clang-format-check CLANG_FORMAT=clang-format-5.0
+    os: linux
+    dist: trusty
+    addons:
+      apt:
+        sources:
+        - llvm-toolchain-trusty-5.0
+        packages:
+        - clang-5.0
+        - clang-format-5.0
+.if project.travis_clangformat_implem ?= "cmake" | ( !defined(project.travis_clangformat_implem) & ( project.travis_use_cmake ?= 1 | !defined(project.travis_use_cmake) ) )
+#autotools#\
+.endif
+        - *pkg_deps_prereqs
+.if project.travis_clangformat_allow_failures ?= 1 | project.travis_distcheck ?= 2
+# Note: "env" lines below must exactly describe a matrix option defined above
+  allow_failures:
+.   if project.travis_distcheck ?= 2
+.   echo "TRAVIS: DISTCHECK: allow-fail: true"
+  - env: BUILD_TYPE=default CI_TEST_DISTCHECK=true
+.   endif
+.   if project.travis_clangformat_allow_failures ?= 1
+.   echo "TRAVIS: CLANG-FORMAT: allow-fail: true"
+.       if project.travis_clangformat_implem ?= "autotools" | ( !defined(project.travis_clangformat_implem) & project.travis_use_cmake ?= 0 )
+#\
+.       endif
+  - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1 CLANG_FORMAT=clang-format-5.0
+.       if project.travis_clangformat_implem ?= "cmake" | ( !defined(project.travis_clangformat_implem) & ( project.travis_use_cmake ?= 1 | !defined(project.travis_use_cmake) ) )
+#\
+.       endif
+  - env: BUILD_TYPE=clang-format-check CLANG_FORMAT=clang-format-5.0
+.   endif
+.endif
 
 before_install:
-- if [ "$TRAVIS_OS_NAME" == "osx" ] ; then brew update; brew install binutils ; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "android" ] ; then brew install binutils ; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "valgrind" ] ; then brew install valgrind ; fi
 
 # Hand off to generated script for each BUILD_TYPE
@@ -186,31 +309,38 @@ case "$CI_TRACE" in
 esac
 
 case "$BUILD_TYPE" in
-default|default-Werror|default-with-docs|valgrind)
+default|default-Werror|default-with-docs|valgrind|clang-format-check)
     LANG=C
     LC_ALL=C
     export LANG LC_ALL
 
     if [ -d "./tmp" ]; then
+        # Proto installation area for this project and its deps
         rm -rf ./tmp
     fi
-    mkdir -p tmp
+    if [ -d "./tmp-deps" ]; then
+        # Checkout/unpack and build area for dependencies
+        rm -rf ./tmp-deps
+    fi
+    mkdir -p tmp tmp-deps
     BUILD_PREFIX=$PWD/tmp
 
-    PATH="`echo "$PATH" | sed -e 's,^/usr/lib/ccache/?:,,' -e 's,:/usr/lib/ccache/?:,,' -e 's,:/usr/lib/ccache/?$,,' -e 's,^/usr/lib/ccache/?$,,'2`"
+    PATH="`echo "$PATH" | sed -e 's,^/usr/lib/ccache/?:,,' -e 's,:/usr/lib/ccache/?:,,' -e 's,:/usr/lib/ccache/?$,,' -e 's,^/usr/lib/ccache/?$,,'`"
     CCACHE_PATH="$PATH"
     CCACHE_DIR="${HOME}/.ccache"
+    # Use tools from prerequisites we might have built
+    PATH="${BUILD_PREFIX}/sbin:${BUILD_PREFIX}/bin:${PATH}"
     export CCACHE_PATH CCACHE_DIR PATH
     HAVE_CCACHE=no
     if which ccache && ls -la /usr/lib/ccache ; then
         HAVE_CCACHE=yes
     fi
+    mkdir -p "${CCACHE_DIR}" || HAVE_CCACHE=no
 
     if [ "$HAVE_CCACHE" = yes ] && [ -d "$CCACHE_DIR" ]; then
         echo "CCache stats before build:"
         ccache -s || true
     fi
-    mkdir -p "${HOME}/.ccache"
 
     CONFIG_OPTS=()
     COMMON_CFLAGS=""
@@ -352,22 +482,24 @@ default|default-Werror|default-with-docs|valgrind)
 .       if ! defined (use.repository) & ! defined (use.tarball)
         echo "WARNING: Can not build prerequisite '$(use.project)'" >&2
         echo "because neither tarball nor repository sources are known for it," >&2
-        echo "and it was not isntalled as a package; this may cause the test to fail!" >&2
+        echo "and it was not installed as a package; this may cause the test to fail!" >&2
 .       else
         BASE_PWD=${PWD}
 .           if defined (use.tarball)
         echo "`date`: INFO: Building prerequisite '$(use.project)' from tarball..." >&2
+        cd ./tmp-deps
         $CI_TIME wget $(use.tarball)
         tar -xzf \$(basename "$(use.tarball)")
-        cd \$(basename "$(use.tarball)" .tar.gz)
+        cd \$(basename "$(use.tarball)" .tar.gz) || exit \$?
 .           elsif defined (use.repository)
         echo "`date`: INFO: Building prerequisite '$(use.project)' from Git repository..." >&2
+        cd ./tmp-deps
 .               if defined (use.release)
         $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
 .               else
         $CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
 .               endif
-        cd $(use.project)
+        cd ./$(use.project)
 .           endif
 .           if defined (use.builddir)
         cd ./$(use.builddir)
@@ -404,6 +536,13 @@ default|default-Werror|default-with-docs|valgrind)
         $CI_TIME make -j4
         $CI_TIME make install
         cd "${BASE_PWD}"
+.           if use.optional
+        CONFIG_OPTS+=("--with-$(use.libname)=yes")
+.           endif
+.       endif
+.       if use.optional
+    else
+        CONFIG_OPTS+=("--with-$(use.libname)=yes")
 .       endif
     fi
 .   endfor
@@ -431,29 +570,37 @@ default|default-Werror|default-with-docs|valgrind)
 .   endif
     $CI_TIME ./autogen.sh 2> /dev/null
     $CI_TIME ./configure --enable-drafts=yes "${CONFIG_OPTS[@]}"
-    if [ "$BUILD_TYPE" == "valgrind" ] ; then
-        # Build and check this project
-        $CI_TIME make VERBOSE=1 memcheck
-        exit $?
-    fi
+    case "$BUILD_TYPE" in
+        valgrind)
+            # Build and check this project
+            $CI_TIME make VERBOSE=1 memcheck && exit
+            echo "Re-running failed ($?) memcheck with greater verbosity" >&2
+            $CI_TIME make VERBOSE=1 memcheck-verbose
+            exit $?
+            ;;
+        clang-format-check)
+            $CI_TIME make VERBOSE=1 clang-format-check-CI
+            exit $?
+            ;;
+    esac
     $CI_TIME make VERBOSE=1 all
 
-    echo "=== Are GitIgnores good after 'make all' with drafts? (should have no output below)"
-    git status -s || true
+    echo "=== Are GitIgnores good after 'make all' with drafts?"
+    make check-gitignore
     echo "==="
 
-.   if travis_distcheck ?= 0
-    make check
-.   else
+    if [ "$CI_TEST_DISTCHECK" = false ]; then
+        make check
+    else
     (
-        export DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=yes ${CONFIG_OPTS[@]}"
-        $CI_TIME make VERBOSE=1 DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" distcheck
-
-        echo "=== Are GitIgnores good after 'make distcheck' with drafts? (should have no output below)"
-        git status -s || true
-        echo "==="
+        export DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=yes ${CONFIG_OPTS[@]}" && \\
+        $CI_TIME make VERBOSE=1 DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" distcheck || exit $?
     )
-.   endif
+    fi
+
+    echo "=== Are GitIgnores good after 'make (dist)check' with drafts?"
+    make check-gitignore
+    echo "==="
 
     # Build and check this project without DRAFT APIs
     echo ""
@@ -464,21 +611,21 @@ default|default-Werror|default-with-docs|valgrind)
     git reset --hard HEAD
     (
         $CI_TIME ./autogen.sh 2> /dev/null
-        $CI_TIME ./configure --enable-drafts=no "${CONFIG_OPTS[@]}" --with-docs=yes
+        $CI_TIME ./configure --enable-drafts=no "${CONFIG_OPTS[@]}"
         $CI_TIME make VERBOSE=1 all || exit $?
-.   if travis_distcheck ?= 0
-        make check
-.   else
+        if [ "$CI_TEST_DISTCHECK" = false ]; then
+            make check
+        else
         (
-            export DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no ${CONFIG_OPTS[@]} --with-docs=yes" && \\
+            export DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no ${CONFIG_OPTS[@]}" && \\
             $CI_TIME make VERBOSE=1 DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" distcheck || exit $?
         )
-.   endif
+        fi
     ) || exit 1
     [ -z "$CI_TIME" ] || echo "`date`: Builds completed without fatal errors!"
 
-    echo "=== Are GitIgnores good after 'make distcheck' without drafts? (should have no output below)"
-    git status -s || true
+    echo "=== Are GitIgnores good after 'make (dist)check' without drafts?"
+    make check-gitignore
     echo "==="
 
     if [ "$HAVE_CCACHE" = yes ]; then
@@ -505,6 +652,8 @@ set -ex
 [ -n "${REPO_DIR-}" ] || exit 1
 
 # Verify all required dependencies with repos can be checked out
+# Note: certain zproject scripts that deal with deeper dependencies expect that
+# such checkouts are directly in the same parent directory as "this" project.
 cd "$REPO_DIR/.."
 .for project.use where !optional & defined (use.repository)
 .   if defined (use.release)
@@ -526,7 +675,7 @@ fi
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scripting-language >/dev/null 2>&1) || \\
        (command -v brew >/dev/null 2>&1 && brew ls --versions gsl >/dev/null 2>&1)); then
     cd "$REPO_DIR/.."
-    git clone https://github.com/imatix/gsl.git gsl
+    git clone https://github.com/zeromq/gsl.git gsl
     cd gsl/src
     make
     PATH="`pwd`:$PATH"

@@ -1,7 +1,7 @@
 #   Generate minimal Qt language bindings.
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -438,8 +438,8 @@ endfunction
 /*
 $(project.GENERATED_WARNING_HEADER:)
 */
-#ifndef Q_$(PROJECT.PREFIX)_H
-#define Q_$(PROJECT.PREFIX)_H
+#ifndef Q_$(PROJECT.QTNAME)_H
+#define Q_$(PROJECT.QTNAME)_H
 
 #include <QObject>
 #include <QString>
@@ -780,6 +780,9 @@ $(project.GENERATED_WARNING_HEADER:)
         project.QtName = "q$(project.name)"
         for class where defined (class.api) & class.private = "0"
             class.QtName = "Q$(class.c_name:Pascal)"
+            if "$(class.qtname)" = "$(project.qtname)"
+                project.QtName = "qt$(project.name)"
+            endif
         endfor
         for dependencies.class
             class.QtName = "Q$(class.c_name:Pascal)"

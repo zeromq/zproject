@@ -1,7 +1,7 @@
 #   Generate docker packaging for project
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -27,11 +27,11 @@ RUN chmod 0440 /etc/sudoers.d/zmq
 USER zmq
 
 .for use where !optional & defined (use.tarball)
-WORKDIR /home/zmq
+WORKDIR /home/zmq/tmp-deps
 RUN wget $(use.tarball)
 RUN tar -xzf \$(basename "$(use.tarball)")
 RUN rm \$(basename "$(use.tarball)")
-WORKDIR /home/zmq/\$(basename "$(use.tarball)" .tar.gz)
+WORKDIR /home/zmq/tmp-deps/\$(basename "$(use.tarball)" .tar.gz)
 RUN ./configure --quiet --without-docs
 RUN make
 RUN sudo make install
@@ -39,9 +39,9 @@ RUN sudo ldconfig
 
 .endfor
 .for use where !optional & !defined (use.tarball)
-WORKDIR /home/zmq
+WORKDIR /home/zmq/tmp-deps
 RUN git clone --quiet $(use.repository) $(use.project)
-WORKDIR /home/zmq/$(use.project)
+WORKDIR /home/zmq/tmp-deps/$(use.project)
 RUN ./autogen.sh 2> /dev/null
 RUN ./configure --quiet --without-docs
 RUN make
@@ -51,7 +51,7 @@ RUN sudo ldconfig
 .endfor
 WORKDIR /home/zmq
 RUN git clone --quiet git://github.com/zeromq/$(project.name:c).git $(project.name:c)
-WORKDIR /home/zmq/$(project.name:c) $(project.name:c)
+WORKDIR /home/zmq/$(project.name:c)
 RUN ./autogen.sh 2> /dev/null
 RUN ./configure --quiet --without-docs
 RUN make

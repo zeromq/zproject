@@ -1,0 +1,159 @@
+/*  The following example Jenkinsfile is a skeleton to copy into your CI
+ *  scripts repository and configure a MultiBranch Pipeline job from it.
+ *  This would create a job instance from every branch that contains this
+ *  file, so you can adapt the content to your installation's tools and
+ *  call this job to deploy projects generated with zproject.
+ *
+ *  Then in your Jenkins Management Web-GUI go to Configure System /
+ *  / Global properties / Environment variables and Add a new variable
+ *  DEFAULT_DEPLOY_JOB_NAME with value like '/my-deploy/master', and a
+ *  DEFAULT_DEPLOY_BRANCH_PATTERN like '^(master|feature/,*|release/.*)$'
+ *
+ *  Contributed to zproject, Copyright (C) 2017 by Eaton
+ *  See the reference version of this file at
+ *   https://github.com/zeromq/zproject/blob/master/Jenkinsfile-deploy.example
+ *  Author: Jim Klimov <EvgenyKlimov@eaton.com>
+ */
+
+pipeline {
+// Select an agent with proper tools and access needed for deployment
+    agent { label "deploy-tools" }
+    parameters {
+        string (
+            defaultValue: '',
+            description: 'Git repo URL with sources',
+            name: 'DEPLOY_GIT_URL')
+        string (
+            defaultValue: '',
+            description: 'The branch which passed tests (e.g. "master") - influences which OBS project to push into',
+            name: 'DEPLOY_GIT_BRANCH')
+        string (
+            defaultValue: '',
+            description: 'The commit ID of the sources to check out (may be not current HEAD of that repo/branch)',
+            name: 'DEPLOY_GIT_COMMIT')
+        string (
+            defaultValue: '',
+            description: 'URL to a "dist" archive prepared by the build (e.g. with pregenerated docs and config script) which will be fetched, and used instead of (or combined with) git-archive checkout contents during further packaging; note all the DEPLOY_GIT_* arguments are still required if this feature is used.',
+            name: 'DEPLOY_DIST_ARCHIVE')
+        string (
+            defaultValue: 'https://github.com/myorg/myjenkinsscripts.git',
+            description: 'GIT Repo with CI scripts and tools',
+            name: 'CI_REPO_FORK')
+        string (
+            defaultValue: 'origin/master',
+            description: '',
+            name: 'CI_REPO_BRANCH')
+        string (
+            defaultValue: '',
+            description: '',
+            name: 'CI_REPO_REFSPEC')
+// You may have more parameters passed here, to pass them down to your
+// deployment script; make sure to set some sane defaults or guess blank
+// values in your scripts
+    }
+
+    stages {
+        stage ('Sanity check') {
+            steps {
+                script {
+                    if ( "${params["CI_REPO_BRANCH"]}" == "" || "${params["CI_REPO_FORK"]}" == "" ||
+                         "${params["DEPLOY_GIT_URL"]}" == "" || "${params["DEPLOY_GIT_BRANCH"]}" == ""
+                       ) {
+                        echo "BUILD_CAUSE : ${env.BUILD_CAUSE}"
+                        script {
+                            if ( env.BUILD_CAUSE_SCMTRIGGER == "true" || env.BUILD_CAUSE == "SCMTRIGGER" ) {
+                                // Not quite green, but not an outright failure either
+                                manager.addShortText("Sanity: Missing critical arguments, SCM triggered run")
+                                currentBuild.result = 'ABORTED'
+                                manager.buildUnstable()
+                                error("This run did not have critical arguments set; it looks like an automatic build of refreshed CI repo.")
+                            } else {
+                                // Bad arguments on manual/scripted invokation = FAIL
+                                manager.addShortText("Sanity: Missing critical arguments, normal build was attempted")
+                                currentBuild.result = 'FAILURE'
+                                manager.buildAborted()
+                                error("This run did not have critical arguments set; it looks like an operator error.")
+                            }
+                            return
+                        }
+                    }
+                }
+// Comment away the block below if you have some need
+// to publish the codebase of ephemeral PR branches.
+// This is a Jenkins server instance implementation
+// detail; with proper DEPLOY_BRANCH_PATTERN settings
+// you would not even hit this clause unless desired.
+                script {
+                    if ( "${params["DEPLOY_GIT_BRANCH"]}" =~ /^PR-[0-9]+/ ) {
+                        manager.addShortText("Sanity: ephemeral PR branches should not be published")
+                        currentBuild.result = 'ABORTED'
+                        manager.buildAborted()
+                        error("This run tried to publish an ephemeral PR branch; it looks like an operator error.")
+                    }
+                }
+            }
+        }
+
+        stage ('Checkout') {
+            parallel {
+                stage ('Checkout SRC') {
+                    steps {
+                        checkout([$class: 'GitSCM',
+                            branches: [[name: "${params["DEPLOY_GIT_BRANCH"]}"]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[$class: 'WipeWorkspace'],
+                                [$class: 'RelativeTargetDirectory', relativeTargetDir: 'project'],
+                                [$class: 'CloneOption', noTags: false, shallow: false]],
+                            submoduleCfg: [],
+                            userRemoteConfigs: [[url: "${params["DEPLOY_GIT_URL"]}", refspec: "${params["DEPLOY_GIT_COMMIT"]}"]]
+                                // Maybe also pass a credentialsId with account who may read your repos, if access is restricted
+                        ])
+                    }
+                }
+                stage ('Checkout CI scripts') {
+                    steps {
+                        checkout([$class: 'GitSCM',
+                            branches: [[name: "${params["CI_REPO_BRANCH"]}"]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[$class: 'WipeWorkspace'],
+                                [$class: 'RelativeTargetDirectory', relativeTargetDir: 'ci'],
+                                [$class: 'CloneOption', depth: 3, noTags: true, shallow: true, reference: "${env.WORKSPACE}/.git"]],
+                                // Optimization above assumes that this Jenkinsfile-deploy lives in the same repo, so we know it is already checked out
+                            submoduleCfg: [],
+                            userRemoteConfigs: [[url: "${params["CI_REPO_FORK"]}", refspec: "${params["CI_REPO_REFSPEC"]}"]]
+                        ])
+                    }
+                }
+            }
+        }
+
+// Certainly, customize the code below to match your tools and their params
+        stage ('Deploy') {
+            steps {
+                script {
+                    manager.addShortText("Pushing: " + ( (params.DEPLOY_GIT_URL).substring( (params.DEPLOY_GIT_URL).lastIndexOf("/") + 1 ).replace(".git", "") ) + " / " + params.DEPLOY_GIT_BRANCH + " @ " + ( (params.DEPLOY_GIT_COMMIT).take(7) ) + ( (params.DEPLOY_DIST_ARCHIVE == "") ? "(no dist tarballs)" : (" using " + params.DEPLOY_DIST_ARCHIVE)  ) )
+                    def statusCode = sh returnStatus:true, script: """
+DEPLOY_GIT_URL="${params["DEPLOY_GIT_URL"]}"
+DEPLOY_GIT_BRANCH="${params["DEPLOY_GIT_BRANCH"]}"
+DEPLOY_GIT_COMMIT="${params["DEPLOY_GIT_COMMIT"]}"
+DEPLOY_DIST_ARCHIVE="${params["DEPLOY_DIST_ARCHIVE"]}"
+export DEPLOY_GIT_URL DEPLOY_GIT_BRANCH DEPLOY_GIT_COMMIT DEPLOY_DIST_ARCHIVE
+cd project && \
+../ci/update-deployment.sh
+"""
+                    if ( statusCode == 42 ) {
+                        manager.addShortText("Sanity: update-deployment.sh refused the git URL/branch: " + params.DEPLOY_GIT_URL + " / " + params.DEPLOY_GIT_BRANCH)
+                        currentBuild.result = 'ABORTED'
+                        manager.buildUnstable()
+                        error("Sanity: update-deployment.sh refused the git URL/branch; it looks like an automatic build of a master/release branch in a developer's repo: " + params.DEPLOY_GIT_URL + " / " + params.DEPLOY_GIT_BRANCH)
+                    } else {
+                        if ( statusCode != 0 ) {
+                            currentBuild.result = 'FAILURE'
+                            manager.buildAborted()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

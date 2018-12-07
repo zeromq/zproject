@@ -1,7 +1,7 @@
 #   Generate debian recipes for project
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -27,7 +27,7 @@ $(project.name:lower) ($(->version.major).$(->version.minor).$(->version.patch))
 
  -- $(project.name) Developers <$(project.email)>  Wed, 31 Dec 2014 00:00:00 +0000
 .output "packaging/debian/compat"
-9
+10
 .output "packaging/debian/control"
 #
 #    $(project.name) - $(project.description?'':)
@@ -40,7 +40,7 @@ Source:         $(string.replace (project.name, "_|-"):lower)
 Section:        net
 Priority:       optional
 Maintainer:     $(project.name) Developers <$(project.email)>
-Standards-Version: 4.0.0
+Standards-Version: 4.0.1.0
 Build-Depends: debhelper (>= 9),
     pkg-config,
 .for project.use
@@ -70,8 +70,14 @@ Build-Depends: debhelper (>= 9),
 .- NOTE: after support for Debian 7 and Ubuntu 12.04 is dropped, <!nodoc> can be added to each of the following
     asciidoc-base | asciidoc, xmlto,
     dh-autoreconf
+.if project.exports_classes | ( project.has_classes & project.has_main )
+.# NOTE: Now for at least some compilers the symbol visibility seems to
+.# be managed in the shared library files, not the "exportedness" - so
+.# the delivered compiled binary files can use and do require those libs
+.# packaged even if all classes are marked private - should have at least
+.# one though. Also note that "bin" files are not necessarily compiled,
+.# e.g. helper scripts, so are not covered in this clause.
 
-.if project.exports_classes
 .if defined (project->abi)
 Package: $(string.replace (project.libname, "_|-"))$(project->abi.current - project->abi.age)
 .else
@@ -82,6 +88,10 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: $(project.name) shared library
  This package contains shared library for $(project.name):
  $(project.description)
+.endif
+.if project.exports_classes
+.# NOTE: The development libs/headers make sense if any class was not
+.# marked private - different from just the lib package above.
 
 Package: $(string.replace (project.libname, "_|-"))-dev
 Architecture: any
@@ -110,8 +120,8 @@ Description: $(project.name) development tools
  This package contains development files for $(project.name):
  $(project.description)
 .endif
+.if project.has_main | project.has_bin
 
-.if project.has_main | count(project.bin) > 0
 Package: $(string.replace (project.name, "_|-"):lower)
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
@@ -136,9 +146,9 @@ Description: runnable binaries from $(project.name)
 Package: $(string.replace (project.name, "_|-"):lower)-dbg
 Architecture: any
 Section: debug
-Priority: extra
+Priority: optional
 Depends:
-.if project.has_main | count(project.bin) > 0
+.if project.has_main | project.has_bin
     $(string.replace (project.name, "_|-"):lower) (= ${binary:Version}),
 .elsif project.exports_classes
 .if defined (project->abi)
@@ -187,10 +197,14 @@ Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: $(project.name)
 
 Files: *
+.if defined (project->starting_year)
+Copyright: $(project->starting_year)- $(project.name) Developers <$(project.email)>
+.else
 Copyright: 2015- $(project.name) Developers <$(project.email)>
+.endif
 License: $(project.name)_license
 .   for project.license
- $(string.trim (license.):block                                         )
+ $(string.replace(string.trim (license.), '\n\n|\n.\n'):block)
 .   endfor
 .output "packaging/debian/format"
 3.0 (quilt)
@@ -289,6 +303,9 @@ override_dh_auto_configure:
 .if systemd ?= 1
 		--with-systemd-units \\
 .endif
+.for project.use where use.optional
+		--with-$(use.libname)=yes \\
+.endfor
 		--with-docs=\$(DOCS) \\
 		--enable-drafts=\$(DRAFTS)
 
@@ -300,10 +317,11 @@ override_dh_auto_configure:
 .if python_cffi ?= 1
 		\$(WITH_PYTHON) \\
 .endif
+		--parallel \\
 		--with autoreconf
 .chmod_x ("packaging/debian/rules")
 .discover_manpages(project)
-.if project.has_main | count(project.bin) > 0
+.if project.has_main | project.has_bin
 .   output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).manpages")
 .   for project.main where scope = "public" & project.has_main & man1 ?<> ""
 debian/tmp/usr/share/man/man1/$(main.name).1

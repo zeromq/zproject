@@ -1,7 +1,7 @@
 #   Generate Open Build Service recipes for project
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -62,7 +62,7 @@ register_target ("obs", "service for Open Build Service")
     <param name="files">*/packaging/debian/copyright</param>
     <param name="outfilename">debian.copyright</param>
   </service>
-.   if project.has_main | count(project.bin) > 0
+.   if project.has_main | project.has_bin
   <service name="extract_file">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/$(string.replace (project.name, "_|-"):lower).install</param>

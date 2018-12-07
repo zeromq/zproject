@@ -8,29 +8,39 @@ sudo: false
 # Set CI_TIME=true to enable build-step profiling in Travis
 # Set CI_TRACE=true to enable shell script tracing in Travis
 # Set CI_CONFIG_QUIET=true to enable "configure --quiet" (only report stderr)
+# Set CI_REQUIRE_GOOD_GITIGNORE=false to NOT fail if "git status -s" is not clean
 env:
   global:
     - CI_TIME=true
     - CI_TRACE=false
     - CI_CONFIG_QUIET=true
+    - CI_REQUIRE_GOOD_GITIGNORE=false
   matrix:
     - BUILD_TYPE=default
     - BUILD_TYPE=distcheck
+    - BUILD_TYPE=check_zproject
 
 matrix:
   include:
-  - env: BUILD_TYPE=check_zproject
+  - env: BUILD_TYPE=check_readme
     os: linux
-    dist: trusty
-    services: docker
     addons:
       apt:
+        sources:
+        - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/ ./'
+          key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/Release.key'
+        packages:
+        - openjdk-7-jre
+#        - perl
+        - imagemagick
+        - generator-scripting-language
+        - time
 
 addons:
   apt:
     sources:
-    - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_12.04/ ./'
-      key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_12.04/Release.key'
+    - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/ ./'
+      key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/Release.key'
     packages:
     - generator-scripting-language
     - time

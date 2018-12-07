@@ -1,7 +1,7 @@
 #   Generate spec file for project
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -42,12 +42,20 @@ register_target ("redhat", "packaging for RedHat")
 .   if !has_main & !project.exports_classes
 %global debug_package %{nil}
 .   endif
+.if systemd ?= 1
+%define SYSTEMD_UNIT_DIR %(pkg-config --variable=systemdsystemunitdir systemd)
+.endif
 .if python_cffi ?= 1
 
 # build with python_cffi support enabled
 %bcond_with python_cffi
 %if %{with python_cffi}
 %define py2_ver %(python2 -c "import sys; print ('%d.%d' % (sys.version_info.major, sys.version_info.minor))")
+%endif
+
+# build with python3_cffi support enabled
+%bcond_with python3_cffi
+%if %{with python3_cffi}
 %define py3_ver %(python3 -c "import sys; print ('%d.%d' % (sys.version_info.major, sys.version_info.minor))")
 %endif
 
@@ -94,13 +102,15 @@ BuildRequires:  $(use.project)-devel
 BuildRequires:  python-cffi
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools
+%endif
+%if %{with python3_cffi}
 BuildRequires:  python3-devel
 BuildRequires:  python3-cffi
 BuildRequires:  python3-setuptools
 %endif
 .endif
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-.if project.has_main | count(project.bin) > 0
+.if project.has_main | project.has_bin
 .for project.use where use.type ?= "runtime"
 .if defined(use.redhat_name)
 .   if !(use.redhat_name = '')
@@ -118,13 +128,19 @@ Requires: $(string.replace (use.project, "_|-"))
 
 %description
 $(project.name) $(project.description).
-
 .if defined (project->abi)
 .   my.abi_ver = project->abi.current - project->abi.age
 .else
 .   my.abi_ver = 0
 .endif
-.if project.exports_classes
+.if project.exports_classes | ( project.has_classes & project.has_main )
+.# NOTE: Now for at least some compilers the symbol visibility seems to
+.# be managed in the shared library files, not the "exportedness" - so
+.# the delivered compiled binary files can use and do require those libs
+.# packaged even if all classes are marked private - should have at least
+.# one though. Also note that "bin" files are not necessarily compiled,
+.# e.g. helper scripts, so are not covered in this clause.
+
 %package -n $(project.libname)$(my.abi_ver)
 Group:          System/Libraries
 Summary:        $(project.description) shared library
@@ -141,6 +157,10 @@ This package contains shared library for $(project.name): $(project.description)
 %doc COPYING
 .endif
 %{_libdir}/$(project.libname).so.*
+.endif
+.if project.exports_classes
+.# NOTE: The development libs/headers make sense if any class was not
+.# marked private - different from just the lib package above.
 
 %package devel
 Summary:        $(project.description)
@@ -179,7 +199,7 @@ This package contains development files for $(project.name): $(project.descripti
 # Install api files into /usr/local/share/zproject
 %dir %{_datadir}/zproject/
 %dir %{_datadir}/zproject/$(project.name)
-%{_datadir}/zproject/$(project.name)/*.api
+%{_datadir}/zproject/$(project.name)/*
 .      endif
 .   endfor
 .endif
@@ -187,9 +207,9 @@ This package contains development files for $(project.name): $(project.descripti
 
 %if %{with python_cffi}
 %package -n python2-$(project.name)-cffi
-Group:  Python
-Summary:    Python CFFI bindings for $(project.name)
-Requires:  python = %{py2_ver}
+Group: Python
+Summary: Python CFFI bindings for $(project.name)
+Requires: python >= %{py2_ver}.0, python < 3.0.0
 
 %description -n python2-$(project.name)-cffi
 This package contains Python CFFI bindings for $(project.name)
@@ -197,11 +217,13 @@ This package contains Python CFFI bindings for $(project.name)
 %files -n python2-$(project.name)-cffi
 %{_libdir}/python%{py2_ver}/site-packages/$(project.name:c)_cffi/
 %{_libdir}/python%{py2_ver}/site-packages/$(project.name:c)_cffi-*-py%{py2_ver}.egg-info/
+%endif
 
+%if %{with python3_cffi}
 %package -n python3-$(project.name)-cffi
-Group:  Python
-Summary:    Python 3 CFFI bindings for $(project.name)
-Requires:  python3 = %{py3_ver}
+Group: Python
+Summary: Python 3 CFFI bindings for $(project.name)
+Requires: python = %{py3_ver}
 
 %description -n python3-$(project.name)-cffi
 This package contains Python 3 CFFI bindings for $(project.name)
@@ -214,7 +236,7 @@ This package contains Python 3 CFFI bindings for $(project.name)
 
 %prep
 .if python_cffi ?= 1
-#FIXME: %{error:...} did not worked for me
+#FIXME: error:... did not worked for me
 %if %{with python_cffi}
 %if %{without drafts}
 echo "FATAL: python_cffi not yet supported w/o drafts"
@@ -227,23 +249,41 @@ exit 1
 
 %build
 sh autogen.sh
+%{configure} --enable-drafts=%{DRAFTS}\
 .if systemd ?= 1
-%{configure} --enable-drafts=%{DRAFTS} --with-systemd-units
-.else
-%{configure} --enable-drafts=%{DRAFTS}
+ --with-systemd-units\
 .endif
+.for project.use where use.optional
+ --with-$(use.libname)=yes\
+.endfor
+
 make %{_smp_mflags}
 .if python_cffi ?= 1
-
 %if %{with python_cffi}
 # Problem: we need pkg-config points to built and not yet installed copy of $(project.name)
 # Solution: chicken-egg problem - let's make "fake" pkg-config file
-sed -e "s@^libdir.*@libdir=`pwd`/src/.libs@" \\
-    -e "s@^includedir.*@includedir=`pwd`/include@" \\
+sed -e "s@^libdir.*@libdir=.libs/@" \\
+    -e "s@^includedir.*@includedir=include/@" \\
     src/$(project.libname).pc > bindings/python_cffi/$(project.libname).pc
 cd bindings/python_cffi
+# This avoids problem with "weird" character quoting between shell and python3
+ln -sfr ../../include/ .
+ln -sfr ../../src/.libs/ .
 export PKG_CONFIG_PATH=`pwd`
 python2 setup.py build
+%endif
+
+%if %{with python3_cffi}
+# Problem: we need pkg-config points to built and not yet installed copy of $(project.name)
+# Solution: chicken-egg problem - let's make "fake" pkg-config file
+sed -e "s@^libdir.*@libdir=.libs/@" \\
+    -e "s@^includedir.*@includedir=include/@" \\
+    src/$(project.libname).pc > bindings/python_cffi/$(project.libname).pc
+cd bindings/python_cffi
+# This avoids problem with "weird" character quoting between shell and python3
+ln -sfr ../../include/ .
+ln -sfr ../../src/.libs/ .
+export PKG_CONFIG_PATH=`pwd`
 python3 setup.py build
 %endif
 .endif
@@ -260,11 +300,15 @@ find %{buildroot} -name '*.la' | xargs rm -f
 cd bindings/python_cffi
 export PKG_CONFIG_PATH=`pwd`
 python2 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
-python3 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
 %endif
 
+%if %{with python3_cffi}
+cd bindings/python_cffi
+export PKG_CONFIG_PATH=`pwd`
+python3 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
+%endif
 .endif
-.if has_main | count(project.bin) > 0
+.if has_main | project.has_bin
 %files
 %defattr(-,root,root)
 .if file.exists ('README.md')
@@ -295,35 +339,35 @@ python3 setup.py install --root=%{buildroot} --skip-build --prefix %{_prefix}
 %config(noreplace) %{_sysconfdir}/$(project.name)/$(main.name).cfg
 .       endif
 .       if file.exists("src/$(main.name).service") | file.exists("src/$(main.name).service.in") | ( main.service ?= 1 | main.service ?= 3 )
-/usr/lib/systemd/system/$(main.name).service
+%{SYSTEMD_UNIT_DIR}/$(main.name).service
 .       endif
 .       if file.exists("src/$(main.name)@.service") | file.exists("src/$(main.name)@.service.in") | ( main.service ?= 2 | main.service ?= 3 )
-/usr/lib/systemd/system/$(main.name)@.service
+%{SYSTEMD_UNIT_DIR}/$(main.name)@.service
 .       endif
 .etc_exists = 1
 .endfor
 .for project.main where ( defined(main.timer) & main.timer > 0 )
 .       if file.exists("src/$(main.name).timer") | file.exists("src/$(main.name).timer.in") | ( main.timer ?= 1 | main.timer ?= 3 )
-/usr/lib/systemd/system/$(main.name).timer
+%{SYSTEMD_UNIT_DIR}/$(main.name).timer
 .       endif
 .       if file.exists("src/$(main.name)@.timer") | file.exists("src/$(main.name)@.timer.in") | ( main.timer ?= 2 | main.timer ?= 3 )
-/usr/lib/systemd/system/$(main.name)@.timer
+%{SYSTEMD_UNIT_DIR}/$(main.name)@.timer
 .       endif
 .endfor
 .for project.bin where ( defined(bin.service) & bin.service > 0 )
 .       if file.exists("src/$(bin.name).service") | file.exists("src/$(bin.name).service.in") | ( bin.service ?= 1 | bin.service ?= 3 )
-/usr/lib/systemd/system/$(bin.name).service
+%{SYSTEMD_UNIT_DIR}/$(bin.name).service
 .       endif
 .       if file.exists("src/$(bin.name)@.service") | file.exists("src/$(bin.name)@.service.in") | ( bin.service ?= 2 | bin.service ?= 3 )
-/usr/lib/systemd/system/$(bin.name)@.service
+%{SYSTEMD_UNIT_DIR}/$(bin.name)@.service
 .       endif
 .endfor
 .for project.bin where ( defined(bin.timer) & bin.timer > 0 )
 .       if file.exists("src/$(bin.name).timer") | file.exists("src/$(bin.name).timer.in") | ( bin.timer ?= 1 | bin.timer ?= 3 )
-/usr/lib/systemd/system/$(bin.name).timer
+%{SYSTEMD_UNIT_DIR}/$(bin.name).timer
 .       endif
 .       if file.exists("src/$(bin.name)@.timer") | file.exists("src/$(bin.name)@.timer.in") | ( bin.timer ?= 2 | bin.timer ?= 3 )
-/usr/lib/systemd/system/$(bin.name)@.timer
+%{SYSTEMD_UNIT_DIR}/$(bin.name)@.timer
 .       endif
 .endfor
 .if etc_exists ?= 1

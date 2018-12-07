@@ -24,10 +24,19 @@ LC_ALL=C
 export LANG LC_ALL
 
 if [ -d "./tmp" ]; then
+    # Proto installation area for this project and its deps
     rm -rf ./tmp
 fi
-mkdir -p tmp
+if [ -d "./tmp-deps" ]; then
+    # Checkout/unpack and build area for dependencies
+    rm -rf ./tmp-deps
+fi
+mkdir -p tmp tmp-deps
 BUILD_PREFIX=$PWD/tmp
+
+# Use tools from prerequisites we might have built
+PATH="${BUILD_PREFIX}/sbin:${BUILD_PREFIX}/bin:${PATH}"
+export PATH
 
 CONFIG_OPTS=()
 CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include")
@@ -47,12 +56,17 @@ CMAKE_OPTS+=("-DCMAKE_PREFIX_PATH:PATH=${BUILD_PREFIX}")
 CMAKE_OPTS+=("-DCMAKE_LIBRARY_PATH:PATH=${BUILD_PREFIX}/lib")
 CMAKE_OPTS+=("-DCMAKE_INCLUDE_PATH:PATH=${BUILD_PREFIX}/include")
 
+if [ "$CLANG_FORMAT" != "" ] ; then
+    CMAKE_OPTS+=("-DCLANG_FORMAT=${CLANG_FORMAT}")
+fi
+
 # Clone and build dependencies
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scripting-language >/dev/null 2>&1) || \
        (command -v brew >/dev/null 2>&1 && brew ls --versions gsl >/dev/null 2>&1)); then
-    $CI_TIME git clone --quiet --depth 1 https://github.com/imatix/gsl.git gsl
     BASE_PWD=${PWD}
+    cd tmp-deps
+    $CI_TIME git clone --quiet --depth 1 https://github.com/zeromq/gsl.git gsl
     cd gsl
     CCACHE_BASEDIR=${PWD}
     export CCACHE_BASEDIR
@@ -77,15 +91,31 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scri
     cd "${BASE_PWD}"
 fi
 
-# Build and check this project
 cd ../..
+
+# always install custom builds from dist if the autotools chain exists
+# to make sure that `make dist` doesn't omit any files required to build & test
+if [ -z "$DO_CLANG_FORMAT_CHECK" -a -f configure.ac ]; then
+    $CI_TIME ./autogen.sh
+    $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+    $CI_TIME make -j5 dist-gzip
+    $CI_TIME tar -xzf zproject-1.1.0.tar.gz
+    cd zproject-1.1.0
+fi
+
+# Build and check this project
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of currently tested project..."
 CCACHE_BASEDIR=${PWD}
 export CCACHE_BASEDIR
-PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" .
-$CI_TIME make all VERBOSE=1 -j4
-$CI_TIME ctest -V
-$CI_TIME make install
+if [ "$DO_CLANG_FORMAT_CHECK" = "1" ] ; then
+    { PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" . \
+      && make clang-format-check-CI ; exit $? ; }
+else
+    PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" .
+    $CI_TIME make all VERBOSE=1 -j4
+    $CI_TIME ctest -V
+    $CI_TIME make install
+fi
 [ -z "$CI_TIME" ] || echo "`date`: Builds completed without fatal errors!"
 
 echo "=== Are GitIgnores good after making the project '$BUILD_TYPE'? (should have no output below)"

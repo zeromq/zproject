@@ -1,7 +1,7 @@
 #   Generate project API
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -31,7 +31,7 @@
 #define $(PROJECT.HEADER:c)_H_INCLUDED
 
 //  Include the project library file
-#include "$(project.prefix)_library.h"
+#include "$(project.prefix)_library.$(project.header_ext)"
 
 //  Add your own public definitions here, if you need them
 
@@ -39,7 +39,7 @@
 .else
 .   echo "NOT regenerating an existing include/$(project.header) skeleton file; but you probably should not care"
 .endif
-.output "include/$(project.prefix)_library.h"
+.output "include/$(project.prefix)_library.$(project.header_ext)"
 /*  =========================================================================
     $(project.name) - generated layer of public API
 
@@ -82,6 +82,28 @@ $(project.GENERATED_WARNING_HEADER:)
 #define $(PROJECT.PREFIX)_VERSION \\
     $(PROJECT.PREFIX)_MAKE_VERSION($(PROJECT.PREFIX)_VERSION_MAJOR, $(PROJECT.PREFIX)_VERSION_MINOR, $(PROJECT.PREFIX)_VERSION_PATCH)
 
+.if project.prefix <> "czmq" & project.has_czmq <> 1
+// czmq_prelude.h bits
+#if !defined (__WINDOWS__)
+#   if (defined WIN32 || defined _WIN32 || defined WINDOWS || defined _WINDOWS)
+#       undef __WINDOWS__
+#       define __WINDOWS__
+#   endif
+#endif
+
+// Windows MSVS doesn't have stdbool
+#if (defined (_MSC_VER) && !defined (true))
+#   if (!defined (__cplusplus) && (!defined (true)))
+#       define true 1
+#       define false 0
+        typedef char bool;
+#   endif
+#else
+#   include <stdbool.h>
+#endif
+// czmq_prelude.h bits
+
+.endif
 #if defined (__WINDOWS__)
 #   if defined $(PROJECT.PREFIX)_STATIC
 #       define $(PROJECT.PREFIX)_EXPORT
@@ -97,12 +119,16 @@ $(project.GENERATED_WARNING_HEADER:)
 #       define $(PROJECT.PREFIX)_EXPORT __declspec(dllimport)
 #   endif
 #   define $(PROJECT.PREFIX)_PRIVATE
-#else
+#elif defined (__CYGWIN__)
 #   define $(PROJECT.PREFIX)_EXPORT
+#   define $(PROJECT.PREFIX)_PRIVATE
+#else
 #   if (defined __GNUC__ && __GNUC__ >= 4) || defined __INTEL_COMPILER
 #       define $(PROJECT.PREFIX)_PRIVATE __attribute__ ((visibility ("hidden")))
+#       define $(PROJECT.PREFIX)_EXPORT __attribute__ ((visibility ("default")))
 #   else
 #       define $(PROJECT.PREFIX)_PRIVATE
+#       define $(PROJECT.PREFIX)_EXPORT
 #   endif
 #endif
 
@@ -115,16 +141,16 @@ $(project.GENERATED_WARNING_HEADER:)
 //  Opaque class structures to allow forward references
 //  These classes are stable or legacy and built in all releases
 .for project.class where scope = "public" & !draft
-typedef struct _$(class.c_name)_t $(class.c_name)_t;
-#define $(CLASS.C_NAME)_T_DEFINED
+typedef struct _$(class.c_name:)_t $(class.c_name:)_t;
+#define $(CLASS.C_NAME:c)_T_DEFINED
 .endfor
 .for project.class where scope = "public" & draft
 .   if first ()
 //  Draft classes are by default not built in stable releases
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
-typedef struct _$(class.c_name)_t $(class.c_name)_t;
-#define $(CLASS.C_NAME)_T_DEFINED
+typedef struct _$(class.c_name:)_t $(class.c_name:)_t;
+#define $(CLASS.C_NAME:c)_T_DEFINED
 .   if last ()
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
@@ -153,25 +179,34 @@ typedef struct _$(class.c_name)_t $(class.c_name)_t;
 
 //  Public classes, each with its own header file
 .for header where scope = "public"
-#include "$(header.name).h"
+#include "$(header.name:$(project.filename_prettyprint)).$(project.header_ext)"
 .endfor
 .for class where scope = "public" & class.c_name <> "$(project.name)" & !draft
-#include "$(class.c_name).h"
+#include "$(class.name:$(project.filename_prettyprint)).$(project.header_ext)"
 .endfor
 .for class where scope = "public" & class.c_name <> "$(project.name)" & draft
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
-#include "$(class.c_name).h"
+#include "$(class.name:$(project.filename_prettyprint)).$(project.header_ext)"
 .   if last ()
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
 .endfor
 
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //  Self test for private classes
 $(PROJECT.PREFIX)_EXPORT void
-    $(project.prefix)_private_selftest (bool verbose);
+    $(project.prefix)_private_selftest (bool verbose, const char *subtest);
+
+#ifdef __cplusplus
+}
+#endif
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 
 #endif
@@ -182,9 +217,9 @@ $(project.GENERATED_WARNING_HEADER:)
 .#  Build the project selftest program
 .#
 .if project.use_cxx
-.output "src/$(project.prefix)_selftest.cc"
+.output "src/$(project.prefix)_selftest.$(project.source_ext)"
 .else
-.output "src/$(project.prefix)_selftest.c"
+.output "src/$(project.prefix)_selftest.$(project.source_ext)"
 .endif
 /*  =========================================================================
     $(project.prefix)_selftest.c - run selftests
@@ -200,11 +235,14 @@ $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
-#include "$(project.prefix)_classes.h"
+#include "$(project.prefix)_classes.$(project.header_ext)"
 
 typedef struct {
-    const char *testname;
-    void (*test) (bool);
+    const char *testname;           // test name, can be called from command line this way
+    void (*test) (bool);            // function to run the test (or NULL for private tests)
+    bool stable;                    // true if class is declared as stable
+    bool pub;                       // true if class is declared as public
+    const char *subtest;            // name of private subtest to run
 } test_item_t;
 
 static test_item_t
@@ -213,22 +251,35 @@ all_tests [] = {
 .   if first ()
 // Tests for stable public classes:
 .   endif
-    { "$(class.c_name)", $(class.c_name)_test },
+    { "$(class.c_name)", $(class.c_name)_test, true, true, NULL },
 .endfor
 .for class where draft & selftest & private ?<> 1
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 // Tests for draft public classes:
 .   endif
-    { "$(class.c_name)", $(class.c_name)_test },
+    { "$(class.c_name)", $(class.c_name)_test, false, true, NULL },
 .   if last ()
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
 .endfor
+.for class where selftest & private ?= 1
+.   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
-    { "private_classes", $(project.prefix)_private_selftest },
+// Tests for stable/draft private classes:
+// Now built only with --enable-drafts, so even stable builds are hidden behind the flag
+.   endif
+.   if class.draft = 1
+    { "$(class.c_name)", NULL, false, false, "$(class.c_name)_test" },
+.   else
+    { "$(class.c_name)", NULL, true, false, "$(class.c_name)_test" },
+.   endif
+.   if last ()
+    { "private_classes", NULL, false, false, "$ALL" }, // compat option for older projects
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
-    {0, 0}          //  Sentinel
+.   endif
+.endfor
+    {NULL, NULL, 0, 0, NULL}          //  Sentinel
 };
 
 //  -------------------------------------------------------------------------
@@ -240,7 +291,7 @@ test_item_t *
 test_available (const char *testname)
 {
     test_item_t *item;
-    for (item = all_tests; item->test; item++) {
+    for (item = all_tests; item->testname; item++) {
         if (streq (testname, item->testname))
             return item;
     }
@@ -256,10 +307,43 @@ test_runall (bool verbose)
 {
     test_item_t *item;
     printf ("Running $(project.name) selftests...\\n");
-    for (item = all_tests; item->test; item++)
-        item->test (verbose);
+    for (item = all_tests; item->testname; item++) {
+        if (streq (item->testname, "private_classes"))
+            continue;
+        if (!item->subtest)
+            item->test (verbose);
+#ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API // selftest is still in draft
+        else
+            $(project.prefix)_private_selftest (verbose, item->subtest);
+#endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
+    }
 
     printf ("Tests passed OK\\n");
+}
+
+static void
+test_list (void)
+{
+    test_item_t *item;
+    puts ("Available tests:");
+    for (item = all_tests; item->testname; item++)
+        printf ("    %-40s - %s\t%s\\n",
+            item->testname,
+            item->stable ? "stable" : "draft",
+            item->pub ? "public" : "private"
+        );
+}
+
+static void
+test_number (void)
+{
+    int n = 0;
+    test_item_t *item;
+    for (item = all_tests; item->testname; item++) {
+        if (! streq (item->testname, "private_classes"))
+            n++;
+    }
+    printf ("%d\\n", n);
 }
 
 int
@@ -285,23 +369,13 @@ main (int argc, char **argv)
         else
         if (streq (argv [argn], "--number")
         ||  streq (argv [argn], "-n")) {
-            puts ("$(count (project.class))");
+            test_number ();
             return 0;
         }
         else
         if (streq (argv [argn], "--list")
         ||  streq (argv [argn], "-l")) {
-            puts ("Available tests:");
-.for class where selftest & private ?<> 1
-            puts ("    $(class.c_name)\\t\\t- \
-.   if class.draft
-draft\
-.   else
-stable\
-.   endif
-");
-.endfor
-            puts ("    private_classes\\t- draft");
+            test_list ();
             return 0;
         }
         else
@@ -339,7 +413,12 @@ stable\
 
     if (test) {
         printf ("Running $(project.name) test '%s'...\\n", test->testname);
-        test->test (verbose);
+        if (!test->subtest)
+            test->test (verbose);
+#ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API // selftest is still in draft
+        else
+            $(project.prefix)_private_selftest (verbose, test->subtest);
+#endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
     }
     else
         test_runall (verbose);
@@ -353,9 +432,9 @@ $(project.GENERATED_WARNING_HEADER:)
 .#  Build the project private classes selftest module
 .#
 .if project.use_cxx
-.output "src/$(project.prefix)_private_selftest.cc"
+.output "src/$(project.prefix)_private_selftest.$(project.source_ext)"
 .else
-.output "src/$(project.prefix)_private_selftest.c"
+.output "src/$(project.prefix)_private_selftest.$(project.source_ext)"
 .endif
 /*  =========================================================================
     $(project.prefix)_private_selftest.c - run private classes selftests
@@ -371,7 +450,7 @@ $(project.GENERATED_WARNING_HEADER:)
     =========================================================================
 */
 
-#include "$(project.prefix)_classes.h"
+#include "$(project.prefix)_classes.$(project.header_ext)"
 
 
 //  -------------------------------------------------------------------------
@@ -379,20 +458,22 @@ $(project.GENERATED_WARNING_HEADER:)
 //
 
 void
-$(project.prefix)_private_selftest (bool verbose)
+$(project.prefix)_private_selftest (bool verbose, const char *subtest)
 {
 .for class where !draft & selftest & private ?= 1
 .   if first ()
 // Tests for stable private classes:
 .   endif
-    $(class.c_name)_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "$(class.c_name)_test"))
+        $(class.c_name)_test (verbose);
 .endfor
 .for class where draft & selftest & private ?= 1
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 // Tests for draft private classes:
 .   endif
-    $(class.c_name)_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "$(class.c_name)_test")
+        $(class.c_name)_test (verbose);
 .   if last ()
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
@@ -404,7 +485,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .-
 .-  Build the classes header for private header files and constants
 .-
-.output "src/$(project.prefix)_classes.h"
+.output "src/$(project.prefix)_classes.$(project.header_ext)"
 /*  =========================================================================
     $(project.prefix)_classes - private header file
 
@@ -426,24 +507,88 @@ $(project.GENERATED_WARNING_HEADER:)
 
 //  Extra headers
 .for header where scope = "private"
-#include "$(header.name).h"
+#include "$(header.name:$(project.filename_prettyprint)).$(project.header_ext)"
 .endfor
 
 //  Opaque class structures to allow forward references
 .for class where scope = "private"
-#ifndef $(CLASS.C_NAME)_T_DEFINED
-typedef struct _$(class.c_name)_t $(class.c_name)_t;
-#define $(CLASS.C_NAME)_T_DEFINED
+#ifndef $(CLASS.C_NAME:c)_T_DEFINED
+typedef struct _$(class.c_name:)_t $(class.c_name:)_t;
+#define $(CLASS.C_NAME:c)_T_DEFINED
 #endif
 .endfor
 
 //  Internal API
+.if project.prefix <> "czmq" & project.has_czmq <> 1
+// common definitions and idioms from czmq_prelude.h, which are used in generated code
+#if ! defined(__CZMQ_PRELUDE_H_INCLUDED__)
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+
+#define streq(s1,s2)    (!strcmp ((s1), (s2)))
+#define strneq(s1,s2)   (strcmp ((s1), (s2)))
+//  Replacement for malloc() which asserts if we run out of heap, and
+//  which zeroes the allocated block.
+static inline void *
+safe_malloc (size_t size, const char *file, unsigned line)
+{
+//     printf ("%s:%u %08d\\n", file, line, (int) size);
+    void *mem = calloc (1, size);
+    if (mem == NULL) {
+        fprintf (stderr, "FATAL ERROR at %s:%u\\n", file, line);
+        fprintf (stderr, "OUT OF MEMORY (malloc returned NULL)\\n");
+        fflush (stderr);
+        abort ();
+    }
+    return mem;
+}
+
+//  Define _ZMALLOC_DEBUG if you need to trace memory leaks using e.g. mtrace,
+//  otherwise all allocations will claim to come from czmq_prelude.h. For best
+//  results, compile all classes so you see dangling object allocations.
+//  _ZMALLOC_PEDANTIC does the same thing, but its intention is to propagate
+//  out of memory condition back up the call stack.
+#if defined (_ZMALLOC_DEBUG) || defined (_ZMALLOC_PEDANTIC)
+#   define zmalloc(size) calloc(1,(size))
+#else
+#   define zmalloc(size) safe_malloc((size), __FILE__, __LINE__)
+#endif
+#endif // __CZMQ_PRELUDE_H_INCLUDED__
+
+.endif
+.for class where scope = "public"
+.   visibility = "$(PROJECT.PREFIX)_PRIVATE"
+.   for class.method where private
+//  $(method.description:no,block)
+.       if method->return.fresh
+//  Caller owns return value and must destroy it when done.
+.       endif
+$(VISIBILITY) $(c_method_signature (method):)\
+.       if defined(method.format_index)
+ CHECK_PRINTF ($(method.format_index));
+.       else
+;
+.       endif
+
+.   endfor
+.endfor
+
 .for class where scope = "private"
-#include "$(class.c_name).h"
+#include "$(class.name:$(project.filename_prettyprint)).$(project.header_ext)"
 .endfor
 
 //  *** To avoid double-definitions, only define if building without draft ***
 #ifndef $(PROJECT.PREFIX)_BUILD_DRAFT_API
+.for constant where scope = "public" & draft
+.   if first ()
+
+//  *** Draft global constants, defined for internal use only ***
+.   endif
+#define $(CONSTANT.NAME)\
+                            $(constant.value)  //  $(constant.?'')
+.endfor
 .for class where draft = 0
 .   for constant where draft = 1
 .      if first ()
@@ -480,7 +625,7 @@ $(PROJECT.PREFIX)_PRIVATE $(c_method_signature (method):)\
 
 //  Self test for private classes
 $(PROJECT.PREFIX)_PRIVATE void
-    $(project.prefix)_private_selftest (bool verbose);
+    $(project.prefix)_private_selftest (bool verbose, const char *subtest);
 
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 
@@ -545,7 +690,7 @@ $(VISIBILITY) void
     $(actor.name:c) (zsock_t *pipe, void *args);
 
 .   endfor
-.   for class.method where draft = my.draft
+.   for class.method where draft = my.draft & !private
 .       method_state_comment (state)
 //  $(method.description:no,block)
 .       if method->return.fresh

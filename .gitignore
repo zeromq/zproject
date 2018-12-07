@@ -27,10 +27,10 @@ src/zproject_selftest
 *.app
 core
 
- # Distcheck workspace and archives
-zproject-1.1.0/
-zproject-1.1.0.tar.gz
-zproject-1.1.0.zip
+# Distcheck workspace and archives
+zproject-*/
+zproject-*.tar.gz
+zproject-*.zip
 
 # Man pages
 doc/*.1
@@ -71,10 +71,13 @@ install_manifest.txt
 Testing/
 
 # Repositories downloaded by CI integration scripts
-gsl/
+tmp-deps/
+###gsl/
+###gitdown/
 
-# Manually tracked: the czmq source is pulled as a test target
-czmq/
+### Manually tracked: the czmq source is pulled as a test target
+###libzmq/
+###czmq/
 
 # Travis build area
 tmp/
@@ -103,7 +106,7 @@ src/app/gen/
 src/app/obj/
 src/app/local.properties
 
-# Android -dependencies
+# Android - dependencies
 src/app/jni/output
 
 # Python build directory
@@ -124,6 +127,9 @@ bindings/qt/selftest/selftest
 *.swp
 *.bak
 .test*
+
+# Netbeans directory
+nbproject/
 
 # editor backups
 *~

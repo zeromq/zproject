@@ -2,7 +2,7 @@
 #   zproject
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -33,25 +33,76 @@ function project_use_cxx ()
     use_cxx = 0
     for class
         if file.exists ("src/$(name:c).cc")
+            project.source_ext = "cc"
             return 1
         endif
     endfor
     for main
         if file.exists ("src/$(name:c).cc")
+            project.source_ext = "cc"
             return 1
         endif
     endfor
     return 0
 endfunction
 
+function resolve_classfilename_option()
+    for classfilename
+        if defined (classfilename.pretty\-print)
+            project.filename_prettyprint = classfilename.pretty\-print
+        endif
+
+        if defined (classfilename.source\-extension)
+            project.source_ext = classfilename.source\-extension
+        endif
+
+        if defined (classfilename.header\-extension)
+            project.header_ext = classfilename.header\-extension
+        endif
+
+        if defined (classfilename.use\-cxx)
+            if classfilename.use\-cxx ?= "true"
+                use_cxx = 1
+            elsif classfilename.use\-cxx ?= "false"
+                use_cxx = 0
+            endif
+        endif
+
+
+        if defined (classfilename.keep\-tree)
+            if classfilename.keep\-tree ?= "true"
+                project.keep_tree = 1
+            elsif classfilename.keep\-tree ?= "false"
+                project.keep_tree = 0
+            endif
+        endif
+
+        if defined (classfilename.pkgincludedir)
+            if classfilename.pkgincludedir ?= "true"
+                project.pkgincludedir = 1
+            elsif classfilename.pkgincludedir ?= "false"
+                project.pkgincludedir = 0
+            endif
+        endif
+
+        return
+    endfor
+endfunction
+
+project.filename_prettyprint = "c"
+project.header_ext = "h"
+project.source_ext = "c"
 project.use_cxx = project_use_cxx ()
+project.keep_tree = 0
+project.pkgincludedir = 0
+resolve_classfilename_option()
 project.name ?= "myproject"
 project.prefix ?= "$(project.name:c)"
 project.linkname ?= project.prefix
 project.libname ?= "lib" + project.linkname
 project.prelude ?= project.prefix + "_prelude.h"
 project.description ?= "Project"
-project.header ?= "$(project.name:c).h"
+project.header ?= "$(project.name:$(project.filename_prettyprint)).$(project.header_ext)"
 
 if count (project.version) = 0
     new version to project
@@ -68,6 +119,8 @@ endif
 project->license. ?= "Copyright (c) the Authors"
 
 project.has_main = (count (main) > 0)
+project.has_bin = (count (bin) > 0)
+project.has_classes = (count (class) > 0)
 project.exports_classes = (count (class, !defined (class.private)) > 0)
 project.generated_warning_header ?= "\
 ################################################################################
@@ -196,6 +249,7 @@ gsl from "zproject_docker.gsl"
 gsl from "zproject_gyp.gsl"
 gsl from "zproject_java.gsl"
 gsl from "zproject_java_msvc.gsl"
+gsl from "zproject_jenkins.gsl"
 gsl from "zproject_mingw32.gsl"
 gsl from "zproject_nodejs.gsl"
 gsl from "zproject_nuget.gsl"

@@ -4,7 +4,7 @@
 #   of FFI function bindings on which to base idiomatic Ruby classes.
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -143,23 +143,6 @@ function ruby_ffi_attach_definition(method)
     my.attach_definition += "], $(method->return.ruby_ffi_type:), **opts"
     return my.attach_definition
 endfunction
-
-
-# Ruby code that warns about unavailable function and creates a placeholder
-# function that just raises NotImplementedError with a helpful message.
-.macro ruby_unimplemented_method_definition(method)
-        if $VERBOSE || $DEBUG
-          warn "The $(method.STATE) function $(class.c_name:)_$(method.name:c)()" +
-            " is not provided by the installed $(project.name:) library."
-        end
-        def self.$(class.c_name:)_$(method.c_name:)(*)
-.       if method.state = 'draft'
-          raise NotImplementedError, "compile $(project.name:) with --enable-drafts"
-.       else
-          raise NotImplementedError, "update your code or downgrade the $(project.name:) library"
-.       endif
-        end
-.endmacro
 
 # Returns the Ruby method call without arguments,
 # like: ::MyProject::FFI.my_class_my_method
@@ -312,6 +295,19 @@ module $(project.RubyName:)
       @available = false
     end
 
+
+    def self.attach_function(name, *rest)
+      super
+    rescue ::FFI::NotFoundError
+      define_singleton_method name do |*|
+        raise NotImplementedError, "The function #{name}() is not provided by the $(project.name:) library installed. Upgrade the library or compile it with --enable-drafts."
+      end
+
+      return unless $VERBOSE || $DEBUG
+
+      warn "The function #{name}() is not provided by the installed $(project.name:) library."
+    end
+
     if available?
       opts = {
         blocking: true  # only necessary on MRI to deal with the GIL.
@@ -319,37 +315,13 @@ module $(project.RubyName:)
 .for class where defined (class.api) & class.private = "0"
 
 .for constructor as method
-.  if method.state = 'draft' | method.state = 'deprecated'
-      begin # $(method.STATE) method
-        $(ruby_ffi_attach_definition (method))
-      rescue ::FFI::NotFoundError
-.       ruby_unimplemented_method_definition (method)
-      end
-.  else
       $(ruby_ffi_attach_definition (method))
-.  endif
 .endfor
 .for destructor as method
-.  if method.state = 'draft' | method.state = 'deprecated'
-      begin # $(method.STATE) method
-        $(ruby_ffi_attach_definition (method))
-      rescue ::FFI::NotFoundError
-.       ruby_unimplemented_method_definition (method)
-      end
-.  else
       $(ruby_ffi_attach_definition (method))
-.  endif
 .endfor
 .for method
-.  if method.state = 'draft' | method.state = 'deprecated'
-      begin # $(method.STATE) method
-        $(ruby_ffi_attach_definition (method))
-      rescue ::FFI::NotFoundError
-.       ruby_unimplemented_method_definition (method)
-      end
-.  else
       $(ruby_ffi_attach_definition (method))
-.  endif
 .endfor
 
       require_relative 'ffi/$(class.ruby_require:)'

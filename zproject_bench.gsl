@@ -4,7 +4,7 @@
 #   See project.xml for instructions on how to specify a benchmark.
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -189,6 +189,7 @@ bench-memcheck: \$(benchmark_progs)
 \t\t$\(LIBTOOL) --mode=execute valgrind --tool=memcheck \\
 \t\t\t--leak-check=full --show-reachable=yes --error-exitcode=1 \\
 \t\t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
+\t\t\t$\(VALGRIND_OPTIONS) \\
 \t\t\t$\(srcdir)/\$\$f; \\
 \tdone
 
@@ -196,6 +197,7 @@ bench-memcheck: \$(benchmark_progs)
 bench-callcheck: \$(benchmark_progs)
 \tfor f in \$^; do \\
 \t\t$\(LIBTOOL) --mode=execute valgrind --tool=callgrind \\
+\t\t\t$\(VALGRIND_OPTIONS) \\
 \t\t\t$\(srcdir)/\$\$f; \\
 \tdone
 

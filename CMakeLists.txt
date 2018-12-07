@@ -6,7 +6,7 @@
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.8)
 project(zproject)
 enable_language(C)
 enable_testing()
@@ -15,6 +15,8 @@ set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 # Select flags
 SET(CMAKE_C_FLAGS_RELEASE "-O3")
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
 
 # Will be used to add flags to pkg-config useful when apps want to statically link
 set(pkg_config_libs_private "")
@@ -67,7 +69,7 @@ if (MSVC)
 endif()
 
 # specific case of windows UWP
-if( ${CMAKE_SYSTEM_NAME} STREQUAL "WindowsStore" AND ${CMAKE_SYSTEM_VERSION} STREQUAL "10.0")
+if( "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore" AND "${CMAKE_SYSTEM_VERSION}" STREQUAL "10.0")
   ADD_DEFINITIONS(-DZMQ_HAVE_WINDOWS_UWP)
   ADD_DEFINITIONS(-D_WIN32_WINNT=_WIN32_WINNT_WIN10)
 endif()
@@ -94,6 +96,16 @@ IF (GSL_FOUND)
 ELSE (GSL_FOUND)
     message( FATAL_ERROR "gsl not found." )
 ENDIF (GSL_FOUND)
+
+########################################################################
+# version
+########################################################################
+set(ZPROJECT_VERSION_MAJOR 1)
+set(ZPROJECT_VERSION_MINOR 1)
+set(ZPROJECT_VERSION_PATCH 0)
+set(ZPROJECT_VERSION "${ZPROJECT_VERSION_MAJOR}.${ZPROJECT_VERSION_MINOR}.${ZPROJECT_VERSION_PATCH}")
+message(STATUS "Detected ZPROJECT Version - ${ZPROJECT_VERSION}")
+
 
 ########################################################################
 # includes
@@ -124,15 +136,34 @@ endif()
 set(TEST_CLASSES
 )
 
+
+add_custom_target(
+    copy-selftest-ro ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src/selftest-ro ${CMAKE_BINARY_DIR}/src/selftest-ro
+)
+
+add_custom_target(
+    make-selftest-rw ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/src/selftest-rw
+)
+
+set_directory_properties(
+    PROPERTIES
+    ADDITIONAL_MAKE_CLEAN_FILES "${CMAKE_BINARY_DIR}/src/selftest-ro;${CMAKE_BINARY_DIR}/src/selftest-rw"
+)
+
 foreach(TEST_CLASS ${TEST_CLASSES})
     add_test(
         NAME ${TEST_CLASS}
         COMMAND zproject_selftest --continue --verbose --test ${TEST_CLASS}
-        WORKING_DIRECTORY ${SOURCE_DIR}
     )
     set_tests_properties(
         ${TEST_CLASS}
         PROPERTIES TIMEOUT ${CLASSTEST_TIMEOUT}
+    )
+    set_tests_properties(
+        ${TEST_CLASS}
+        PROPERTIES DEPENDS "copy-selftest-ro;make-selftest-rw"
     )
 endforeach(TEST_CLASS)
 
@@ -165,6 +196,8 @@ add_custom_command(
     TARGET  distclean
 )
 
+include(ClangFormat OPTIONAL)
+
 ########################################################################
 # summary
 ########################################################################
@@ -177,6 +210,8 @@ message (STATUS "  C compiler        :   ${CMAKE_C_COMPILER}")
 message (STATUS "  Debug C flags     :   ${CMAKE_C_FLAGS_DEBUG} ${CMAKE_C_FLAGS}")
 message (STATUS "  Release C flags   :   ${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS}")
 message (STATUS "  Build type        :   ${CMAKE_BUILD_TYPE}")
+message (STATUS "  Static build      :   ${ZPROJECT_BUILD_STATIC}")
+message (STATUS "  Shared build      :   ${ZPROJECT_BUILD_SHARED}")
 IF (ENABLE_DRAFTS)
 message (STATUS "  Draft API         :   Yes")
 ELSE (ENABLE_DRAFTS)

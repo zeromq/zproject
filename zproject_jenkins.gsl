@@ -1,0 +1,1038 @@
+#   Generate Jenkinsfile for project, to test automatically on Jenkins v2.x+
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/zeromq/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+register_target ("jenkins", "pipeline CI script for jenkins")
+
+.function isSingle_jenkins_agent (project, global_agent)
+.# See details below in jenkins_agent()
+.# The default if agent_single is not defined is to treat it as "true" mostly
+.# due to https://issues.jenkins-ci.org/browse/JENKINS-48168 instability so far
+.   if ( ( (project.jenkins_agent_single ?= 0) & (my.global_agent ?= 0) ) | ( (my.global_agent ?= 1) & ( !(defined (project.jenkins_agent_single)) | project.jenkins_agent_single ?= 1 ) ) )
+.       return 1
+.   endif
+.   return 0
+.endfunction
+
+.function jenkins_agent (project, global_agent)
+.# An "agent_single" setup defines one of the choices from project.xml
+.# in the head of Jenkinsfile, and no more agents in individual steps.
+.# The opposite setup (default) uses "agent none" at the top and sets
+.# the agents in each step of the build and test, to spread the load.
+.# The "global_agent" option is "1" in header and "0" in steps, to
+.# specify whether we want anything to be printed at that position.
+.   if ( isSingle_jenkins_agent(project, my.global_agent) )
+.# Project can be built and tested in a single agent, or can spread
+.# the load across executors or even different agents
+.     if defined (project.jenkins_agent_docker)
+>                   agent \{ docker \{ image '$(project.jenkins_agent_docker:)' } }
+.     elsif defined (project.jenkins_docker)
+.# Legacy naming for the variable
+>                    agent \{ docker \{ image '$(project.jenkins_docker:)' } }
+.     elsif defined (project.jenkins_agent_label)
+>                    agent \{ label "$(project.jenkins_agent_label:)" }
+.     else
+>                    agent any
+.     endif
+.     return 1
+.   else
+.     if ( (my.global_agent ?= 1) | (project.jenkins_agent_single ?= 0) )
+.# This option only happens in the header of the file, not in steps
+>    agent none
+.     return 1
+.     endif
+.   endif
+.   return 0
+.endfunction
+
+.macro target_jenkins
+. if defined (project.jenkins_file)
+.   jenkinsfile = project.jenkins_file
+. else
+.   jenkinsfile = 'Jenkinsfile'
+. endif
+. if file.exists (jenkinsfile)
+.    echo "NOT regenerating an existing Jenkins file '$(jenkinsfile:)'; you might want to move yours out of the way and re-generate the project again to get updated settings"
+. else
+.    output jenkinsfile
+/*
+    $(project.name) - $(project.description?'':)
+
+.   for project.license
+    $(string.trim (license.):block                                         )
+.   endfor
+
+    NOTE : This Jenkins pipeline script only handles the self-testing of your
+    project. If you also want the successful codebase published or deployed,
+    you can define a helper job - see the reference implementation skeleton at
+    https://github.com/zeromq/zproject/blob/master/Jenkinsfile-deploy.example
+
+*/
+
+pipeline {
+.  jenkins_agent (project, 1)
+    parameters {
+        // Use DEFAULT_DEPLOY_BRANCH_PATTERN and DEFAULT_DEPLOY_JOB_NAME if
+        // defined in this jenkins setup -- in Jenkins Management Web-GUI
+        // see Configure System / Global properties / Environment variables
+        // Default (if unset) is empty => no deployment attempt after good test
+        // See zproject Jenkinsfile-deploy.example for an example deploy job.
+        // TODO: Try to marry MultiBranchPipeline support with pre-set defaults
+        // directly in MultiBranchPipeline plugin, or mechanism like Credentials,
+        // or a config file uploaded to master for all jobs or this job, see
+        // https://jenkins.io/doc/pipeline/examples/#configfile-provider-plugin
+        string (
+            defaultValue: '\$\{DEFAULT_DEPLOY_BRANCH_PATTERN}',
+            description: 'Regular expression of branch names for which a deploy action would be attempted after a successful build and test; leave empty to not deploy. Reasonable value is ^(master|release/.*|feature/*)$',
+            name : 'DEPLOY_BRANCH_PATTERN')
+        string (
+            defaultValue: '\$\{DEFAULT_DEPLOY_JOB_NAME}',
+            description: 'Name of your job that handles deployments and should accept arguments: DEPLOY_GIT_URL DEPLOY_GIT_BRANCH DEPLOY_GIT_COMMIT -- and it is up to that job what to do with this knowledge (e.g. git archive + push to packaging); leave empty to not deploy',
+            name : 'DEPLOY_JOB_NAME')
+        booleanParam (
+            defaultValue: true,
+            description: 'If the deployment is done, should THIS job wait for it to complete and include its success or failure as the build result (true), or should it schedule the job and exit quickly to free up the executor (false)',
+            name: 'DEPLOY_REPORT_RESULT')
+        booleanParam (
+.  if ( ( project.jenkins_build_without_draft_api ?= 0 ) | !(project.stable) )
+.# NOTE: If "!project.stable" then there is no support for --enable-drafts in
+.# the generated configure.ac script, drafts are always on. So we can skip the
+.# non-draft test for young experimental projects.
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt stable build without DRAFT API in this run?',
+            name: 'DO_BUILD_WITHOUT_DRAFT_API')
+        booleanParam (
+.  if project.jenkins_build_with_draft_api ?= 0
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt build with DRAFT API in this run?',
+            name: 'DO_BUILD_WITH_DRAFT_API')
+        choice (
+            choices: 'auto\\nyes\\nno',
+            description: 'Enable pedantic compiler options for common builds (auto turns into yes for GCC builds)?',
+            name: 'ENABLE_WERROR')
+        booleanParam (
+.  if ( !(defined(project.jenkins_build_docs)) | (project.jenkins_build_docs ?= 0) )
+. # asciidoc and xmlto are external tools that may be not installed in general case
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt a build with docs in this run? (Note: corresponding tools are required in the build environment)',
+            name: 'DO_BUILD_DOCS')
+        booleanParam (
+.  if ( !(defined(project.jenkins_dist_docs)) | (project.jenkins_dist_docs ?= 0) )
+. # asciidoc and xmlto are external tools that may be not installed in general case
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Publish as an archive a "dist" tarball from a build with docs in this run? (Note: corresponding tools are required in the build environment; enabling this enforces DO_BUILD_DOCS too)',
+            name: 'DO_DIST_DOCS')
+        booleanParam (
+.  if project.jenkins_test_check ?= 0
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt "make check" in this run?',
+            name: 'DO_TEST_CHECK')
+        booleanParam (
+.  if project.jenkins_test_memcheck ?= 0
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt "make memcheck" in this run?',
+            name: 'DO_TEST_MEMCHECK')
+        booleanParam (
+.  if ( project.jenkins_test_distcheck ?= 0 | project.jenkins_distcheck ?= 0 )
+.# "distcheck" option is a legacy artifact; use test_distcheck=0 in practice
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt "make distcheck" in this run?',
+            name: 'DO_TEST_DISTCHECK')
+        booleanParam (
+.  if project.jenkins_test_install ?= 0
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt a "make install" check in this run?',
+            name: 'DO_TEST_INSTALL')
+        string (
+.  if ( !(defined(project.jenkins_test_install_DESTDIR)) | project.jenkins_test_install_DESTDIR ?= "" )
+            defaultValue: "`pwd`/tmp/_inst",
+.  else
+            defaultValue: "$(project.jenkins_test_install_DESTDIR)",
+.  endif
+            description: 'If attempting a "make install" check in this run, what DESTDIR to specify? (absolute path, defaults to "BUILD_DIR/tmp/_inst")',
+            name: 'USE_TEST_INSTALL_DESTDIR')
+        booleanParam (
+.  if ( !(defined(project.jenkins_test_cppcheck)) | (project.jenkins_test_cppcheck ?= 1) )
+. # if nothing was set, try to do the cppcheck (it should not be fatal if the tool is not there)
+            defaultValue: true,
+.  else
+. # cppcheck is an external tool that may be not installed in general case, and takes a while to run - this project's devs want it off by default
+            defaultValue: false,
+.  endif
+            description: 'Attempt "cppcheck" analysis before this run? (Note: corresponding tools are required in the build environment)',
+            name: 'DO_CPPCHECK')
+        booleanParam (
+.  if project.jenkins_require_gitignore ?= 0
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Require that there are no files not discovered changed/untracked via .gitignore after builds and tests?',
+            name: 'CI_REQUIRE_GOOD_GITIGNORE')
+        booleanParam (
+.  if ( !(defined(project.jenkins_test_check_clang_format)) | (project.jenkins_test_check_clang_format ?= 1) )
+. # if nothing was set, try to make check-clang-format-CI (it should not be fatal if the tool is not there)
+            defaultValue: true,
+.  else
+. # clang-format(-5.0) is an external tool that may be not installed in general case, and takes a while to run - this project's devs want it off by default
+            defaultValue: false,
+.  endif
+            description: 'Attempt "clang-format" (v5+) analysis before this run? (Note: corresponding tools are required in the build environment)',
+            name: 'DO_CHECK_CLANG_FORMAT')
+        booleanParam (
+.  if ( !(defined(project.jenkins_require_good_clang_format)) | project.jenkins_require_good_clang_format ?= 0 )
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Require that if clang-format is executed, then it must show no differences in codebase?',
+            name: 'CI_REQUIRE_GOOD_CLANG_FORMAT')
+        string (
+.  if ( !(defined(project.jenkins_use_clang_format_prog)) | project.jenkins_use_clang_format_prog ?= "" )
+            defaultValue: "",
+.  else
+            defaultValue: "$(project.jenkins_use_clang_format_prog)",
+.  endif
+            description: 'The clang-format program (v5+) to use for this build, e.g. clang-format-5.0; an empty value means configure-time guesswork',
+            name: 'CLANG_FORMAT')
+        string (
+.  if ( !(defined(project.jenkins_use_test_timeout)) | project.jenkins_use_test_timeout ?= "" )
+            defaultValue: "30",
+.  else
+            defaultValue: "$(project.jenkins_use_test_timeout)",
+.  endif
+            description: 'When running tests, use this timeout (in minutes; be sure to leave enough for double-job of a distcheck too)',
+            name: 'USE_TEST_TIMEOUT')
+        booleanParam (
+            defaultValue: false,
+            description: 'Try to collect CCACHE logs in the build workspace during this run, to analyze the build behavior?',
+            name: 'USE_CCACHE_LOGGING')
+.  if !(isSingle_jenkins_agent (project, 0))
+        booleanParam (
+.    if ( !(defined(project.jenkins_do_cleanup_after_build)) | (project.jenkins_do_cleanup_after_build ?= 1) )
+. # if nothing was set, do the cleanup by default to reduce footprint on CI server
+            defaultValue: true,
+.    else
+. # explicitly disabled for a particular project
+            defaultValue: false,
+.    endif
+            description: 'When using temporary subdirs in build/test workspaces, wipe them right after each successful build stage?',
+            name: 'DO_CLEANUP_AFTER_BUILD')
+.  endif
+        booleanParam (
+.    if ( !(defined(project.jenkins_do_cleanup_after_job)) | (project.jenkins_do_cleanup_after_job ?= 1) )
+. # if nothing was set, do the cleanup by default to reduce footprint on CI server
+            defaultValue: true,
+.    else
+. # explicitly disabled for a particular project
+            defaultValue: false,
+.    endif
+            description: 'When using temporary subdirs in build/test workspaces, wipe them after the whole job is done successfully?',
+            name: 'DO_CLEANUP_AFTER_JOB')
+        booleanParam (
+.    if ( !(defined(project.jenkins_do_cleanup_after_failed_job)) | (project.jenkins_do_cleanup_after_failed_job ?= 0) )
+. # if nothing was set, don't cleanup by default to allow postmortems on CI server
+            defaultValue: false,
+.    else
+. # explicitly enabled for a particular project
+            defaultValue: true,
+.    endif
+            description: 'When using temporary subdirs in build/test workspaces, wipe them after the whole job is done unsuccessfully (failed)? Note this would not allow postmortems on CI server, but would conserve its disk space.',
+            name: 'DO_CLEANUP_AFTER_FAILED_JOB')
+    }
+.  if !(defined(project.jenkins_triggers_pollSCM))
+    triggers {
+        pollSCM 'H/5 * * * *'
+    }
+.  else
+.   if project.jenkins_triggers_pollSCM ?= ""
+.       # Explicit skip of polling setup
+.   else
+    triggers {
+        pollSCM '$(project.jenkins_triggers_pollSCM)'
+    }
+.   endif
+.  endif
+.  if project.jenkins_use_checkout_explicit ?= 1 | project.jenkins_use_build_nonconcurrent ?= 1
+
+    // Jenkins tends to reschedule jobs that have not yet completed if they took
+    // too long, maybe this happens in combination with polling. Either way, if
+    // the server gets into this situation, the snowball of same builds grows as
+    // the build system lags more and more. Let the devs avoid it in a few ways.
+    options {
+.   if project.jenkins_use_build_nonconcurrent ?= 1
+        disableConcurrentBuilds()
+.   endif
+.   if project.jenkins_use_checkout_explicit ?= 1
+        // Jenkins community suggested that instead of a default checkout, we can do
+        // an explicit step for that. It is expected that either way Jenkins "should"
+        // record that a particular commit is being processed, but the explicit ways
+        // might work better. In either case it honors SCM settings like refrepo if
+        // set up in the Pipeline or MultiBranchPipeline job.
+        skipDefaultCheckout()
+.   endif
+    }
+.  endif
+.# TODO: Add a --enable-address-sanitizer=yes matrix
+// Note: your Jenkins setup may benefit from similar setup on side of agents:
+//        PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/bin:/bin:\$\{PATH}"
+    stages {
+        stage ('pre-clean') {
+.       jenkins_agent (project, 0)
+                    steps {
+.  if project.jenkins_use_earlymilestone ?= 1
+                        milestone ordinal: 20, label: "\$\{env.JOB_NAME}@\$\{env.BRANCH_NAME}"
+.  endif
+                        dir("tmp") {
+                            sh 'if [ -s Makefile ]; then make -k distclean || true ; fi'
+                            sh 'chmod -R u+w .'
+.       if project.jenkins_use_deleteDir_rm_first ?= 1
+                            sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.       endif
+                            deleteDir()
+                        }
+                        sh 'rm -f ccache.log cppcheck.xml'
+                    }
+        }
+.  if project.jenkins_use_checkout_explicit ?= 1
+        stage ('git') {
+.       jenkins_agent (project, 0)
+                    steps {
+                        retry(3) {
+                            checkout scm
+                        }
+.  if project.jenkins_use_earlymilestone ?= 1
+                        milestone ordinal: 30, label: "\$\{env.JOB_NAME}@\$\{env.BRANCH_NAME}"
+.  endif
+                    }
+        }
+.  endif
+        stage ('prepare') {
+.       jenkins_agent (project, 0)
+                    steps {
+                        sh './autogen.sh'
+                        stash (name: 'prepped', includes: '**/*', excludes: '**/cppcheck.xml')
+.  if project.jenkins_use_earlymilestone ?= 1
+                        milestone ordinal: 40, label: "\$\{env.JOB_NAME}@\$\{env.BRANCH_NAME}"
+.  endif
+                    }
+        }
+        stage ('compile') {
+            parallel {
+                stage ('build with DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/build-withDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                        deleteDir()
+.       endif
+                        unstash 'prepped'
+                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then rm -f ccache.log ; CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; ./configure --enable-drafts=yes --enable-Werror="\$\{params.ENABLE_WERROR}" --with-docs=no"""
+                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; make -k -j4 || make"""
+                        sh """ echo "Are GitIgnores good after make with drafts?"; make CI_REQUIRE_GOOD_GITIGNORE="\$\{params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
+                        stash (name: 'built-draft', includes: '**/*', excludes: '**/cppcheck.xml')
+.       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                deleteDir()
+                            }
+                        }
+                      }
+.       endif
+                    }
+                }
+                stage ('build without DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/build-withoutDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                        deleteDir()
+.       endif
+                        unstash 'prepped'
+                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then rm -f ccache.log ; CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; ./configure --enable-drafts=no --enable-Werror="\$\{params.ENABLE_WERROR}" --with-docs=no"""
+                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; make -k -j4 || make"""
+                        sh """ echo "Are GitIgnores good after make without drafts?"; make CI_REQUIRE_GOOD_GITIGNORE="\$\{params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
+                        stash (name: 'built-nondraft', includes: '**/*', excludes: '**/cppcheck.xml')
+.       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                deleteDir()
+                            }
+                        }
+                      }
+.       endif
+                    }
+                }
+                stage ('build with DOCS') {
+                    when { expression { return ( params.DO_BUILD_DOCS || params.DO_DIST_DOCS ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/build-DOCS") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                        deleteDir()
+.       endif
+                        unstash 'prepped'
+                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then rm -f ccache.log ; CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; ./configure --enable-drafts=yes --with-docs=yes --enable-Werror=no"""
+                        script {
+                            if ( params.DO_DIST_DOCS ) {
+                                sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; make dist-gzip || exit ; DISTFILE="`ls -1tc *.tar.gz | head -1`" && [ -n "\\\$DISTFILE" ] && [ -s "\\\$DISTFILE" ] || exit ; mv -f "\\\$DISTFILE" __dist.tar.gz"""
+                                archiveArtifacts artifacts: '__dist.tar.gz'
+                                sh "rm -f __dist.tar.gz"
+                            }
+                        }
+                        sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; make -k -j4 || make"""
+                        sh """ echo "Are GitIgnores good after make with docs?"; make CI_REQUIRE_GOOD_GITIGNORE="\$\{params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
+                        stash (name: 'built-docs', includes: '**/*', excludes: '**/cppcheck.xml')
+.       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                deleteDir()
+                            }
+                        }
+                      }
+.       endif
+                    }
+                }
+            }
+        }
+.       if ( project.jenkins_check_sequential ?= 1 )
+        // Self-test stages below should be run sequentially, as decreed by
+        // project authors for the time being (e.g. port conflicts, etc.)
+        // You can uncomment the closures below experimentally, but proper
+        // fix belongs in the project.xml (e.g. use separate agents if your
+        // infrastructure is set up to only schedule one build on the agent
+        // at a time) and better yet - in the project sources, to not have
+        // the conflicts at all.
+//        stage ('check') {
+//            parallel {
+.       else
+        stage ('check') {
+            parallel {
+.       endif
+                stage ('cppcheck') {
+                    when { expression { return ( params.DO_CPPCHECK ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+                        dir("tmp/test-cppcheck") {
+.       if project.jenkins_use_deleteDir_rm_first ?= 1
+                            sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.       endif
+                            deleteDir()
+                            script {
+                                // We need a configured source codebase to run
+                                // "make", any variant will do. Save some time
+                                // by using a build tree (if exists), but can
+                                // fall back to running the configure script
+                                // explicitly.
+                                if ( params.DO_BUILD_WITH_DRAFT_API ) {
+                                    unstash 'built-draft'
+                                } else if ( params.DO_BUILD_WITHOUT_DRAFT_API ) {
+                                    unstash 'built-nondraft'
+                                } else if ( params.DO_BUILD_DOCS || params.DO_DIST_DOCS ) {
+                                    unstash 'built-docs'
+                                } else {
+                                    unstash 'prepped'
+                                    sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then rm -f ccache.log ; CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; ./configure --enable-drafts=no --enable-Werror="\$\{params.ENABLE_WERROR}" --with-docs=no"""
+                                }
+                            }
+                            sh 'rm -f cppcheck.xml'
+                            // This make target should produce a cppcheck.xml if tool is available
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; make cppcheck"""
+                            archiveArtifacts artifacts: '**/cppcheck.xml', allowEmptyArchive: true
+                            sh 'rm -f cppcheck.xml'
+.       if !(isSingle_jenkins_agent (project, 0))
+                            script {
+                                if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                    sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                    deleteDir()
+                                }
+                            }
+.       endif
+                        }
+                    }
+                }
+                stage ('clang-format-check') {
+                    when { expression { return ( params.DO_CHECK_CLANG_FORMAT ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+                        dir("tmp/test-clang-format-check") {
+.       if project.jenkins_use_deleteDir_rm_first ?= 1
+                            sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.       endif
+                            deleteDir()
+                            script {
+                                // We need a configured source codebase to run
+                                // "make", any variant will do. Save some time
+                                // by using a build tree (if exists), but can
+                                // fall back to running the configure script
+                                // explicitly.
+                                if ( params.DO_BUILD_WITH_DRAFT_API ) {
+                                    unstash 'built-draft'
+                                } else if ( params.DO_BUILD_WITHOUT_DRAFT_API ) {
+                                    unstash 'built-nondraft'
+                                } else if ( params.DO_BUILD_DOCS || params.DO_DIST_DOCS ) {
+                                    unstash 'built-docs'
+                                } else {
+                                    unstash 'prepped'
+                                    sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then rm -f ccache.log ; CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; ./configure --enable-drafts=no --enable-Werror="\$\{params.ENABLE_WERROR}" --with-docs=no"""
+                                }
+                            }
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; make clang-format-check-CI"""
+.       if !(isSingle_jenkins_agent (project, 0))
+                            script {
+                                if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                    sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                    deleteDir()
+                                }
+                            }
+.       endif
+                        }
+                    }
+                }
+                stage ('check with DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_CHECK ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-check-withDRAFT") {
+.       endif
+                        script {
+                         def RETRY_NUMBER = 0
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                         retry($(project.jenkins_use_test_retry)) {
+                          RETRY_NUMBER++
+.       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-draft'
+                          timeout (time: "\$\{params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                           try {
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" check"""
+                           }
+                           catch (Exception e) {
+                            currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
+                            sh """D="`pwd`"; B="`basename "\\$D"`" ; [ "\$\{RETRY_NUMBER}" -gt 0 ] && T="_try-\$\{RETRY_NUMBER}" || T="" ; tar czf "test-suite_\$\{BUILD_TAG}_\\$\{B}\\$\{T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
+                            throw e
+                           }
+                          }
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                         }
+.       endif
+                        }
+                        sh """ echo "Are GitIgnores good after make check with drafts?"; make CI_REQUIRE_GOOD_GITIGNORE="\$\{params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
+.       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                deleteDir()
+                            }
+                        }
+                      }
+.       endif
+                    }
+                }
+                stage ('check without DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_CHECK ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-check-withoutDRAFT") {
+.       endif
+                        script {
+                         def RETRY_NUMBER = 0
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                         retry($(project.jenkins_use_test_retry)) {
+                          RETRY_NUMBER++
+.       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-nondraft'
+                          timeout (time: "\$\{params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                           try {
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" check"""
+                           }
+                           catch (Exception e) {
+                            currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
+                            sh """D="`pwd`"; B="`basename "\\$D"`" ; [ "\$\{RETRY_NUMBER}" -gt 0 ] && T="_try-\$\{RETRY_NUMBER}" || T="" ; tar czf "test-suite_\$\{BUILD_TAG}_\\$\{B}\\$\{T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
+                            throw e
+                           }
+                          }
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                         }
+.       endif
+                        }
+                        sh """ echo "Are GitIgnores good after make check without drafts?"; make CI_REQUIRE_GOOD_GITIGNORE="\$\{params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
+.       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                deleteDir()
+                            }
+                        }
+                      }
+.       endif
+                    }
+                }
+                stage ('memcheck with DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-memcheck-withDRAFT") {
+.       endif
+                        script {
+                         def RETRY_NUMBER = 0
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                         retry($(project.jenkins_use_test_retry)) {
+                          RETRY_NUMBER++
+.       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-draft'
+                          timeout (time: "\$\{params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                           try {
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed (\\\$?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose"""
+                           }
+                           catch (Exception e) {
+                            currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
+                            sh """D="`pwd`"; B="`basename "\\$D"`" ; [ "\$\{RETRY_NUMBER}" -gt 0 ] && T="_try-\$\{RETRY_NUMBER}" || T="" ; tar czf "test-suite_\$\{BUILD_TAG}_\\$\{B}\\$\{T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
+                            throw e
+                           }
+                          }
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                         }
+.       endif
+                        }
+                        sh """ echo "Are GitIgnores good after make memcheck with drafts?"; make CI_REQUIRE_GOOD_GITIGNORE="\$\{params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
+.       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                deleteDir()
+                            }
+                        }
+                      }
+.       endif
+                    }
+                }
+                stage ('memcheck without DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-memcheck-withoutDRAFT") {
+.       endif
+                        script {
+                         def RETRY_NUMBER = 0
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                         retry($(project.jenkins_use_test_retry)) {
+                          RETRY_NUMBER++
+.       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-nondraft'
+                          timeout (time: "\$\{params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                           try {
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" memcheck && exit 0 ; echo "Re-running failed (\\\$?) memcheck with greater verbosity" >&2 ; make LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" VERBOSE=1 memcheck-verbose"""
+                           }
+                           catch (Exception e) {
+                            currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
+                            sh """D="`pwd`"; B="`basename "\\$D"`" ; [ "\$\{RETRY_NUMBER}" -gt 0 ] && T="_try-\$\{RETRY_NUMBER}" || T="" ; tar czf "test-suite_\$\{BUILD_TAG}_\\$\{B}\\$\{T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
+                            throw e
+                           }
+                          }
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                         }
+.       endif
+                        }
+                        sh """ echo "Are GitIgnores good after make memcheck without drafts?"; make CI_REQUIRE_GOOD_GITIGNORE="\$\{params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
+.       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                deleteDir()
+                            }
+                        }
+                      }
+.       endif
+                    }
+                }
+                stage ('distcheck with DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_DISTCHECK ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-distcheck-withDRAFT") {
+.       endif
+                        script {
+                         def RETRY_NUMBER = 0
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                         retry($(project.jenkins_use_test_retry)) {
+                          RETRY_NUMBER++
+.       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-draft'
+                          timeout (time: "\$\{params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                           try {
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=yes --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="\\\$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" distcheck"""
+                           }
+                           catch (Exception e) {
+                            currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
+                            sh """D="`pwd`"; B="`basename "\\$D"`" ; [ "\$\{RETRY_NUMBER}" -gt 0 ] && T="_try-\$\{RETRY_NUMBER}" || T="" ; tar czf "test-suite_\$\{BUILD_TAG}_\\$\{B}\\$\{T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
+                            throw e
+                           }
+                          }
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                         }
+.       endif
+                        }
+                        sh """ echo "Are GitIgnores good after make distcheck with drafts?"; make CI_REQUIRE_GOOD_GITIGNORE="\$\{params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
+.       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                deleteDir()
+                            }
+                        }
+                      }
+.       endif
+                    }
+                }
+                stage ('distcheck without DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_DISTCHECK ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-distcheck-withoutDRAFT") {
+.       endif
+                        script {
+                         def RETRY_NUMBER = 0
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                         retry($(project.jenkins_use_test_retry)) {
+                          RETRY_NUMBER++
+.       endif
+.       if !(isSingle_jenkins_agent (project, 0))
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                          sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                          deleteDir()
+.       endif
+                          unstash 'built-nondraft'
+                          timeout (time: "\$\{params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                           try {
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\\$LD_LIBRARY_PATH"; export LD_LIBRARY_PATH; DISTCHECK_CONFIGURE_FLAGS="--enable-drafts=no --with-docs=no" ; export DISTCHECK_CONFIGURE_FLAGS; make DISTCHECK_CONFIGURE_FLAGS="\\\$DISTCHECK_CONFIGURE_FLAGS" LD_LIBRARY_PATH="\\\$LD_LIBRARY_PATH" distcheck"""
+                           }
+                           catch (Exception e) {
+                            currentBuild.result = 'UNSTABLE' // Jenkins should not let the verdict "improve"
+                            sh """D="`pwd`"; B="`basename "\\$D"`" ; [ "\$\{RETRY_NUMBER}" -gt 0 ] && T="_try-\$\{RETRY_NUMBER}" || T="" ; tar czf "test-suite_\$\{BUILD_TAG}_\\$\{B}\\$\{T}.tar.gz" `find . -name '*.trs'` `find . -name '*.log'`"""
+                            archiveArtifacts artifacts: "**/test-suite*.tar.gz", allowEmptyArchive: true
+                            throw e
+                           }
+                          }
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                         }
+.       endif
+                        }
+                        sh """ echo "Are GitIgnores good after make distcheck without drafts?"; make CI_REQUIRE_GOOD_GITIGNORE="\$\{params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
+.       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                deleteDir()
+                            }
+                        }
+                      }
+.       endif
+                    }
+                }
+                stage ('install with DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_INSTALL ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-install-withDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                        deleteDir()
+.       endif
+                        unstash 'built-draft'
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                        retry($(project.jenkins_use_test_retry)) {
+.       endif
+                        timeout (time: "\$\{params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\$\{LD_LIBRARY_PATH\}"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\$\{LD_LIBRARY_PATH}" DESTDIR="\$\{params.USE_TEST_INSTALL_DESTDIR}/withDRAFT" install"""
+                        }
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                        }
+.       endif
+                        sh """cd "\$\{params.USE_TEST_INSTALL_DESTDIR}/withDRAFT" && find . -ls"""
+                        sh """ echo "Are GitIgnores good after make install with drafts?"; make CI_REQUIRE_GOOD_GITIGNORE="\$\{params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
+.       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                deleteDir()
+                            }
+                        }
+                      }
+.       endif
+                    }
+                }
+                stage ('install without DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_INSTALL ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-install-withoutDRAFT") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                        deleteDir()
+.       endif
+                        unstash 'built-nondraft'
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                        retry($(project.jenkins_use_test_retry)) {
+.       endif
+                        timeout (time: "\$\{params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\$\{LD_LIBRARY_PATH\}"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\$\{LD_LIBRARY_PATH}" DESTDIR="\$\{params.USE_TEST_INSTALL_DESTDIR}/withoutDRAFT" install"""
+                        }
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                        }
+.       endif
+                        sh """cd "\$\{params.USE_TEST_INSTALL_DESTDIR}/withoutDRAFT" && find . -ls"""
+                        sh """ echo "Are GitIgnores good after make install without drafts?"; make CI_REQUIRE_GOOD_GITIGNORE="\$\{params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
+.       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                deleteDir()
+                            }
+                        }
+                      }
+.       endif
+                    }
+                }
+                stage ('install with DOCS') {
+                    when { expression { return ( params.DO_BUILD_DOCS && params.DO_TEST_INSTALL ) } }
+.       jenkins_agent (project, 0)
+                    steps {
+.       if !(isSingle_jenkins_agent (project, 0))
+                      dir("tmp/test-install-withDOCS") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                        deleteDir()
+.       endif
+                        unstash 'built-docs'
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                        retry($(project.jenkins_use_test_retry)) {
+.       endif
+                        timeout (time: "\$\{params.USE_TEST_TIMEOUT}".toInteger(), unit: 'MINUTES') {
+                            sh """CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; if test "\$\{params.USE_CCACHE_LOGGING}" = true ; then CCACHE_LOGFILE="`pwd`/ccache.log" ; export CCACHE_LOGFILE ; fi ; LD_LIBRARY_PATH="`pwd`/src/.libs:\\$\{LD_LIBRARY_PATH\}"; export LD_LIBRARY_PATH; make LD_LIBRARY_PATH="\\$\{LD_LIBRARY_PATH}" DESTDIR="\$\{params.USE_TEST_INSTALL_DESTDIR}/withDOCS" install"""
+                        }
+.       if ( (defined(project.jenkins_use_test_retry)) & project.jenkins_use_test_retry > 1 )
+                        }
+.       endif
+                        sh """cd "\$\{params.USE_TEST_INSTALL_DESTDIR}/withDOCS" && find . -ls"""
+                        sh """ echo "Are GitIgnores good after make install with docs?"; make CI_REQUIRE_GOOD_GITIGNORE="\$\{params.CI_REQUIRE_GOOD_GITIGNORE}" check-gitignore """
+.       if !(isSingle_jenkins_agent (project, 0))
+                        script {
+                            if ( params.DO_CLEANUP_AFTER_BUILD ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                                sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                                deleteDir()
+                            }
+                        }
+                      }
+.       endif
+                    }
+                }
+.       if ( project.jenkins_check_sequential ?= 1 )
+        // Sequential block of self-tests end here
+//            }
+//        }
+.       else
+            }
+        }
+.       endif
+        stage ('deploy if appropriate') {
+            steps {
+                script {
+                    def myDEPLOY_JOB_NAME = sh(returnStdout: true, script: """echo "\$\{params["DEPLOY_JOB_NAME"]}" """).trim();
+                    def myDEPLOY_BRANCH_PATTERN = sh(returnStdout: true, script: """echo "\$\{params["DEPLOY_BRANCH_PATTERN"]}" """).trim();
+                    def myDEPLOY_REPORT_RESULT = sh(returnStdout: true, script: """echo "\$\{params["DEPLOY_REPORT_RESULT"]}" """).trim().toBoolean();
+                    echo "Original: DEPLOY_JOB_NAME : \$\{params["DEPLOY_JOB_NAME"]} DEPLOY_BRANCH_PATTERN : \$\{params["DEPLOY_BRANCH_PATTERN"]} DEPLOY_REPORT_RESULT : \$\{params["DEPLOY_REPORT_RESULT"]}"
+                    echo "Used:     myDEPLOY_JOB_NAME:\$\{myDEPLOY_JOB_NAME} myDEPLOY_BRANCH_PATTERN:\$\{myDEPLOY_BRANCH_PATTERN} myDEPLOY_REPORT_RESULT:\$\{myDEPLOY_REPORT_RESULT}"
+                    if ( (myDEPLOY_JOB_NAME != "") && (myDEPLOY_BRANCH_PATTERN != "") ) {
+                        if ( env.BRANCH_NAME =~ myDEPLOY_BRANCH_PATTERN ) {
+                            def GIT_URL = sh(returnStdout: true, script: """git remote -v | egrep '^origin' | awk '{print \\$2}' | head -1""").trim()
+                            def GIT_COMMIT = sh(returnStdout: true, script: 'git rev-parse --verify HEAD').trim()
+                            def DIST_ARCHIVE = ""
+                            def msg = "Would deploy \$\{GIT_URL} \$\{GIT_COMMIT} because tested branch '\$\{env.BRANCH_NAME}' matches filter '\$\{myDEPLOY_BRANCH_PATTERN}'"
+                            if ( params.DO_DIST_DOCS ) {
+                                DIST_ARCHIVE = env.BUILD_URL + "artifact/__dist.tar.gz"
+                                msg += ", using dist archive '\$\{DIST_ARCHIVE}' to speed up deployment"
+                            }
+                            echo msg
+.  if project.jenkins_use_deploymilestone ?= 1
+                            milestone ordinal: 100, label: "\$\{env.JOB_NAME}@\$\{env.BRANCH_NAME}"
+.  endif
+                            build job: "\$\{myDEPLOY_JOB_NAME}", parameters: [
+                                string(name: 'DEPLOY_GIT_URL', value: "\$\{GIT_URL}"),
+                                string(name: 'DEPLOY_GIT_BRANCH', value: env.BRANCH_NAME),
+                                string(name: 'DEPLOY_GIT_COMMIT', value: "\$\{GIT_COMMIT}"),
+                                string(name: 'DEPLOY_DIST_ARCHIVE', value: "\$\{DIST_ARCHIVE}")
+                                ], quietPeriod: 0, wait: myDEPLOY_REPORT_RESULT, propagate: myDEPLOY_REPORT_RESULT
+                        } else {
+                            echo "Not deploying because branch '\$\{env.BRANCH_NAME}' did not match filter '\$\{myDEPLOY_BRANCH_PATTERN}'"
+                        }
+                    } else {
+                        echo "Not deploying because deploy-job parameters are not set"
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {
+            script {
+                if (currentBuild.getPreviousBuild()?.result != 'SUCCESS') {
+                    // Uncomment desired notification
+
+                    //slackSend (color: "#008800", message: "Build \$\{env.JOB_NAME} is back to normal.")
+                    //emailext (to: "qa@example.com", subject: "Build \$\{env.JOB_NAME} is back to normal.", body: "Build \$\{env.JOB_NAME} is back to normal.")
+                }
+                if ( params.DO_CLEANUP_AFTER_JOB ) {
+                    dir("tmp") {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                        deleteDir()
+                    }
+                }
+            }
+        }
+        failure {
+            // Uncomment desired notification
+            // Section must not be empty, you can delete the sleep once you set notification
+            sleep 1
+            //slackSend (color: "#AA0000", message: "Build \$\{env.BUILD_NUMBER} of \$\{env.JOB_NAME} \$\{currentBuild.result} (<\$\{env.BUILD_URL}|Open>)")
+            //emailext (to: "qa@example.com", subject: "Build \$\{env.JOB_NAME} failed!", body: "Build \$\{env.BUILD_NUMBER} of \$\{env.JOB_NAME} \$\{currentBuild.result}\\nSee \$\{env.BUILD_URL}")
+
+            dir("tmp") {
+                script {
+                    if ( params.DO_CLEANUP_AFTER_FAILED_JOB ) {
+.           if project.jenkins_use_deleteDir_rm_first ?= 1
+                        sh '_PWD="`pwd`" ; cd /tmp ; rm -rf "$_PWD" || true ; mkdir -p "$_PWD"'
+.           endif
+                        deleteDir()
+                    } else {
+                        sh """ echo "NOTE: BUILD AREA OF WORKSPACE `pwd` REMAINS FOR POST-MORTEMS ON `hostname` AND CONSUMES `du -hs . | awk '{print \\$1}'` !" """
+                    }
+                }
+            }
+        }
+    }
+}
+. endif
+.endmacro

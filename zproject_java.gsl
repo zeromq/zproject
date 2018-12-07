@@ -4,7 +4,7 @@
 #   of JNI function bindings on which to base idiomatic Java classes.
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -428,7 +428,7 @@ android_build_env
 #   Build any dependent libraries
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-( cd ../../../../$(use.project)/bindings/jni/android; ./build.sh )
+( cd ../../../../tmp-deps/$(use.project)/bindings/jni/android; ./build.sh )
 .   endif
 .endfor
 
@@ -457,7 +457,7 @@ echo "********  Building $(project.name:c).jar for Android"
 unzip -q ../../build/libs/$(project.prefix)-jni-$(->version.major).$(->version.minor).$(->version.patch).jar
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-unzip -q -o ../../../../../$(use.project)/bindings/jni/android/$(use.project)-android.jar
+unzip -q -o ../../../../../tmp-deps/$(use.project)/bindings/jni/android/$(use.project)-android.jar
 .   endif
 .endfor
 
@@ -625,10 +625,14 @@ if [ -z "${CI_CONFIG_QUIET-}" ] || [ "${CI_CONFIG_QUIET-}" = yes ] || [ "${CI_CO
 fi
 
 pushd ../../..
+rm -rf tmp-deps
+mkdir -p tmp-deps
 
 # Clone and build dependencies
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
 .   for use where defined (use.tarball)
+BASE_PWD=${PWD}
+cd tmp-deps
 wget $(use.tarball)
 tar -xzf \$(basename "$(use.tarball)")
 cd \$(basename "$(use.tarball)" .tar.gz)
@@ -644,9 +648,11 @@ $CI_TIME ./configure "${CONFIG_OPTS[@]}"
 .       endif
 $CI_TIME make -j4
 $CI_TIME make install
-cd ..
+cd ${BASE_PWD}
 .   endfor
 .   for use where defined (use.repository)
+BASE_PWD=${PWD}
+cd tmp-deps
 .      if defined (use.release)
 $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
 .      else
@@ -684,7 +690,7 @@ $CI_TIME make install
 # Build jni dependency
 ( cd bindings/jni && TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./gradlew publishToMavenLocal )
 .       endif
-cd ..
+cd ${BASE_PWD}
 
 .   endfor
 popd

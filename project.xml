@@ -10,6 +10,7 @@
         docker              packaging for Docker
         java                Java JNI binding
         java-msvc           MSVC builds for Java JNI binding
+        jenkins             Jenkins pipeline build
         mingw32             Mingw32 build system
         nuget               Packaging for NuGet
         python              Python binding
@@ -18,7 +19,13 @@
         redhat              Packaging for RedHat
         ruby                Ruby binding
         travis              Travis CI scripts
-            <option name="travis_distcheck" value="0" /> will disable run of make distcheck
+            <option name="distcheck" value="0" /> "0" will disable run of make distcheck in Travis CI, "2" will enable it as a special testcase allowed to fail (default: 1 to enable and require to pass)
+            <option name="use_pkg_deps_prereqs_source" value="0" /> "0" will disable use of use_pkg_deps_prereqs_source list in Travis CI and so cause rebuild of everything from scratch (default: 1, recently packaged prereqs must exist then)
+            <option name="use_cmake" value="0" /> "0" will disable use of CMake recipes in Travis CI (default: 1)
+            <option name="require_gitignore" value="1" /> "1" will require that the workspace is clean with regard to .gitignore settings after build (default: 0)
+            <option name="clangformat_allow_failures" value="0" /> "1" will generate the option allowing non-fatal failure of clang-format test in Travis CI (default: 1)
+            <option name="clangformat_require_good" value="0" /> "1" will generate the option allowing to report and not ignore failure of clang-format test in Travis CI (otherwise "0" hides the failure, and devs must look in test logs) (default: same as allow_failures)
+            <option name="clangformat_implem" value="cmake|autotools" /> will pick one of two implems of the clang-format test in Travis CI (cmake is default and faster if available, since autotools needs to configure first)
         vs2008              Microsoft Visual Studio 2008
         vs2010              Microsoft Visual Studio 2010
         vs2012              Microsoft Visual Studio 2012
@@ -34,6 +41,7 @@
     description := A short description for your project (optional)
     email := The email address where to reach you (optional)
     repository := git repository holding project (optional)
+    unique_class_name := "0"|"1" (optional, defaults to 0) As a failsafe, forbid naming agents or classes same as the project itself (can cause conflicts in generated header filenames). Disable explicitly (set to 0) only in legacy projects that can not regenerate otherwise, and try to fix those.
 -->
 <project script = "zproject.gsl" name = "zproject"
     email = "zeromq-dev@lists.zeromq.org"
@@ -43,7 +51,10 @@
 
     <!--
         Includes are processed first, so XML in included files will be
-        part of the XML tree
+        part of the XML tree. This file can provide content of such tags
+        as <license> (detailed text to put in generated file headers)
+        and <starting_year> (a number to put in packaging copyright
+        summaries).
     -->
     <include filename = "license.xml" />
 
@@ -168,6 +179,179 @@
     <target name = "debian" />
     <target name = "redhat" />
 
+    <!-- Note: zproject itself uses a customized CI-testing routine
+         on Travis CI, not a generated one, so DO NOT ENABLE this one:
+        <target name = "travis" />
+    -->
+
+    <!-- Jenkins target creates jenkins pipeline
+         Pipeline file is not overwriten if it exists.
+
+         Your projects can build under a docker container OR agents
+         matched by a label OR under an "any" agent by default.
+         If you specify a complex label expression, be sure to use
+         XML escaping of the amperesand character (&amp;) if some of
+         your tooling expects project.xml to be valid XML (the GSL
+         parser accepts a verbatim amperesand character as well).
+
+         The agent_single option is a flag that enables parallel
+         builds of this component on several agents (specified by
+         label or docker) vs. a sequential build on a single agent.
+
+         Similarly, a check_sequential option can be defined so that
+         self-testing stages would run sequentially. This can be needed
+         at early stages of a project's evolution, where hardcoding is
+         prevalent so parallel runs in same operating environemnt cause
+         conflicts to each other. Ultimately a project should remove
+         this flag ;)
+
+         The build_* and test_* options influence the default setting
+         of corresponding build arguments for the project. You can
+         still run a custom Jenkins Build with Arguments with other
+         checkboxes clicked, e.g. while developing a missing feature.
+         If not explicitly set to 0, most of these options are assumed
+         "true", as normally a project should be capable of all these
+         aspects. Note however that a project with no classes marked
+         "stable" would by default not test non-DRAFT builds as the
+         configure.ac script would have no support for those anyway.
+
+         The require_gitignore option (enabled by default) also causes
+         the test to fail, rather than warn, if untracked or changed
+         files are found as a result of some build or test stage.
+
+         Also note, that after successful build and test steps, the
+         job generated by this Jenkinsfile can optionally trigger
+         some other job specific to your installation of a Jenkins
+         server, to handle the deployment of tested code (whichever
+         way you'd define that). For this optional feature, your
+         Jenkins master should define (and propagate to its agents)
+         the environment values DEFAULT_DEPLOY_BRANCH_PATTERN (regex)
+         and DEFAULT_DEPLOY_JOB_NAME (note to start with a slash for
+         absolute naming; jobs in a folder may use relative paths too).
+         That job should accept parameters DEPLOY_GIT_URL (URL of repo),
+         DEPLOY_GIT_BRANCH (name for decision-making), DEPLOY_GIT_COMMIT
+         (actual commit to check out and shrink-wrap into packaging.
+
+         The test_install check tries to "make DESTDIR=... install" where
+         the DESTDIR is test_install_DESTDIR value (must be an absolute
+         path), or BUILD_DIR/tmp/_inst if the option is unspecified/empty.
+
+         The test_cppcheck is different, as it calls the "cppcheck" tool
+         which may be not installed on a particular Jenkins deployment.
+         The `make cppcheck` recipe is safe to call in either case, so by
+         default this option is enabled if not set explicitly. Same idea
+         goes for build_docs as it requires asciidoc and xmlto toolkits,
+         except it is off by default to avoid churning CPUs with no tools.
+         A further dist_docs enables preparation of a "dist" tarball from
+         the workspace configured with docs, so you can forward it to the
+         publishing helper job and avoid rebuilding manpages for packaging.
+
+         Similarly, a test_check_clang_format requires an external tool,
+         the clang-format-5.0 (or newer) to process the codebase and decide
+         if it is stylish. By default the test is enabled but not required
+         to pass (is just informative) and will run if the tool is available
+         in the build system. Eventually, a project should define and uphold
+         its coding style -- then this test can become one of requirements
+         for new pull requests.
+
+         The triggers_pollSCM option sets up the pipeline-generated job
+         for regular polling of the original SCM repository, using the
+         Jenkins cron syntax. The default is approximately every 5 minutes
+         with a spread to minimize burst-loads vs quiet times. An explicit
+         empty string disables polling, so you'd only run the job manually.
+         Note that the most frequent working setting is "H/2", NOT a "H/1".
+
+         On the Jenkins setup used by generated projects, sometimes it was
+         re-scheduling the same commits over and over and even overlapping.
+         Usually this was linked to some lagginess of the build system or
+         its internet connection, but the result was a growing queue of
+         same (and redundant) builds. To remedy this, projects can set a
+         few experimental options now (and regenerate their Jenkinsfile):
+         * use_earlymilestone -- uses a milestone to cancel builds that
+            got to it later than the running one
+         * use_deploymilestone -- uses a milestone to cancel builds that
+            got to the 'deploy if appropriate' phase later than the
+            running one
+         * use_build_nonconcurrent -- sets a disableConcurrentBuilds option
+         * use_checkout_explicit -- sets a skipDefaultCheckout option and
+            defines a step to check out code explicitly; it is believed
+            this may better succeed in recording which commits are already
+            being processed by the server
+
+         The use_test_timeout option sets up the default timeout for test
+         steps (further configurable at run-time as a build argument).
+         Generally unit tests should not take pathologically long, so the
+         default of 30 minutes should commonly suffice even for distchecks.
+         If your selftests are known to take a lot of time, perhaps due to
+         using an occasionally overloaded Jenkins CI farm, set this option.
+
+         A use_test_retry option allows to retry each failing test step
+         for the specified amount of attempts; it is deemed good if the
+         test passes at least once. This option should not normally need
+         to be used -- only if selftests somehow depend on environmental
+         circumstances and fail occasionally but not always. Ultimately,
+         project developers should find and fix the issue in tests (or in
+         the production codebase) so it always works on the first try,
+         bulletproof.
+
+         As a workaround for some versions of Jenkins, if your project uses
+         "weird" (generally non-ASCII) filenames in the build directory,
+         their removal with Pipeline deleteDir() can fail even though it
+         should not. If this bites you, set use_deleteDir_rm_first=1 in
+         the project, so the OS native "rm" is tried first.
+
+         The two options do_cleanup_after_build (for parallelized tests)
+         and do_cleanup_after_job control whether the pipeline would by
+         default remove the build/test subdirectory after successful end
+         of stage, and/or cleans the build workspace after the whole job
+         succeeded, respectively. If not set, cleanup is enabled for both
+         and in either case the active options are among build parameters.
+         In opposite fashion, a do_cleanup_after_failed_build is disabled
+         by default to allow post-mortem inspection of errors on CI server.
+         You might want to keep the built sources to analyze the behavior
+         of your build recipes in a particular environment, thought at a
+         risk of using excessive disk space there. In case of failure the
+         workspace remains on disk to make an in-place analysis possible,
+         and would eat space until you clean it up manually or it would
+         expire according to your Jenkins old-build retention policies.
+
+    <target name = "jenkins">
+        <option name = "file" value = "Jenkinsfile" />
+        <option name = "agent_docker" value = "zeromqorg/czmq" />
+        <option name = "agent_label" value = "linux || macosx || bsd || solaris || posix || windows" />
+        <option name = "agent_single" value = "1" />
+        <option name = "check_sequential" value = "1" />
+        <option name = "triggers_pollSCM" value = "H/5 * * * *" />
+        <option name = "build_without_draft_api" value = "0" />
+        <option name = "build_with_draft_api" value = "0" />
+        <option name = "build_docs" value = "1" />
+        <option name = "dist_docs" value = "1" />
+        <option name = "require_gitignore" value = "0" />
+        <option name = "use_deleteDir_rm_first" value = "1" />
+        <option name = "use_test_timeout" value = "60" />
+        <option name = "use_test_retry" value = "3" />
+        <option name = "test_check" value = "0" />
+        <option name = "test_memcheck" value = "0" />
+        <option name = "test_distcheck" value = "0" />
+        <option name = "test_install" value = "0" />
+        <option name = "test_install_DESTDIR" value = "/tmp/proto-area" />
+        <option name = "test_cppcheck" value = "1" />
+        <option name = "test_check_clang_format" value = "1" />
+        <option name = "use_clang_format_prog" value = "clang-format-5.0" />
+        <option name = "require_good_clang_format" value = "0" />
+    </target>
+    -->
+    <target name = "jenkins" >
+        <option name = "agent_label" value = "linux || macosx || bsd || solaris || posix || windows" />
+        <option name = "agent_single" value = "1" />
+        <!-- Note: for zproject itself, all the *check jobs are
+             essentially a loopback to distcheck itself -->
+        <option name = "test_check" value = "1" />
+        <option name = "test_memcheck" value = "0" />
+        <option name = "test_distcheck" value = "0" />
+        <option name = "test_cppcheck" value = "0" />
+    </target>
+
     <!-- In order loaded by zproject.gsl -->
     <bin name = "zproject.gsl" />
     <bin name = "zproject_projects.gsl" />
@@ -192,6 +376,7 @@
     <bin name = "zproject_java.gsl" />
     <bin name = "zproject_java_lib.gsl" />
     <bin name = "zproject_java_msvc.gsl" />
+    <bin name = "zproject_jenkins.gsl" />
     <bin name = "zproject_lua_ffi.gsl" />
     <bin name = "zproject_mingw32.gsl" />
     <bin name = "zproject_nodejs.gsl" />

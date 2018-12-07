@@ -1,7 +1,7 @@
 #   Process class API files in api/*.api
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -9,6 +9,11 @@
 #   This Source Code Form is subject to the terms of the Mozilla Public
 #   License, v. 2.0. If a copy of the MPL was not distributed with this
 #   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# copy&paste from zproject_redhat.gsl
+for project.target where ( target.name = "*" | target.name = "python_cffi" > 0 )
+   python_cffi = 1
+endfor
 
 # Resolve filename for each class API (undefined if the file is not found)
 for project.class
@@ -23,9 +28,28 @@ for project.class
             class.api = "api/$(class.name:c).api"
         elsif file.exists ("api/$(class.name:c).xml")
             class.api = "api/$(class.name:c).xml"
+        elsif file.exists ("/usr/local/share/zproject/$(class.name:c).api")
+            class.api = "/usr/local/share/zproject/$(class.name:c).api"
+        elsif file.exists ("/usr/share/zproject/$(class.name:c).api")
+            class.api = "/usr/share/zproject/$(class.name:c).api"
         endif
     endif
 endfor
+
+if python_cffi ?= 1
+# Resolve python_cffi slurps
+    for project.use
+        if file.exists ("../$(use.project:c)/api/python_cffi.slurp")
+            use.python_cffi_slurp = "../$(use.project:c)/api/python_cffi.slurp"
+        elsif file.exists ("tmp-deps/$(use.project:c)/api/python_cffi.slurp")
+            use.python_cffi_slurp = "tmp-deps/$(use.project:c)/api/python_cffi.slurp"
+        elsif file.exists ("/usr/local/share/zproject/$(use.project:c)/python_cffi.slurp")
+            use.python_cffi_slurp = "/usr/local/share/zproject/$(use.project:c)/python_cffi.slurp"
+        elsif file.exists ("/usr/share/zproject/$(use.project:c)/python_cffi.slurp")
+            use.python_cffi_slurp = "/usr/share/zproject/$(use.project:c)/python_cffi.slurp"
+        endif
+    endfor
+endif
 
 # Replace each class item with the class model from its API file (if any)
 for project.class where defined (class.api)
@@ -52,12 +76,22 @@ function set_state (element, default)
     my.element.state ?= my.default
     if my.element.state = "stable" \
     |  my.element.state = "legacy" \
+    |  my.element.state = "deprecated" \
     |  my.element.private ?= 1
         my.element.draft = 0
+    elsif my.element.stable ?= 0 | my.element.stable ?= 1
+        echo "LEGACY HACK WARNING: Usage of 'stable' boolean attribute in $(name (my.element)) is deprecated, please choose a 'state' instead"
+        if my.element.stable ?= 0
+            my.element.draft = 1
+            my.element.state = "draft"
+        else
+            my.element.draft = 0
+            my.element.state = "stable"
+        endif
     elsif my.element.state = "draft"
         my.element.draft = 1
     else
-        abort "E: $(name (element)).state must be draft/stable/legacy (is '$(my.element.state)')"
+        abort "E: $(name (my.element)).state must be draft/stable/legacy/deprecated (is '$(my.element.state)')"
     endif
 endfunction
 
@@ -225,6 +259,7 @@ function resolve_c_method (method, default_description)
     my.method.is_constructor ?= 0
     my.method.is_destructor ?= 0
     my.method.polymorphic ?= 0
+    my.method.private ?= 0
 
     # Resolve language-specific attributes for the C language.
     my.method.c_name ?= "$(my.method.name:c)"
@@ -283,6 +318,9 @@ endfunction
 function resolve_c_class (class)
     my.class.c_name ?= "$(my.class.name:c)"
     my.class.description ?= "$(string.trim (my.class.?""):left)"
+    if !defined (my.class.selftest)
+        my.class.selftest ?= 1
+    endif
 
     set_state (my.class, "draft")
 
@@ -299,8 +337,8 @@ function resolve_c_class (class)
         endif
     endfor
 
-    # All classes must have a test method
-    if !count (my.class.method, method.name = "test")
+    # All classes must have a test method... unless selftest="0" in project.xml
+    if !count (my.class.method, method.name = "test") & my.class.selftest
         new method to my.class
             method.name = "test"
             method.singleton = 1
@@ -536,6 +574,38 @@ function c_callback_typedef (method)
     return my.out
 endfunction
 
+#
+# Saves the state of resolved C classes.
+#
+# This function SHOULD BE called by language bindings that
+# modify the class state with their own properties to avoid
+# property conflicts with other language bindings.
+#
+# If language bindings require the original class they use the
+# saved state at 'project.c_class'. Under no circumstance is a
+# bindings allowed to modify those classes. In case this is needed
+# the language binding MUST copy them first.
+#
+function save_c_class_state()
+    for class
+        copy class to project as c_class
+    endfor
+endfunction
+
+#
+# Restores the state of resolved C classes.
+#
+# This function will discard any changes a language binding may
+# have done to the class state.
+#
+function restore_c_class_state()
+    for class
+        delete class
+    endfor
+    for c_class
+        move c_class to project as class
+    endfor
+endfunction
 
 # Resolve each class using the functions written above.
 #
@@ -547,23 +617,23 @@ endfunction
 #
 for project.main
     if project.use_cxx
-        main.source = "src/$(main.name:c).cc"
+        main.source = "src/$(main.name:$(project.filename_prettyprint)).$(project.source_ext)"
     else
-        main.source = "src/$(main.name:c).c"
+        main.source = "src/$(main.name:$(project.filename_prettyprint)).$(project.source_ext)"
     endif
     skeleton_main_source ()
 endfor
 
 for project.actor
     if scope = "private"
-        actor.header = "src/$(actor.name:c).h"
+        actor.header = "src/$(actor.name:$(project.filename_prettyprint)).$(project.header_ext)"
     else
-        actor.header = "include/$(actor.name:c).h"
+        actor.header = "include/$(actor.name:$(project.filename_prettyprint)).$(project.header_ext)"
     endif
     if project.use_cxx
-        actor.source = "src/$(actor.name:c).cc"
+        actor.source = "src/$(actor.name:$(project.filename_prettyprint)).$(project.source_ext)"
     else
-        actor.source = "src/$(actor.name:c).c"
+        actor.source = "src/$(actor.name:$(project.filename_prettyprint)).$(project.source_ext)"
     endif
     skeleton_actor_header ()
     skeleton_actor_source ()
@@ -571,14 +641,14 @@ endfor
 
 for project.class
     if scope = "private"
-        class.header = "src/$(class.name:c).h"
+        class.header = "src/$(class.name:$(project.filename_prettyprint)).$(project.header_ext)"
     else
-        class.header = "include/$(class.name:c).h"
+        class.header = "include/$(class.name:$(project.filename_prettyprint)).$(project.header_ext)"
     endif
     if project.use_cxx
-        class.source = "src/$(class.name:c).cc"
+        class.source = "src/$(class.name:$(project.filename_prettyprint)).$(project.source_ext)"
     else
-        class.source = "src/$(class.name:c).c"
+        class.source = "src/$(class.name:$(project.filename_prettyprint)).$(project.source_ext)"
     endif
 
     if defined (class.api)

@@ -54,10 +54,10 @@ the book is still work in progress!
 
 zproject uses the universal code generator called GSL to process its XML inputs
 and create its outputs. Before you start you'll need to install GSL
-(https://github.com/imatix/gsl) on your system.
+(https://github.com/zeromq/gsl) on your system.
 
 ```sh
-git clone https://github.com/imatix/gsl.git
+git clone https://github.com/zeromq/gsl.git
 cd gsl/src
 make
 make install
@@ -138,6 +138,26 @@ Model is described in `zproject_known_projects.xml` file:
 ```xml
 .pull zproject_known_projects.xml
 ```
+
+### Optional : Class filename configuration
+
+Exemple:
+```classfilename
+<classfilename use-cxx = "true" pkgincludedir = "false" keep-tree = "true" pretty-print = "no" source-extension = "cpp" header-extension = "hpp" />
+```
+
+* use-cxx will force usage (or not) of c++.
+* keep-tree will keep the include tree structure on the install (as opposed to flat delivery of include files basenames into the single-level target directory), must be used with a conservative name format (ex: pretty-print = "no"). Currently only supported with autotool.
+* pkgincludedir option chooses whether headers of this project should be dumped into the common system includedir (legacy default), or into an includedir/projname subdirectory?. Currently only supported with autotool.
+* pretty-print define the type of class name format change in order to generate the filename. It uses the pretty-print option of gsl (see Substituting Symbols and Expressions on https://github.com/zeromq/gsl#expressions for more information).
+* source-extension define the filename extension for source files in this project.
+* header-extension define the filename extension for header files in this project.
+
+Default value :
+* pretty-print : substitute_non_alpha_to_make_c_identifier (c option)
+* header-extension : h
+* source-extension : c (unless a cc file is present, then cc)
+* use-cxx : true if a cc file is present false otherwhise
 
 ### Targets
 

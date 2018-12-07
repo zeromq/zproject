@@ -1,7 +1,7 @@
 #   Generate cross compile environment for the Raspberry Pi
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -67,7 +67,16 @@ if [ $UPDATE ]; then
 fi
 
 # Cross build for the Raspberry Pi
-mkdir -p $PWD/tmp
+if [ -d "./tmp" ]; then
+    # Proto installation area for this project and its deps
+    rm -rf ./tmp
+fi
+if [ -d "./tmp-deps" ]; then
+    # Checkout/unpack and build area for dependencies
+    rm -rf ./tmp-deps
+fi
+mkdir -p tmp tmp-deps
+
 BUILD_PREFIX=$PWD/tmp
 TOOLCHAIN_HOST="arm-linux-gnueabihf"
 TOOLCHAIN_PATH="${PWD}/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin"
@@ -110,6 +119,8 @@ CONFIG_OPTS+=("RANLIB=${RANLIB}")
 if [ ! $INCREMENTAL ]; then
     # Clone and build dependencies
 .   for use where defined (use.tarball)
+    BASE_PWD=${PWD}
+    cd tmp-deps
     if [ ! -e \$(basename "$(use.tarball)") ]; then
         $CI_TIME wget $(use.tarball)
         tar -xzf \$(basename "$(use.tarball)")
@@ -130,9 +141,12 @@ if [ ! $INCREMENTAL ]; then
         $CI_TIME make install
     ) || exit 1
     popd
+    cd ${BASE_PWD}
 
 .   endfor
 .   for use where defined (use.repository) & ! defined (use.tarball)
+    BASE_PWD=${PWD}
+    cd tmp-deps
     if [ ! -e $(use.project) ]; then
 .      if defined (use.release)
         $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
@@ -174,6 +188,7 @@ if [ ! $INCREMENTAL ]; then
         $CI_TIME make install
     ) || exit 1
     popd
+    cd ${BASE_PWD}
 
 .   endfor
 fi

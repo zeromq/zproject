@@ -1,7 +1,7 @@
 #   Generate CMake project file for project
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -19,15 +19,21 @@ $(project.GENERATED_WARNING_HEADER:)
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.8)
 project($(project.name:c))
+.if project.use_cxx
+enable_language(CXX)
+.else
 enable_language(C)
+.endif
 enable_testing()
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 # Select flags
 SET(CMAKE_C_FLAGS_RELEASE "-O3")
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
 
 # Will be used to add flags to pkg-config useful when apps want to statically link
 set(pkg_config_libs_private "")
@@ -50,7 +56,7 @@ if (NOT CMAKE_BUILD_TYPE)
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
         message(STATUS "git workspace root [${git_result}]: ${git_root}")
-        if ( "${git_result}" == "0" )
+        if ( "${git_result}" STREQUAL "0" )
             set (CMAKE_BUILD_TYPE Debug)
         else ()
             set (CMAKE_BUILD_TYPE Release)
@@ -100,7 +106,11 @@ configure_file("${SOURCE_DIR}/src/platform.h.in" "${SOURCE_DIR}/src/platform.h")
 #so the sources have to be compiled as c++
 if (MSVC)
     enable_language(CXX)
-    file(GLOB sources "${SOURCE_DIR}/src/*.c")
+.   if project.use_cxx
+    file(GLOB sources "${SOURCE_DIR}/src/*.$(project.source_ext)")
+.   else
+    file(GLOB sources "${SOURCE_DIR}/src/*.$(project.source_ext)")
+.   endif
     set_source_files_properties(
         ${sources}
         PROPERTIES LANGUAGE CXX
@@ -109,7 +119,7 @@ if (MSVC)
 endif()
 
 # specific case of windows UWP
-if( ${CMAKE_SYSTEM_NAME} STREQUAL "WindowsStore" AND ${CMAKE_SYSTEM_VERSION} STREQUAL "10.0")
+if( "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore" AND "${CMAKE_SYSTEM_VERSION}" STREQUAL "10.0")
   ADD_DEFINITIONS(-DZMQ_HAVE_WINDOWS_UWP)
   ADD_DEFINITIONS(-D_WIN32_WINNT=_WIN32_WINNT_WIN10)
 endif()
@@ -158,6 +168,22 @@ ENDIF ($(USE.PROJECT)_FOUND)
 .endfor
 
 ########################################################################
+# version
+########################################################################
+.if defined (project->version)
+set($(PROJECT.PREFIX)_VERSION_MAJOR $(project->version.major))
+set($(PROJECT.PREFIX)_VERSION_MINOR $(project->version.minor))
+set($(PROJECT.PREFIX)_VERSION_PATCH $(project->version.patch))
+.else
+set($(PROJECT.PREFIX)_VERSION_MAJOR "0")
+set($(PROJECT.PREFIX)_VERSION_MINOR "0")
+set($(PROJECT.PREFIX)_VERSION_PATCH "0")
+.endif
+set($(PROJECT.PREFIX)_VERSION "${$(PROJECT.PREFIX)_VERSION_MAJOR}.${$(PROJECT.PREFIX)_VERSION_MINOR}.${$(PROJECT.PREFIX)_VERSION_PATCH}")
+message(STATUS "Detected $(PROJECT.PREFIX) Version - ${$(PROJECT.PREFIX)_VERSION}")
+
+
+########################################################################
 # includes
 ########################################################################
 set ($(project.prefix)_headers
@@ -171,13 +197,13 @@ set ($(project.prefix)_headers
 .   endif
 .endif
 .for header where scope = "public"
-    include/$(name:c).h
+    include/$(name:$(project.filename_prettyprint)).$(project.header_ext)
 .endfor
 .for class where scope = "public" & !draft
-    include/$(name:c).h
+    include/$(name:$(project.filename_prettyprint)).$(project.header_ext)
 .endfor
 .for class where scope = "private"
-    src/$(name:c).h
+    src/$(name:$(project.filename_prettyprint)).$(project.header_ext)
 .endfor
 .for extra
     src/$(name)
@@ -188,7 +214,7 @@ set ($(project.prefix)_headers
 IF (ENABLE_DRAFTS)
     list(APPEND $(project.prefix)_headers
 .   for class where scope = "public" & draft
-        include/$(name:c).h
+        include/$(name:$(project.filename_prettyprint)).$(project.header_ext)
 .   endfor
     )
 ENDIF (ENABLE_DRAFTS)
@@ -201,10 +227,16 @@ install(FILES ${$(project.prefix)_headers} DESTINATION include)
 ########################################################################
 # library
 ########################################################################
+
+
 include_directories("${SOURCE_DIR}/src" "${SOURCE_DIR}/include")
 set ($(project.linkname)_sources
 .for class where !draft
-    src/$(name:c).c
+.   if project.use_cxx
+    src/$(name:$(project.filename_prettyprint)).$(project.source_ext)
+.   else
+    src/$(name:$(project.filename_prettyprint)).$(project.source_ext)
+.   endif
 .endfor
 )
 .if count (class, draft)
@@ -212,7 +244,11 @@ set ($(project.linkname)_sources
 IF (ENABLE_DRAFTS)
     list (APPEND $(project.linkname)_sources
 .   for class where draft
-        src/$(name:c).c
+.       if project.use_cxx
+        src/$(name:$(project.filename_prettyprint)).$(project.source_ext)
+.       else
+        src/$(name:$(project.filename_prettyprint)).$(project.source_ext)
+.       endif
 .   endfor
     )
 ENDIF (ENABLE_DRAFTS)
@@ -222,47 +258,110 @@ ENDIF (ENABLE_DRAFTS)
 IF (ENABLE_DRAFTS)
     list (APPEND $(project.linkname)_sources
 .   if project.use_cxx
-        src/$(project.prefix)_private_selftest.cc
+        src/$(project.prefix)_private_selftest.$(project.source_ext)
 .   else
-        src/$(project.prefix)_private_selftest.c
+        src/$(project.prefix)_private_selftest.$(project.source_ext)
 .   endif
     )
 ENDIF (ENABLE_DRAFTS)
 
 .endif
 source_group("Source Files" FILES ${$(project.linkname)_sources})
-if (NOT DEFINED BUILD_SHARED_LIBS)
-    SET(BUILD_SHARED_LIBS ON)
-endif()
-add_library($(project.linkname) ${$(project.linkname)_sources})
-set_target_properties($(project.linkname)
-    PROPERTIES DEFINE_SYMBOL "$(PROJECT.PREFIX)_EXPORTS"
-)
-set_target_properties ($(project.linkname)
-.if defined (project->abi)
-    PROPERTIES SOVERSION "$(project->abi.current - project->abi.age)"
-.else
-    PROPERTIES SOVERSION "0"
-.endif
-)
-set_target_properties ($(project.linkname)
-.if defined (project->version)
-    PROPERTIES VERSION "$(project->version.major).$(project->version.minor).$(project->version.patch)"
-.else
-    PROPERTIES VERSION "0.0.0"
-.endif
-)
-target_link_libraries($(project.linkname)
-    ${ZEROMQ_LIBRARIES} ${MORE_LIBRARIES}
-)
 
-install(TARGETS $(project.linkname)
+
+option($(PROJECT.PREFIX)_BUILD_SHARED "Whether or not to build the shared object" ON)
+option($(PROJECT.PREFIX)_BUILD_STATIC "Whether or not to build the static archive" ON)
+
+if (NOT $(PROJECT.PREFIX)_BUILD_SHARED AND NOT $(PROJECT.PREFIX)_BUILD_STATIC)
+  message(FATAL_ERROR "Neither static nor shared library build enabled")
+endif()
+
+IF (NOT MSVC)
+  # avoid building everything twice for shared + static
+  # only on *nix, as Windows needs different preprocessor defines in static builds
+  add_library ($(project.linkname)_objects OBJECT ${$(project.linkname)_sources})
+  set_property(TARGET $(project.linkname)_objects PROPERTY POSITION_INDEPENDENT_CODE ON)
+ENDIF (NOT MSVC)
+
+# shared
+if ($(PROJECT.PREFIX)_BUILD_SHARED)
+  IF (MSVC)
+    add_library($(project.linkname) SHARED ${$(project.linkname)_sources})
+  ELSE (MSVC)
+    add_library($(project.linkname) SHARED $<TARGET_OBJECTS:$(project.linkname)_objects>)
+  ENDIF (MSVC)
+
+  set_target_properties ($(project.linkname) PROPERTIES
+    PUBLIC_HEADER "${public_headers}"
+    DEFINE_SYMBOL "$(PROJECT.PREFIX)_EXPORTS"
+.if defined (project->abi)
+    SOVERSION "$(project->abi.current - project->abi.age)"
+.else
+    SOVERSION "0"
+.endif
+    VERSION "${$(PROJECT.PREFIX)_VERSION}"
+    COMPILE_DEFINITIONS "DLL_EXPORT"
+    OUTPUT_NAME "$(project.linkname)"
+    PREFIX "lib"
+  )
+
+  target_link_libraries($(project.linkname)
+    PUBLIC ${MORE_LIBRARIES}
+  )
+
+  install(TARGETS $(project.linkname)
+    EXPORT $(project.linkname)-targets
     LIBRARY DESTINATION "lib${LIB_SUFFIX}" # .so file
     ARCHIVE DESTINATION "lib${LIB_SUFFIX}" # .lib file
-    RUNTIME DESTINATION bin              # .dll file
-)
-.if file.exists ("src/CMakeLists-local.txt")
+    RUNTIME DESTINATION bin                # .dll file
+  )
 
+  target_include_directories($(project.linkname)
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>
+  )
+endif()
+
+# static
+if ($(PROJECT.PREFIX)_BUILD_STATIC)
+  IF (MSVC)
+    add_library($(project.linkname)-static STATIC ${$(project.linkname)_sources})
+  ELSE (MSVC)
+    add_library($(project.linkname)-static STATIC $<TARGET_OBJECTS:$(project.linkname)_objects>)
+  ENDIF (MSVC)
+
+  set_target_properties($(project.linkname)-static PROPERTIES
+    PUBLIC_HEADER "${public_headers}"
+    COMPILE_DEFINITIONS "$(PROJECT.PREFIX)_STATIC"
+    OUTPUT_NAME "$(project.linkname)"
+    PREFIX "lib"
+  )
+
+  target_link_libraries($(project.linkname)-static
+    PUBLIC ${MORE_LIBRARIES}
+  )
+
+  install(TARGETS $(project.linkname)-static
+    EXPORT $(project.linkname)-targets
+    LIBRARY DESTINATION "lib${LIB_SUFFIX}" # .so file
+    ARCHIVE DESTINATION "lib${LIB_SUFFIX}" # .lib file
+    RUNTIME DESTINATION bin                # .dll file
+  )
+
+  target_include_directories($(project.linkname)-static
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>
+  )
+  target_compile_definitions($(project.linkname)-static
+    PUBLIC $(PROJECT.PREFIX)_STATIC
+  )
+
+endif()
+
+
+.if file.exists ("src/CMakeLists-local.txt")
 include(${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists-local.txt) # Optional project-local hook
 .endif
 
@@ -289,6 +388,34 @@ install(
     DESTINATION "lib${LIB_SUFFIX}/pkgconfig"
 )
 
+########################################################################
+# installer
+########################################################################
+include(CMakePackageConfigHelpers)
+if (WIN32)
+  set(CMAKECONFIG_INSTALL_DIR "CMake" CACHE STRING "install path for $(project.linkname)Config.cmake")
+else()
+  # GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
+  set(CMAKECONFIG_INSTALL_DIR "share/cmake/$(project.linkname)" CACHE STRING "install path for $(project.linkname)Config.cmake")
+endif()
+
+if (NOT CMAKE_VERSION VERSION_LESS 3.0)
+  export(EXPORT $(project.linkname)-targets
+         FILE "${CMAKE_CURRENT_BINARY_DIR}/$(project.linkname)Targets.cmake")
+endif()
+configure_package_config_file(builds/cmake/Config.cmake.in
+                              "${CMAKE_CURRENT_BINARY_DIR}/$(project.linkname)Config.cmake"
+                              INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/$(project.linkname)ConfigVersion.cmake
+                                 VERSION ${$(PROJECT.PREFIX)_VERSION}
+                                 COMPATIBILITY AnyNewerVersion)
+install(EXPORT $(project.linkname)-targets
+        FILE $(project.linkname)Targets.cmake
+        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/$(project.linkname)Config.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/$(project.linkname)ConfigVersion.cmake
+              DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+
 .endif
 ########################################################################
 # executables
@@ -296,8 +423,13 @@ install(
 .for project.main
 add_executable(
     $(main.name)
-    "${SOURCE_DIR}/src/$(name).c"
+.   if project.use_cxx
+    "${SOURCE_DIR}/src/$(name).$(project.source_ext)"
+.   else
+    "${SOURCE_DIR}/src/$(name).$(project.source_ext)"
+.   endif
 )
+if (TARGET $(project.linkname))
 target_link_libraries(
     $(main.name)
 .if count (project.class)
@@ -310,6 +442,21 @@ target_link_libraries(
 .endfor
     ${OPTIONAL_LIBRARIES}
 )
+endif()
+if (NOT TARGET $(project.linkname) AND TARGET $(project.linkname)-static)
+target_link_libraries(
+    $(main.name)
+.if count (project.class)
+    $(project.linkname)-static
+.endif
+.for project.use
+.if use.optional = 0
+    ${$(USE.PROJECT)_LIBRARIES}
+.endif
+.endfor
+    ${OPTIONAL_LIBRARIES}
+)
+endif()
 .   if main.scope = "public"
 install(TARGETS $(main.name)
     RUNTIME DESTINATION bin
@@ -417,6 +564,8 @@ add_custom_command(
     TARGET  distclean
 )
 
+include(ClangFormat OPTIONAL)
+
 ########################################################################
 # summary
 ########################################################################
@@ -429,6 +578,8 @@ message (STATUS "  C compiler        :   ${CMAKE_C_COMPILER}")
 message (STATUS "  Debug C flags     :   ${CMAKE_C_FLAGS_DEBUG} ${CMAKE_C_FLAGS}")
 message (STATUS "  Release C flags   :   ${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS}")
 message (STATUS "  Build type        :   ${CMAKE_BUILD_TYPE}")
+message (STATUS "  Static build      :   ${$(PROJECT.PREFIX)_BUILD_STATIC}")
+message (STATUS "  Shared build      :   ${$(PROJECT.PREFIX)_BUILD_SHARED}")
 IF (ENABLE_DRAFTS)
 message (STATUS "  Draft API         :   Yes")
 ELSE (ENABLE_DRAFTS)
@@ -555,10 +706,19 @@ LC_ALL=C
 export LANG LC_ALL
 
 if [ -d "./tmp" ]; then
+    # Proto installation area for this project and its deps
     rm -rf ./tmp
 fi
-mkdir -p tmp
+if [ -d "./tmp-deps" ]; then
+    # Checkout/unpack and build area for dependencies
+    rm -rf ./tmp-deps
+fi
+mkdir -p tmp tmp-deps
 BUILD_PREFIX=$PWD/tmp
+
+# Use tools from prerequisites we might have built
+PATH="${BUILD_PREFIX}/sbin:${BUILD_PREFIX}/bin:${PATH}"
+export PATH
 
 CONFIG_OPTS=()
 CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include")
@@ -578,6 +738,10 @@ CMAKE_OPTS+=("-DCMAKE_PREFIX_PATH:PATH=${BUILD_PREFIX}")
 CMAKE_OPTS+=("-DCMAKE_LIBRARY_PATH:PATH=${BUILD_PREFIX}/lib")
 CMAKE_OPTS+=("-DCMAKE_INCLUDE_PATH:PATH=${BUILD_PREFIX}/include")
 
+if [ "$CLANG_FORMAT" != "" ] ; then
+    CMAKE_OPTS+=("-DCLANG_FORMAT=${CLANG_FORMAT}")
+fi
+
 # Clone and build dependencies
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
 .for use where defined (use.tarball)
@@ -594,9 +758,10 @@ if \
        (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1) \\
 ; then
     BASE_PWD=${PWD}
+    cd tmp-deps
     wget $(use.tarball)
     tar -xzf \$(basename "$(use.tarball)")
-    cd \$(basename "$(use.tarball)" .tar.gz)
+    cd \$(basename "$(use.tarball)" .tar.gz) || exit \$?
 .   if defined (use.builddir)
     cd ./$(use.builddir)
 .   endif
@@ -640,12 +805,13 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
 .   endif
        (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
+    BASE_PWD=${PWD}
+    cd tmp-deps
 .   if defined (use.release)
     $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
 .   else
     $CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
 .   endif
-    BASE_PWD=${PWD}
 .   if defined (use.builddir)
     cd $(use.project)/$(use.builddir)
 .   else
@@ -684,8 +850,19 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)
 fi
 .endfor
 
-# Build and check this project
 cd ../..
+
+# always install custom builds from dist if the autotools chain exists
+# to make sure that `make dist` doesn't omit any files required to build & test
+if [ -z "$DO_CLANG_FORMAT_CHECK" -a -f configure.ac ]; then
+    $CI_TIME ./autogen.sh
+    $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+    $CI_TIME make -j5 dist-gzip
+    $CI_TIME tar -xzf $(project.name)-$(->version.major).$(->version.minor).$(->version.patch).tar.gz
+    cd $(project.name)-$(->version.major).$(->version.minor).$(->version.patch)
+fi
+
+# Build and check this project
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of currently tested project..."
 .if count(add_config_opts) > 0
 # Custom additional options for this project
@@ -695,10 +872,15 @@ CONFIG_OPTS+=("$(add_cfgopt)")
 .endif
 CCACHE_BASEDIR=${PWD}
 export CCACHE_BASEDIR
-PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" .
-$CI_TIME make all VERBOSE=1 -j4
-$CI_TIME ctest -V
-$CI_TIME make install
+if [ "$DO_CLANG_FORMAT_CHECK" = "1" ] ; then
+    { PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" . \\
+      && make clang-format-check-CI ; exit $? ; }
+else
+    PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" .
+    $CI_TIME make all VERBOSE=1 -j4
+    $CI_TIME ctest -V
+    $CI_TIME make install
+fi
 [ -z "$CI_TIME" ] || echo "`date`: Builds completed without fatal errors!"
 
 echo "=== Are GitIgnores good after making the project '$BUILD_TYPE'? (should have no output below)"
@@ -706,4 +888,97 @@ git status -s || true
 echo "==="
 .close
 .chmod_x ("builds/cmake/ci_build.sh")
+.directory.create ('builds/cmake/Modules')
+.output "builds/cmake/Modules/ClangFormat.cmake"
+# additional target to perform clang-format run, requires clang-format
+
+# get all project files
+file(GLOB_RECURSE ALL_SOURCE_FILES
+     RELATIVE ${CMAKE_CURRENT_BINARY_DIR}
+     ${CMAKE_SOURCE_DIR}/src/*.c ${CMAKE_SOURCE_DIR}/src/*.cc ${CMAKE_SOURCE_DIR}/src/*.cpp
+     ${CMAKE_SOURCE_DIR}/src/*.h ${CMAKE_SOURCE_DIR}/src/*.hpp
+     ${CMAKE_SOURCE_DIR}/tests/*.c ${CMAKE_SOURCE_DIR}/tests/*.cc ${CMAKE_SOURCE_DIR}/tests/*.cpp
+     ${CMAKE_SOURCE_DIR}/tests/*.h ${CMAKE_SOURCE_DIR}/tests/*.hpp
+     ${CMAKE_SOURCE_DIR}/perf/*.c ${CMAKE_SOURCE_DIR}/perf/*.cc ${CMAKE_SOURCE_DIR}/perf/*.cpp
+     ${CMAKE_SOURCE_DIR}/perf/*.h ${CMAKE_SOURCE_DIR}/perf/*.hpp
+     ${CMAKE_SOURCE_DIR}/tools/*.c ${CMAKE_SOURCE_DIR}/tools/*.cc ${CMAKE_SOURCE_DIR}/tools/*.cpp
+     ${CMAKE_SOURCE_DIR}/tools/*.h ${CMAKE_SOURCE_DIR}/tools/*.hpp
+     ${CMAKE_SOURCE_DIR}/include/*.h ${CMAKE_SOURCE_DIR}/include/*.hpp
+    )
+
+if("${CLANG_FORMAT}" STREQUAL "")
+  set(CLANG_FORMAT "clang-format")
+endif()
+
+add_custom_target(
+        clang-format
+        COMMAND ${CLANG_FORMAT} -style=file -i ${ALL_SOURCE_FILES}
+)
+
+function(JOIN VALUES GLUE OUTPUT)
+  string (REPLACE ";" "${GLUE}" _TMP_STR "${VALUES}")
+  set (${OUTPUT} "${_TMP_STR}" PARENT_SCOPE)
+endfunction()
+
+configure_file(builds/cmake/clang-format-check.sh.in clang-format-check.sh @ONLY)
+
+add_custom_target(
+        clang-format-check
+        COMMAND chmod +x clang-format-check.sh
+        COMMAND ./clang-format-check.sh
+        COMMENT "Checking correct formatting according to .clang-format file using ${CLANG_FORMAT}"
+)
+
+add_custom_target(
+        clang-format-check-CI
+        COMMAND chmod +x clang-format-check.sh
+        COMMAND ./clang-format-check.sh --CI
+        COMMENT "Checking correct formatting according to .clang-format file using ${CLANG_FORMAT}"
+)
+
+add_custom_target(
+        clang-format-diff
+        COMMAND ${CLANG_FORMAT} -style=file -i ${ALL_SOURCE_FILES}
+        COMMAND git diff ${ALL_SOURCE_FILES}
+        COMMENT "Formatting with clang-format (using ${CLANG_FORMAT}) and showing differences with latest commit"
+)
+.close
+.output "builds/cmake/clang-format-check.sh.in"
+#!/bin/sh
+
+# Use clang-format tool to verify this codebase conforms to our style standards
+
+FAILED=0
+IFS=";"
+FILES="@ALL_SOURCE_FILES@"
+IDS=\$\(echo -en "\\n\\b")
+[ -n "\$MAKE" ] || MAKE=make
+for FILE in $FILES
+do
+    @CLANG_FORMAT@ -style=file -output-replacements-xml "$FILE" | grep "<replacement " >/dev/null && \\
+    {
+      echo "$FILE is not correctly formatted" >&2
+      FAILED=1
+    }
+done
+if [ "\$FAILED" -eq "1" ] ; then
+    if [ "\$1" = "--CI" ] ; then
+        echo "Style mismatches were found by clang-format; detailing below:" >&2
+        \$\{MAKE} clang-format-diff
+        if test x"\$\{CI_REQUIRE_GOOD_CLANG_FORMAT}" = xtrue ; then
+            echo "FAILED : Style checks have failed and CI_REQUIRE_GOOD_CLANG_FORMAT==true" >&2
+            exit 1
+        fi
+        echo "WARNING : Style checks have failed, but the result is not-fatal because CI_REQUIRE_GOOD_CLANG_FORMAT!=true" >&2
+        exit 0
+    fi
+    exit 1
+fi
+.close
+.output "builds/cmake/Config.cmake.in"
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
+check_required_components("@PROJECT_NAME@")
+.close
 .endmacro

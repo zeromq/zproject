@@ -1,25 +1,24 @@
 #
 #    zproject - Project
 #
-#    Copyright (c) the Contributors as noted in the AUTHORS file.       
-#    This file is part of CZMQ, the high-level C binding for 0MQ:       
-#    http://czmq.zeromq.org.                                            
-#                                                                       
+#    Copyright (c) the Contributors as noted in the AUTHORS file.
+#    This file is part of CZMQ, the high-level C binding for 0MQ:
+#    http://czmq.zeromq.org.
+#
 #    This Source Code Form is subject to the terms of the Mozilla Public
 #    License, v. 2.0. If a copy of the MPL was not distributed with this
-#    file, You can obtain one at http://mozilla.org/MPL/2.0/.           
+#    file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 Source:         zproject
 Section:        net
 Priority:       optional
 Maintainer:     zproject Developers <zeromq-dev@lists.zeromq.org>
-Standards-Version: 4.0.0
+Standards-Version: 4.0.1.0
 Build-Depends: debhelper (>= 9),
     pkg-config,
     generator-scripting-language,
     asciidoc-base | asciidoc, xmlto,
     dh-autoreconf
-
 
 Package: zproject
 Architecture: any
@@ -32,7 +31,7 @@ Description: runnable binaries from zproject
 Package: zproject-dbg
 Architecture: any
 Section: debug
-Priority: extra
+Priority: optional
 Depends:
     zproject (= ${binary:Version}),
     ${misc:Depends}

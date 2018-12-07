@@ -1,7 +1,7 @@
 #   Generate gyp build file for project
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -56,6 +56,8 @@ project.Makefile
 *.mk
 out/
 Makefile
+tmp-deps/
+.#TODO: Remove this for if tmp-deps/ works for this
 .for project.use where !optional
 $(use.project)/
 .endfor
@@ -166,35 +168,44 @@ $(project.GENERATED_WARNING_HEADER:)
         '../../include/$(project.prelude)',
 .   endif
 .   for class by name
-        '../../src/$(name:c).c',
+        '../../src/$(name:$(project.filename_prettyprint)).$(project.source_ext)',
 .       if scope = "public"
-        '../../include/$(name:c).h',
+        '../../include/$(name:$(project.filename_prettyprint)).$(project.header_ext)',
 .       else
-        '../../src/$(name:c).h',
+        '../../src/$(name:$(project.filename_prettyprint)).$(project.header_ext)',
 .       endif
 .   endfor
 .   for header by name
-        '../../include/$(header.name).h',
+        '../../include/$(header.name).$(project.header_ext)',
 .   endfor
 .   for extra by name
         '../../src/$(extra.name)',
 .   endfor
-        '../../include/$(project.prefix)_library.h',
-        '../../src/$(project.prefix)_selftest.c',
+        '../../include/$(project.prefix)_library.$(project.header_ext)',
+        '../../src/$(project.prefix)_selftest.$(project.source_ext)',
 .   if project.use_cxx
-        '../../src/$(project.prefix)_private_selftest.cc',
+        '../../src/$(project.prefix)_private_selftest.$(project.source_ext)',
 .   else
-        '../../src/$(project.prefix)_private_selftest.c',
+        '../../src/$(project.prefix)_private_selftest.$(project.source_ext)',
 .   endif
-        '../../src/$(project.prefix)_classes.h'
+        '../../src/$(project.prefix)_classes.$(project.header_ext)'
       ],
       'dependencies': [
 .   for project.use where !optional
-.       use.gypfile = "../$(use.project)/$(my.targetdir)/project.gyp"
-.       if file.exists (gypfile)
+.       prjdir = "../$(use.project)"
+.       gypfile = "$(prjdir)/$(my.targetdir)/project.gyp"
+.       if ! file.exists (gypfile)
+.           prjdir_tmp = "../tmp-deps/$(use.project)"
+.           gypfile_tmp = "$(prjdir_tmp)/$(my.targetdir)/project.gyp"
+.       endif
+.       if (file.exists (gypfile) | file.exists (gypfile_tmp))
+.# Note: Use the location expected in usual, non-CI workflows
         '../../$(gypfile):$(use.libname)',
 .       else
-.           echo "E: please checkout $(use.project) into ../$(use.project)"
+.# Note: Simply missing file with a properly checked out code is ok, it just is not there
+.           if (!file.exists (prjdir) & !file.exists (prjdir_tmp))
+.               abort "E: please checkout $(use.project) into $(prjdir_tmp) or $(prjdir)"
+.           endif
 .       endif
 .   endfor
       ],
@@ -213,7 +224,7 @@ $(project.GENERATED_WARNING_HEADER:)
       'target_name': '$(name)',
       'type': 'executable',
       'sources': [
-        '../../src/$(name).c'
+        '../../src/$(name).$(project.source_ext)'
       ],
 .   if count (project.class)
       'dependencies': [

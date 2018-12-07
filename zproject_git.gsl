@@ -1,7 +1,7 @@
 #   Generate .gitignore for project (one time only)
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -45,10 +45,10 @@ if !file.exists (".gitignore")
     >*.app
     >core
     >
-    > # Distcheck workspace and archives
-    >$(project.name)-$(->version.major).$(->version.minor).$(->version.patch)/
-    >$(project.name)-$(->version.major).$(->version.minor).$(->version.patch).tar.gz
-    >$(project.name)-$(->version.major).$(->version.minor).$(->version.patch).zip
+    ># Distcheck workspace and archives
+    >$(project.name)-*/
+    >$(project.name)-*.tar.gz
+    >$(project.name)-*.zip
     >
     ># Man pages
     >doc/*.1
@@ -89,12 +89,7 @@ if !file.exists (".gitignore")
     >Testing/
     >
     ># Repositories downloaded by CI integration scripts
-.   for use where defined (use.repository) & ! defined (use.tarball)
-    >$(use.project)/
-.   endfor
-.   for use where defined (use.tarball)
-    >\$(basename "$(use.tarball)" .tar.gz)/
-.   endfor
+    >tmp-deps/
     >
     ># Travis build area
     >tmp/
@@ -123,7 +118,7 @@ if !file.exists (".gitignore")
     >src/app/obj/
     >src/app/local.properties
     >
-    ># Android -dependencies
+    ># Android - dependencies
     >src/app/jni/output
     >
     ># Python build directory
@@ -145,6 +140,9 @@ if !file.exists (".gitignore")
     >*.bak
     >.test*
     >
+    ># Netbeans directory
+    >nbproject/
+    >
     ># editor backups
     >*~
 else
@@ -159,4 +157,29 @@ if !file.exists (".gitattributes")
     >* -text
 else
     echo "NOT regenerating an existing .gitattributes file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+endif
+if !file.exists (".editorconfig")
+    echo "Generating initial .editorconfig file"
+    output ".editorconfig"
+    ># This is a skeleton created by zproject.
+    ># You can add hand-written code here.
+    ># See http://editorconfig.org/ and https://github.com/editorconfig/ for
+    ># details about the format and links to plugins for IDEs and editors which
+    ># do not yet support this configuration out of the box - but easily can.
+    >
+    ># This is a top-level setting for project sources under this directory
+    >root = true
+    >
+    >[*]
+    >end_of_line = lf
+    >insert_final_newline = true
+    >indent_style = space
+    >indent_size = 4
+    >trim_trailing_whitespace = true
+    >charset = utf-8
+    >
+    >[*.am]
+    >indent_style = tab
+else
+    echo "NOT regenerating an existing .editorconfig file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 endif

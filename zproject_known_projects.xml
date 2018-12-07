@@ -63,7 +63,7 @@
     </use>
 
     <use project = "gsl" libname = ""
-        repository = "https://github.com/imatix/gsl.git"
+        repository = "https://github.com/zeromq/gsl.git"
         debian_name = "generator-scripting-language"
         redhat_name = "generator-scripting-language">
     </use>
@@ -93,6 +93,7 @@
 
     <use project = "libcurl"
         repository = "https://github.com/curl/curl.git"
+        debian_name = "libcurl4-openssl-dev"
         test = "curl_easy_init"
         header = "curl/curl.h" />
 
@@ -191,5 +192,11 @@
             <pkgconfig>lua51</pkgconfig>
             <pkgconfig>lua</pkgconfig>
     </use>
+
+    <use project = "lz4"
+        libname = "liblz4"
+        redhat_name = "liblz4-devel"
+        header = "lz4.h"
+        test = "LZ4_decompress_safe" />
 
 </known_projects>

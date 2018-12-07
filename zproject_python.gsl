@@ -4,7 +4,7 @@
 #   of FFI function bindings on which to base idiomatic Python classes.
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -157,6 +157,9 @@ endfunction
 
 function method_annotation (method)
     fn = "lib.$(class.name:c)_$(method.name:c)"
+    if method.private ?= 1
+        fn="#lib.$(class.name:c)_$(method.name:c)"
+    endif
     for my.method.return
         restype = return.python_type
     endfor
@@ -239,20 +242,28 @@ function method_definition (method)
 endfunction
 
 function generate_setup_py
-    output "setup.py"
-    >from distutils.core import setup
+    output "bindings/python/setup.py"
+    >$(project.GENERATED_WARNING_HEADER:)
+    >from setuptools import setup
     >
-    >setup(name='$(project.name:c)',
-    if defined (project.description)
-    >	  description="""$(project.description:no)""",
-    endif
-    >	  version='0.1',
+    >setup(
+    >    name = "$(project.name:c)",
+    >    version = "$(project->version.major).$(project->version.minor).$(project->version.patch)",
+    >    license = "$(project.license)",
+    >    description = """Python bindings of: $(project.description)""",
     if defined (project.repository)
-    >	  url='$(project.repository)',
+    >    url = "$(project.repository)",
     endif
-    >	  packages=['$(project.name:c)'],
-    >	  package_dir={'': 'bindings/python'},
+    >    packages = ["$(project.name:c)"],
+    >    install_requires = [
+   for project.use
+       if count (project->dependencies.class, class.project = use.project) > 0
+    >        "$(use.project)",
+       endif
+   endfor
+    >    ],
     >)
+    >$(project.GENERATED_WARNING_HEADER:)
 endfunction
 
 function generate_binding

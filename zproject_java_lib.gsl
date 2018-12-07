@@ -1,7 +1,7 @@
 #   JNI common functions
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -134,6 +134,7 @@ function resolve_method (method)
     |  my.method.name = "finalize" \
     |  my.method.name = "getClass" \
     |  my.method.name = "hashCode" \
+    |  my.method.name = "interface" \
     |  my.method.name = "toString" \
     |  my.method.name = "notify" \
     |  my.method.name = "notifyAll" \

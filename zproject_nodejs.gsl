@@ -1,7 +1,7 @@
 #   Generate nodejs binding & build
 #
 #   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
+#   language. See https://github.com/zeromq/gsl for details.
 #
 #   Copyright (c) the Contributors as noted in the AUTHORS file.
 #   This file is part of zproject.
@@ -93,16 +93,19 @@ done
 
 BUILD_ROOT=`pwd`
 cd ../../..
+# Note: here we go to parent directory that contains current project,
+# so the checkout is nearby, same as expected for usual developer work
 
 .for project.use where !optional & defined (use.repository)
 #   Check dependent projects
 if [ ! -d $(use.project) ]; then
     echo "I:    cloning $(use.repository) into `pwd`/$(use.project)..."
-    git clone $QUIET $(use.repository)
+.# TODO: Should there be a use of "release" (git branch) like elsewhere?
+    git clone $QUIET $(use.repository) || exit
 fi
 if [ ! -f $(use.project)/builds/gyp/project.gyp ]; then
-    echo "E:    `pwd`/$(use.project) out of date (builds/gyp/project.gyp missing)"
-    exit
+    echo "E:    `pwd`/$(use.project) out of date (builds/gyp/project.gyp missing)" >&2
+    exit 1
 fi
 
 .endfor
@@ -146,8 +149,13 @@ $(project.GENERATED_WARNING_HEADER:)
       'target_name': '$(project.name)',
       'sources': [
 .   for project.use where !optional
+.# Note: the file.exists() paths are relative to current project.xml during zproject regen
 .       if file.exists ("../$(use.project)/$(topdir)/binding.cc")
           '../../../$(use.project)/$(topdir)/binding.cc',
+.       else
+.           if !file.exists ("../$(use.project)")
+.               abort "E: please checkout $(use.project) into ../../../$(use.project)"
+.           endif
 .       endif
 .   endfor
           'binding.cc'
@@ -241,6 +249,10 @@ $(project.GENERATED_WARNING_HEADER:)
 .   for project.use where !optional
 .       if file.exists ("../$(use.project)/$(topdir)/binding.h")
 #include "../../../$(use.project)/$(topdir)/binding.h"
+.       else
+.           if !file.exists ("../$(use.project)")
+.               abort "E: please checkout $(use.project) into ../$(use.project)"
+.           endif
 .       endif
 .   endfor
 #include "$(project.header)"
@@ -362,7 +374,9 @@ using namespace Nan;
     if (info [$(index () - 1)]->IsUndefined ())
         return Nan::ThrowTypeError ("method requires a `$(name)`");
 
-    $(c_type) $(c_name);
+    //$(c_type) $(c_name); // bjornw typedef - if using c_type, then you get 'int * major' but it needs to be 'int major'. later using the FromJust() returns an int
+    $(nan_type) $(c_name); 
+
 .           if type = "boolean"
 .               my.check = "IsBoolean"
 .               my.what = "Boolean"
@@ -374,6 +388,7 @@ using namespace Nan;
 .               my.what = "number or string"
     if (info [$(index () - 1)]->IsString ()) {
         Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
+            // bjornw: check if we need to remove scope here
         char *$(c_name)_name = *$(c_name)_utf8;
         for (char *$(c_name)_ptr = $(c_name)_name; *$(c_name)_ptr; $(c_name)_ptr++)
             *$(c_name)_ptr = tolower (*$(c_name)_ptr);
@@ -389,23 +404,30 @@ using namespace Nan;
 .               my.check = "IsNumber"
 .               my.what = "number"
 .           endif
+
     if (info [$(index () - 1)]->$(my.check:) ())
-        $(c_name) = Nan::To<$(nan_type:)>(info [$(index () - 1)]).FromJust ();
+    {
+          $(c_name) = Nan::To<$(nan_type:)>(info [$(index () - 1)]).FromJust ();
+    }
     else
         return Nan::ThrowTypeError ("`$(name)` must be a $(my.what:)");
 .       elsif type = "char"
     char $(c_name);
     if (info [$(index () - 1)]->IsUndefined ())
+    {
         return Nan::ThrowTypeError ("method requires a `$(name)`");
-    else
-    if (!info [$(index () - 1)]->IsString ())
-        return Nan::ThrowTypeError ("`$(name)` must be a string");
-    else {
-        Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
-        if (strlen (*$(c_name)_utf8) != 1)
-            return Nan::ThrowTypeError ("`$(name)` must be a single character");
-        $(c_name) = (*$(c_name)_utf8) [0];
     }
+    else if (!info [$(index () - 1)]->IsString ())
+    {
+        return Nan::ThrowTypeError ("`$(name)` must be a string");
+    }
+    //else { // bjornw: remove brackets to keep scope
+    Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
+
+    if (strlen (*$(c_name)_utf8) != 1)
+        return Nan::ThrowTypeError ("`$(name)` must be a single character");
+    $(c_name) = (*$(c_name)_utf8) [0];
+    //} // bjornw end
 .       elsif type = "string" | type = "format"
     char *$(c_name);
     if (info [$(index () - 1)]->IsUndefined ())
@@ -417,10 +439,10 @@ using namespace Nan;
     else
     if (!info [$(index () - 1)]->IsString ())
         return Nan::ThrowTypeError ("`$(name)` must be a string");
-    else {
-        Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
-        $(c_name) = *$(c_name)_utf8;
-    }
+    //else { // bjornw: remove brackets to keep scope
+    Nan::Utf8String $(c_name)_utf8 (info [$(index () - 1)].As<String>());
+    $(c_name) = *$(c_name)_utf8;
+         //} //bjornw end
 .       elsif type = "buffer"
     if (info [$(index () - 1)]->IsUndefined ())
         return Nan::ThrowTypeError ("method requires a argument to provide data");
