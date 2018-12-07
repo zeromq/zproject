@@ -83,6 +83,7 @@ At least the following build environments are currently supported:
 
 Thanks to the ZeroMQ community, you can do all the heavy lifting in C and then easily generate bindings in the following languages:
 
+* Delphi
 * Java (JNI)
 * Python
 * QML
@@ -183,6 +184,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         android             Native shared library for Android
         cygwin              Cygwin build system
         debian              packaging for Debian
+        delphi              Delphi binding
         docker              packaging for Docker
         java                Java JNI binding
         java-msvc           MSVC builds for Java JNI binding
@@ -546,6 +548,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_cmake.gsl" />
     <bin name = "zproject_cygwin.gsl" />
     <bin name = "zproject_debian.gsl" />
+    <bin name = "zproject_delphi.gsl" />
     <bin name = "zproject_docker.gsl" />
     <bin name = "zproject_gyp.gsl" />
     <bin name = "zproject_java.gsl" />
