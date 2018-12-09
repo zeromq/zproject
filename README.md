@@ -83,6 +83,7 @@ At least the following build environments are currently supported:
 
 Thanks to the ZeroMQ community, you can do all the heavy lifting in C and then easily generate bindings in the following languages:
 
+* Delphi
 * Java (JNI)
 * Python
 * QML
@@ -183,6 +184,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         android             Native shared library for Android
         cygwin              Cygwin build system
         debian              packaging for Debian
+        delphi              Delphi binding
         docker              packaging for Docker
         java                Java JNI binding
         java-msvc           MSVC builds for Java JNI binding
@@ -195,7 +197,13 @@ zproject's `project.xml` contains an extensive description of the available conf
         redhat              Packaging for RedHat
         ruby                Ruby binding
         travis              Travis CI scripts
-            <option name="distcheck" value="0" /> will disable run of make distcheck in Travis CI
+            <option name="distcheck" value="0" /> "0" will disable run of make distcheck in Travis CI, "2" will enable it as a special testcase allowed to fail (default: 1 to enable and require to pass)
+            <option name="use_pkg_deps_prereqs_source" value="0" /> "0" will disable use of use_pkg_deps_prereqs_source list in Travis CI and so cause rebuild of everything from scratch (default: 1, recently packaged prereqs must exist then)
+            <option name="use_cmake" value="0" /> "0" will disable use of CMake recipes in Travis CI (default: 1)
+            <option name="require_gitignore" value="1" /> "1" will require that the workspace is clean with regard to .gitignore settings after build (default: 0)
+            <option name="clangformat_allow_failures" value="0" /> "1" will generate the option allowing non-fatal failure of clang-format test in Travis CI (default: 1)
+            <option name="clangformat_require_good" value="0" /> "1" will generate the option allowing to report and not ignore failure of clang-format test in Travis CI (otherwise "0" hides the failure, and devs must look in test logs) (default: same as allow_failures)
+            <option name="clangformat_implem" value="cmake|autotools" /> will pick one of two implems of the clang-format test in Travis CI (cmake is default and faster if available, since autotools needs to configure first)
         vs2008              Microsoft Visual Studio 2008
         vs2010              Microsoft Visual Studio 2010
         vs2012              Microsoft Visual Studio 2012
@@ -439,6 +447,9 @@ zproject's `project.xml` contains an extensive description of the available conf
          few experimental options now (and regenerate their Jenkinsfile):
          * use_earlymilestone -- uses a milestone to cancel builds that
             got to it later than the running one
+         * use_deploymilestone -- uses a milestone to cancel builds that
+            got to the 'deploy if appropriate' phase later than the
+            running one
          * use_build_nonconcurrent -- sets a disableConcurrentBuilds option
          * use_checkout_explicit -- sets a skipDefaultCheckout option and
             defines a step to check out code explicitly; it is believed
@@ -537,6 +548,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_cmake.gsl" />
     <bin name = "zproject_cygwin.gsl" />
     <bin name = "zproject_debian.gsl" />
+    <bin name = "zproject_delphi.gsl" />
     <bin name = "zproject_docker.gsl" />
     <bin name = "zproject_gyp.gsl" />
     <bin name = "zproject_java.gsl" />
@@ -669,6 +681,7 @@ Model is described in `zproject_known_projects.xml` file:
 
     <use project = "libcurl"
         repository = "https://github.com/curl/curl.git"
+        debian_name = "libcurl4-openssl-dev"
         test = "curl_easy_init"
         header = "curl/curl.h" />
 

@@ -11,6 +11,7 @@ usr/bin/zproject_autotools.gsl
 usr/bin/zproject_cmake.gsl
 usr/bin/zproject_cygwin.gsl
 usr/bin/zproject_debian.gsl
+usr/bin/zproject_delphi.gsl
 usr/bin/zproject_docker.gsl
 usr/bin/zproject_gyp.gsl
 usr/bin/zproject_java.gsl
@@ -38,4 +39,3 @@ usr/bin/zproject_vs20xx_props.gsl
 usr/bin/zproject_known_projects.xml
 usr/bin/mkapi.py
 usr/bin/fake_cpp
-

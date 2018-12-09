@@ -1,0 +1,818 @@
+register_target ("delphi", "Delphi binding")
+
+function target_delphi
+
+  function check_reserved(name)
+    my.ret = "$(my.name:Pascal)"
+    if my.ret = "Set" \
+      | my.ret = "Destructor" \
+      | my.ret = "String" \
+      | my.ret = "File" \
+      | my.ret = "Property" \
+      | my.ret = "Type" \
+      | my.ret = "Is" \
+      | my.ret = "Interface"
+      return "&" + my.ret
+    elsif my.ret = "Self"
+      return "This"
+    else
+      return my.ret
+    endif
+  endfunction
+
+  function generate_data_type(container, iscapi)
+    if my.container.type = ""
+        return ""
+    elsif my.container.type = "nothing"
+        return ""
+    elsif my.container.type = "anything"
+        return "Pointer"
+    elsif my.container.type = "byte"
+        return "Byte"
+    elsif my.container.type = "char"
+        return "AnsiChar"
+    elsif my.container.type = "integer"
+        return "Integer"
+    elsif my.container.type = "size"
+        return "NativeUInt"
+    elsif my.container.type = "real"
+        if my.container.size = 4
+            return "Single"
+        elsif my.container.size = 8
+            return "Double"
+        endif
+    elsif my.container.type = "number"
+        if my.container.size = 1
+            return "Byte"
+        elsif my.container.size = 2
+            return "Word"
+        elsif my.container.size = 4
+            return "Cardinal"
+        elsif my.container.size = 8
+            return "UInt64"
+        endif
+    elsif my.container.type = "boolean"
+        return "Boolean"
+    elsif my.container.type = "file_size"
+        return "Longint"
+    elsif my.container.type = "time"
+        return "Int64"
+    elsif my.container.type = "msecs"
+        return "Int64"
+    elsif my.container.type = "FILE"
+        return "Pointer"
+    elsif my.container.type = "va_list" #todo
+        return "va_list"
+    elsif my.container.type = "socket"
+        return "TSocket"
+    elsif my.container.type = "zmq_pollitem"
+        return "Pointer" #todo
+    elsif my.container.type = "string"
+      if my.iscapi <> 0
+        return "PAnsiChar"
+      else
+        return "String"
+      endif
+    elsif my.container.type = "format"
+      if my.iscapi <> 0
+        return "PAnsiChar"
+      else
+        return "String"
+      endif
+    elsif my.container.type = "buffer"
+      return "PByte"
+    elsif my.container.callback
+      return "T$(my.container.type:Pascal)"
+    elsif my.container.type = "sockish"
+      if my.iscapi <> 0
+        return "PZSock"
+      else
+        return "IZSock"
+      endif
+    else
+      if my.iscapi <> 0
+        return "P$(my.container.type:Pascal)"
+      else
+        return "I$(my.container.type:Pascal)"
+      endif
+    endif
+  endfunction
+
+  function could_be_const(container)
+    if my.container.type = ""
+        return 0
+    elsif my.container.type = "nothing"
+        return 0
+    elsif my.container.type = "anything"
+        return 0
+    elsif my.container.type = "byte"
+        return 0
+    elsif my.container.type = "char"
+        return 0
+    elsif my.container.type = "integer"
+        return 0
+    elsif my.container.type = "size"
+        return 0
+    elsif my.container.type = "real"
+        return 0
+    elsif my.container.type = "number"
+        return 0
+    elsif my.container.type = "boolean"
+        return 0
+    elsif my.container.type = "file_size"
+        return 0
+    elsif my.container.type = "time"
+        return 0
+    elsif my.container.type = "msecs"
+        return 0
+    elsif my.container.type = "FILE"
+        return 0
+    elsif my.container.type = "va_list"
+        return 0
+    elsif my.container.type = "socket"
+        return 0
+    elsif my.container.type = "zmq_pollitem"
+        return 0
+    elsif my.container.type = "string"
+        return 1
+    elsif my.container.type = "format"
+        return 1
+    elsif my.container.type = "buffer"
+      return "PByte"
+    elsif my.container.callback
+        return 0
+    elsif my.container.type = "sockish"
+        return 1
+    else
+        return 1
+    endif
+  endfunction
+
+  function is_class(container)
+    if my.container.type = ""
+        return 0
+    elsif my.container.type = "nothing"
+        return 0
+    elsif my.container.type = "anything"
+        return 0
+    elsif my.container.type = "byte"
+        return 0
+    elsif my.container.type = "char"
+        return 0
+    elsif my.container.type = "integer"
+        return 0
+    elsif my.container.type = "size"
+        return 0
+    elsif my.container.type = "real"
+        return 0
+    elsif my.container.type = "number"
+        return 0
+    elsif my.container.type = "boolean"
+        return 0
+    elsif my.container.type = "file_size"
+        return 0
+    elsif my.container.type = "time"
+        return 0
+    elsif my.container.type = "msecs"
+        return 0
+    elsif my.container.type = "FILE"
+        return 0
+    elsif my.container.type = "va_list"
+        return 0
+    elsif my.container.type = "socket"
+        return 0
+    elsif my.container.type = "zmq_pollitem"
+        return 0
+    elsif my.container.type = "string"
+        return 0
+    elsif my.container.type = "format"
+        return 0
+    elsif my.container.type = "buffer"
+      return "PByte"
+    elsif my.container.callback
+        return 0
+    elsif my.container.type = "sockish"
+        return 1
+    else
+        return 1
+    endif
+  endfunction
+
+  function generate_argument(argument)
+    my.ret = ""
+    if my.argument.by_reference = 1
+      my.ret += "var "
+    elsif could_be_const(my.argument)
+      my.ret += "const "
+    endif
+    my.ret += "$(check_reserved(my.argument.name)): " + generate_data_type(argument, 0)
+    return my.ret
+  endfunction
+
+  function generate_arguments(method)
+    if count(my.method.argument) > 0
+      my.ret = "("
+      my.lasttype = ""
+      for my.method.argument as argument
+        if argument.type = "nothing"
+          if my.lasttype = "format"
+#            my.ret += "; const Args: array of const"
+            last
+          else
+            next
+          endif
+        endif
+        if !first()
+          my.ret += "; "
+        endif
+        my.ret += generate_argument(argument)
+        my.lasttype = argument.type
+      endfor
+      return my.ret + ")"
+    endif
+    return ""
+  endfunction
+
+  function generate_argument_c(argument)
+    my.ret = ""
+    if my.argument.by_reference = 1
+      my.ret += "var "
+    endif
+    my.ret += "$(check_reserved(my.argument.name)): " + generate_data_type(argument, 1)
+    return my.ret
+  endfunction
+
+  function is_vararg(argument)
+    if argument.variadic
+      return 1
+    endif
+    if argument.type = "nothing"
+      return 1
+    endif
+    return 0
+  endfunction
+
+  function generate_arguments_c(method)
+    if count(my.method.argument) > 0
+      my.ret = "("
+      for my.method.argument as argument where !is_vararg(argument)
+        if !first()
+          my.ret += "; "
+        endif
+        my.ret += generate_argument_c(argument)
+      endfor
+      return my.ret + ")"
+    endif
+    return ""
+  endfunction
+
+  function generate_arguments_api_c(class, method)
+    if method.singleton = "1"
+      my.ret = ""
+    else
+      my.ret = "(self: P$(my.class.name:Pascal)"
+    endif
+    if count(method.argument, !is_vararg(argument)) > 0
+      if method.singleton = "1"
+        my.ret = "("
+      else
+        my.ret += "; "
+      endif
+      for method.argument as argument where !is_vararg(argument)
+        my.ret += generate_argument_c(argument)
+        if !last()
+          my.ret += "; "
+        endif
+      endfor
+      return my.ret + ")"
+    endif
+    if method.singleton = "1"
+      return ""
+    else
+      return my.ret + ")"
+    endif
+  endfunction
+
+  function generate_class_method_interface(method)
+    >
+    >    // $(method.description:no,block)
+    if count(method.return, return.type ?<> "nothing")
+      for method.return as return
+      >    function $(check_reserved(method.name))$(generate_arguments(method)): $(generate_data_type(return, 0));
+      endfor
+    else
+    >    procedure $(check_reserved(method.name))$(generate_arguments(method));
+    endif
+  endfunction
+
+  function generate_class_constructor_interface(method)
+    >
+    >    // $(method.description:no,block)
+    >    constructor $(method.name:Pascal)$(generate_arguments(my.method));
+  endfunction
+
+  function generate_class_destructor_interface(method)
+    >
+    >    // $(method.description:no,block)
+    >    destructor Destroy; override;
+  endfunction
+
+  function have_interface(class)
+    if count(my.class.destructor) > 0
+      return 1
+    else
+      return 0
+    endif
+  endfunction
+
+  function is_valid_method(method)
+    for method.argument
+      if argument.type = "string" & argument.by_reference = 1
+        return 0
+      endif
+    endfor
+    return 1
+  endfunction
+
+  function generate_interface(class)
+    if have_interface(class)
+      >
+      >  // $(class.description:no,block)
+      >  I$(class.name:Pascal) = interface
+      for my.class.method where singleton ?<> "1"
+        generate_class_method_interface(method)
+      endfor
+      >  end;
+    endif
+  endfunction
+
+  function generate_static_method_interface(method)
+    >
+    >    // $(method.description:no,block)
+    if count(method.return, return.type ?<> "nothing")
+      for method.return as return
+      >    class function $(check_reserved(method.name))$(generate_arguments(method)): $(generate_data_type(return, 0));
+      endfor
+    else
+    >    class procedure $(check_reserved(method.name))$(generate_arguments(method));
+    endif
+  endfunction
+
+  function generate_callback_c(class, method)
+    >
+    >    // $(method.description:no,block)
+    if count(method.return, return.type ?<> "nothing")
+      for method.return as return
+      >  T$(class.name:Pascal)$(method.name:Pascal) = function$(generate_arguments_c(method)): $(generate_data_type(return, 1)); stdcall;
+      endfor
+    else
+    >  T$(class.name:Pascal)$(method.name:Pascal) = procedure$(generate_arguments_c(method)); stdcall;
+    endif
+  endfunction
+
+  function generate_class_interface(class)
+    >
+    >  // $(class.description:no,block)
+    if have_interface(my.class)
+    >  T$(class.name:Pascal) = class(TInterfacedObject, I$(class.name:Pascal))
+    >  public
+    >    FOwned: Boolean;
+    >    FHandle: P$(class.name:Pascal);
+    >    constructor Create(handle: P$(class.name:Pascal); owned: Boolean);
+    else
+    >  T$(class.name:Pascal) = class
+    endif
+    if count(my.class.constructor) + count(my.class.destructor) + count(my.class.method, singleton ?= "1") > 0
+    >  public
+      for my.class.constructor as method
+        generate_class_constructor_interface(method)
+      endfor
+      for my.class.destructor as method
+        generate_class_destructor_interface(method)
+      endfor
+      for my.class.method where singleton ?= "1"
+        if is_valid_method(method)
+          generate_static_method_interface(method)
+        endif
+      endfor
+      if have_interface(my.class)
+        >
+        >    class function Wrap(handle: P$(my.class.name:Pascal); owned: Boolean): I$(my.class.name:Pascal);
+        >    class function UnWrap(const Value: I$(my.class.name:Pascal)): P$(my.class.name:Pascal);
+      endif
+    endif
+    if count(my.class.method, singleton ?<> "1") > 0
+      >  protected
+      for my.class.method where singleton ?<> "1"
+        if is_valid_method(method)
+          generate_class_method_interface(method)
+        endif
+      endfor
+    endif
+    >  end;
+  endfunction
+
+  function check_var_declaration(context)
+    if my.context.count = 0
+      >  var
+      my.context.count += 1
+    endif
+  endfunction
+
+  function generate_argument_var(argument, context)
+    if argument.type = "string" | argument.type = "format"
+      check_var_declaration(my.context)
+      >    __$(argument.name:Pascal)__: UTF8String;
+    endif
+  endfunction
+
+  function generate_arguments_var(method, context)
+    for my.method.argument as argument
+      generate_argument_var(argument, my.context)
+    endfor
+  endfunction
+
+  function generate_arguments_value(method)
+    for my.method.argument as argument
+      if argument.type = "string" | argument.type = "format"
+        >    __$(argument.name:Pascal)__ := UTF8String($(check_reserved(argument.name)));
+#      elsif argument.type = "format"
+#        >    __$(argument.name:Pascal)__ := UTF8String(System.SysUtils.Format($(check_reserved(argument.name)), Args));
+      endif
+    endfor
+  endfunction
+
+  function get_real_type(type)
+    if my.type = "sockish"
+      return "zsock"
+    else
+      return my.type
+    endif
+  endfunction
+
+  function generate_argument_call(argument)
+    if my.argument.type = "string" | my.argument.type = "format"
+      return "PAnsiChar(__$(argument.name:Pascal)__)"
+    elsif is_class(my.argument)
+      if my.argument.by_reference = 1
+        return "T$(get_real_type(my.argument.type):Pascal)($(check_reserved(my.argument.name))).FHandle"
+      else
+        return "T$(get_real_type(my.argument.type):Pascal).UnWrap($(check_reserved(my.argument.name)))"
+      endif
+    else
+      return "$(check_reserved(my.argument.name))"
+    endif
+  endfunction
+
+  function generate_arguments_cleanup(method)
+    for my.method.argument as argument
+      if is_class(argument) & argument.by_reference = 1
+        >    if T$(get_real_type(argument.type):Pascal)($(check_reserved(argument.name))).FHandle = nil then
+        >      $(check_reserved(argument.name)) := nil;
+      endif
+    endfor
+  endfunction
+
+  function generate_arguments_static_call(method)
+    if count(my.method.argument) > 0
+      my.ret = "("
+      for my.method.argument as argument
+        if argument.type = "nothing"
+          last
+        endif
+        if !first()
+          my.ret += ", "
+        endif
+        my.ret += generate_argument_call(argument)
+      endfor
+      return my.ret + ")"
+    endif
+    return ""
+  endfunction
+
+  function generate_arguments_method_call(method)
+    my.ret = "(FHandle"
+    for my.method.argument as argument
+      if argument.type = "nothing"
+          last
+        endif
+        my.ret += ", " + generate_argument_call(argument)
+     endfor
+     return my.ret + ")"
+  endfunction
+
+  function generate_class_constructor_implementation(class, method)
+    >
+    >  constructor T$(class.name:Pascal).$(method.name:Pascal)$(generate_arguments(method));
+    my.count = 0
+    generate_arguments_var(method, my)
+    >  begin
+         generate_arguments_value(method)
+    >    Create($(class.name:c)_$(method.name:c)$(generate_arguments_static_call(method)), True);
+         generate_arguments_cleanup(method)
+    >  end;
+  endfunction
+
+  function generate_class_destructor_implementation(class)
+    >
+    >  destructor T$(class.name:Pascal).Destroy;
+    >  begin
+    >    if FOwned and (FHandle <> nil) then
+    >      $(class.name:c)_destroy(FHandle);
+    >  end;
+  endfunction
+
+  function generate_return(return, value)
+    if my.return.type = "string"
+      if my.return.fresh = 1
+        return "ZFreeString($(my.value:no))"
+      else
+        return "String(UTF8String($(my.value:no)))"
+      endif
+    elsif is_class(my.return)
+      if my.return.fresh = 1
+        my.owned = "True"
+      else
+        my.owned = "False"
+      endif
+      return "T$(get_real_type(my.return.type):Pascal).Wrap($(my.value:no), $(my.owned))"
+    else
+      return my.value
+    endif
+  endfunction
+
+  function generate_class_method_implementation(class, method)
+    >
+    my.count = 0
+    if count(method.return, return.type ?<> "nothing")
+      for method.return as return
+      >  function T$(class.name:Pascal).$(check_reserved(method.name))$(generate_arguments(method)): $(generate_data_type(return, 0));
+        generate_arguments_var(method, my)
+        >  begin
+             generate_arguments_value(method)
+        >    Result := $(generate_return(return, "$(class.name:c)_$(method.name:c)$(generate_arguments_method_call(method))"));
+             generate_arguments_cleanup(method)
+        >  end;
+      endfor
+    else
+      >  procedure T$(class.name:Pascal).$(check_reserved(method.name))$(generate_arguments(method));
+      generate_arguments_var(method, my)
+      >  begin
+           generate_arguments_value(method)
+      >    $(class.name:c)_$(method.name:c)$(generate_arguments_method_call(method));
+           generate_arguments_cleanup(method)
+      >  end;
+    endif
+  endfunction
+
+  function generate_static_method_implementation(class, method)
+    >
+    my.count = 0
+    if count(method.return, return.type ?<> "nothing")
+      for method.return as return
+        >  class function T$(class.name:Pascal).$(check_reserved(method.name))$(generate_arguments(method)): $(generate_data_type(return, 0));
+        generate_arguments_var(method, my)
+        >  begin
+             generate_arguments_value(method)
+        >    Result := $(generate_return(return, "$(class.name:c)_$(method.name:c)$(generate_arguments_static_call(method))"));
+             generate_arguments_cleanup(method)
+        >  end;
+      endfor
+    else
+      >  class procedure T$(class.name:Pascal).$(check_reserved(method.name))$(generate_arguments(method));
+      generate_arguments_var(method, my)
+      >  begin
+           generate_arguments_value(method)
+      >    $(class.name:c)_$(method.name:c)$(generate_arguments_static_call(method));
+           generate_arguments_cleanup(method)
+      >  end;
+    endif
+  endfunction
+
+  function generate_util_methods(class)
+    >
+    >  constructor T$(class.name:Pascal).Create(handle: P$(class.name:Pascal); owned: Boolean);
+    >  begin
+    >    FHandle := handle;
+    >    FOwned := owned;
+    >  end;
+    >
+    >  class function T$(class.name:Pascal).Wrap(handle: P$(class.name:Pascal); owned: Boolean): I$(class.name:Pascal);
+    >  begin
+    >    if handle <> nil then Result := T$(class.name:Pascal).Create(handle, owned) else Result := nil;
+    >  end;
+    >
+    >  class function T$(class.name:Pascal).UnWrap(const value: I$(class.name:Pascal)): P$(class.name:Pascal);
+    >  begin
+    >    if value <> nil then Result := T$(class.name:Pascal)(value).FHandle else Result := nil;
+    >  end;
+  endfunction
+
+  function generate_class_implementation(class)
+    >
+    > (* T$(class.name:Pascal) *)
+    for my.class.constructor as method
+      generate_class_constructor_implementation(my.class, method)
+    endfor
+    for my.class.destructor
+      generate_util_methods(my.class)
+      generate_class_destructor_implementation(my.class)
+    endfor
+    for my.class.method where singleton ?= "1"
+      if is_valid_method(method)
+        generate_static_method_implementation(my.class, method)
+      endif
+    endfor
+    for my.class.method where singleton ?<> "1"
+      if is_valid_method(method)
+        generate_class_method_implementation(my.class, method)
+      endif
+    endfor
+  endfunction
+
+  function have_varargs(method)
+    for method.argument as argument
+      if argument.variadic
+        return 1
+      endif
+      if argument.type = "format"
+        return 1
+      endif
+    endfor
+    return 0
+  endfunction
+
+  function generate_modifier(method)
+    if have_varargs(method)
+      return "; cdecl; varargs"
+    else
+      return "; cdecl"
+    endif
+  endfunction
+
+  function generate_c_api_method(class, method)
+    >
+    >  // $(my.method.description:no,block)
+    if count(method.return, return.type ?<> "nothing")
+      for method.return as return
+      >  function $(class.name:c)_$(method.name:c)$(generate_arguments_api_c(my.class, my.method)): $(generate_data_type(return, 1))$(generate_modifier(method)); external lib_$(project.name:c);
+      endfor
+    else
+    >  procedure $(class.name:c)_$(method.name:c)$(generate_arguments_api_c(my.class, my.method))$(generate_modifier(method)); external lib_$(project.name:c);
+    endif
+  endfunction
+
+  function generate_c_api_constructor(class, method)
+    >
+    >  // $(my.method.description:no,block)
+    >  function $(class.name:c)_$(method.name:c)$(generate_arguments_c(method)): P$(class.name:Pascal)$(generate_modifier(method)); external lib_$(project.name:c);
+  endfunction
+
+  function generate_c_api_destructor(class, method)
+    >
+    >  // $(my.method.description:no,block)
+    >  procedure $(class.name:c)_destroy(var self: P$(class.name:Pascal))$(generate_modifier(method)); external lib_$(project.name:c);
+  endfunction
+
+  function generate_c_api(class)
+    >
+    >(* $(class.name:Pascal,block) *)
+    >(* $(class.description:no,block) *)
+    if count(my.class.callback_type) > 0
+      >type
+      for my.class.callback_type as method
+        generate_callback_c(my.class, method)
+      endfor
+    endif
+    for my.class.constructor as method
+      generate_c_api_constructor(my.class, method)
+    endfor
+    for my.class.destructor as method
+      generate_c_api_destructor(my.class, method)
+    endfor
+    for my.class.method as method
+      generate_c_api_method(my.class, method)
+    endfor
+  endfunction
+
+  function generate_c_const(class)
+    if count(my.class.constant) > 0
+      >
+      for my.class.constant
+        >  // $(constant.description:no,block)
+        >  $(project.name:UPPER)_$(my.class.name:UPPER)_$(CONSTANT.NAME:c) = $(constant.value);
+      endfor
+    endif
+  endfunction
+
+  function generate_c_binding()
+    output "bindings/delphi/lib$(project.name:c).pas"
+    >(*
+    >$(project.GENERATED_WARNING_HEADER:)
+    >
+    > $(project.description:no,block)
+    >*)
+    >
+    >unit lib$(project.name:c);
+    >
+    >interface
+    >
+    >uses
+    if project.name <> "CZMQ"
+    >  libczmq,
+    endif
+    >  Winapi.Windows, Winapi.Winsock2;
+    >
+    >const
+    >  $(PROJECT.PREFIX)_VERSION_MAJOR = $(project->version.major);
+    >  $(PROJECT.PREFIX)_VERSION_MINOR = $(project->version.minor);
+    >  $(PROJECT.PREFIX)_VERSION_PATCH = $(project->version.patch);
+    >
+    >const
+    >  lib_$(project.name:c) = 'lib$(project.name:c).dll';
+    for project.class where scope = "public" & !draft
+      generate_c_const(class)
+    endfor
+    >
+    >type
+    for project.class where scope = "public" & !draft
+    >  P$(class.name:Pascal) = Pointer;
+    endfor
+    for project.class where scope = "public" & !draft
+      generate_c_api(class)
+    endfor
+    >implementation
+    >end.
+  endfunction
+
+  function generate_object_binding()
+    output "bindings/delphi/$(project.name:Pascal).pas"
+    >(*
+    >$(project.GENERATED_WARNING_HEADER:)
+    >*)
+    >
+    >unit $(project.name:Pascal);
+    >
+    >interface
+    >
+    >uses
+    if project.name <> "CZMQ"
+    >  CZMQ,
+    endif
+    >  lib$(project.name:c), Winapi.Windows, Winapi.Winsock2;
+    >
+    >// forward declarations
+    > type
+    for project.class where scope = "public" & !draft
+      if have_interface(class)
+        >  I$(class.name:Pascal) = interface;
+      endif
+    endfor
+    for project.class where scope = "public" & !draft
+      generate_interface(class)
+    endfor
+    for project.class where scope = "public" & !draft
+      generate_class_interface(class)
+    endfor
+    >
+    if project.name = "CZMQ"
+    >function ZFreeString(const str: PansiCHar): String;
+    endif
+    >
+    >implementation
+    >
+    >uses
+    >  System.SysUtils;
+    >
+    # dirty
+    if project.name = "CZMQ"
+      >function ZFreeString(const str: PansiCHar): String;
+      >var
+      >  p: PAnsiChar;
+      >begin
+      >  Result := String(UTF8String(str));
+      >  p := str;
+      >  zstr_free(p);
+      >end;
+    endif
+
+    for project.class where scope = "public" & !draft
+      generate_class_implementation(class)
+    endfor
+    >end.
+  endfunction
+
+  function generate_binding
+    directory.create ("bindings/delphi")
+    my.oldterm = terminator
+    terminator = "\r\n"
+    generate_c_binding()
+    generate_object_binding()
+    terminator = my.oldterm
+  endfunction
+
+
+  if count (class, defined (class.api) & class.private = "0")
+    generate_binding ()
+  endif
+endfunction

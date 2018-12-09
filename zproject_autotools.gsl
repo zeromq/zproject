@@ -654,7 +654,6 @@ AS_IF([test x"${search_$(use.libname:c)}" = xyes], [
     PRE_SEARCH_LIBS="${LIBS}"
 
     found_pkgconfig=""
-    found_linkname=""
 . if use.pkgconfig ?<> ""
     PKG_CHECK_MODULES([$(use.project:c)], [$(use.pkgconfig) >= $(use.min_version)\
 .  if defined(use.max_version)
@@ -773,7 +772,6 @@ Header file $(use.header) was not found in default search paths])
             [
                 was_$(use.project:c)_check_lib_detected=yes
                 PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -l$(use.linkname)"
-                found_linkname="$(use.linkname)"
 .       if optional
                 AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The optional $(use.libname) library is to be used (as -l$(use.linkname))])
             ],
@@ -799,12 +797,27 @@ Header file $(use.header) was not found in default search paths])
 dnl END of PKG_CHECK_MODULES and/or direct tests for $(use.libname:c)
     AS_CASE(["x${was_$(use.project:c)_check_lib_detected}"],
         [xpkgcfg], [
-                AC_SUBST([pkgconfig_name_$(use.libname:c)],[${found_pkgconfig}])
+                AC_SUBST([pkgconfig_name_$(use.libname:c)],["${found_pkgconfig}\
+.       if (use.min_version <> '0.0.0')
+ >= $(use.min_version)\
+.       endif
+.       if defined(use.max_version) | defined(use.next_incompatible_version)
+.           if (use.min_version = '0.0.0')
+ >= 0.0.0
+.           endif
+.           if defined(use.max_version)
+ $(use.libname) <= $(use.max_version)\
+.           endif
+.           if defined(use.next_incompatible_version)
+ $(use.libname) < $(use.next_incompatible_version)\
+.           endif
+.       endif
+"])
                 CFLAGS="${$(use.project:c)_CFLAGS} ${CFLAGS}"
                 LIBS="${$(use.project:c)_LIBS} ${LIBS}"
             ],
         [xyes], [
-                AC_SUBST([pkgconfig_name_$(use.libname:c)],[${found_linkname}])
+                AC_SUBST([pkgconfig_name_$(use.libname:c)],[""])
                 CFLAGS="${$(use.project:c)_synthetic_cflags} ${CFLAGS}"
                 LDFLAGS="${$(use.project:c)_synthetic_libs} ${LDFLAGS}"
                 LIBS="${$(use.project:c)_synthetic_libs} ${LIBS}"
@@ -813,7 +826,7 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for $(use.libname:c)
                 AC_SUBST([$(use.project:c)_LIBS],[${$(use.project:c)_synthetic_libs}])
             ],
         [xno], [
-                AC_SUBST([pkgconfig_name_$(use.libname:c)],[$(use.libname)])
+                AC_SUBST([pkgconfig_name_$(use.libname:c)],[""])
 .# No data defined to use a linkability test, or test failed
 .   if optional
             AC_MSG_WARN([\
@@ -2229,20 +2242,6 @@ Version: @VERSION@
 Requires:\
 .   for use where use.optional = 0
 @pkgconfig_name_$(use.libname:c)@\
-.       if (use.min_version <> '0.0.0')
- >= $(use.min_version)\
-.       endif
-.       if defined(use.max_version) | defined(use.next_incompatible_version)
-.           if (use.min_version = '0.0.0')
- >= 0.0.0
-.           endif
-.           if defined(use.max_version)
- $(use.libname) <= $(use.max_version)\
-.           endif
-.           if defined(use.next_incompatible_version)
- $(use.libname) < $(use.next_incompatible_version)\
-.           endif
-.       endif
 .       if !last ()
  \
 .       endif
