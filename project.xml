@@ -7,6 +7,7 @@
         android             Native shared library for Android
         cygwin              Cygwin build system
         debian              packaging for Debian
+        delphi              Delphi binding
         docker              packaging for Docker
         java                Java JNI binding
         java-msvc           MSVC builds for Java JNI binding

@@ -36,6 +36,7 @@ At least the following build environments are currently supported:
 
 Thanks to the ZeroMQ community, you can do all the heavy lifting in C and then easily generate bindings in the following languages:
 
+* Delphi
 * Java (JNI)
 * Python
 * QML
