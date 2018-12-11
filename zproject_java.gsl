@@ -807,7 +807,6 @@ implements AutoCloseable\
     $(my.prefix) $(->return.jni_java_type:) $(jni_name:) ($(jni_method_signature:)) {
 .       if defined (method.return_self_p)
         self = __$(name:camel) ($(jni_shim_invocation_java:));
-        return 0;
 .       elsif ->return.type = "nothing"
         __$(name:camel) ($(jni_shim_invocation_java:));
 .       elsif ->return.jni_is_class = 1
@@ -846,7 +845,11 @@ $(jni_shim_signature_c:))
 .   endif
 .   if ->return.type = "nothing"
     $(class.c_name)_$(c_name) ($(jni_native_invocation_c));
-.       my.return = ""
+.       if defined (my.method.return_self_p) & !my.method.is_destructor
+.           my.return = "    return self;\n"
+.       else
+.           my.return = ""
+.   endif
 .#
 .   elsif ->return.type = "buffer"
 .       if regexp.match ("^\\.(.*)", ->return.size, my.size)
