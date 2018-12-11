@@ -214,6 +214,8 @@ function resolve_method (method)
             if type = "buffer" & !defined (return.size)
                 my.method.okay = 0
                 #echo "Skipping $(class.name).$(my.method.name) - can't return unsized fresh buffer"
+            elsif defined(my.method.return_self_p)
+                jni_java_type = "void"
             endif
         endif
     endfor
