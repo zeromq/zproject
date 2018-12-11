@@ -795,7 +795,7 @@ implements AutoCloseable\
     }
 .   endfor
 .   for method where okay
-.       if name = "test"
+.       if singleton = 1 & !defined (method.return_self_p)
 .           my.prefix = "public static"
 .       else
 .           my.prefix = "public"
