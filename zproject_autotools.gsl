@@ -599,6 +599,7 @@ AS_IF([test -n "${pkgconfigdir}" -a -d "${pkgconfigdir}"],
 
 # Will be used to add flags to pkg-config useful when apps want to statically link
 PKGCFG_LIBS_PRIVATE=""
+PKGCFG_NAMES_PRIVATE=""
 
 # Archive user supplied flags
 PREVIOUS_CFLAGS="${CFLAGS}"
@@ -675,7 +676,6 @@ AS_IF([test x"${search_$(use.libname:c)}" = xyes], [
 .   endif
  is to be used])
 .  endif
-        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $$(use.project:c)_LIBS"
         was_$(use.project:c)_check_lib_detected=pkgcfg
         found_pkgconfig="$(use.pkgconfig)"
     ],
@@ -706,7 +706,6 @@ AS_IF([test x"${search_$(use.libname:c)}" = xyes], [
 .       endif
  is to be used])
 .     endif
-                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $$(use.project:c)_LIBS"
                 was_$(use.project:c)_check_lib_detected=pkgcfg
                 found_pkgconfig="$(pkgconfig_variant)"
             ],
@@ -797,7 +796,7 @@ Header file $(use.header) was not found in default search paths])
 dnl END of PKG_CHECK_MODULES and/or direct tests for $(use.libname:c)
     AS_CASE(["x${was_$(use.project:c)_check_lib_detected}"],
         [xpkgcfg], [
-                AC_SUBST([pkgconfig_name_$(use.libname:c)],["${found_pkgconfig}\
+                PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE ${found_pkgconfig}\
 .       if (use.min_version <> '0.0.0')
  >= $(use.min_version)\
 .       endif
@@ -812,12 +811,11 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for $(use.libname:c)
  $(use.libname) < $(use.next_incompatible_version)\
 .           endif
 .       endif
-"])
+"
                 CFLAGS="${$(use.project:c)_CFLAGS} ${CFLAGS}"
                 LIBS="${$(use.project:c)_LIBS} ${LIBS}"
             ],
         [xyes], [
-                AC_SUBST([pkgconfig_name_$(use.libname:c)],[""])
                 CFLAGS="${$(use.project:c)_synthetic_cflags} ${CFLAGS}"
                 LDFLAGS="${$(use.project:c)_synthetic_libs} ${LDFLAGS}"
                 LIBS="${$(use.project:c)_synthetic_libs} ${LIBS}"
@@ -826,7 +824,6 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for $(use.libname:c)
                 AC_SUBST([$(use.project:c)_LIBS],[${$(use.project:c)_synthetic_libs}])
             ],
         [xno], [
-                AC_SUBST([pkgconfig_name_$(use.libname:c)],[""])
 .# No data defined to use a linkability test, or test failed
 .   if optional
             AC_MSG_WARN([\
@@ -876,6 +873,7 @@ CFLAGS="${PREVIOUS_CFLAGS}"
 LIBS="${PREVIOUS_LIBS}"
 
 AC_SUBST(pkg_config_libs_private, $PKGCFG_LIBS_PRIVATE)
+AC_SUBST(pkg_config_names_private, $PKGCFG_NAMES_PRIVATE)
 
 # Platform specific checks
 $(project.name:c)_on_mingw32="no"
@@ -2238,17 +2236,7 @@ Name: $(project.libname)
 Description: $(project.description:)
 Version: @VERSION@
 
-.if count (use)
-Requires:\
-.   for use where use.optional = 0
-@pkgconfig_name_$(use.libname:c)@\
-.       if !last ()
- \
-.       endif
-.   endfor
-
-.endif
-
+Requires.private: @pkg_config_names_private@
 Libs: -L${libdir} -l$(project.linkname)
 Cflags: -I${includedir} @pkg_config_defines@
 Libs.private: @pkg_config_libs_private@

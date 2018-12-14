@@ -37,6 +37,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/builds/cm
 
 # Will be used to add flags to pkg-config useful when apps want to statically link
 set(pkg_config_libs_private "")
+set(pkg_config_names_private "")
 
 ########################################################################
 # options
@@ -151,7 +152,26 @@ IF ($(USE.PROJECT)_FOUND)
 .if use.libname ?<> ""
     include_directories(${$(USE.PROJECT)_INCLUDE_DIRS})
     list(APPEND MORE_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
-    set(pkg_config_libs_private "${pkg_config_libs_private} -l$(use.linkname)")
+  IF (PC_$(USE.PROJECT)_FOUND)
+      set(pkg_config_names_private "${pkg_config_names_private} $(use.libname)\
+.  if (use.min_version <> '0.0.0')
+ >= $(use.min_version)\
+.  endif
+.  if defined(use.max_version) | defined(use.next_incompatible_version)
+.    if (use.min_version = '0.0.0')
+ >= 0.0.0
+.    endif
+.    if defined(use.max_version)
+ $(use.libname) <= $(use.max_version)\
+.    endif
+.    if defined(use.next_incompatible_version)
+ $(use.libname) < $(use.next_incompatible_version)\
+.    endif
+.  endif
+")
+  ELSE (PC_$(USE.PROJECT)_FOUND)
+      set(pkg_config_libs_private "${pkg_config_libs_private} -l$(use.linkname)")
+  ENDIF (PC_$(USE.PROJECT)_FOUND)
 .if use.optional = 1
     add_definitions(-DHAVE_$(USE.LIBNAME))
     list(APPEND OPTIONAL_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
