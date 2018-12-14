@@ -641,7 +641,7 @@ find_path (
 
 find_library (
     $(USE.PROJECT)_LIBRARIES
-    NAMES $(use.prefix)
+    NAMES $(use.linkname)
     HINTS ${PC_$(USE.PROJECT)_LIBRARY_HINTS}
 )
 
