@@ -92,6 +92,7 @@
         test = "sodium_init" />
 
     <use project = "libcurl"
+        prefix = "curl"
         repository = "https://github.com/curl/curl.git"
         debian_name = "libcurl4-openssl-dev"
         test = "curl_easy_init"

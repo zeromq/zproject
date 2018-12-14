@@ -46,15 +46,19 @@ Build-Depends: debhelper (>= 9),
 .for project.use
 .if defined(use.debian_name)
 .   if !(use.debian_name = '')
-    $(use.debian_name),
+    $(use.debian_name)\
 .   else
 .       echo "WARNING: debian_name=='' for $(use.project) - not added to packaging/debian/control"
 .   endif
 .elsif regexp.match("^lib", use.libname)
-    $(string.replace (use.libname, "_|-"))-dev,
+    $(string.replace (use.libname, "_|-"))-dev\
 .else
-    lib$(string.replace (use.libname, "_|-"))-dev,
+    lib$(string.replace (use.libname, "_|-"))-dev\
 .endif
+.  if (use.min_version <> '0.0.0')
+ (>= $(use.min_version))\
+.  endif
+,
 .endfor
 .if systemd ?= 1
 .# necessary for systemd.pc to get unit install path
@@ -101,15 +105,19 @@ Depends:
 .for project.use
 .if defined(use.debian_name)
 .   if !(use.debian_name = '')
-    $(use.debian_name),
+    $(use.debian_name)\
 .   else
 .       echo "WARNING: debian_name=='' for $(use.project) - not added to packaging/debian/control"
 .   endif
 .elsif regexp.match("^lib", use.libname)
-    $(string.replace (use.libname, "_|-"))-dev,
+    $(string.replace (use.libname, "_|-"))-dev\
 .else
-    lib$(string.replace (use.libname, "_|-"))-dev,
+    lib$(string.replace (use.libname, "_|-"))-dev\
 .endif
+.  if (use.min_version <> '0.0.0')
+ (>= $(use.min_version))\
+.  endif
+,
 .endfor
 .if defined (project->abi)
     $(string.replace (project.libname, "_|-"))$(project->abi.current - project->abi.age) (= ${binary:Version})
@@ -128,15 +136,19 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 .for project.use where use.type ?= "runtime"
 .if defined(use.debian_name)
 .   if !(use.debian_name = '')
-    $(use.debian_name),
+    $(use.debian_name)\
 .   else
 .       echo "WARNING: debian_name=='' for $(use.project) - not added to packaging/debian/control"
 .   endif
 .elsif regexp.match("^lib", use.libname)
-    $(string.replace (use.libname, "_|-")),
+    $(string.replace (use.libname, "_|-"))\
 .else
-    $(string.replace (use.project, "_|-")),
+    $(string.replace (use.project, "_|-"))\
 .endif
+.  if (use.min_version <> '0.0.0')
+ (>= $(use.min_version))\
+.  endif
+,
 .endfor
 Description: runnable binaries from $(project.name)
  Main package for $(project.name):
@@ -409,15 +421,19 @@ Build-Depends: debhelper (>= 9),
 .for project.use
 .if defined(use.debian_name)
 .   if !(use.debian_name = '')
-    $(use.debian_name),
+    $(use.debian_name)\
 .   else
 .       echo "WARNING: debian_name=='' for $(use.project) - not added to packaging/debian/control"
 .   endif
 .elsif regexp.match("^lib", use.libname)
-    $(string.replace (use.libname, "_|-"))-dev,
+    $(string.replace (use.libname, "_|-"))-dev\
 .else
-    lib$(string.replace (use.libname, "_|-"))-dev,
+    lib$(string.replace (use.libname, "_|-"))-dev\
 .endif
+.  if (use.min_version <> '0.0.0')
+ (>= $(use.min_version))\
+.  endif
+,
 .endfor
 .if systemd ?= 1
     systemd,

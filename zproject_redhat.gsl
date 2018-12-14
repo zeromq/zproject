@@ -89,13 +89,17 @@ BuildRequires:  gcc-c++
 .for project.use
 .if defined(use.redhat_name)
 .   if !(use.redhat_name = '')
-BuildRequires:  $(use.redhat_name)
+BuildRequires:  $(use.redhat_name)\
 .   else
 .       echo "WARNING: redhat_name=='' for $(use.project) - not added to packaging/redhat/$(project.name).spec"
 .   endif
 .else
-BuildRequires:  $(use.project)-devel
+BuildRequires:  $(use.project)-devel\
 .endif
+.  if (use.min_version <> '0.0.0')
+ (>= $(use.min_version))\
+.  endif
+
 .endfor
 .if python_cffi ?= 1
 %if %{with python_cffi}
@@ -114,15 +118,19 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 .for project.use where use.type ?= "runtime"
 .if defined(use.redhat_name)
 .   if !(use.redhat_name = '')
-Requires: $(use.redhat_name)
+Requires: $(use.redhat_name)\
 .   else
 .       echo "WARNING: redhat_name=='' for $(use.project) - not added to packaging/redhat/$(project.name).spec"
 .   endif
 .elsif regexp.match("^lib", use.libname)
-Requires: $(string.replace (use.libname, "_|-"))
+Requires: $(string.replace (use.libname, "_|-"))\
 .else
-Requires: $(string.replace (use.project, "_|-"))
+Requires: $(string.replace (use.project, "_|-"))\
 .endif
+.  if (use.min_version <> '0.0.0')
+ (>= $(use.min_version))\
+.  endif
+
 .endfor
 .endif
 
@@ -169,13 +177,17 @@ Requires:       $(project.libname)$(my.abi_ver) = %{version}
 .for project.use
 .if defined(use.redhat_name)
 .   if !(use.redhat_name = '')
-Requires:       $(use.redhat_name)
+Requires:       $(use.redhat_name)\
 .   else
 .       echo "WARNING: redhat_name=='' for $(use.project) - not added to packaging/redhat/$(project.name).spec"
 .   endif
 .else
-Requires:       $(use.project)-devel
+Requires:       $(use.project)-devel\
 .endif
+.  if (use.min_version <> '0.0.0')
+ >= $(use.min_version)\
+.  endif
+
 .endfor
 
 %description devel

@@ -152,6 +152,7 @@ AS_IF([test -n "${pkgconfigdir}" -a -d "${pkgconfigdir}"],
 
 # Will be used to add flags to pkg-config useful when apps want to statically link
 PKGCFG_LIBS_PRIVATE=""
+PKGCFG_NAMES_PRIVATE=""
 
 # Archive user supplied flags
 PREVIOUS_CFLAGS="${CFLAGS}"
@@ -166,6 +167,7 @@ CFLAGS="${PREVIOUS_CFLAGS}"
 LIBS="${PREVIOUS_LIBS}"
 
 AC_SUBST(pkg_config_libs_private, $PKGCFG_LIBS_PRIVATE)
+AC_SUBST(pkg_config_names_private, $PKGCFG_NAMES_PRIVATE)
 
 # Platform specific checks
 zproject_on_mingw32="no"
