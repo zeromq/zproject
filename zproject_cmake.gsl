@@ -138,6 +138,7 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${SOURCE_DIR}")
 set(OPTIONAL_LIBRARIES)
+set(OPTIONAL_LIBRARIES_STATIC)
 .for use
 
 ########################################################################
@@ -169,6 +170,7 @@ IF ($(USE.PROJECT)_FOUND)
 .    endif
 .  endif
 ")
+      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_$(USE.PROJECT)_STATIC_LDFLAGS})
   ELSE (PC_$(USE.PROJECT)_FOUND)
       set(pkg_config_libs_private "${pkg_config_libs_private} -l$(use.linkname)")
   ENDIF (PC_$(USE.PROJECT)_FOUND)
@@ -475,6 +477,7 @@ target_link_libraries(
 .endif
 .endfor
     ${OPTIONAL_LIBRARIES}
+    ${OPTIONAL_LIBRARIES_STATIC}
 )
 endif()
 .   if main.scope = "public"
