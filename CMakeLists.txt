@@ -88,6 +88,7 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${SOURCE_DIR}")
 set(OPTIONAL_LIBRARIES)
+set(OPTIONAL_LIBRARIES_STATIC)
 
 ########################################################################
 # GSL dependency
