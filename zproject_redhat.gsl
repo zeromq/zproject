@@ -97,7 +97,7 @@ BuildRequires:  $(use.redhat_name)\
 BuildRequires:  $(use.project)-devel\
 .endif
 .  if (use.min_version <> '0.0.0')
- (>= $(use.min_version))\
+ >= $(use.min_version)\
 .  endif
 
 .endfor
@@ -128,7 +128,7 @@ Requires: $(string.replace (use.libname, "_|-"))\
 Requires: $(string.replace (use.project, "_|-"))\
 .endif
 .  if (use.min_version <> '0.0.0')
- (>= $(use.min_version))\
+ >= $(use.min_version)\
 .  endif
 
 .endfor
