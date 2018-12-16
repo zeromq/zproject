@@ -166,10 +166,6 @@ pkg_deps_doctools: &pkg_deps_doctools
 pkg_deps_devtools: &pkg_deps_devtools
     - git
 
-pkg_src_zeromq_ubuntu12: &pkg_src_zeromq_ubuntu12
-- sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_12.04/ ./'
-  key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_12.04/Release.key'
-
 pkg_src_zeromq_ubuntu14: &pkg_src_zeromq_ubuntu14
 - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/ ./'
   key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/Release.key'
