@@ -766,11 +766,14 @@ implements AutoCloseable\
 .   endif
 {
     static {
-        try {
-            NativeLoader.loadLibrary("$(project.prefix:c)jni");
-        }
-        catch (Exception e) {
-            System.exit (-1);
+        if (System.getProperty("java.vm.vendor").contains("Android")) {
+            System.loadLibrary("$(project.prefix:c)jni");
+        } else {
+            try {
+                NativeLoader.loadLibrary("$(project.prefix:c)jni");
+            } catch (Exception e) {
+                System.exit (-1);
+            }
         }
     }
     public long self;
