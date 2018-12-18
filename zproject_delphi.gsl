@@ -71,13 +71,13 @@ function target_delphi
       if my.iscapi <> 0
         return "PAnsiChar"
       else
-        return "String"
+        return "string"
       endif
     elsif my.container.type = "format"
       if my.iscapi <> 0
         return "PAnsiChar"
       else
-        return "String"
+        return "string"
       endif
     elsif my.container.type = "buffer"
       return "PByte"
@@ -527,7 +527,7 @@ function target_delphi
       if my.return.fresh = 1
         return "ZFreeString($(my.value:no))"
       else
-        return "String(UTF8String($(my.value:no)))"
+        return "string(UTF8String($(my.value:no)))"
       endif
     elsif is_class(my.return)
       if my.return.fresh = 1
@@ -776,7 +776,7 @@ function target_delphi
     endfor
     >
     if project.name = "CZMQ"
-    >function ZFreeString(const str: PansiCHar): String;
+    >function ZFreeString(const str: PAnsiChar): string;
     endif
     >
     >implementation
@@ -786,11 +786,11 @@ function target_delphi
     >
     # dirty
     if project.name = "CZMQ"
-      >function ZFreeString(const str: PansiCHar): String;
+      >function ZFreeString(const str: PAnsiChar): string;
       >var
       >  p: PAnsiChar;
       >begin
-      >  Result := String(UTF8String(str));
+      >  Result := string(UTF8String(str));
       >  p := str;
       >  zstr_free(p);
       >end;
