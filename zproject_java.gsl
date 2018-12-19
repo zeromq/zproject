@@ -780,6 +780,14 @@ implements AutoCloseable\
             System.loadLibrary("$(project.prefix:c)jni");
         } else {
             try {
+.       for project.use
+                NativeLoader.loadLibrary("$(use.prefix:c)");
+.       endfor
+                NativeLoader.loadLibrary("$(project.prefix:c)");
+            } catch (Exception e) {
+                System.err.println("[WARN] " + e.getMessage() +" from jar. Assuming it is installed on the system.");
+            }
+            try {
                 NativeLoader.loadLibrary("$(project.prefix:c)jni");
             } catch (Exception e) {
                 System.exit (-1);
