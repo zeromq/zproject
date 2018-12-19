@@ -181,7 +181,17 @@ task initCMake(type: Exec, dependsOn: 'generateJniHeaders') {
 task buildNative(type: Exec, dependsOn: 'initCMake') {
     commandLine "make"
 }
+
+task copyLibs(type: Copy) {
+    from "/usr/lib/$(project.libname).so", "/usr/local/lib/$(project.libname).so", "/tmp/lib/$(project.libname).so",
+.   for project.use
+         "/usr/lib/$(use.libname).so", "/usr/local/lib/$(use.libname).so", "/tmp/lib/$(use.libname).so"$(last ()?? ""? ",")
+.   endfor
+    into "."
+}
+
 jar.dependsOn buildNative
+jar.dependsOn copyLibs
 test.dependsOn buildNative
 
 jar {
