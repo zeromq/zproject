@@ -269,7 +269,7 @@ bintray {
 
 clean.doFirst {
     delete "${rootDir}/CMakeCache.txt"
-    delete "${rootDir}/libczmqjni.so"
+    delete fileTree("${rootDir}") { include "*.so" }
 }
 .
 .output "$(topdir)/README.md"
