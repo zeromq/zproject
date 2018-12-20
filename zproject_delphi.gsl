@@ -82,7 +82,11 @@ function target_delphi
     elsif my.container.type = "buffer"
       return "PByte"
     elsif my.container.callback
-      return "T$(my.container.type:Pascal)"
+      if my.container.by_reference
+        return "P$(my.container.type:Pascal)"
+      else
+        return "T$(my.container.type:Pascal)"
+      endif
     elsif my.container.type = "sockish"
       if my.iscapi <> 0
         return "PZSock"
@@ -200,7 +204,7 @@ function target_delphi
 
   function generate_argument(argument)
     my.ret = ""
-    if my.argument.by_reference = 1
+    if my.argument.by_reference = 1 & !my.argument.callback
       my.ret += "var "
     elsif could_be_const(my.argument)
       my.ret += "const "
@@ -235,7 +239,7 @@ function target_delphi
 
   function generate_argument_c(argument)
     my.ret = ""
-    if my.argument.by_reference = 1
+    if my.argument.by_reference = 1  & !my.argument.callback
       my.ret += "var "
     endif
     my.ret += "$(check_reserved(my.argument.name)): " + generate_data_type(argument, 1)
@@ -368,6 +372,7 @@ function target_delphi
     else
     >  T$(class.name:Pascal)$(method.name:Pascal) = procedure$(generate_arguments_c(method)); stdcall;
     endif
+    >  P$(class.name:Pascal)$(method.name:Pascal) = ^T$(class.name:Pascal)$(method.name:Pascal);
   endfunction
 
   function generate_class_interface(class)
