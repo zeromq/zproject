@@ -250,6 +250,20 @@ matrix:
   - env: BUILD_TYPE=clang-format-check CLANG_FORMAT=clang-format-5.0
 .   endif
 .endif
+.if project.exports_classes
+  - env: BUILD_TYPE=abi-compliance-checker
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+        - sourceline: 'deb http://ppa.launchpad.net/hnakamur/universal-ctags/ubuntu bionic main'
+          key_url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x60D954A11017341E'
+        packages:
+        - universal-ctags
+        - abi-dumper
+        - abi-compliance-checker
+.endif
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "android" ] ; then brew install binutils ; fi
@@ -726,6 +740,52 @@ if [[ \$(git status -s api) ]]; then
 fi
 .close
 .chmod_x ("builds/check_zproto/ci_build.sh")
+.endif
+.
+.if project.exports_classes
+.directory.create ("builds/abi-compliance-checker")
+.output "builds/abi-compliance-checker/ci_build.sh"
+#!/usr/bin/env bash
+set -x
+
+cd ../../
+
+mkdir tmp
+BUILD_PREFIX=$PWD/tmp
+
+CONFIG_OPTS=()
+CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include -g -Og")
+CONFIG_OPTS+=("CPPFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("CXXFLAGS=-I${BUILD_PREFIX}/include -g -Og")
+CONFIG_OPTS+=("LDFLAGS=-L${BUILD_PREFIX}/lib")
+CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
+CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
+CONFIG_OPTS+=("--enable-drafts=no")
+
+function print_abi_api_breakages() {
+   echo "ABI breakages detected:"
+   cat compat_reports/$(project.libname)/${LATEST_VERSION}_to_HEAD/abi_affected.txt | c++filt
+   echo "API breakages detected:"
+   cat compat_reports/$(project.libname)/${LATEST_VERSION}_to_HEAD/src_affected.txt | c++filt
+   exit 1
+}
+
+\./autogen.sh
+\./configure "${CONFIG_OPTS[@]}"
+make VERBOSE=1 -j5
+abi-dumper -public-headers include src/.libs/$(project.libname).so -o ${BUILD_PREFIX}/$(project.libname).head.dump -lver HEAD
+
+git clone --depth 1 -b latest_release $(project.repository) latest_release
+cd latest_release
+LATEST_VERSION=\$(git describe --abbrev=0 --tags)
+\./autogen.sh
+\./configure "${CONFIG_OPTS[@]}"
+make VERBOSe=1 -j5
+abi-dumper -public-headers include src/.libs/$(project.libname).so -o ${BUILD_PREFIX}/$(project.libname).latest.dump -lver ${LATEST_VERSION}
+
+abi-compliance-checker -l $(project.libname) -d1 ${BUILD_PREFIX}/$(project.libname).latest.dump -d2 ${BUILD_PREFIX}/$(project.libname).head.dump -list-affected || print_abi_api_breakages
+.close
+.chmod_x ("builds/abi-compliance-checker/ci_build.sh")
 .endif
 .
 .output "ci_deploy.sh"
