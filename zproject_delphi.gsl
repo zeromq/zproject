@@ -364,7 +364,7 @@ function target_delphi
 
   function generate_callback_c(class, method)
     >
-    >    // $(method.description:no,block)
+    >  // $(method.description:no,block)
     if count(method.return, return.type ?<> "nothing")
       for method.return as return
       >  T$(class.name:Pascal)$(method.name:Pascal) = function$(generate_arguments_c(method)): $(generate_data_type(return, 1)); stdcall;
@@ -654,29 +654,33 @@ function target_delphi
       return "; cdecl"
     endif
   endfunction
+  
+  function generate_external()
+    return "; external lib_$(project.name:c) {$IFDEF MSWINDOWS}delayed{$ENDIF}"
+  endfunction
 
   function generate_c_api_method(class, method)
     >
     >  // $(my.method.description:no,block)
     if count(method.return, return.type ?<> "nothing")
       for method.return as return
-      >  function $(class.name:c)_$(method.name:c)$(generate_arguments_api_c(my.class, my.method)): $(generate_data_type(return, 1))$(generate_modifier(method)); external lib_$(project.name:c);
+      >  function $(class.name:c)_$(method.name:c)$(generate_arguments_api_c(my.class, my.method)): $(generate_data_type(return, 1))$(generate_modifier(method))$(generate_external());
       endfor
     else
-    >  procedure $(class.name:c)_$(method.name:c)$(generate_arguments_api_c(my.class, my.method))$(generate_modifier(method)); external lib_$(project.name:c);
+    >  procedure $(class.name:c)_$(method.name:c)$(generate_arguments_api_c(my.class, my.method))$(generate_modifier(method))$(generate_external());
     endif
   endfunction
 
   function generate_c_api_constructor(class, method)
     >
     >  // $(my.method.description:no,block)
-    >  function $(class.name:c)_$(method.name:c)$(generate_arguments_c(method)): P$(class.name:Pascal)$(generate_modifier(method)); external lib_$(project.name:c);
+    >  function $(class.name:c)_$(method.name:c)$(generate_arguments_c(method)): P$(class.name:Pascal)$(generate_modifier(method))$(generate_external());
   endfunction
 
   function generate_c_api_destructor(class, method)
     >
     >  // $(my.method.description:no,block)
-    >  procedure $(class.name:c)_destroy(var self: P$(class.name:Pascal))$(generate_modifier(method)); external lib_$(project.name:c);
+    >  procedure $(class.name:c)_destroy(var self: P$(class.name:Pascal))$(generate_modifier(method))$(generate_external());
   endfunction
 
   function generate_c_api(class)
@@ -684,6 +688,7 @@ function target_delphi
     >(* $(class.name:Pascal,block) *)
     >(* $(class.description:no,block) *)
     if count(my.class.callback_type) > 0
+      >
       >type
       for my.class.callback_type as method
         generate_callback_c(my.class, method)
@@ -719,6 +724,10 @@ function target_delphi
     >*)
     >
     >unit lib$(project.name:c);
+    >
+    >{$if defined(MSWINDOWS)}
+    >  {$warn SYMBOL_PLATFORM off}
+    >{$ifend}
     >
     >interface
     >
