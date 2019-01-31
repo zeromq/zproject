@@ -686,6 +686,13 @@ Model is described in `zproject_known_projects.xml` file:
         test = "curl_easy_init"
         header = "curl/curl.h" />
 
+    <use project = "libmicrohttpd"
+         prefix = "microhttpd"
+         repository = ""
+         tarball = "http://ftp.gnu.org/gnu/libmicrohttpd/libmicrohttpd-0.9.61.tar.gz"
+         debian_name = " libmicrohttpd-dev"
+         test = "MHD_start_daemon" />
+
     <use project = "editline"
         repository = "https://github.com/troglobit/editline.git"
         test = "readline" />
