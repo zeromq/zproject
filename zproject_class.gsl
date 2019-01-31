@@ -652,7 +652,7 @@ $(PROJECT.PREFIX)_PRIVATE void
 .      visibility = "$(PROJECT.PREFIX)_EXPORT"
 .   endif
 .   for class.constant where draft = my.draft
-#define $(CLASS.NAME:c)_$(NAME:c) $(value)  // $(constant.description:no,block)
+#define $(CLASS.NAME:c)_$(NAME:c) $(value:)  // $(constant.description:no,block)
 .   if last ()
 
 .   endif
