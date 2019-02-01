@@ -151,6 +151,15 @@ pkg_deps_prereqs: &pkg_deps_prereqs
     - *pkg_deps_prereqs_source
     - *pkg_deps_prereqs_distro
 
+.if defined(project.travis_check_zproject) & !(project.travis_check_zproject ?= 0)
+# NOTE: Currently the shell script does support use of packages or checkout
+# of latest github code for these tools - but only from zeromq org repos,
+# no forks/branches.
+pkg_deps_zproject: &pkg_deps_zproject
+    - generator-scripting-language
+    - zproject
+
+.endif
 pkg_deps_doctools: &pkg_deps_doctools
     - asciidoc
     - xmlto
@@ -203,6 +212,17 @@ matrix:
         sources: *pkg_src_zeromq_ubuntu16
         packages:
         - *pkg_deps_common
+.if defined(project.travis_check_zproject) & !(project.travis_check_zproject ?= 0)
+  - env: BUILD_TYPE=check_zproject
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources: *pkg_src_zeromq_ubuntu16
+        packages:
+        - *pkg_deps_devtools
+        - *pkg_deps_zproject
+.endif
 .if project.travis_clangformat_implem ?= "autotools" | ( !defined(project.travis_clangformat_implem) & project.travis_use_cmake ?= 0 )
 .   echo "TRAVIS: CLANG-FORMAT: implementation: autotools"
 ### Note: we don't use CMake
@@ -237,6 +257,10 @@ matrix:
 .   if project.travis_distcheck ?= 2
 .   echo "TRAVIS: DISTCHECK: allow-fail: true"
   - env: BUILD_TYPE=default CI_TEST_DISTCHECK=true
+.   endif
+.   if project.travis_check_zproject ?= 2
+.   echo "TRAVIS: CHECK_ZPROJECT: allow-fail: true"
+  - env: BUILD_TYPE=check_zproject
 .   endif
 .   if project.travis_clangformat_allow_failures ?= 1
 .   echo "TRAVIS: CLANG-FORMAT: allow-fail: true"
