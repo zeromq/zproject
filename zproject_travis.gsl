@@ -250,7 +250,12 @@ matrix:
   - env: BUILD_TYPE=clang-format-check CLANG_FORMAT=clang-format-5.0
 .   endif
 .endif
-.if project.exports_classes
+.if project.travis_check_abi_compliance ?= 1
+.   if project.exports_classes
+# Note: the ABI compliance checker script currently assumes that:
+# 1) Your project sources have a "latest_release" branch or tag
+#    to check out and compare the current commit's ABI to;
+# 2) Prerequisites are available as packages - no custom rebuilds.
   - env: BUILD_TYPE=abi-compliance-checker
     os: linux
     dist: xenial
@@ -260,9 +265,11 @@ matrix:
         - sourceline: 'deb http://ppa.launchpad.net/hnakamur/universal-ctags/ubuntu bionic main'
           key_url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x60D954A11017341E'
         packages:
+        - *pkg_deps_common
         - universal-ctags
         - abi-dumper
         - abi-compliance-checker
+.   endif
 .endif
 
 before_install:
@@ -742,11 +749,17 @@ fi
 .chmod_x ("builds/check_zproto/ci_build.sh")
 .endif
 .
-.if project.exports_classes
-.directory.create ("builds/abi-compliance-checker")
-.output "builds/abi-compliance-checker/ci_build.sh"
+.if project.travis_check_abi_compliance ?= 1
+.   if project.exports_classes
+.       directory.create ("builds/abi-compliance-checker")
+.       output "builds/abi-compliance-checker/ci_build.sh"
 #!/usr/bin/env bash
 set -x
+
+# Note: the ABI compliance checker script currently assumes that:
+# 1) Your project sources have a "latest_release" branch or tag
+#    to check out and compare the current commit's ABI to;
+# 2) Prerequisites are available as packages - no custom rebuilds.
 
 cd ../../
 
@@ -784,8 +797,9 @@ make VERBOSe=1 -j5
 abi-dumper -public-headers include src/.libs/$(project.libname).so -o ${BUILD_PREFIX}/$(project.libname).latest.dump -lver ${LATEST_VERSION}
 
 abi-compliance-checker -l $(project.libname) -d1 ${BUILD_PREFIX}/$(project.libname).latest.dump -d2 ${BUILD_PREFIX}/$(project.libname).head.dump -list-affected || print_abi_api_breakages
-.close
-.chmod_x ("builds/abi-compliance-checker/ci_build.sh")
+.       close
+.       chmod_x ("builds/abi-compliance-checker/ci_build.sh")
+.   endif
 .endif
 .
 .output "ci_deploy.sh"
