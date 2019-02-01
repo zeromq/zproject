@@ -204,6 +204,8 @@ zproject's `project.xml` contains an extensive description of the available conf
             <option name="clangformat_allow_failures" value="0" /> "1" will generate the option allowing non-fatal failure of clang-format test in Travis CI (default: 1)
             <option name="clangformat_require_good" value="0" /> "1" will generate the option allowing to report and not ignore failure of clang-format test in Travis CI (otherwise "0" hides the failure, and devs must look in test logs) (default: same as allow_failures)
             <option name="clangformat_implem" value="cmake|autotools" /> will pick one of two implems of the clang-format test in Travis CI (cmake is default and faster if available, since autotools needs to configure first)
+            <option name="check_abi_compliance" value="0" /> "1" will compare the currently tested commit's ABI to the one in a "latest_release" branch or tag, using packaged prerequisites. Due to these limitations, the option is off by default.
+            <option name="check_zproject" value="0" /> "1" will regenerate the zproject of the tested commit, and will verify that nothing changed, "2" will enable it as a special testcase allowed to fail. Many projects do customize their originally generated codebase, so to avoid surprises this option is off by default.
         vs2008              Microsoft Visual Studio 2008
         vs2010              Microsoft Visual Studio 2010
         vs2012              Microsoft Visual Studio 2012
