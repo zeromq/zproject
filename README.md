@@ -688,9 +688,7 @@ Model is described in `zproject_known_projects.xml` file:
 
     <use project = "libmicrohttpd"
          prefix = "microhttpd"
-         repository = ""
-         tarball = "http://ftp.gnu.org/gnu/libmicrohttpd/libmicrohttpd-0.9.61.tar.gz"
-         debian_name = " libmicrohttpd-dev"
+         repository = "https://gnunet.org/git/libmicrohttpd.git"
          test = "MHD_start_daemon" />
 
     <use project = "editline"
