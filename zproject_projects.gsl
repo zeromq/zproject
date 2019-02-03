@@ -178,6 +178,9 @@ for actor
         class.private = actor.private?
         class.description = actor.description?
         class.selftest = actor.selftest
+        if defined(actor.state)
+            class.state = actor.state
+        endif
     endnew
     resolve_scope (actor)
     if actor.name ?= project.name
