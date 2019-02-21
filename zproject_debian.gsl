@@ -362,10 +362,10 @@ lib/systemd/system/$(main.name)@.service
 .   endfor
 .   for project.main where ( defined(main.timer) & main.timer > 0 )
 .       if file.exists("src/$(main.name).timer") | file.exists("src/$(main.name).timer.in") | ( main.timer ?= 1 | main.timer ?= 3 )
-/usr/lib/systemd/system/$(main.name).timer
+lib/systemd/system/$(main.name).timer
 .       endif
 .       if file.exists("src/$(main.name)@.timer") | file.exists("src/$(main.name)@.timer.in") | ( main.timer ?= 2 | main.timer ?= 3 )
-/usr/lib/systemd/system/$(main.name)@.timer
+lib/systemd/system/$(main.name)@.timer
 .       endif
 .   endfor
 .   for project.bin where ( defined(bin.service) & bin.service > 0 )
