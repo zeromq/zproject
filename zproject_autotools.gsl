@@ -1229,8 +1229,8 @@ ifdef([AX_PROJECT_LOCAL_HOOK_CONFIGVARS],
 
 .endif
 # Specify output files
-.if count (class) + count (ac_config)  > 0
 AC_CONFIG_FILES([Makefile
+.if count (class) + count (ac_config)  > 0
 .   if count (class) > 0
                  doc/Makefile
                  include/Makefile
@@ -1241,17 +1241,11 @@ AC_CONFIG_FILES([Makefile
                  src/$(extra.name)
 .       endfor
 .   endfor
-.   for project.main where ( defined(main.service) & main.service > 0 & ( !defined(main.no_config) | main.no_config ?= 0 ) )
-                 src/$(main.name).cfg
-.   endfor
-                 ])
-.else
-AC_CONFIG_FILES([Makefile
+.endif
 .   for project.main where ( defined(main.service) & main.service > 0 & ( !defined(main.no_config) | main.no_config ?= 0 ) )
                  src/$(main.name).cfg
 .   endfor
                 ])
-.endif
 
 .if systemd ?= 1
 AM_COND_IF([WITH_SYSTEMD_UNITS],
@@ -2216,6 +2210,8 @@ server
 .  else
 .   echo "NOT regenerating an existing src/$(main.name).cfg.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .  endif
+.else
+.   echo "NOT generating an src/$(main.name).cfg.in file because this 'main' explicitly set no_config!=0"
 .endif
 .#
 .#
