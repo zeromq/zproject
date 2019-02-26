@@ -2210,6 +2210,8 @@ server
 .  else
 .   echo "NOT regenerating an existing src/$(main.name).cfg.in file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .  endif
+.else
+.   echo "NOT generating an src/$(main.name).cfg.in file because this 'main' explicitly set no_config!=0"
 .endif
 .#
 .#
