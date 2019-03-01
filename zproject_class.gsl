@@ -505,17 +505,17 @@ $(project.GENERATED_WARNING_HEADER:)
 //  External API
 #include "../include/$(project.header:)"
 
-//  Extra headers
-.for header where scope = "private"
-#include "$(header.name:$(project.filename_prettyprint)).$(project.header_ext)"
-.endfor
-
 //  Opaque class structures to allow forward references
 .for class where scope = "private"
 #ifndef $(CLASS.C_NAME:c)_T_DEFINED
 typedef struct _$(class.c_name:)_t $(class.c_name:)_t;
 #define $(CLASS.C_NAME:c)_T_DEFINED
 #endif
+.endfor
+
+//  Extra headers
+.for header where scope = "private"
+#include "$(header.name:$(project.filename_prettyprint)).$(project.header_ext)"
 .endfor
 
 //  Internal API
