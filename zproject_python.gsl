@@ -242,6 +242,7 @@ function method_definition (method)
 endfunction
 
 function generate_setup_py
+    directory.create ("bindings/python")
     output "bindings/python/setup.py"
     >$(project.GENERATED_WARNING_HEADER:)
     >from setuptools import setup
