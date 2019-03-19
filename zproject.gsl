@@ -102,6 +102,7 @@ project.linkname ?= project.prefix
 project.libname ?= "lib" + project.linkname
 project.prelude ?= project.prefix + "_prelude.h"
 project.description ?= "Project"
+project.repository ?= "https://github.com/zeromq/$(project.name:c)"
 project.header ?= "$(project.name:$(project.filename_prettyprint)).$(project.header_ext)"
 
 if count (project.version) = 0
