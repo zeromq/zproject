@@ -243,28 +243,43 @@ endfunction
 
 function generate_setup_py
     directory.create ("bindings/python")
-    output "bindings/python/setup.py"
+    output "bindings/python/_project.py"
     >$(project.GENERATED_WARNING_HEADER:)
-    >from setuptools import setup
-    >
-    >setup(
-    >    name = "$(project.name:c)",
-    >    version = "$(project->version.major).$(project->version.minor).$(project->version.patch)",
-    >    license = "$(project.license)",
-    >    description = """Python bindings of: $(project.description)""",
+    >NAME        = "$(project.name:c)"
+    >VERSION     = "$(project->version.major).$(project->version.minor).$(project->version.patch)"
+    >LICENSE     = "$(project.license)"
+    >DESCRIPTION = """Python bindings of: $(project.description)"""
     if defined (project.repository)
-    >    url = "$(project.repository)",
+    >URL         = "$(project.repository)"
+    else
+    >URL         = ""
     endif
-    >    packages = ["$(project.name:c)"],
-    >    install_requires = [
-   for project.use
-       if count (project->dependencies.class, class.project = use.project) > 0
-    >        "$(use.project)",
-       endif
-   endfor
-    >    ],
-    >)
+    >PACKAGES    = ["$(project.name:c)"]
+    >REQUIRES    = [
+    for project.use
+    if count (project->dependencies.class, class.project = use.project) > 0
+    >    "$(use.project)",
+    endif
+    endfor
+    >]
     >$(project.GENERATED_WARNING_HEADER:)
+
+    if !file.exists ("bindings/python/setup.py")
+        output "bindings/python/setup.py"
+        >import os.path
+        >from _project import NAME, VERSION, LICENSE, DESCRIPTION, URL, PACKAGES, REQUIRES
+        >from setuptools import setup
+        >
+        >setup(
+        >    name = NAME,
+        >    version = VERSION,
+        >    license = LICENSE,
+        >    description = DESCRIPTION,
+        >    url = URL,
+        >    packages = PACKAGES,
+        >    install_requires = REQUIRES,
+        >)
+    endif
 endfunction
 
 function generate_binding
