@@ -70,7 +70,11 @@ function resolve_container (container)
     elsif my.container.callback
     else
         register_type ("$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
-        my.py_arg_pass = "$(my.container.python_name:)._p"
+        if my.container.by_reference
+            my.py_arg_pass = "native.ffi.new(\"$(my.container.type)_t **\", $(my.container.python_name:)._p)"
+        else
+            my.py_arg_pass = "$(my.container.python_name:)._p"
+        endif
     endif
 
     my.container.py_arg_pass ?= my.py_arg_pass
