@@ -48,6 +48,7 @@ function resolve_container (container)
     # Resolve the `py_type` for this `type`, finish tweaking semantic attributes.
     #
     if my.container.variadic
+        my.py_arg_pass = "*args"
     elsif my.container.type = "nothing"
     elsif my.container.type = "anything" | my.container.type = "sockish"
         my.py_arg_pass = "$(my.container.python_name:)._p"
@@ -71,12 +72,11 @@ function resolve_container (container)
     else
         register_type ("$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
         if my.container.by_reference
-            my.py_arg_pass = "native.ffi.new(\"$(my.container.type)_t **\", $(my.container.python_name:)._p)"
+            my.py_arg_pass = "utils.ffi.new(\"$(my.container.type)_t **\", $(my.container.python_name:)._p)"
         else
             my.py_arg_pass = "$(my.container.python_name:)._p"
         endif
     endif
-
     my.container.py_arg_pass ?= my.py_arg_pass
 endfunction
 
@@ -154,6 +154,10 @@ function python_c_method_call (class, method)
         endif
         if !argument.variadic
             my.out += (argument.py_arg_pass?"") + (last() ?? '' ? ', ')
+        elsif argument.type = "nothing" & defined( argument.va_start )
+            my.out += "*" + (argument.va_start) + "_args" + (last() ?? '' ? ', ')
+        else
+            my.out += (argument.py_arg_pass?"") + (last() ?? '' ? ', ')
         endif
     endfor
     my.out += ")"
@@ -170,6 +174,8 @@ function python_method_signature (method)
     for my.method.argument by argument.order
         if !argument.variadic
             my.out += (argument.python_name?"") + (last() ?? '' ? ', ')
+        else
+            my.out += "*" + (argument.va_start?"")+ "_args" + (last() ?? '' ? ', ')
         endif
     endfor
     my.out += "):"
