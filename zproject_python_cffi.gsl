@@ -48,6 +48,7 @@ function resolve_container (container)
     # Resolve the `py_type` for this `type`, finish tweaking semantic attributes.
     #
     if my.container.variadic
+        my.py_arg_pass = "*args"
     elsif my.container.type = "nothing"
     elsif my.container.type = "anything" | my.container.type = "sockish"
         my.py_arg_pass = "$(my.container.python_name:)._p"
@@ -71,12 +72,11 @@ function resolve_container (container)
     else
         register_type ("$(my.container.type:c,no)_t", "$(my.container.type:c,no)_p")
         if my.container.by_reference
-            my.py_arg_pass = "native.ffi.new(\"$(my.container.type)_t **\", $(my.container.python_name:)._p)"
+            my.py_arg_pass = "utils.ffi.new(\"$(my.container.type)_t **\", $(my.container.python_name:)._p)"
         else
             my.py_arg_pass = "$(my.container.python_name:)._p"
         endif
     endif
-
     my.container.py_arg_pass ?= my.py_arg_pass
 endfunction
 
@@ -91,13 +91,15 @@ function resolve_method (method)
     endif
     # Prepend python self argument to non singleton classes
     if (!my.method.singleton & count (my.method.argument, argument.name = 'self') = 0) | my.method.is_constructor
-        new argument to my.method
-            argument.python_name = 'self'
-            argument.type = 'nothing'
-            argument.py_arg_pass = 'self._p'
-            argument.variadic = 0
-            argument.order = 0
-        endnew
+        if !(my.method.is_constructor & my.method.name <> "new")
+            new argument to my.method
+                argument.python_name = 'self'
+                argument.type = 'nothing'
+                argument.py_arg_pass = 'self._p'
+                argument.variadic = 0
+                argument.order = 0
+            endnew
+        endif
     endif
     if regexp.match ("^(is|from)$", my.method.python_name) # matches keyword
         my.method.python_name += "_"
@@ -149,10 +151,14 @@ function python_c_method_call (class, method)
 
     my.out += "utils.lib.$(my.class.c_name)_$(my.method.c_name)("
     for my.method.argument by argument.order
-        if first() & my.method.is_constructor
+        if first() & my.method.is_constructor & my.method.name = "new"
             next
         endif
         if !argument.variadic
+            my.out += (argument.py_arg_pass?"") + (last() ?? '' ? ', ')
+        elsif argument.type = "nothing" & defined( argument.va_start )
+            my.out += "*" + (argument.va_start) + "_args" + (last() ?? '' ? ', ')
+        else
             my.out += (argument.py_arg_pass?"") + (last() ?? '' ? ', ')
         endif
     endfor
@@ -164,12 +170,20 @@ endfunction
 function python_method_signature (method)
     if my.method.is_constructor & my.method.name = 'new'
         my.out = "def __init__("
+    elsif my.method.is_constructor
+        my.out = "@staticmethod\n"
+        my.out += "    def $(my.method.python_name)("
+    elsif my.method.singleton = 1
+        my.out = "@staticmethod\n"
+        my.out += "    def $(my.method.python_name)("
     else
         my.out = "def $(my.method.python_name)("
     endif
     for my.method.argument by argument.order
         if !argument.variadic
             my.out += (argument.python_name?"") + (last() ?? '' ? ', ')
+        else
+            my.out += "*" + (argument.va_start?"")+ "_args" + (last() ?? '' ? ', ')
         endif
     endfor
     my.out += "):"
@@ -481,6 +495,17 @@ function generate_classes ()
                     >        self._p = utils.ffi.gc(p, lib$(project.name:c)_destructors.$(class.c_name)_destroy_py)
                 endfor
                 >
+            else
+                for constructor.argument
+                    echo (argument.name) + (argument.type)
+                endfor
+                >    $(python_method_signature (constructor):)
+                >        """
+                >        $(constructor.description:no,block)
+                >        """
+                >        return $(python_c_method_call (class, constructor))
+                >
+                # TODO: perhaps return a Python instance instead of cdata
             endif
         endfor
         for class.actor
