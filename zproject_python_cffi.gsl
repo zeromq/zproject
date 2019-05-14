@@ -168,6 +168,9 @@ endfunction
 function python_method_signature (method)
     if my.method.is_constructor & my.method.name = 'new'
         my.out = "def __init__("
+    elsif my.method.singleton = 1
+        my.out = "@staticmethod\n"
+        my.out += "    def $(my.method.python_name)("
     else
         my.out = "def $(my.method.python_name)("
     endif
