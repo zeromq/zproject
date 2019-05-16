@@ -496,9 +496,6 @@ function generate_classes ()
                 endfor
                 >
             else
-                for constructor.argument
-                    echo (argument.name) + (argument.type)
-                endfor
                 >    $(python_method_signature (constructor):)
                 >        """
                 >        $(constructor.description:no,block)
