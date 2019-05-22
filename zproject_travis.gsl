@@ -33,12 +33,43 @@ cache:
 os:
 - linux
 
-# The default distro for env:/matrix: tests and unspecified matrix: tests;
+# The default distro for env:/matrix:/* and unspecified-dist matrix:/* tests;
 # for the latter see also addons/apt/sources with the package repos in use.
 # See https://docs.travis-ci.com/user/reference/overview/ for up-to-date
 # allowed values of "dist" supported by the Travis CI service.
+.# Note: by default zproject before 2019-05-22 enforced xenial
+.# in specific build items in the matrix: below, and nothing here
+.if defined(project.travis_dist)
+.   if project.travis_dist ?= ""
+#dist:
+#- xenial
+.   else
+dist:
+- $(project.travis_dist)
+.   endif
+.else
 dist:
 - xenial
+.endif
+.#
+.if !defined(project.travis_dist) | (project.travis_dist ?= "")
+.   if project.travis_use_pkg_deps_prereqs_source ?= 1
+.# Even if our zproject user did not want a distro specified,
+.# we need something specific installed in the build env
+.       project.travis_dist = "xenial"
+.   else
+.# Have it defined() at least
+.       project.travis_dist = ""
+.   endif
+.endif
+.#
+.# TODO: Add the older "precise"/"ubuntu12" back for completness?
+.pkg_src_zeromq_dist = ""
+.if (project.travis_dist ?= "trusty")
+.    pkg_src_zeromq_dist = "pkg_src_zeromq_ubuntu14"
+.elsif (project.travis_dist ?= "xenial")
+.    pkg_src_zeromq_dist = "pkg_src_zeromq_ubuntu16"
+.endif
 
 #services:
 #- docker
@@ -171,20 +202,25 @@ pkg_deps_doctools: &pkg_deps_doctools
 pkg_deps_devtools: &pkg_deps_devtools
     - git
 
+# dist==trusty means ubuntu14
 pkg_src_zeromq_ubuntu14: &pkg_src_zeromq_ubuntu14
 - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/ ./'
   key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/Release.key'
 
+# dist==xenial means ubuntu16
 pkg_src_zeromq_ubuntu16: &pkg_src_zeromq_ubuntu16
 - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_16.04/ ./'
   key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_16.04/Release.key'
 
-# Note: refer to ubuntu16 if you use dist==xenial
 # Also note that as of early 2017, either dist==trusty or services==docker
-# is needed for C++11 support; docker envs are usually faster to start up
+# is needed for some C++11 support; docker envs are usually faster to start up
+# A newer dist==xenial completes the C++11 support with gcc-5+
 addons:
   apt:
-    sources: *pkg_src_zeromq_ubuntu16
+.if (pkg_src_zeromq_dist ?<> "")
+    sources:
+    - *$(pkg_src_zeromq_dist)
+.endif
     packages: &pkg_deps_common
     - *pkg_deps_devtools
     - *pkg_deps_prereqs
@@ -193,36 +229,57 @@ matrix:
   include:
   - env: BUILD_TYPE=default-with-docs
     os: linux
+.if (project.travis_dist ?<> "")
+    dist: $(project.travis_dist)
+.endif
     addons:
       apt:
-        sources: *pkg_src_zeromq_ubuntu16
+.if (pkg_src_zeromq_dist ?<> "")
+        sources:
+        - *$(pkg_src_zeromq_dist)
+.endif
         packages:
         - *pkg_deps_common
         - *pkg_deps_doctools
   - env: BUILD_TYPE=valgrind
     os: linux
-    dist: xenial
+.if (project.travis_dist ?<> "")
+    dist: $(project.travis_dist)
+.endif
     addons:
       apt:
-        sources: *pkg_src_zeromq_ubuntu16
+.if (pkg_src_zeromq_dist ?<> "")
+        sources:
+        - *$(pkg_src_zeromq_dist)
+.endif
         packages:
         - valgrind
         - *pkg_deps_common
   - env: BUILD_TYPE=default ADDRESS_SANITIZER=enabled
     os: linux
-    dist: xenial
+.if (project.travis_dist ?<> "")
+    dist: $(project.travis_dist)
+.endif
     addons:
       apt:
-        sources: *pkg_src_zeromq_ubuntu16
+.if (pkg_src_zeromq_dist ?<> "")
+        sources:
+        - *$(pkg_src_zeromq_dist)
+.endif
         packages:
         - *pkg_deps_common
 .if defined(project.travis_check_zproject) & !(project.travis_check_zproject ?= 0)
   - env: BUILD_TYPE=check_zproject
     os: linux
-    dist: xenial
+.   if (project.travis_dist ?<> "")
+    dist: $(project.travis_dist)
+.   endif
     addons:
       apt:
-        sources: *pkg_src_zeromq_ubuntu16
+.   if (pkg_src_zeromq_dist ?<> "")
+        sources:
+        - *$(pkg_src_zeromq_dist)
+.   endif
         packages:
         - *pkg_deps_devtools
         - *pkg_deps_zproject
