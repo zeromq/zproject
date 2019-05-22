@@ -227,6 +227,9 @@ matrix:
         - *pkg_deps_devtools
         - *pkg_deps_zproject
 .endif
+.if (defined (project.travis_shadow_clang) & !(project.travis_shadow_clang ?= 0)) | (defined (project.travis_shadow_gcc) & !(project.travis_shadow_gcc ?= 0))
+# Shadow-compilation setups below inspired by https://docs.travis-ci.com/user/languages/cpp/
+.endif
 .if defined (project.travis_shadow_clang) & !(project.travis_shadow_clang ?= 0)
   - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
     os: linux
