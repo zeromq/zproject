@@ -219,14 +219,28 @@ pkg_deps_common: &pkg_deps_common
 # Also note that as of early 2017, either dist==trusty or services==docker
 # is needed for some C++11 support; docker envs are usually faster to start up
 # A newer dist==xenial completes the C++11 support with gcc-5+
+.if defined(use_cxx) & defined(use_cxx_gcc_4_9)
+# Note that with current implementation of zproject use-cxx-gcc-4-9 option,
+# this effectively hardcodes the use of specifically 4.9, not allowing for
+# "4.9 or newer".
+.endif
 addons:
   apt:
-.if (pkg_src_zeromq_dist ?<> "")
+.if (pkg_src_zeromq_dist ?<> "") | (defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0))
     sources:
+.endif
+.if (pkg_src_zeromq_dist ?<> "")
     - *$(pkg_src_zeromq_dist)
+.endif
+.if defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0)
+    - ubuntu-toolchain-r-test
 .endif
     packages:
     - *pkg_deps_common
+.if defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0)
+    - gcc-4.9
+    - g++-4.9
+.endif
 
 matrix:
   include:
@@ -237,13 +251,22 @@ matrix:
 .endif
     addons:
       apt:
-.if (pkg_src_zeromq_dist ?<> "")
+.if (pkg_src_zeromq_dist ?<> "") | (defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0))
         sources:
+.endif
+.if (pkg_src_zeromq_dist ?<> "")
         - *$(pkg_src_zeromq_dist)
+.endif
+.if defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0)
+        - ubuntu-toolchain-r-test
 .endif
         packages:
         - *pkg_deps_common
         - *pkg_deps_doctools
+.if defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0)
+        - gcc-4.9
+        - g++-4.9
+.endif
   - env: BUILD_TYPE=valgrind
     os: linux
 .if (project.travis_dist ?<> "")
@@ -251,13 +274,22 @@ matrix:
 .endif
     addons:
       apt:
-.if (pkg_src_zeromq_dist ?<> "")
+.if (pkg_src_zeromq_dist ?<> "") | (defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0))
         sources:
+.endif
+.if (pkg_src_zeromq_dist ?<> "")
         - *$(pkg_src_zeromq_dist)
+.endif
+.if defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0)
+        - ubuntu-toolchain-r-test
 .endif
         packages:
         - valgrind
         - *pkg_deps_common
+.if defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0)
+        - gcc-4.9
+        - g++-4.9
+.endif
   - env: BUILD_TYPE=default ADDRESS_SANITIZER=enabled
     os: linux
 .if (project.travis_dist ?<> "")
@@ -265,12 +297,21 @@ matrix:
 .endif
     addons:
       apt:
-.if (pkg_src_zeromq_dist ?<> "")
+.if (pkg_src_zeromq_dist ?<> "") | (defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0))
         sources:
+.endif
+.if (pkg_src_zeromq_dist ?<> "")
         - *$(pkg_src_zeromq_dist)
+.endif
+.if defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0)
+        - ubuntu-toolchain-r-test
 .endif
         packages:
         - *pkg_deps_common
+.if defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0)
+        - gcc-4.9
+        - g++-4.9
+.endif
 .if defined(project.travis_check_zproject) & !(project.travis_check_zproject ?= 0)
   - env: BUILD_TYPE=check_zproject
     os: linux
@@ -509,6 +550,9 @@ before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "android" ] ; then brew install binutils ; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "valgrind" ] ; then brew install valgrind ; fi
 - if [ -n "\${MATRIX_EVAL}" ] ; then eval \${MATRIX_EVAL} ; fi
+.if defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0)
+- if [ "$CXX" == "g++" ] ; then export CXX="g++-4.9" CC="gcc-4.9" ; fi
+.endif
 
 # Hand off to generated script for each BUILD_TYPE
 script: ./ci_build.sh
