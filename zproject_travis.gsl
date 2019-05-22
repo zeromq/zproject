@@ -394,22 +394,24 @@ matrix:
         - clang-3.8
 .endif
 .if defined (project.travis_shadow_gcc) & !(project.travis_shadow_gcc ?= 0)
+.   if !(defined(use_cxx_gcc_4_9)) | !(use_cxx_gcc_4_9 ?= 1)
   - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
     os: linux
-.if (project.travis_dist ?<> "")
+.       if (project.travis_dist ?<> "")
     dist: $(project.travis_dist)
-.endif
+.       endif
     addons:
       apt:
         sources:
         - ubuntu-toolchain-r-test
-.if (pkg_src_zeromq_dist ?<> "")
+.       if (pkg_src_zeromq_dist ?<> "")
         - *$(pkg_src_zeromq_dist)
-.endif
+.       endif
         packages:
         - *pkg_deps_common
         - g++-4.9
         - gcc-4.9
+.   endif
   - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
     os: linux
 .if (project.travis_dist ?<> "")
@@ -500,7 +502,9 @@ matrix:
 .   endif
 .   if project.travis_shadow_gcc ?= 2
 .   echo "TRAVIS: Shadow GCC versions: allow-fail: true"
+.       if !(use_cxx_gcc_4_9 ?= 1)
   - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+.       endif
   - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
   - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
   - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
