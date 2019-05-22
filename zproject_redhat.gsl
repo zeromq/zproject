@@ -84,7 +84,15 @@ BuildRequires:  systemd
 .endif
 BuildRequires:  xmlto
 .if project.use_cxx
+.   if defined(project.use_cxx_gcc_4_9) & !(project.use_cxx_gcc_4_9 ?= 0)
+# Note that with current implementation of zproject use-cxx-gcc-4-9 option,
+# this effectively hardcodes the use of specifically 4.9, not allowing for
+# "4.9 or newer".
+BuildRequires:  devtoolset-3-gcc devtoolset-3-gcc-c++
+BuildRequires:  gcc-c++ >= 4.9.0
+.   else
 BuildRequires:  gcc-c++
+.   endif
 .endif
 .for project.use
 .if defined(use.redhat_name)
