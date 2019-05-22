@@ -142,7 +142,7 @@ Model is described in `zproject_known_projects.xml` file:
 
 ### Optional : Class filename configuration
 
-Exemple:
+Example:
 ```classfilename
 <classfilename use-cxx = "true" pkgincludedir = "false" keep-tree = "true" pretty-print = "no" source-extension = "cpp" header-extension = "hpp" />
 ```
@@ -158,7 +158,7 @@ Default value :
 * pretty-print : substitute_non_alpha_to_make_c_identifier (c option)
 * header-extension : h
 * source-extension : c (unless a cc file is present, then cc)
-* use-cxx : true if a cc file is present false otherwhise
+* use-cxx : true if a cc file is present, false otherwhise
 
 ### Targets
 
