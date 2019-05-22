@@ -227,6 +227,134 @@ matrix:
         - *pkg_deps_devtools
         - *pkg_deps_zproject
 .endif
+.if defined (project.travis_shadow_clang) & !(project.travis_shadow_clang ?= 0)
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+    os: linux
+.if (project.travis_dist ?<> "")
+    dist: $(project.travis_dist)
+.endif
+    addons:
+      apt:
+        sources:
+        - llvm-toolchain-trusty-5.0
+.if (pkg_src_zeromq_dist ?<> "")
+        - *$(pkg_src_zeromq_dist)
+.endif
+        packages:
+        - *pkg_deps_common
+        - clang-5.0
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+    os: linux
+.if (project.travis_dist ?<> "")
+    dist: $(project.travis_dist)
+.endif
+    addons:
+      apt:
+        sources:
+        - llvm-toolchain-trusty-4.0
+.if (pkg_src_zeromq_dist ?<> "")
+        - *$(pkg_src_zeromq_dist)
+.endif
+        packages:
+        - *pkg_deps_common
+        - clang-4.0
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+    os: linux
+.if (project.travis_dist ?<> "")
+    dist: $(project.travis_dist)
+.endif
+    addons:
+      apt:
+        sources:
+        - llvm-toolchain-trusty-3.9
+.if (pkg_src_zeromq_dist ?<> "")
+        - *$(pkg_src_zeromq_dist)
+.endif
+        packages:
+        - *pkg_deps_common
+        - clang-3.9
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
+    os: linux
+.if (project.travis_dist ?<> "")
+    dist: $(project.travis_dist)
+.endif
+    addons:
+      apt:
+        sources:
+        - llvm-toolchain-trusty-3.8
+.if (pkg_src_zeromq_dist ?<> "")
+        - *$(pkg_src_zeromq_dist)
+.endif
+        packages:
+        - *pkg_deps_common
+        - clang-3.8
+.endif
+.if defined (project.travis_shadow_gcc) & !(project.travis_shadow_gcc ?= 0)
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+    os: linux
+.if (project.travis_dist ?<> "")
+    dist: $(project.travis_dist)
+.endif
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+.if (pkg_src_zeromq_dist ?<> "")
+        - *$(pkg_src_zeromq_dist)
+.endif
+        packages:
+        - *pkg_deps_common
+        - g++-4.9
+        - gcc-4.9
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+    os: linux
+.if (project.travis_dist ?<> "")
+    dist: $(project.travis_dist)
+.endif
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+.if (pkg_src_zeromq_dist ?<> "")
+        - *$(pkg_src_zeromq_dist)
+.endif
+        packages:
+        - *pkg_deps_common
+        - g++-5
+        - gcc-5
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+    os: linux
+.if (project.travis_dist ?<> "")
+    dist: $(project.travis_dist)
+.endif
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+.if (pkg_src_zeromq_dist ?<> "")
+        - *$(pkg_src_zeromq_dist)
+.endif
+        packages:
+        - *pkg_deps_common
+        - g++-6
+        - gcc-6
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    os: linux
+.if (project.travis_dist ?<> "")
+    dist: $(project.travis_dist)
+.endif
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+.if (pkg_src_zeromq_dist ?<> "")
+        - *$(pkg_src_zeromq_dist)
+.endif
+        packages:
+        - *pkg_deps_common
+        - g++-7
+        - gcc-7
+.endif
 .if project.travis_clangformat_implem ?= "autotools" | ( !defined(project.travis_clangformat_implem) & project.travis_use_cmake ?= 0 )
 .   echo "TRAVIS: CLANG-FORMAT: implementation: autotools"
 ### Note: we don't use CMake
@@ -255,7 +383,7 @@ matrix:
 #autotools#\
 .endif
         - *pkg_deps_prereqs
-.if project.travis_clangformat_allow_failures ?= 1 | project.travis_distcheck ?= 2
+.if project.travis_clangformat_allow_failures ?= 1 | project.travis_distcheck ?= 2 | project.travis_shadow_gcc ?=2 | project.travis_shadow_clang ?= 2
 # Note: "env" lines below must exactly describe a matrix option defined above
   allow_failures:
 .   if project.travis_distcheck ?= 2
@@ -265,6 +393,20 @@ matrix:
 .   if project.travis_check_zproject ?= 2
 .   echo "TRAVIS: CHECK_ZPROJECT: allow-fail: true"
   - env: BUILD_TYPE=check_zproject
+.   endif
+.   if project.travis_shadow_gcc ?= 2
+.   echo "TRAVIS: Shadow GCC versions: allow-fail: true"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+.   endif
+.   if project.travis_shadow_clang ?= 2
+.   echo "TRAVIS: Shadow CLANG versions: allow-fail: true"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
 .   endif
 .   if project.travis_clangformat_allow_failures ?= 1
 .   echo "TRAVIS: CLANG-FORMAT: allow-fail: true"
@@ -303,6 +445,7 @@ matrix:
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "android" ] ; then brew install binutils ; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "valgrind" ] ; then brew install valgrind ; fi
+- if [ -n "\${MATRIX_EVAL}" ] ; then eval \${MATRIX_EVAL} ; fi
 
 # Hand off to generated script for each BUILD_TYPE
 script: ./ci_build.sh

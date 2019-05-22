@@ -206,6 +206,8 @@ zproject's `project.xml` contains an extensive description of the available conf
             <option name="clangformat_implem" value="cmake|autotools" /> will pick one of two implems of the clang-format test in Travis CI (cmake is default and faster if available, since autotools needs to configure first)
             <option name="check_abi_compliance" value="0" /> "1" will compare the currently tested commit's ABI to the one in a "latest_release" branch or tag, using packaged prerequisites. Due to these limitations, the option is off by default.
             <option name="check_zproject" value="0" /> "1" will regenerate the zproject of the tested commit, and will verify that nothing changed, "2" will enable it as a special testcase allowed to fail. Many projects do customize their originally generated codebase, so to avoid surprises this option is off by default.
+            <option name="shadow_gcc" value="0" /> "1" will enable builds with warnings configured as fatal in additional recent versions of GCC, and "2" will make failures in these cases non-fatal so you can take time to modernize your code with modern best practices in mind. This is off "0" by default.
+            <option name="shadow_clang" value="0" /> "1" will enable builds with warnings configured as fatal in additional recent versions of CLANG, and "2" will make failures in these cases non-fatal so you can take time to modernize your code with modern best practices in mind. This is off "0" by default.
         vs2008              Microsoft Visual Studio 2008
         vs2010              Microsoft Visual Studio 2010
         vs2012              Microsoft Visual Studio 2012
