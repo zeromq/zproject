@@ -336,11 +336,17 @@ matrix:
     os: linux
 .       if (project.travis_dist ?<> "")
     dist: $(project.travis_dist)
+.       else
+    dist: xenial
 .       endif
     addons:
       apt:
         sources:
-        - llvm-toolchain-trusty-5.0
+.       if (project.travis_dist ?<> "")
+        - llvm-toolchain-$(project.travis_dist)-5.0
+.       else
+        - llvm-toolchain-xenial-5.0
+.       endif
 .       if (pkg_src_zeromq_dist ?<> "")
         - *$(pkg_src_zeromq_dist)
 .       endif
@@ -351,11 +357,17 @@ matrix:
     os: linux
 .       if (project.travis_dist ?<> "")
     dist: $(project.travis_dist)
+.       else
+    dist: xenial
 .       endif
     addons:
       apt:
         sources:
-        - llvm-toolchain-trusty-4.0
+.       if (project.travis_dist ?<> "")
+        - llvm-toolchain-$(project.travis_dist)-4.0
+.       else
+        - llvm-toolchain-xenial-4.0
+.       endif
 .       if (pkg_src_zeromq_dist ?<> "")
         - *$(pkg_src_zeromq_dist)
 .       endif
@@ -366,11 +378,17 @@ matrix:
     os: linux
 .       if (project.travis_dist ?<> "")
     dist: $(project.travis_dist)
+.       else
+    dist: xenial
 .       endif
     addons:
       apt:
         sources:
-        - llvm-toolchain-trusty-3.9
+.       if (project.travis_dist ?<> "")
+        - llvm-toolchain-$(project.travis_dist)-3.9
+.       else
+        - llvm-toolchain-xenial-3.9
+.       endif
 .       if (pkg_src_zeromq_dist ?<> "")
         - *$(pkg_src_zeromq_dist)
 .       endif
@@ -381,11 +399,17 @@ matrix:
     os: linux
 .       if (project.travis_dist ?<> "")
     dist: $(project.travis_dist)
+.       else
+    dist: xenial
 .       endif
     addons:
       apt:
         sources:
-        - llvm-toolchain-trusty-3.8
+.       if (project.travis_dist ?<> "")
+        - llvm-toolchain-$(project.travis_dist)-3.8
+.       else
+        - llvm-toolchain-xenial-3.8
+.       endif
 .       if (pkg_src_zeromq_dist ?<> "")
         - *$(pkg_src_zeromq_dist)
 .       endif
