@@ -68,6 +68,19 @@ function resolve_classfilename_option()
             endif
         endif
 
+        # Some but not all C++ projects require the fuller scope of C++11
+        # and do not compile under gcc-4.8 which is Travis default in "trusty".
+        # This optional toggle allows to require a newer gcc-4.9 for them.
+        # Note that with current implementation, it effectively hardcodes
+        # the use of specifically 4.9, not allowing for "4.9 or newer".
+        if defined (classfilename.use\-cxx\-gcc\-4\-9)
+            if classfilename.use\-cxx\-gcc\-4\-9 ?= "true"
+                use_cxx_gcc_4_9 = 1
+                use_cxx = 1
+            elsif classfilename.use\-cxx\-gcc\-4\-9 ?= "false"
+                use_cxx_gcc_4_9 = 0
+            endif
+        endif
 
         if defined (classfilename.keep\-tree)
             if classfilename.keep\-tree ?= "true"
@@ -93,6 +106,7 @@ project.filename_prettyprint = "c"
 project.header_ext = "h"
 project.source_ext = "c"
 project.use_cxx = project_use_cxx ()
+project.use_cxx_gcc_4_9 = 0
 project.keep_tree = 0
 project.pkgincludedir = 0
 resolve_classfilename_option()
