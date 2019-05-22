@@ -197,7 +197,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         redhat              Packaging for RedHat
         ruby                Ruby binding
         travis              Travis CI scripts
-            <option name="dist" value="trusty" /> Select a Linux distribution to use by default on Travis CI, also impacts the OBS-served repository of ZMQ-family packages to use (if not building from source all the time per use_pkg_deps_prereqs_source below). By default the choice is made by Travis CI platform.
+            <option name="dist" value="trusty" /> Select a Linux distribution to use by default on Travis CI, also impacts the OBS-served repository of ZMQ-family packages to use (if not building from source all the time per use_pkg_deps_prereqs_source below). By default it would be "xenial" as of now.
             <option name="distcheck" value="0" /> "0" will disable run of make distcheck in Travis CI, "2" will enable it as a special testcase allowed to fail (default: 1 to enable and require to pass)
             <option name="use_pkg_deps_prereqs_source" value="0" /> "0" will disable use of use_pkg_deps_prereqs_source list in Travis CI and so cause rebuild of everything from scratch (default: 1, recently packaged prereqs must exist then)
             <option name="use_cmake" value="0" /> "0" will disable use of CMake recipes in Travis CI (default: 1)
