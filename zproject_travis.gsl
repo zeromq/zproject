@@ -212,6 +212,10 @@ pkg_src_zeromq_ubuntu16: &pkg_src_zeromq_ubuntu16
 - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_16.04/ ./'
   key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_16.04/Release.key'
 
+pkg_deps_common: &pkg_deps_common
+- *pkg_deps_devtools
+- *pkg_deps_prereqs
+
 # Also note that as of early 2017, either dist==trusty or services==docker
 # is needed for some C++11 support; docker envs are usually faster to start up
 # A newer dist==xenial completes the C++11 support with gcc-5+
@@ -221,9 +225,8 @@ addons:
     sources:
     - *$(pkg_src_zeromq_dist)
 .endif
-    packages: &pkg_deps_common
-    - *pkg_deps_devtools
-    - *pkg_deps_prereqs
+    packages:
+    - *pkg_deps_common
 
 matrix:
   include:
