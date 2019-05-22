@@ -144,10 +144,11 @@ Model is described in `zproject_known_projects.xml` file:
 
 Example:
 ```classfilename
-<classfilename use-cxx = "true" pkgincludedir = "false" keep-tree = "true" pretty-print = "no" source-extension = "cpp" header-extension = "hpp" />
+<classfilename use-cxx = "true" use-cxx-gcc-4-9 = "true" pkgincludedir = "false" keep-tree = "true" pretty-print = "no" source-extension = "cpp" header-extension = "hpp" />
 ```
 
 * use-cxx will force usage (or not) of c++.
+* use-cxx-gcc-4-9 will enable "use-cxx" AND enforce the use of gcc-4.9 on Travis CI for nearly complete C++11 language support that is lacking in default gcc-4.8 there.
 * keep-tree will keep the include tree structure on the install (as opposed to flat delivery of include files basenames into the single-level target directory), must be used with a conservative name format (ex: pretty-print = "no"). Currently only supported with autotool.
 * pkgincludedir option chooses whether headers of this project should be dumped into the common system includedir (legacy default), or into an includedir/projname subdirectory?. Currently only supported with autotool.
 * pretty-print define the type of class name format change in order to generate the filename. It uses the pretty-print option of gsl (see Substituting Symbols and Expressions on https://github.com/zeromq/gsl#expressions for more information).
@@ -159,6 +160,7 @@ Default value :
 * header-extension : h
 * source-extension : c (unless a cc file is present, then cc)
 * use-cxx : true if a cc file is present, false otherwhise
+* use-cxx-gcc-4-9 : false by default, older GCC versions still suffice for many C++11 features
 
 ### Targets
 
