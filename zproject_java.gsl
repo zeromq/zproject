@@ -181,7 +181,17 @@ task initCMake(type: Exec, dependsOn: 'generateJniHeaders') {
 task buildNative(type: Exec, dependsOn: 'initCMake') {
     commandLine "make"
 }
+
+task copyLibs(type: Copy) {
+    from "/usr/lib/$(project.libname).so", "/usr/local/lib/$(project.libname).so", "/tmp/lib/$(project.libname).so",
+.   for project.use
+         "/usr/lib/$(use.libname).so", "/usr/local/lib/$(use.libname).so", "/tmp/lib/$(use.libname).so"$(last ()?? ""? ",")
+.   endfor
+    into "."
+}
+
 jar.dependsOn buildNative
+jar.dependsOn copyLibs
 test.dependsOn buildNative
 
 jar {
@@ -259,7 +269,7 @@ bintray {
 
 clean.doFirst {
     delete "${rootDir}/CMakeCache.txt"
-    delete "${rootDir}/libczmqjni.so"
+    delete fileTree("${rootDir}") { include "*.so" }
 }
 .
 .output "$(topdir)/README.md"
@@ -769,6 +779,14 @@ implements AutoCloseable\
         if (System.getProperty("java.vm.vendor").contains("Android")) {
             System.loadLibrary("$(project.prefix:c)jni");
         } else {
+            try {
+.       for project.use
+                NativeLoader.loadLibrary("$(use.prefix:c)");
+.       endfor
+                NativeLoader.loadLibrary("$(project.prefix:c)");
+            } catch (Exception e) {
+                System.err.println("[WARN] " + e.getMessage() +" from jar. Assuming it is installed on the system.");
+            }
             try {
                 NativeLoader.loadLibrary("$(project.prefix:c)jni");
             } catch (Exception e) {
