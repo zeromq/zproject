@@ -763,6 +763,7 @@ $(project.GENERATED_WARNING_HEADER:)
 */
 package org.zeromq.$(project.prefix:c);
 
+import java.util.stream.Stream;
 import org.scijava.nativelib.NativeLoader;
 .   for project.use
 .       if count (project->dependencies.class, class.project = use.project) > 0
@@ -779,14 +780,19 @@ implements AutoCloseable\
         if (System.getProperty("java.vm.vendor").contains("Android")) {
             System.loadLibrary("$(project.prefix:c)jni");
         } else {
-            try {
+            Stream.of(
 .       for project.use
-                NativeLoader.loadLibrary("$(use.prefix:c)");
+                "$(use.prefix:c)",
 .       endfor
-                NativeLoader.loadLibrary("$(project.prefix:c)");
-            } catch (Exception e) {
-                System.err.println("[WARN] " + e.getMessage() +" from jar. Assuming it is installed on the system.");
-            }
+                "$(project.prefix:c)"
+            )
+            .forEach(lib -> {
+                try {
+                    NativeLoader.loadLibrary(lib);
+                } catch (Exception e) {
+                    System.err.println("[WARN] " + e.getMessage() +" from jar. Assuming it is installed on the system.");
+                }
+            });
             try {
                 NativeLoader.loadLibrary("$(project.prefix:c)jni");
             } catch (Exception e) {
