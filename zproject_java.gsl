@@ -170,7 +170,10 @@ task generateJniHeaders(type: Exec, dependsOn: 'classes') {
             'src/main/java/$(name_path)/$(name:pascal).java'$(last ()?? ""? ",")
 .   endfor
     ]
-    commandLine("javac", "-h", "$nativeIncludes", "-classpath", "$classpath:$appclasspath", *jniClasses)
+    def utilityClasses = [
+            'src/main/java/org/zeromq/tools/ZmqNativeLoader.java'
+    ]
+    commandLine("javac", "-h", "$nativeIncludes", "-classpath", "$classpath:$appclasspath", *jniClasses, *utilityClasses)
 }
 tasks.withType(Test) {
     systemProperty "java.library.path", "/usr/lib:/usr/local/lib:$projectDir"
@@ -755,6 +758,37 @@ popd
 .endif
 .endmacro
 
+.macro generate_native_loader ()
+.   directory.create ("$(topdir)/src/main/java/org/zeromq/tools")
+.   output "$(topdir)/src/main/java/org/zeromq/tools/ZmqNativeLoader.java"
+package org.zeromq.tools;
+
+import java.util.Set;
+import java.util.HashSet;
+import org.scijava.nativelib.NativeLoader;
+
+public class ZmqNativeLoader {
+
+    private static final Set<String> loadedLibraries = new HashSet<>();
+
+    public static void loadLibrary(String libname) {
+        if (!loadedLibraries.contains(libname)) {
+            if (System.getProperty("java.vm.vendor").contains("Android")) {
+                System.loadLibrary(libname);
+            } else {
+                try {
+                    NativeLoader.loadLibrary(libname);
+                } catch (Exception e) {
+                    System.err.println("[WARN] " + e.getMessage() +" from jar. Assuming it is installed on the system.");
+                }
+            }
+            loadedLibraries.add(libname);
+        }
+    }
+
+}
+.endmacro
+
 .macro generate_class_in_java (class)
 .   directory.create ("$(topdir)/src/main/java/$(name_path)")
 .   output "$(topdir)/src/main/java/$(name_path)/$(my.class.name:pascal).java"
@@ -764,7 +798,7 @@ $(project.GENERATED_WARNING_HEADER:)
 package org.zeromq.$(project.prefix:c);
 
 import java.util.stream.Stream;
-import org.scijava.nativelib.NativeLoader;
+import org.zeromq.tools.ZmqNativeLoader;
 .   for project.use
 .       if count (project->dependencies.class, class.project = use.project) > 0
 import org.zeromq.$(use.project).*;
@@ -777,10 +811,7 @@ implements AutoCloseable\
 .   endif
 {
     static {
-        if (System.getProperty("java.vm.vendor").contains("Android")) {
-            System.loadLibrary("$(project.prefix:c)jni");
-        } else {
-            Stream.of(
+        Stream.of(
 .       for project.use
                 "$(use.prefix:c)",
 .       endfor
@@ -788,16 +819,15 @@ implements AutoCloseable\
             )
             .forEach(lib -> {
                 try {
-                    NativeLoader.loadLibrary(lib);
+                    ZmqNativeLoader.loadLibrary(lib);
                 } catch (Exception e) {
                     System.err.println("[WARN] " + e.getMessage() +" from jar. Assuming it is installed on the system.");
                 }
             });
-            try {
-                NativeLoader.loadLibrary("$(project.prefix:c)jni");
-            } catch (Exception e) {
-                System.exit (-1);
-            }
+        try {
+            ZmqNativeLoader.loadLibrary("$(project.prefix:c)jni");
+        } catch (Exception e) {
+            System.exit (-1);
         }
     }
     public long self;
@@ -990,6 +1020,7 @@ public class $(my.class.name:pascal)Test {
     project.topdir = "bindings/jni"
     directory.create (topdir)
 
+    generate_native_loader ()
     for project.class
         resolve_class (class)
         if class.okay
