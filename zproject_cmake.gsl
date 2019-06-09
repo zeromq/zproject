@@ -148,10 +148,12 @@ set(OPTIONAL_LIBRARIES_STATIC)
 ########################################################################
 .if use.optional = 0
 find_package($(use.project) REQUIRED)
+IF ($(USE.PROJECT)_FOUND)
 .else
 find_package($(use.project))
+option($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) "Build czmq with $(use.project)" ${$(USE.PROJECT)_FOUND})
+IF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(USE.PROJECT)_FOUND)
 .endif
-IF ($(USE.PROJECT)_FOUND)
 .if use.libname ?<> ""
     include_directories(${$(USE.PROJECT)_INCLUDE_DIRS})
     list(APPEND MORE_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
@@ -187,8 +189,10 @@ IF ($(USE.PROJECT)_FOUND)
 .if use.optional = 0
 ELSE ($(USE.PROJECT)_FOUND)
     message( FATAL_ERROR "$(use.project) not found." )
-.endif
 ENDIF ($(USE.PROJECT)_FOUND)
+.else
+ENDIF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(USE.PROJECT)_FOUND)
+.endif
 .endfor
 
 ########################################################################
@@ -661,7 +665,7 @@ find_path (
     HINTS ${PC_$(USE.PROJECT)_INCLUDE_HINTS}
 )
 
-.       if use.libname = "libzmq"
+.       if use.libname ?= "libzmq"
 if (MSVC)
     # libzmq dll/lib built with MSVC is named using the Boost convention.
     # https://github.com/zeromq/czmq/issues/577
@@ -683,9 +687,6 @@ if (MSVC)
 
     set(_zmq_version ${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH})
 
-    set(_zmq_debug_names)
-    set(_zmq_release_names)
-
     set(_zmq_debug_names
         "libzmq${MSVC_TOOLSET}-mt-gd-${_zmq_version}" # Debug, BUILD_SHARED
         "libzmq${MSVC_TOOLSET}-mt-sgd-${_zmq_version}" # Debug, BUILD_STATIC
@@ -700,37 +701,33 @@ if (MSVC)
         "libzmq-mt-s-${_zmq_version}" # Release|RelWithDebInfo|MinSizeRel, BUILD_STATIC
     )
 
-    find_library (ZeroMQ_LIBRARY_DEBUG
+    find_library (LIBZMQ_LIBRARY_DEBUG
         NAMES ${_zmq_debug_names}
     )
 
-    find_library (ZeroMQ_LIBRARY_RELEASE
+    find_library (LIBZMQ_LIBRARY_RELEASE
         NAMES ${_zmq_release_names}
     )
 
-    if (ZeroMQ_LIBRARY_RELEASE AND ZeroMQ_LIBRARY_DEBUG)
-        set(LIBZMQ_LIBRARIES
-            debug ${ZeroMQ_LIBRARY_DEBUG}
-            optimized ${ZeroMQ_LIBRARY_RELEASE}
-        )
-    elseif (ZeroMQ_LIBRARY_RELEASE)
-        set(LIBZMQ_LIBRARIES ${ZeroMQ_LIBRARY_RELEASE})
-    elseif (ZeroMQ_LIBRARY_DEBUG)
-        set(LIBZMQ_LIBRARIES ${ZeroMQ_LIBRARY_DEBUG})
-    endif ()
+    include(SelectLibraryConfigurations)
+    select_library_configurations(LIBZMQ)
 endif ()
 
 if (NOT LIBZMQ_LIBRARIES)
     find_library (
         LIBZMQ_LIBRARIES
-        NAMES zmq libzmq
+        NAMES libzmq zmq
         HINTS ${PC_LIBZMQ_LIBRARY_HINTS}
     )
 endif ()
 .       else
 find_library (
     $(USE.PROJECT)_LIBRARIES
+.           if use.libname ?<> use.linkname
+    NAMES $(use.libname) $(use.linkname)
+.           else
     NAMES $(use.linkname)
+.           endif
     HINTS ${PC_$(USE.PROJECT)_LIBRARY_HINTS}
 )
 .       endif
