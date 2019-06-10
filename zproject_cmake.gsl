@@ -19,7 +19,7 @@ $(project.GENERATED_WARNING_HEADER:)
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 2.8.12)
 project($(project.name:c))
 .if project.use_cxx
 enable_language(CXX)
@@ -151,7 +151,7 @@ find_package($(use.project) REQUIRED)
 IF ($(USE.PROJECT)_FOUND)
 .else
 find_package($(use.project))
-option($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) "Build czmq with $(use.project)" ${$(USE.PROJECT)_FOUND})
+option($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) "Build $(project.linkname) with $(use.project)" ${$(USE.PROJECT)_FOUND})
 IF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(USE.PROJECT)_FOUND)
 .endif
 .if use.libname ?<> ""
