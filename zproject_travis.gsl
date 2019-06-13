@@ -219,7 +219,7 @@ pkg_deps_common: &pkg_deps_common
 # Also note that as of early 2017, either dist==trusty or services==docker
 # is needed for some C++11 support; docker envs are usually faster to start up
 # A newer dist==xenial completes the C++11 support with gcc-5+
-.if defined(use_cxx) & defined(use_cxx_gcc_4_9)
+.if defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0)
 # Note that with current implementation of zproject use-cxx-gcc-4-9 option,
 # this effectively hardcodes the use of specifically 4.9, not allowing for
 # "4.9 or newer".
