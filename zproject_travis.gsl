@@ -584,10 +584,10 @@ matrix:
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "android" ] ; then brew install binutils ; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "valgrind" ] ; then brew install valgrind ; fi
-- if [ -n "\${MATRIX_EVAL}" ] ; then eval \${MATRIX_EVAL} ; fi
 .if defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0)
 - if [ "$CXX" == "g++" ] ; then export CXX="g++-4.9" CC="gcc-4.9" ; fi
 .endif
+- if [ -n "\${MATRIX_EVAL}" ] ; then eval \${MATRIX_EVAL} ; fi
 
 # Hand off to generated script for each BUILD_TYPE
 script: ./ci_build.sh
