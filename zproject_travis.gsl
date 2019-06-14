@@ -202,14 +202,17 @@ pkg_deps_doctools: &pkg_deps_doctools
 pkg_deps_devtools: &pkg_deps_devtools
     - git
 
+# NOTE: Unlike earlier zproject versions, the pkg_src* objects below do not
+# start with a dash, due to peculiarities of YAML alias dereferencing in Travis
+
 # dist==trusty means ubuntu14
 pkg_src_zeromq_ubuntu14: &pkg_src_zeromq_ubuntu14
-- sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/ ./'
+  sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/ ./'
   key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_14.04/Release.key'
 
 # dist==xenial means ubuntu16
 pkg_src_zeromq_ubuntu16: &pkg_src_zeromq_ubuntu16
-- sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_16.04/ ./'
+  sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_16.04/ ./'
   key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-draft/xUbuntu_16.04/Release.key'
 
 pkg_deps_common: &pkg_deps_common
@@ -219,7 +222,7 @@ pkg_deps_common: &pkg_deps_common
 # Also note that as of early 2017, either dist==trusty or services==docker
 # is needed for some C++11 support; docker envs are usually faster to start up
 # A newer dist==xenial completes the C++11 support with gcc-5+
-.if defined(use_cxx) & defined(use_cxx_gcc_4_9)
+.if defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0)
 # Note that with current implementation of zproject use-cxx-gcc-4-9 option,
 # this effectively hardcodes the use of specifically 4.9, not allowing for
 # "4.9 or newer".
@@ -332,7 +335,7 @@ matrix:
 # Shadow-compilation setups below inspired by https://docs.travis-ci.com/user/languages/cpp/
 .endif
 .   if defined (project.travis_shadow_clang) & !(project.travis_shadow_clang ?= 0)
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0 && export CC CXX"
     os: linux
 .       if (project.travis_dist ?<> "")
     dist: $(project.travis_dist)
@@ -353,7 +356,7 @@ matrix:
         packages:
         - *pkg_deps_common
         - clang-5.0
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0 && export CC CXX"
     os: linux
 .       if (project.travis_dist ?<> "")
     dist: $(project.travis_dist)
@@ -374,7 +377,7 @@ matrix:
         packages:
         - *pkg_deps_common
         - clang-4.0
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9 && export CC CXX"
     os: linux
 .       if (project.travis_dist ?<> "")
     dist: $(project.travis_dist)
@@ -395,7 +398,7 @@ matrix:
         packages:
         - *pkg_deps_common
         - clang-3.9
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8 && export CC CXX"
     os: linux
 .       if (project.travis_dist ?<> "")
     dist: $(project.travis_dist)
@@ -419,7 +422,7 @@ matrix:
 .endif
 .if defined (project.travis_shadow_gcc) & !(project.travis_shadow_gcc ?= 0)
 .   if !(defined(use_cxx_gcc_4_9)) | !(use_cxx_gcc_4_9 ?= 1)
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9 && export CC CXX"
     os: linux
 .       if (project.travis_dist ?<> "")
     dist: $(project.travis_dist)
@@ -437,7 +440,7 @@ matrix:
         - gcc-4.9
 .   endif
 .   if !defined(project.travis_dist) | (project.travis_dist ?<> "xenial")
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-5 && CXX=g++-5 && export CC CXX"
     os: linux
 .       if (project.travis_dist ?<> "")
     dist: $(project.travis_dist)
@@ -454,7 +457,7 @@ matrix:
         - g++-5
         - gcc-5
 .   endif
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-6 && CXX=g++-6 && export CC CXX"
     os: linux
 .   if (project.travis_dist ?<> "")
     dist: $(project.travis_dist)
@@ -470,7 +473,7 @@ matrix:
         - *pkg_deps_common
         - g++-6
         - gcc-6
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-7 && CXX=g++-7 && export CC CXX"
     os: linux
 .   if (project.travis_dist ?<> "")
     dist: $(project.travis_dist)
@@ -529,20 +532,20 @@ matrix:
 .   if project.travis_shadow_gcc ?= 2
 .   echo "TRAVIS: Shadow GCC versions: allow-fail: true"
 .       if !(use_cxx_gcc_4_9 ?= 1)
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9 && export CC CXX"
 .       endif
 .       if !defined(project.travis_dist) | (project.travis_dist ?<> "xenial")
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-5 && CXX=g++-5 && export CC CXX"
 .       endif
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-6 && CXX=g++-6 && export CC CXX"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=gcc-7 && CXX=g++-7 && export CC CXX"
 .   endif
 .   if project.travis_shadow_clang ?= 2
 .   echo "TRAVIS: Shadow CLANG versions: allow-fail: true"
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
-  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0 && export CC CXX"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0 && export CC CXX"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9 && export CC CXX"
+  - env: BUILD_TYPE=default-Werror MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8 && export CC CXX"
 .   endif
 .   if project.travis_clangformat_allow_failures ?= 1
 .   echo "TRAVIS: CLANG-FORMAT: allow-fail: true"
@@ -581,10 +584,10 @@ matrix:
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "android" ] ; then brew install binutils ; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$BUILD_TYPE" == "valgrind" ] ; then brew install valgrind ; fi
-- if [ -n "\${MATRIX_EVAL}" ] ; then eval \${MATRIX_EVAL} ; fi
 .if defined(use_cxx) & defined(use_cxx_gcc_4_9) & !(use_cxx ?= 0) & !(use_cxx_gcc_4_9 ?= 0)
 - if [ "$CXX" == "g++" ] ; then export CXX="g++-4.9" CC="gcc-4.9" ; fi
 .endif
+- if [ -n "\${MATRIX_EVAL}" ] ; then eval \${MATRIX_EVAL} ; fi
 
 # Hand off to generated script for each BUILD_TYPE
 script: ./ci_build.sh
