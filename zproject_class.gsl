@@ -247,22 +247,6 @@ typedef struct {
 
 static test_item_t
 all_tests [] = {
-.for class where !draft & selftest & private ?<> 1
-.   if first ()
-// Tests for stable public classes:
-.   endif
-    { "$(class.c_name)", $(class.c_name)_test, true, true, NULL },
-.endfor
-.for class where draft & selftest & private ?<> 1
-.   if first ()
-#ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
-// Tests for draft public classes:
-.   endif
-    { "$(class.c_name)", $(class.c_name)_test, false, true, NULL },
-.   if last ()
-#endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
-.   endif
-.endfor
 .for class where selftest & private ?= 1
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
@@ -276,6 +260,22 @@ all_tests [] = {
 .   endif
 .   if last ()
     { "private_classes", NULL, false, false, "$ALL" }, // compat option for older projects
+#endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
+.   endif
+.endfor
+.for class where !draft & selftest & private ?<> 1
+.   if first ()
+// Tests for stable public classes:
+.   endif
+    { "$(class.c_name)", $(class.c_name)_test, true, true, NULL },
+.endfor
+.for class where draft & selftest & private ?<> 1
+.   if first ()
+#ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
+// Tests for draft public classes:
+.   endif
+    { "$(class.c_name)", $(class.c_name)_test, false, true, NULL },
+.   if last ()
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
 .endfor
