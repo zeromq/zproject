@@ -1278,7 +1278,7 @@ int main() {
 #endif
   return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-], AC_MSG_RESULT([ok]), AC_MSG_ERROR([test for std::regex failed]) )
+     ], AC_MSG_RESULT([ok]), AC_MSG_ERROR([test for std::regex failed]) )
      AC_LANG_POP([C++])
     ]
   ,[AC_MSG_WARN([Not checking for GNU C++11 support level expected by gcc-4.9 release or newer, due to explicit configure option])
