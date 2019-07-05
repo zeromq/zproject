@@ -658,6 +658,8 @@ if \
     cd ./tmp-deps
 .            if defined (use.release)
     $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
+.            elsif project.travis_implicit_releases ?= 1
+    $CI_TIME git clone --quiet --depth 1 -b "$TRAVIS_BRANCH" $(use.repository) $(use.project)
 .            else
     $CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
 .            endif
@@ -1001,6 +1003,8 @@ cd "$REPO_DIR/.."
 .for project.use where !optional & defined (use.repository)
 .   if defined (use.release)
 git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
+.   elsif project.travis_implicit_releases ?= 1
+git clone --quiet --depth 1 -b "$TRAVIS_BRANCH" $(use.repository) $(use.project)
 .   else
 git clone --quiet --depth 1 $(use.repository) $(use.project)
 .   endif
