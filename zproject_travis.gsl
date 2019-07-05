@@ -609,6 +609,111 @@ deploy:
 .   echo "NOT regenerating an existing .travis.yml file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .endif
 .
+.output "ci_dependencies.sh"
+#!/usr/bin/env bash
+
+$(project.GENERATED_WARNING_HEADER)
+
+set -e
+
+if [ -d "./tmp-deps" ]; then
+    # Checkout/unpack and build area for dependencies
+    rm -rf ./tmp-deps
+fi
+mkdir -p tmp-deps
+
+# Clone and build dependencies, if not yet installed to Travis env as DEBs
+# or MacOS packages; other OSes are not currently supported by Travis cloud
+[ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
+.for use
+
+# Start of recipe for dependency: $(use.project)
+if \
+.      if defined (use.debian_name)
+.        if !(use.debian_name = '')
+\! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
+.        endif
+.   elsif defined (use.libname)
+\! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)-dev >/dev/null 2>&1) || \\
+.   else
+\! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
+.   endif
+       (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1) \\
+; then
+    echo ""
+.    if ! defined (use.repository) & ! defined (use.tarball)
+    echo "WARNING: Can not build prerequisite '$(use.project)'" >&2
+    echo "because neither tarball nor repository sources are known for it," >&2
+    echo "and it was not installed as a package; this may cause the test to fail!" >&2
+.    else
+    BASE_PWD=${PWD}
+.        if defined (use.tarball)
+    echo "`date`: INFO: Building prerequisite '$(use.project)' from tarball..." >&2
+    cd ./tmp-deps
+    $CI_TIME wget $(use.tarball)
+    tar -xzf \$(basename "$(use.tarball)")
+    cd \$(basename "$(use.tarball)" .tar.gz) || exit \$?
+.        elsif defined (use.repository)
+    echo "`date`: INFO: Building prerequisite '$(use.project)' from Git repository..." >&2
+    cd ./tmp-deps
+.            if defined (use.release)
+    $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
+.            else
+    $CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
+.            endif
+    cd ./$(use.project)
+.        endif
+.        if defined (use.builddir)
+    cd ./$(use.builddir)
+.        endif
+    CCACHE_BASEDIR=${PWD}
+    export CCACHE_BASEDIR
+.        if defined (use.repository) & ! defined (use.tarball)
+        git --no-pager log --oneline -n1
+.        endif
+    if [ -e ci_dependencies.sh ]; then
+        echo "`date`: INFO: Building prerequisites of '$(use.project)'..." >&2
+        ($CI_TIME source ./ci_dependencies.sh)
+    fi
+    if [ -e autogen.sh ]; then
+        $CI_TIME ./autogen.sh 2> /dev/null
+    fi
+    if [ -e buildconf ]; then
+        $CI_TIME ./buildconf 2> /dev/null
+    fi
+    if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
+        $CI_TIME libtoolize --copy --force && \\
+        $CI_TIME aclocal -I . && \\
+        $CI_TIME autoheader && \\
+        $CI_TIME automake --add-missing --copy && \\
+        $CI_TIME autoconf || \\
+        $CI_TIME autoreconf -fiv
+    fi
+.        if count(use.add_config_opts) > 0
+    ( # Custom additional options for $(use.project)
+.            for use.add_config_opts as add_cfgopt
+        CONFIG_OPTS+=("$(add_cfgopt)")
+.            endfor
+        $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+    )
+.        else
+    $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+.        endif
+    $CI_TIME make -j4
+    $CI_TIME make install
+    cd "${BASE_PWD}"
+.        if use.optional
+    CONFIG_OPTS+=("--with-$(use.libname)=yes")
+.        endif
+.    endif
+.    if use.optional
+else
+    CONFIG_OPTS+=("--with-$(use.libname)=yes")
+.    endif
+fi
+.endfor
+.close
+.chmod_x ("ci_dependencies.sh")
 .output "ci_build.sh"
 #!/usr/bin/env bash
 
@@ -644,11 +749,7 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
         # Proto installation area for this project and its deps
         rm -rf ./tmp
     fi
-    if [ -d "./tmp-deps" ]; then
-        # Checkout/unpack and build area for dependencies
-        rm -rf ./tmp-deps
-    fi
-    mkdir -p tmp tmp-deps
+    mkdir -p tmp
     BUILD_PREFIX=$PWD/tmp
 
     PATH="`echo "$PATH" | sed -e 's,^/usr/lib/ccache/?:,,' -e 's,:/usr/lib/ccache/?:,,' -e 's,:/usr/lib/ccache/?$,,' -e 's,^/usr/lib/ccache/?$,,'`"
@@ -786,92 +887,8 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
     CONFIG_OPTS_COMMON=$CONFIG_OPTS
     CONFIG_OPTS+=("--with-docs=no")
 
-    # Clone and build dependencies, if not yet installed to Travis env as DEBs
-    # or MacOS packages; other OSes are not currently supported by Travis cloud
-    [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
-.   for use
-
-    # Start of recipe for dependency: $(use.project)
-    if \
-.      if defined (use.debian_name)
-.           if !(use.debian_name = '')
-\! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
-.           endif
-.      elsif defined (use.libname)
-\! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)-dev >/dev/null 2>&1) || \\
-.      else
-\! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
-.      endif
-           (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1) \\
-    ; then
-        echo ""
-.       if ! defined (use.repository) & ! defined (use.tarball)
-        echo "WARNING: Can not build prerequisite '$(use.project)'" >&2
-        echo "because neither tarball nor repository sources are known for it," >&2
-        echo "and it was not installed as a package; this may cause the test to fail!" >&2
-.       else
-        BASE_PWD=${PWD}
-.           if defined (use.tarball)
-        echo "`date`: INFO: Building prerequisite '$(use.project)' from tarball..." >&2
-        cd ./tmp-deps
-        $CI_TIME wget $(use.tarball)
-        tar -xzf \$(basename "$(use.tarball)")
-        cd \$(basename "$(use.tarball)" .tar.gz) || exit \$?
-.           elsif defined (use.repository)
-        echo "`date`: INFO: Building prerequisite '$(use.project)' from Git repository..." >&2
-        cd ./tmp-deps
-.               if defined (use.release)
-        $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
-.               else
-        $CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
-.               endif
-        cd ./$(use.project)
-.           endif
-.           if defined (use.builddir)
-        cd ./$(use.builddir)
-.           endif
-        CCACHE_BASEDIR=${PWD}
-        export CCACHE_BASEDIR
-.           if defined (use.repository) & ! defined (use.tarball)
-        git --no-pager log --oneline -n1
-.           endif
-        if [ -e autogen.sh ]; then
-            $CI_TIME ./autogen.sh 2> /dev/null
-        fi
-        if [ -e buildconf ]; then
-            $CI_TIME ./buildconf 2> /dev/null
-        fi
-        if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
-            $CI_TIME libtoolize --copy --force && \\
-            $CI_TIME aclocal -I . && \\
-            $CI_TIME autoheader && \\
-            $CI_TIME automake --add-missing --copy && \\
-            $CI_TIME autoconf || \\
-            $CI_TIME autoreconf -fiv
-        fi
-.           if count(use.add_config_opts) > 0
-        ( # Custom additional options for $(use.project)
-.               for use.add_config_opts as add_cfgopt
-            CONFIG_OPTS+=("$(add_cfgopt)")
-.               endfor
-            $CI_TIME ./configure "${CONFIG_OPTS[@]}"
-        )
-.           else
-        $CI_TIME ./configure "${CONFIG_OPTS[@]}"
-.           endif
-        $CI_TIME make -j4
-        $CI_TIME make install
-        cd "${BASE_PWD}"
-.           if use.optional
-        CONFIG_OPTS+=("--with-$(use.libname)=yes")
-.           endif
-.       endif
-.       if use.optional
-    else
-        CONFIG_OPTS+=("--with-$(use.libname)=yes")
-.       endif
-    fi
-.   endfor
+    # Build dependencies, if needed
+    (source ./ci_dependencies.sh)
 
     # Build and check this project; note that zprojects always have an autogen.sh
     echo ""
