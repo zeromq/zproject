@@ -105,7 +105,5 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/zproject_vs20xx.gsl
 %{_bindir}/zproject_vs20xx_props.gsl
 %{_bindir}/zproject_known_projects.xml
-%{_bindir}/mkapi.py
-%{_bindir}/fake_cpp
 
 %changelog
