@@ -37,6 +37,4 @@ usr/bin/zproject_vs2008.gsl
 usr/bin/zproject_vs20xx.gsl
 usr/bin/zproject_vs20xx_props.gsl
 usr/bin/zproject_known_projects.xml
-usr/bin/mkapi.py
-usr/bin/fake_cpp
 

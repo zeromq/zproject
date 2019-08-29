@@ -49,9 +49,7 @@ dist_bin_SCRIPTS = \
     zproject_vs2008.gsl \
     zproject_vs20xx.gsl \
     zproject_vs20xx_props.gsl \
-    zproject_known_projects.xml \
-    mkapi.py \
-    fake_cpp
+    zproject_known_projects.xml
 
 
 # Directories with test fixtures optionally provided by the project,

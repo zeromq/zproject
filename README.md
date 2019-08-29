@@ -580,8 +580,6 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_vs20xx_props.gsl" />
 
     <bin name = "zproject_known_projects.xml" />
-    <bin name = "mkapi.py" />
-    <bin name = "fake_cpp" />
 </project>
 ```
 
