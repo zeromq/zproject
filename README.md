@@ -796,6 +796,12 @@ Model is described in `zproject_known_projects.xml` file:
         header = "lz4.h"
         test = "LZ4_decompress_safe" />
 
+    <use project = "nss"
+        debian_name = "libnss3-dev"
+        redhat_name = "nss-devel"
+        header = "sechash.h"
+        test = "HASH_Create" />
+
 </known_projects>
 ```
 
