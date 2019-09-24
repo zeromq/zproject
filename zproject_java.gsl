@@ -182,7 +182,7 @@ task initCMake(type: Exec, dependsOn: 'generateJniHeaders') {
     commandLine "cmake", "."
 }
 task buildNative(type: Exec, dependsOn: 'initCMake') {
-    commandLine "make"
+    commandLine "cmake", "--build", "."
 }
 
 task copyLibs(type: Copy) {
