@@ -172,6 +172,7 @@ function resolve_method (method)
             if va_start <> "format"
                 jni_method_signature += " []"
                 jni_shim_invocation_java += " [0]"
+                jni_native_invocation_c += ", NULL"
             endif
         elsif jni_self_p = 1
             jni_shim_signature_java += "$(comma)long self"
