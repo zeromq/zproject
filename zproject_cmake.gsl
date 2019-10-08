@@ -216,7 +216,7 @@ message(STATUS "Detected $(PROJECT.PREFIX) Version - ${$(PROJECT.PREFIX)_VERSION
 ########################################################################
 set ($(project.prefix)_headers
 .if count (project.class)
-    include/$(project.prefix)_library.h
+    include/$(project.prefix)_library.$(project.header_ext)
 .   if file.exists ("include/$(project.prelude)")
     include/$(project.prelude)
 .   endif
