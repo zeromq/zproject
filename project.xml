@@ -62,7 +62,10 @@
         part of the XML tree. This file can provide content of such tags
         as <license> (detailed text to put in generated file headers)
         and <starting_year> (a number to put in packaging copyright
-        summaries).
+        summaries). Note that a verbatim "license.xml" file would be
+        created if it is currently missing but the tag is present, and
+        then it would be seeded with a current starting_year and some
+        boilerplate reminder to specify a real license and copyright.
     -->
     <include filename = "license.xml" />
 
