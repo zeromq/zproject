@@ -223,8 +223,11 @@ zproject's `project.xml` contains an extensive description of the available conf
     name := The name of your project (optional)
     description := A short description for your project (optional)
     email := The email address where to reach you (optional)
+    url := The website or similar resource about the project or its ecosystem (optional)
     repository := git repository holding project (optional)
     unique_class_name := "0"|"1" (optional, defaults to 0) As a failsafe, forbid naming agents or classes same as the project itself (can cause conflicts in generated header filenames). Disable explicitly (set to 0) only in legacy projects that can not regenerate otherwise, and try to fix those.
+    license := optional common tag of the project's license ("MPLv2", "GPL-2.0+", "CompanyName Proprietary" etc.); see also license.xml for longer wording
+    check_license_years := "0"|"1"|"2" (optional, defaults to 0) When a project is regenerated, and if any license text(s) are defined, we check that at least one Copyright line in at least one license text contains the current year, and warn if not. If this option is set to "1", we also pause so that interactive developers can see this warning better and intervene. With "2" require that the year is mentioned, abort GSL with year if it is not.
 -->
 <project script = "zproject.gsl" name = "zproject"
     email = "zeromq-dev@lists.zeromq.org"
@@ -237,7 +240,10 @@ zproject's `project.xml` contains an extensive description of the available conf
         part of the XML tree. This file can provide content of such tags
         as <license> (detailed text to put in generated file headers)
         and <starting_year> (a number to put in packaging copyright
-        summaries).
+        summaries). Note that a verbatim "license.xml" file would be
+        created if it is currently missing but the tag is present, and
+        then it would be seeded with a current starting_year and some
+        boilerplate reminder to specify a real license and copyright.
     -->
     <include filename = "license.xml" />
 

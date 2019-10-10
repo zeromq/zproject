@@ -50,7 +50,45 @@ function resolve_includes (xml)
     endfor
 endfunction
 
+# Sanity-check if project.xml, license.xml etc. reference the current
+# year (as starting, ending, just listed...) in Copyright line context
+function check_license_years (xml)
+    if count (my.xml.license) > 0
+        # Assign HHMMSSss into my.time and YYYYMMDD into my.date:
+        my.time = time.now(my.date)
+        my.now_year = string.substr(my.date, 0, , 4)
+        my.year_seen = 0
+        for my.xml.license
+            # This pattern supports several ways of spelling the copyright
+            # character (ASCII code 169) or registered symbol (ASCII 174).
+            # Note that in XML tag they should be spelled via escape sequences;
+            # a direct UTF character in the tag can be misinterpreted by GSL.
+            if regexp.match ("(opyright|\(C\)|\&\#(169|[xX][aA]9|174|[xX][aA][eE])\;|\&copy\;|&copy;|&#(169|174|[xX][aA]9|[xX][aA][eE]);|$(conv.chr(169))|$(conv.chr(174))).*$(my.now_year)", license.)
+                my.year_seen += 1
+            endif
+        endfor
+        if (0 = my.year_seen)
+            echo "W: Current year '$(my.now_year)' is not listed in any license tag / Copyright line!"
+            echo "W: Do you want to Ctrl+Break now, edit your license.xml and regenerate the project?"
+            # Per PR review, there's no hard need for a pause - after the
+            # Bern convention the "copyright YYYY-YYYY" line is actually not
+            # legally required almost anywhere in the world, and is purely
+            # informative. Copyright is implicit and automatic, and with
+            # git there is enough metadata to satisfty any lawyer/court.
+            if (my.xml.check_license_years ?= 1)
+                echo "W: (Sleeping 5 sec...)"
+                thread.sleep (500)
+                echo "W: Oh well, moving on with possibly obsoleted copyrights"
+            endif
+            if (my.xml.check_license_years ?= 2)
+                abort "E: This project is configured to require that copyrights are up to date"
+            endif
+        endif
+    endif
+endfunction
+
 resolve_includes (project)
+check_license_years (project)
 
 # Check if project contains one or more C++ sources
 function project_use_cxx ()
