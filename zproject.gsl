@@ -70,9 +70,16 @@ function check_license_years (xml)
         if (0 = my.year_seen)
             echo "W: Current year '$(my.now_year)' is not listed in any license tag / Copyright line!"
             echo "W: Do you want to Ctrl+Break now, edit your license.xml and regenerate the project?"
-            echo "W: (Sleeping 5 sec...)"
-            thread.sleep (500)
-            echo "W: Oh well, moving on with possibly obsoleted copyrights"
+            # Per PR review, there's no hard need for a pause - after the
+            # Bern convention the "copyright YYYY-YYYY" line is actually not
+            # legally required almost anywhere in the world, and is purely
+            # informative. Copyright is implicit and automatic, and with
+            # git there is enough metadata to satisfty any lawyer/court.
+            if (my.xml.check_license_years ?= 1)
+                echo "W: (Sleeping 5 sec...)"
+                thread.sleep (500)
+                echo "W: Oh well, moving on with possibly obsoleted copyrights"
+            endif
         endif
     endif
 endfunction
