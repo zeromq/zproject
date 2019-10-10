@@ -17,6 +17,30 @@ function resolve_includes (xml)
         if !defined (include.filename)
             abort "E: required attribute 'filename' not defined"
         endif
+        if ("license.xml" = include.filename) & (!file.exists(include.filename))
+            echo "W: license.xml included but not present; generating a new one with just a current starting_year and a reminder to word the license"
+            # Assign HHMMSSss into my.time and YYYYMMDD into my.date:
+            my.time = time.now(my.date)
+            my.now_year = string.substr(my.date, 0, , 4)
+            echo "W: detected current 'starting_year' as '$(my.now_year)'"
+            my.outfile = file.open(include.filename, 'w')
+            if (defined(my.outfile))
+                file.write (my.outfile, "<starting_year>$(my.now_year)</starting_year>")
+                file.write (my.outfile, "<license>")
+                file.write (my.outfile, "LICENSE FOR THIS PROJECT IS NOT DEFINED!")
+                file.write (my.outfile, "")
+                file.write (my.outfile, "Copyright (C) $(my.now_year)- by $(project.name) Developers &lt;$(project.email)&gt;")
+                file.write (my.outfile, "")
+                file.write (my.outfile, "Please edit license.xml and populate the 'license' tag with proper")
+                file.write (my.outfile, "copyright and legalese contents, and regenerate the zproject.")
+                file.write (my.outfile, "")
+                file.write (my.outfile, "LICENSE FOR THIS PROJECT IS NOT DEFINED!")
+                file.write (my.outfile, "</license>")
+                file.close (my.outfile)
+            else
+                abort "E: Could not create $(include.filename)"
+            endif
+        endif
         my.include_file = my.xml.load_file (filename)?
         if defined (my.include_file)
             move my.include_file after include
