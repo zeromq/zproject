@@ -80,6 +80,9 @@ function check_license_years (xml)
                 thread.sleep (500)
                 echo "W: Oh well, moving on with possibly obsoleted copyrights"
             endif
+            if (my.xml.check_license_years ?= 2)
+                abort "E: This project is configured to require that copyrights are up to date"
+            endif
         endif
     endif
 endfunction
