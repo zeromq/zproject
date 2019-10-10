@@ -46,8 +46,10 @@
     name := The name of your project (optional)
     description := A short description for your project (optional)
     email := The email address where to reach you (optional)
+    url := The website or similar resource about the project or its ecosystem (optional)
     repository := git repository holding project (optional)
     unique_class_name := "0"|"1" (optional, defaults to 0) As a failsafe, forbid naming agents or classes same as the project itself (can cause conflicts in generated header filenames). Disable explicitly (set to 0) only in legacy projects that can not regenerate otherwise, and try to fix those.
+    license := optional common tag of the project's license ("MPLv2", "GPL-2.0+", "CompanyName Proprietary" etc.); see also license.xml for longer wording
 -->
 <project script = "zproject.gsl" name = "zproject"
     email = "zeromq-dev@lists.zeromq.org"
