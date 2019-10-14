@@ -616,11 +616,11 @@ $(project.GENERATED_WARNING_HEADER)
 
 set -e
 
-if [ -d "./tmp-deps" ]; then
-    # Checkout/unpack and build area for dependencies
-    rm -rf ./tmp-deps
+if [ -z "$DEPENDENCIES_DIR" ]; then
+    export DEPENDENCIES_DIR="`pwd`/tmp-deps"
 fi
-mkdir -p tmp-deps
+mkdir -p "$DEPENDENCIES_DIR"
+cd "$DEPENDENCIES_DIR"
 
 # Clone and build dependencies, if not yet installed to Travis env as DEBs
 # or MacOS packages; other OSes are not currently supported by Travis cloud
@@ -638,7 +638,8 @@ if \
 .   else
 \! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
 .   endif
-       (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1) \\
+       (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1) || \\
+       ([ -e "$(use.project)" ]) \\
 ; then
     echo ""
 .    if ! defined (use.repository) & ! defined (use.tarball)
@@ -649,13 +650,11 @@ if \
     BASE_PWD=${PWD}
 .        if defined (use.tarball)
     echo "`date`: INFO: Building prerequisite '$(use.project)' from tarball..." >&2
-    cd ./tmp-deps
     $CI_TIME wget $(use.tarball)
     tar -xzf \$(basename "$(use.tarball)")
     cd \$(basename "$(use.tarball)" .tar.gz) || exit \$?
 .        elsif defined (use.repository)
     echo "`date`: INFO: Building prerequisite '$(use.project)' from Git repository..." >&2
-    cd ./tmp-deps
 .            if defined (use.release)
     $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
 .            elsif project.travis_implicit_releases ?= 1
@@ -890,6 +889,7 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
     CONFIG_OPTS+=("--with-docs=no")
 
     # Build dependencies, if needed
+    export DEPENDENCIES_DIR="`pwd`/tmp-deps"
     (source ./ci_dependencies.sh)
 
     # Build and check this project; note that zprojects always have an autogen.sh
