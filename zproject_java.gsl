@@ -21,7 +21,7 @@ function target_java
 gsl from "zproject_java_lib.gsl"
 
 .macro generate_wrapper
-.output "$(topdir)/CMakeLists.txt"
+.output "$(topdir)/$(project.prefix:c)-jni/CMakeLists.txt"
 $(project.GENERATED_WARNING_HEADER:)
 cmake_minimum_required (VERSION 2.8)
 
@@ -30,7 +30,7 @@ enable_language (C)
 
 # Search for Find*.cmake files in the following locations
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../..")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../..")
 
 ########################################################################
 # JNI dependency
@@ -78,7 +78,7 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
 target_link_libraries ($(project.prefix)jni ${MORE_LIBRARIES})
 .
-.output "$(topdir)/Find$(project.name:c).cmake"
+.output "$(topdir)/$(project.prefix:c)-jni/Find$(project.name:c).cmake"
 $(project.GENERATED_WARNING_HEADER:)
 
 if (NOT MSVC)
@@ -125,30 +125,65 @@ $(project.GENERATED_WARNING_HEADER:)
 /*
 $(project.GENERATED_WARNING_HEADER:)
 */
-import static org.apache.tools.ant.taskdefs.condition.Os.*
 
 plugins {
     id 'java'
     id 'maven-publish'
-    id "com.jfrog.bintray" version "1.7.3"
+    id 'com.jfrog.artifactory' version '4.9.9'
+    id 'com.jfrog.bintray' version '1.8.4'
+    id 'com.google.osdetector' version '1.6.2'
 }
 
-group = "org.zeromq"
-version = "$(->version.major).$(->version.minor).$(->version.patch)"
+wrapper.gradleVersion = '5.6.2'
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-    jcenter()
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.jfrog.bintray'
+    apply plugin: 'com.jfrog.artifactory'
+    apply plugin: 'com.google.osdetector'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+
+    group = '$(project.namespace)'
+
+    if (project.hasProperty('isRelease')) {
+        version = '$(->version.major).$(->version.minor).$(->version.patch)'
+    } else {
+        version = '$(->version.major).$(->version.minor).$(->version.patch)-SNAPSHOT'
+    }
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+artifactory {
+    contextUrl = "https://oss.jfrog.org/artifactory"   //The base Artifactory URL if not overridden by the publisher/resolver
+    publish {
+        repository {
+            repoKey = 'oss-snapshot-local'
+            username = System.getenv('ARTIFACTORY_USERNAME')
+            password = System.getenv('ARTIFACTORY_PASSWORD')
+            maven = true
+        }
+    }
+}
+
+bintrayPublish.enabled = false
+.
+.output "$(topdir)/$(project.prefix:c)-jni/build.gradle"
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
 
 dependencies {
 .   for project.use
 .       if count (project->dependencies.class, class.project = use.project) > 0
-    compile 'org.zeromq:$(use.project)-jni:+'
+    compile 'org.zeromq.$(use.project):$(use.project)-jni:latest.release'
 .       endif
 .   endfor
     compile 'org.scijava:native-lib-loader:2.3.4'
@@ -156,55 +191,63 @@ dependencies {
     testCompile 'org.hamcrest:hamcrest-all:1.3'
 }
 
-wrapper.gradleVersion = '5.4.1'
-
 //  ------------------------------------------------------------------
 //  Build section
 
 task generateJniHeaders(type: Exec, dependsOn: 'classes') {
     def classpath = sourceSets.main.output.classesDirs
     def appclasspath = configurations.runtime.files*.getAbsolutePath().join(File.pathSeparator)
-    def nativeIncludes = "src/native/include"
+    def nativeIncludes = 'src/native/include'
     def jniClasses = [
 .   for project.class where class.okay
-            'src/main/java/$(name_path)/$(name:pascal).java'$(last ()?? ""? ",")
+            'src/main/java/$(name_path)/$(name:pascal).java'$(last ()?? ''? ',')
 .   endfor
     ]
     def utilityClasses = [
             'src/main/java/org/zeromq/tools/ZmqNativeLoader.java'
     ]
-    commandLine("javac", "-h", "$nativeIncludes", "-classpath", "$classpath" + File.pathSeparator + "$appclasspath", *jniClasses, *utilityClasses)
-}
-tasks.withType(Test) {
-    systemProperty "java.library.path", "/usr/lib" + File.pathSeparator + "/usr/local/lib" + File.pathSeparator + "$projectDir"
-}
-task initCMake(type: Exec, dependsOn: 'generateJniHeaders') {
-    commandLine "cmake", "."
-}
-task buildNative(type: Exec, dependsOn: 'initCMake') {
-    commandLine "cmake", "--build", "."
+    commandLine("javac", "-h", "$nativeIncludes", "-classpath", "$classpath${File.pathSeparator}$appclasspath", *jniClasses, *utilityClasses)
 }
 
-task copyLibs(type: Copy) {
-    from "/usr/lib/$(project.libname).so", "/usr/local/lib/$(project.libname).so", "/tmp/lib/$(project.libname).so",
+tasks.withType(Test) {
+    def defaultJavaLibraryPath = System.getProperty("java.library.path")
+    if (osdetector.os == 'windows') {
+        systemProperty "java.library.path", "${projectDir}/build/Release${File.pathSeparator}${defaultJavaLibraryPath}"
+    } else {
+        systemProperty "java.library.path", "${projectDir}${File.pathSeparator}${defaultJavaLibraryPath}${File.pathSeparator}/usr/local/lib${File.pathSeparator}/tmp/lib"
+    }
+}
+
+task initCMake(type: Exec, dependsOn: 'generateJniHeaders') {
+    if (osdetector.os == 'windows') {
+        def includePath = "${rootDir}/../../include"
 .   for project.use
-         "/usr/lib/$(use.libname).so", "/usr/local/lib/$(use.libname).so", "/tmp/lib/$(use.libname).so"$(last ()?? ""? ",")
+        includePath += "${File.pathSeparator}${rootDir}/../../../$(use.project)/include"
 .   endfor
-    into "."
+        workingDir  'build'
+        commandLine 'cmake',
+                    '-G', vsGenerator,
+                    '-D', "CMAKE_INCLUDE_PATH=\\"${includePath}\\"",
+                    '..'
+    } else {
+        commandLine 'cmake', '.'
+    }
+}
+
+task buildNative(type: Exec, dependsOn: 'initCMake') {
+    if (osdetector.os == 'windows') {
+        commandLine 'cmake',
+                    '--build',  'build',
+                    '--config', 'Release',
+                    '--target', 'czmqjni',
+                    '--', '-verbosity:Minimal',  '-maxcpucount'
+    } else {
+        commandLine 'make'
+    }
 }
 
 jar.dependsOn buildNative
-jar.dependsOn copyLibs
 test.dependsOn buildNative
-
-jar {
-    String arch = "${OS_ARCH}".contains("64") ? "64" : "32"
-    String os = "${OS_NAME}".equals("mac") ? "osx" : "${OS_NAME}"
-    from(".") {
-        include("*.so")
-        into("/natives/${os}_${arch}")
-    }
-}
 
 //  ------------------------------------------------------------------
 //  Install and Publish section
@@ -225,23 +268,228 @@ publishing {
             from components.java
             artifact sourcesJar
             artifact javadocJar
-            pom.withXml {
-                asNode().appendNode('packaging', 'jar')
-                asNode().appendNode('name', '$(project.name:c)-jni')
-                asNode().appendNode('description', '$(project.description:no)')
-                asNode().appendNode('url', '$(project.url)')
-
-                def license = asNode().appendNode('licenses').appendNode('license')
-                license.appendNode('name', 'Mozilla Public License Version 2.0')
-                license.appendNode('url', 'https://www.mozilla.org/en-US/MPL/2.0/')
-
-                def scm = asNode().appendNode('scm')
-                scm.appendNode('connection', '$(project.url).git')
-                scm.appendNode('developerConnection', '$(project.url).git')
-                scm.appendNode('url', '$(project.url)')
+            artifactId = '$(project.name:c)-jni'
+            pom {
+                name = '$(project.name:c)-jni'
+                description = '$(project.description:no)'
+                packaging = 'jar'
+                url = '$(project.url)'
+                licenses {
+                    license {
+                        name = 'Mozilla Public License Version 2.0'
+                        url = 'https://www.mozilla.org/en-US/MPL/2.0/'
+                    }
+                }
+                scm {
+                    connection = '$(project.url).git'
+                    developerConnection = '$(project.url).git'
+                    url = '$(project.url)'
+                }
             }
         }
     }
+}
+
+artifactoryPublish {
+    publications ('mavenJava')
+}
+
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['mavenJava']
+    publish = true
+    override = true
+    pkg {
+        repo = 'maven'
+        name = '$(project.name:c)-jni'
+        desc = '$(project.description:no)'
+        userOrg = System.getenv('BINTRAY_USER_ORG')
+        licenses = ['MPL-2.0']
+        websiteUrl = '$(project.url)'
+        issueTrackerUrl = '$(project.url)/issues'
+        vcsUrl = '$(project.url).git'
+        githubRepo = System.getenv('BINTRAY_USER_ORG') + '/$(project.name:c)'
+        version {
+            name = project.version
+            vcsTag= project.version
+        }
+    }
+}
+
+//  ------------------------------------------------------------------
+//  Cleanup section
+
+clean.doFirst {
+    delete 'CMakeFiles', 'msvc'
+    delete fileTree(projectDir) {
+        include '*.so'
+        include '*.dylib'
+        include 'cmake_install.cmake'
+        include 'Makefile'
+        include 'CMakeCache.txt'
+    }
+}
+.
+.directory.create ("$(topdir)/$(project.prefix:c)-jni-all")
+.output "$(topdir)/$(project.prefix:c)-jni-all/build.gradle"
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
+
+dependencies {
+    compile project(':$(project.prefix:c)-jni')
+    runtimeOnly "$(project.namespace):$(project.prefix:c)-jni-linux-x86_64:${project.version}"
+    runtimeOnly "$(project.namespace):$(project.prefix:c)-jni-osx-x86_64:${project.version}"
+    runtimeOnly "$(project.namespace):$(project.prefix:c)-jni-windows-x86_64:${project.version}"
+.   for project.use
+.       if count (project->dependencies.class, class.project = use.project) > 0
+    compile 'org.zeromq.$(use.project):$(use.project)-jni:latest.release'
+    runtimeOnly 'org.zeromq.$(use.project):$(use.project)-jni-all:latest.release'
+.       endif
+.   endfor
+}
+
+//  ------------------------------------------------------------------
+//  Install and Publish section
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId = '$(project.name:c)-jni-all'
+            pom {
+                name = '$(project.name:c)-jni-all'
+                description = '$(project.description:no)'
+                packaging = 'jar'
+                url = '$(project.url)'
+                licenses {
+                    license {
+                        name = 'Mozilla Public License Version 2.0'
+                        url = 'https://www.mozilla.org/en-US/MPL/2.0/'
+                    }
+                }
+                scm {
+                    connection = '$(project.url).git'
+                    developerConnection = '$(project.url).git'
+                    url = '$(project.url)'
+                }
+            }
+        }
+    }
+}
+
+artifactoryPublish {
+    publications ('mavenJava')
+}
+
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['mavenJava']
+    publish = true
+    override = true
+    pkg {
+        repo = 'maven'
+        name = '$(project.name:c)-jni-all'
+        desc = '$(project.description:no)'
+        userOrg = System.getenv('BINTRAY_USER_ORG')
+        licenses = ['MPL-2.0']
+        websiteUrl = '$(project.url)'
+        issueTrackerUrl = '$(project.url)/issues'
+        vcsUrl = '$(project.url).git'
+        githubRepo = System.getenv('BINTRAY_USER_ORG') + '/$(project.name:c)'
+        version {
+            name = project.version
+            vcsTag= project.version
+        }
+    }
+}
+.
+.directory.create ("$(topdir)/$(project.prefix:c)-jni-native")
+.output "$(topdir)/$(project.prefix:c)-jni-native/build.gradle"
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
+
+dependencies {
+    compile project(':$(project.prefix:c)-jni')
+.   for project.use
+.       if count (project->dependencies.class, class.project = use.project) > 0
+    runtimeOnly "org.zeromq.$(use.project):$(use.project)-jni-${osdetector.classifier}:latest.release"
+.       endif
+.   endfor
+}
+
+//  ------------------------------------------------------------------
+//  Build section
+
+task copyLibs(type: Copy) {
+    def libraryPaths = System.getProperty('java.library.path').split(File.pathSeparator).toList()
+    libraryPaths.add('/usr/local/lib')
+    libraryPaths.add("${rootDir}/$(project.prefix:c)-jni")
+    libraryPaths.add("${rootDir}/$(project.prefix:c)-jni/build/Release")
+
+    libraryPaths.each { path ->
+        from path
+            include '$(project.libname)jni.so'
+            include '$(project.libname)jni.dylib'
+            include '*$(project.prefix:c)jni*.dll'
+            include '$(project.libname).so'
+            include '$(project.libname).dylib'
+            include '*$(project.prefix:c)*.dll'
+.   for project.use
+            include '$(use.libname).so'
+            include '$(use.libname).dylib'
+            include '*$(use.prefix:c)*.dll'
+.   endfor
+        into 'build/natives'
+    }
+}
+
+jar.baseName = "$(project.prefix:c)-jni-${osdetector.classifier}"
+jar.dependsOn copyLibs
+
+jar {
+    def arch = osdetector.arch.contains('64') ? '64' : '32'
+    from 'build/natives'
+        include '*'
+    into "natives/${osdetector.os}_${arch}"
+}
+
+//  ------------------------------------------------------------------
+//  Install and Publish section
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId = "$(project.name:c)-jni-${osdetector.classifier}"
+            pom {
+                name = "$(project.name:c)-jni-${osdetector.classifier}"
+                description = '$(project.description:no)'
+                packaging = 'jar'
+                url = '$(project.url)'
+                licenses {
+                    license {
+                        name = 'Mozilla Public License Version 2.0'
+                        url = 'https://www.mozilla.org/en-US/MPL/2.0/'
+                    }
+                }
+                scm {
+                    connection = '$(project.url).git'
+                    developerConnection = '$(project.url).git'
+                    url = '$(project.url)'
+                }
+            }
+        }
+    }
+}
+
+artifactoryPublish {
+    publications ('mavenJava')
 }
 
 bintray {
@@ -251,18 +499,18 @@ bintray {
     publish = true
     override = true
     pkg {
-        repo = "maven"
-        name = "$(project.name:c)-jni"
-        desc = "$(project.description:no)"
+        repo = 'maven'
+        name = "$(project.name:c)-jni-${osdetector.classifier}"
+        desc = '$(project.description:no)'
         userOrg = System.getenv('BINTRAY_USER_ORG')
-        licenses = ["MPL-2.0"]
+        licenses = ['MPL-2.0']
         websiteUrl = '$(project.url)'
         issueTrackerUrl = '$(project.url)/issues'
         vcsUrl = '$(project.url).git'
         githubRepo = System.getenv('BINTRAY_USER_ORG') + '/$(project.name:c)'
         version {
-            name = '$(->version.major).$(->version.minor).$(->version.patch)'
-            vcsTag= '$(->version.major).$(->version.minor).$(->version.patch)'
+            name = project.version
+            vcsTag= project.version
         }
     }
 }
@@ -271,8 +519,10 @@ bintray {
 //  Cleanup section
 
 clean.doFirst {
-    delete "${rootDir}/CMakeCache.txt"
-    delete fileTree("${rootDir}") { include "*.so" }
+    delete fileTree(projectDir) {
+        include '*.so'
+        include '*.dylib'
+    }
 }
 .
 .output "$(topdir)/README.md"
@@ -295,15 +545,6 @@ If you don't like to install gradle beforehand just use the gradle wrapper.
     ./gradlew test
 
 This calls javah to build the headers in src/native/include, and then compiles the C and Java pieces to create a jar file a sharable library (.so).
-
-## Installing the JNI Layer for Linux
-
-If you like to use this JNI Layer in another project you'll need to distribute it
-to a location where the other project can locate it. The easiest way to do this
-is by leveraging maven and install to the local maven repository located at
-$HOME/.m2. Therefore simply run:
-
-    ./gradlew publishToMavenLocal
 
 ## Building the JNI Layer for Android
 
@@ -338,15 +579,36 @@ This does the following:
 
 ## Building the JNI Layer for Windows
 
-You need MS Visual Studio 2010 or later.
+Prerequisites:
+* MS Visual Studio or MS Visual Studio Tools 2010 or later are installed
+* Java JDK 8 or later is installed
 
-You need the Java SDK. Set the JAVA_HOME environment to the installation location, e.g. C:\Program Files\Java\jdk1.8.0_66.
+Environment Variables:
+* Add MSBuild.exe to the PATH, e.g. C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin
+* Set JAVA_HOME to the installation location, e.g. C:\\Program Files\\Java\\jdk1.8.0_66.
 
 1. Check out all dependent projects from github, at the same level as this project. E.g.: libzmq, czmq.
-2. In each project, open a console in builds/msvc/vs2010 and run the build.bat batch file.
-3. In this project, open a console in bindings/jni/msvc/vs2010 and run the build.bat batch file.
+2. Follow the dependent projects instuctions to build thier '.dll' and '.lib' file.
+3. Copy a dependent '.dll' and '.lib' files to a folder
+4. Add this library folder to the path, e.g.:
 
-The resulting libraries ($(project.prefix)jni.dll, $(project.prefix)jni.lib) are created in bindings/jni/msvc/bin.
+	PATH %PATH%;C:\\projects\\libs
+
+Now run:
+
+	gradlew build jar "-PvsGenerator=Visual Studio 16 2019"
+	gradlew test "-PvsGenerator=Visual Studio 16 2019"
+
+Change the vsGenerator parameter to the version of MS Visual Studio you have installed.
+
+## Installing the JNI Layer
+
+If you like to use this JNI Layer in another project you'll need to distribute it
+to a location where the other project can locate it. The easiest way to do this
+is by leveraging maven and install to the local maven repository located at
+$HOME/.m2. Therefore simply run:
+
+    ./gradlew publishToMavenLocal
 
 ## Using the JNI API
 
@@ -406,6 +668,9 @@ Please be aware that secure environmental variables can only be added as global.
 .
 .output "$(topdir)/settings.gradle"
 rootProject.name = '$(project.prefix)-jni'
+include '$(project.prefix)-jni'
+include '$(project.prefix)-jni-native'
+include '$(project.prefix)-jni-all'
 .
 .output "$(topdir)/.gitignore"
 CMakeCache.txt
@@ -416,10 +681,11 @@ build/
 src/native
 gradle-app.setting
 $(project.libname)jni.so
+*.class
 .
-.directory.create ("$(topdir)/android")
+.directory.create ("$(topdir)/$(project.prefix:c)-jni/android")
 .terminator="\n"
-.output "$(topdir)/android/build.sh"
+.output "$(topdir)/$(project.prefix:c)-jni/android/build.sh"
 #!/bin/bash
 $(project.GENERATED_WARNING_HEADER:)
 #   Build JNI interface for Android
@@ -444,7 +710,7 @@ if [ "$1" = "-d" ]; then
     MAKE_OPTIONS=VERBOSE=1
 fi
 
-source ../../../builds/android/android_build_helper.sh
+source ../../../../builds/android/android_build_helper.sh
 android_build_env
 
 #   Build any dependent libraries
@@ -456,11 +722,11 @@ android_build_env
 
 #   Ensure we've built dependencies for Android
 echo "********  Building $(project.name:) Android native libraries"
-( cd ../../../builds/android && ./build.sh )
+( cd ../../../../builds/android && ./build.sh )
 
 #   Ensure we've built JNI interface
 echo "********  Building $(project.name:) JNI interface & classes"
-( cd .. && ./gradlew build jar )
+( cd ../.. && ./gradlew build jar --info )
 
 echo "********  Building $(project.name:) JNI for Android"
 rm -rf build && mkdir build && cd build
@@ -476,7 +742,7 @@ make $MAKE_OPTIONS
 
 echo "********  Building $(project.name:c).jar for Android"
 #   Copy class files into org/zeromq/etc.
-unzip -q ../../build/libs/$(project.prefix)-jni-$(->version.major).$(->version.minor).$(->version.patch).jar
+unzip -q ../../build/libs/$(project.prefix)-jni-$(->version.major).$(->version.minor).$(->version.patch)*.jar
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
 unzip -q -o ../../../../../tmp-deps/$(use.project)/bindings/jni/android/$(use.project)-android.jar
@@ -486,7 +752,7 @@ unzip -q -o ../../../../../tmp-deps/$(use.project)/bindings/jni/android/$(use.pr
 #   Copy native libraries into lib/armeabi
 mkdir -p lib/armeabi
 mv $(project.libname)jni.so lib/armeabi
-cp ../../../../builds/android/prefix/*/lib/*.so lib/armeabi
+cp ../../../../../builds/android/prefix/*/lib/*.so lib/armeabi
 
 cp $ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/$TOOLCHAIN_VERSION/libs/armeabi/libgnustl_shared.so lib/armeabi
 
@@ -495,9 +761,9 @@ cd ..
 rm -rf build
 
 echo "********  Complete"
-.chmod_x ("$(topdir)/android/build.sh")
+.chmod_x ("$(topdir)/$(project.prefix:c)-jni/android/build.sh")
 .
-.output "$(topdir)/android/CMakeLists.txt"
+.output "$(topdir)/$(project.prefix:c)-jni/android/CMakeLists.txt"
 $(project.GENERATED_WARNING_HEADER:)
 cmake_minimum_required (VERSION 2.8)
 
@@ -554,7 +820,7 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
 target_link_libraries ($(project.prefix)jni ${MORE_LIBRARIES})
 .
-.output "$(topdir)/android/android_toolchain.cmake"
+.output "$(topdir)/$(project.prefix:c)-jni/android/android_toolchain.cmake"
 $(project.GENERATED_WARNING_HEADER:)
 #   CMake toolchain script
 #
@@ -567,6 +833,8 @@ set (BUILD_ANDROID True)
 
 include (CMakeForceCompiler)
 include (FindPkgConfig)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../../..")
 
 # Where is the target environment
 set (ANDROID_NDK_ROOT $ENV{ANDROID_NDK_ROOT})
@@ -733,24 +1001,22 @@ $CI_TIME make install
 
 popd
 
-TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./gradlew build jar
+TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./gradlew build jar --info
 TERM=dumb $CI_TIME ./gradlew clean
 
 ########################################################################
 #  Build and check the jni android binding
 ########################################################################
 
-pushd ../../builds/android
+if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+    pushd ../../builds/android
+        \. ./ci_build.sh
+    popd
 
-\. ./ci_build.sh
-
-popd
-
-pushd android
-
-TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./build.sh
-
-popd
+    pushd $(project.prefix:c)-jni/android
+        TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./build.sh
+    popd
+fi
 .close
 .chmod_x ("$(topdir)/ci_build.sh")
 .if ! file.exists ("$(topdir)/gradle/wrapper/gradle-wrapper.jar")
@@ -759,18 +1025,126 @@ popd
 .endmacro
 
 .macro generate_native_loader ()
-.   directory.create ("$(topdir)/src/main/java/org/zeromq/tools")
-.   output "$(topdir)/src/main/java/org/zeromq/tools/ZmqNativeLoader.java"
+.   directory.create ("$(topdir)/$(project.prefix:c)-jni/src/main/java/org/zeromq/tools")
+.   output "$(topdir)/$(project.prefix:c)-jni/src/main/java/org/zeromq/tools/ZmqNativeLoader.java"
 package org.zeromq.tools;
 
-import java.io.IOException;
-import java.util.Set;
-import java.util.HashSet;
+import org.scijava.nativelib.NativeLibraryUtil;
 import org.scijava.nativelib.NativeLoader;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class ZmqNativeLoader {
 
     private static final Set<String> loadedLibraries = new HashSet<>();
+
+    private static final Set<String> potentialDlls = new HashSet<>();
+
+    static {
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+            // Collect potential DLLs to be match when loading the libraries
+
+            // 1. Lookup the java.library.path
+            String javaLibraryPath = System.getProperty("java.library.path");
+            if (javaLibraryPath != null) {
+                final String[] paths = javaLibraryPath.split(File.pathSeparator);
+                for (String path : paths) {
+                    File folder = new File(path);
+                    if (folder.exists()) {
+                        for (final File fileEntry : folder.listFiles()) {
+                            if (fileEntry.isFile() && fileEntry.getName().indexOf(".dll") != -1) {
+                                potentialDlls.add(fileEntry.getName().substring(0, fileEntry.getName().indexOf(".")));
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 2. Lookup the jar files
+            try {
+                String path = "natives/" + NativeLibraryUtil.getArchitecture().name().toLowerCase() + "/";
+                URL url = ZmqNativeLoader.class.getClassLoader().getResource(path);
+                if (url != null && url.getProtocol().equals("jar")) {
+                    String jarPath = url.getPath().substring(5, url.getPath().indexOf("!")); // Strip out only the JAR file
+                    JarFile jar = new JarFile(URLDecoder.decode(jarPath, "UTF-8"));
+                    Enumeration<JarEntry> entries = jar.entries(); // Gives ALL entries in jar
+                    while (entries.hasMoreElements()) {
+                        String name = entries.nextElement().getName();
+                        // Filter DLLs according to the path
+                        if (name.startsWith(path) && name.indexOf(".dll") != -1) {
+                            potentialDlls.add(name.substring(path.length(), name.length() - 4));
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                // Ignore!
+            }
+        }
+    }
+
+    public static void loadLibraries(Map<String, Boolean> libraries) {
+        for (String libraryName : libraries.keySet()) {
+            boolean libraryLoaded = false;
+            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+                // Windows DLL names are not as standardized as dynamic library names are under linux or osx.
+                // Therefore we inspect potential DLLs to find a match.
+
+                // Find all other libraries that contains this library's name
+                Set<String> conflictingLibrariesNames = new HashSet<>();
+                for (String otherLibraryName : libraries.keySet()) {
+                    if (otherLibraryName.contains(libraryName) && !otherLibraryName.equals(libraryName)) {
+                        conflictingLibrariesNames.add(otherLibraryName);
+                    }
+                }
+                // Build regexes to exclude any prefixes and suffixes of libraries that contain this library's name
+                String regexForbiddenPrefix = "";
+                String regexForbiddenSuffix = "";
+                if (conflictingLibrariesNames.size() > 0) {
+                    for (String conflictingLibraryName : conflictingLibrariesNames) {
+                        String prefix = conflictingLibraryName.substring(0, conflictingLibraryName.indexOf(libraryName));
+                        if (!"".equals(prefix)) {
+                            regexForbiddenPrefix += prefix + "|";
+                        }
+                    }
+                    if (!"".equals(regexForbiddenPrefix)) {
+                        regexForbiddenPrefix = regexForbiddenPrefix.substring(0, regexForbiddenPrefix.length() - 1);
+                        regexForbiddenPrefix = "(?<!" + regexForbiddenPrefix + ")";
+                    }
+
+                    for (String conflictingLibraryName : conflictingLibrariesNames) {
+                        String suffix = conflictingLibraryName.substring(conflictingLibraryName.indexOf(libraryName) + libraryName.length());
+                        if (!"".equals(suffix)) {
+                            regexForbiddenSuffix += suffix + "|";
+                        }
+                    }
+                    if (!"".equals(regexForbiddenSuffix)) {
+                        regexForbiddenSuffix = regexForbiddenSuffix.substring(0, regexForbiddenSuffix.length() - 1);
+                        regexForbiddenSuffix = "(?!" + regexForbiddenSuffix + ")";
+                    }
+                }
+
+                for (String fileName : potentialDlls) {
+                    String regex = "^(?:lib)?.*" + regexForbiddenPrefix + libraryName + regexForbiddenSuffix + ".*$";
+                    if (fileName.matches(regex)) {
+                        loadLibrary(fileName, libraries.get(libraryName));
+                        libraryLoaded = true;
+                    }
+                }
+            }
+            if (!libraryLoaded) {
+                loadLibrary(libraryName, libraries.get(libraryName));
+            }
+        }
+    }
 
     public static void loadLibrary(String libname, boolean optional) {
         if (!loadedLibraries.contains(libname)) {
@@ -778,8 +1152,10 @@ public class ZmqNativeLoader {
                 NativeLoader.loadLibrary(libname);
             } catch (IOException e) {
                 if (optional) {
-                    System.err.println("[WARN] " + e.getMessage() + " from jar. Assuming it is installed on the system.");
+                    System.err
+                        .println("[WARN] " + e.getMessage() + " from jar. Assuming it is installed on the system.");
                 } else {
+                    System.err.println("[FATAL] " + e.getMessage() + " from jar. Dependency is required!");
                     System.exit(-1);
                 }
             }
@@ -791,14 +1167,17 @@ public class ZmqNativeLoader {
 .endmacro
 
 .macro generate_class_in_java (class)
-.   directory.create ("$(topdir)/src/main/java/$(name_path)")
-.   output "$(topdir)/src/main/java/$(name_path)/$(my.class.name:pascal).java"
+.   directory.create ("$(topdir)/$(project.prefix:c)-jni/src/main/java/$(name_path)")
+.   output "$(topdir)/$(project.prefix:c)-jni/src/main/java/$(name_path)/$(my.class.name:pascal).java"
 /*
 $(project.GENERATED_WARNING_HEADER:)
 */
-package org.zeromq.$(project.prefix:c);
+package $(project.namespace);
 
 import org.zeromq.tools.ZmqNativeLoader;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 .   for project.use
 .       if count (project->dependencies.class, class.project = use.project) > 0
 import org.zeromq.$(use.project).*;
@@ -811,11 +1190,13 @@ implements AutoCloseable \
 .   endif
 {
     static {
+        Map<String, Boolean> libraries = new LinkedHashMap<>();
 .       for project.use
-        ZmqNativeLoader.loadLibrary("$(use.prefix:c)", true);
+        libraries.put("$(use.prefix:c)", $(use.optional ?? 'true' ? 'false'));
 .       endfor
-        ZmqNativeLoader.loadLibrary("$(project.prefix:c)", true);
-        ZmqNativeLoader.loadLibrary("$(project.prefix:c)jni", false);
+        libraries.put("$(project.prefix:c)", false);
+        libraries.put("$(project.prefix:c)jni", false);
+        ZmqNativeLoader.loadLibraries(libraries);
     }
     public long self;
 .   my.class.jni_void_new = 0
@@ -951,9 +1332,9 @@ $(my.return)\
 .endmacro
 
 .macro generate_class_in_c (class)
-.   directory.create ("$(topdir)/src/main/c/")
+.   directory.create ("$(topdir)/$(project.prefix:c)-jni/src/main/c/")
 .   my.cname = "$(namespace:c)_$(my.class.name:pascal)"
-.   output "$(topdir)/src/main/c/$(my.cname:).c"
+.   output "$(topdir)/$(project.prefix:c)-jni/src/main/c/$(my.cname:).c"
 /*
 $(project.GENERATED_WARNING_HEADER:)
 */
@@ -975,30 +1356,24 @@ $(project.GENERATED_WARNING_HEADER:)
 .endmacro
 
 .macro generate_test_wrapper (class)
-.   directory.create ("$(topdir)/src/test/java/$(name_path)")
-.   output "$(topdir)/src/test/java/$(name_path)/$(my.class.name:pascal)Test.java"
+.   directory.create ("$(topdir)/$(project.prefix:c)-jni/src/test/java/$(name_path)")
+.   output "$(topdir)/$(project.prefix:c)-jni/src/test/java/$(name_path)/$(my.class.name:pascal)Test.java"
 /*
 $(project.GENERATED_WARNING_HEADER:)
 */
-package org.zeromq.$(project.prefix:c);
+package $(project.namespace);
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.scijava.nativelib.NativeLoader;
 
 public class $(my.class.name:pascal)Test {
-    static {
-        try {
-            NativeLoader.loadLibrary("$(project.prefix:c)jni");
-        }
-        catch (Exception e) {
-            System.exit (-1);
-        }
-    }
+
     @Test
     public void test () {
         $(my.class.name:pascal).test (false);
     }
+
 }
 .endmacro
 
