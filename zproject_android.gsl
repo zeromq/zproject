@@ -135,12 +135,14 @@ else
     exit 1
 fi
 
-export FILENAME=$NDK_VERSION-$HOST_PLATFORM.zip
+if [ ! -d "/tmp/${SDK_VERSION}" ]; then
+    export FILENAME=$NDK_VERSION-$HOST_PLATFORM.zip
 
-(cd '/tmp' \\
-    && wget http://dl.google.com/android/repository/$FILENAME -O $FILENAME &> /dev/null \\
-    && unzip -q $FILENAME) || exit 1
-unset FILENAME
+    (cd '/tmp' \\
+        && wget http://dl.google.com/android/repository/$FILENAME -O $FILENAME &> /dev/null \\
+        && unzip -q $FILENAME) || exit 1
+    unset FILENAME
+fi
 
 rm -rf /tmp/tmp-deps
 mkdir -p /tmp/tmp-deps
