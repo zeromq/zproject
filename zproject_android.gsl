@@ -138,7 +138,7 @@ fi
 export FILENAME=$NDK_VERSION-$HOST_PLATFORM.zip
 
 (cd '/tmp' \\
-    && wget http://dl.google.com/android/repository/$FILENAME &> /dev/null \\
+    && wget http://dl.google.com/android/repository/$FILENAME -O $FILENAME &> /dev/null \\
     && unzip -q $FILENAME) || exit 1
 unset FILENAME
 
