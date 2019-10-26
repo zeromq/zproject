@@ -139,7 +139,7 @@ export FILENAME=$NDK_VERSION-$HOST_PLATFORM.zip
 
 (cd '/tmp' \\
     && wget http://dl.google.com/android/repository/$FILENAME &> /dev/null \\
-    && unzip $FILENAME &> /dev/null ) || exit 1
+    && unzip -q $FILENAME) || exit 1
 unset FILENAME
 
 rm -rf /tmp/tmp-deps
