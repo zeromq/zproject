@@ -135,7 +135,7 @@ else
     exit 1
 fi
 
-if [ ! -d "/tmp/${SDK_VERSION}" ]; then
+if [ ! -d "/tmp/${NDK_VERSION}" ]; then
     export FILENAME=$NDK_VERSION-$HOST_PLATFORM.zip
 
     (cd '/tmp' \\
