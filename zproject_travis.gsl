@@ -33,6 +33,11 @@ cache:
 os:
 - linux
 
+.if defined (project.travis_recursive_dependencies) & project.travis_recursive_dependencies ?= "true"
+#Sudo is need because we need to be able to install package for the depencies using apt-get
+sudo: required
+.endif
+
 # The default distro for env:/matrix:/* and unspecified-dist matrix:/* tests;
 # for the latter see also addons/apt/sources with the package repos in use.
 # See https://docs.travis-ci.com/user/reference/overview/ for up-to-date
@@ -609,7 +614,7 @@ deploy:
 .   echo "NOT regenerating an existing .travis.yml file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .endif
 .
-.if defined (project.recursive_dependencies) & (project.recursive_dependencies = 'true')
+. if project.travis_recursive_dependencies ?= "true"
 .output "ci_dependencies.sh"
 #!/usr/bin/env bash
 
@@ -627,7 +632,7 @@ cd "$DEPENDENCIES_DIR"
 
 # Clone and build dependencies, if not yet installed to Travis env as DEBs
 # or MacOS packages; other OSes are not currently supported by Travis cloud
-[ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
+echo "`date`: Starting build of dependencies (if any) using ci_dependencies.sh $REQUESTED_BRANCH..."
 .for use
 
 # Start of recipe for dependency: $(use.project)
@@ -644,6 +649,31 @@ if \
        (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1) || \\
        ([ -e "$(use.project)" ]) \\
 ; then
+.if ! defined (use.repository) & ! defined (use.tarball)
+.         if defined (use.debian_name)
+.             if !(use.debian_name = '')
+ echo "INFO: Get '$(use.project)' using apt-get $(use.debian_name)" >&2
+ sudo apt-get install $(use.debian_name) -y || exit \$? 
+.             endif
+.         elsif defined (use.libname)
+ echo "INFO: Get '$(use.project)' using apt-get $(string.replace (use.libname, "_|-"):lower)-dev" >&2
+ sudo apt-get install $(string.replace (use.libname, "_|-"):lower)-dev -y || exit \$? 
+.         else
+ echo "INFO: Get '$(use.project)' using apt-get $(string.replace (use.project, "_|-"))-dev" >&2
+ sudo apt-get install $(string.replace (use.project, "_|-"))-dev -y || exit \$? 
+.         endif
+.else
+. if defined (use.repository)
+.    if defined (use.release)
+ FOLDER_NAME="$(use.project)-$(use.release)"
+.    else
+ FOLDER_NAME="$(use.project)"
+.    endif
+
+ if [ -d "$FOLDER_NAME" ]; then
+    echo "$FOLDER_NAME already exist. Skipped." >&2
+ else
+. endif
     echo ""
 .    if ! defined (use.repository) & ! defined (use.tarball)
     echo "WARNING: Can not build prerequisite '$(use.project)'" >&2
@@ -659,19 +689,24 @@ if \
 .        elsif defined (use.repository)
     echo "`date`: INFO: Building prerequisite '$(use.project)' from Git repository..." >&2
 .            if defined (use.release)
-    $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
+    echo "git clone -b $(use.release:) $(use.repository) $FOLDER_NAME"
+    $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $FOLDER_NAME
 .            else
     if [ "x$REQUESTED_BRANCH" = "x" ]; then
-        $CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
+        echo "git clone -b $(use.repository) $FOLDER_NAME"
+        $CI_TIME git clone --quiet --depth 1 $(use.repository) $FOLDER_NAME
     else
         if git ls-remote --heads $(use.repository) | grep -q "$REQUESTED_BRANCH"; then
-            $CI_TIME git clone --quiet --depth 1 -b "$REQUESTED_BRANCH" $(use.repository) $(use.project)
+            echo "git clone -b "$REQUESTED_BRANCH" $(use.repository) $FOLDER_NAME"
+            $CI_TIME git clone --quiet --depth 1 -b "$REQUESTED_BRANCH" $(use.repository) $FOLDER_NAME
         else
-            $CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
+            echo "$REQUESTED_BRANCH not found for $(use.repository)"
+            echo "git clone -b $(use.repository) $FOLDER_NAME"
+            $CI_TIME git clone --quiet --depth 1 $(use.repository) $FOLDER_NAME
         fi
     fi  
 .            endif
-    cd ./$(use.project)
+    cd "./$FOLDER_NAME"
 .        endif
 .        if defined (use.builddir)
     cd ./$(use.builddir)
@@ -682,8 +717,9 @@ if \
         git --no-pager log --oneline -n1
 .        endif
     if [ -e ci_dependencies.sh ]; then
-        echo "`date`: INFO: Building prerequisites of '$(use.project)'..." >&2
-        ($CI_TIME source ./ci_dependencies.sh $REQUESTED_BRANCH)
+        PROPAGATED_BRANCH="`git branch | grep \* | cut -d ' ' -f2`"
+        echo "`date`: INFO: Building prerequisites of '$(use.project)' using ci_dependencies.sh $PROPAGATED_BRANCH..." >&2
+        ($CI_TIME source ./ci_dependencies.sh $PROPAGATED_BRANCH)
     fi
     if [ -e autogen.sh ]; then
         $CI_TIME ./autogen.sh 2> /dev/null
@@ -720,13 +756,19 @@ if \
 else
     CONFIG_OPTS+=("--with-$(use.libname)=yes")
 .    endif
+. if defined (use.repository)
 fi
+. endif
+.endif
+fi
+
 .endfor
+
 .close
 .chmod_x ("ci_dependencies.sh")
 .output ".ci_global_release"
-. if defined (project.global_release)
-$(project.global_release:)
+. if defined (project.travis_global_release)
+$(project.travis_global_release:)
 . endif
 .close
 .endif
@@ -766,7 +808,7 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
         rm -rf ./tmp
     fi
     mkdir -p tmp
-. if !defined (project.recursive_dependencies) | ! (project.recursive_dependencies = 'true')   
+. if !defined (project.travis_recursive_dependencies) | ! (project.travis_recursive_dependencies ?= "true")   
     if [ -d "./tmp-deps" ]; then
         # Checkout/unpack and build area for dependencies
         rm -rf ./tmp-deps
@@ -910,13 +952,15 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
     CONFIG_OPTS_COMMON=$CONFIG_OPTS
     CONFIG_OPTS+=("--with-docs=no")
 
-.if defined (project.recursive_dependencies) & (project.recursive_dependencies = 'true')
+.if defined (project.travis_recursive_dependencies) & (project.travis_recursive_dependencies ?= "true")
     # Build dependencies, if needed
     export DEPENDENCIES_DIR="`pwd`/tmp-deps"
     GLOBAL_RELEASE="`head -n 1 .ci_global_release 2> /dev/null`"
-    if [ "x$GLOBAL_RELEASE" = "x" ]; then 
+    if [ "x$GLOBAL_RELEASE" = "x" ]; then
+      [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any) using ./ci_dependencies.sh $TRAVIS_BRANCH..."
       (source ./ci_dependencies.sh $TRAVIS_BRANCH)
     else
+    [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any) using ./ci_dependencies.sh $GLOBAL_RELEASE..."
       (source ./ci_dependencies.sh $GLOBAL_RELEASE)
     fi
 .else
