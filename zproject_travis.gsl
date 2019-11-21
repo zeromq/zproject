@@ -772,6 +772,13 @@ fi
 
 .close
 .chmod_x ("ci_dependencies.sh")
+.output ".dependencies-graph.dot.part"
+.for use
+. if defined (use.repository)
+   $(project.name) -> $(use.project); 
+. endif
+.endfor
+.close
 .output ".ci_global_release"
 . if defined (project.travis_global_release)
 $(project.travis_global_release:)
