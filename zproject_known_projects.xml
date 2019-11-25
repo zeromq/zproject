@@ -88,7 +88,6 @@
 
     <use project = "libsodium" prefix = "sodium"
         repository = "https://github.com/jedisct1/libsodium.git"
-        release = "stable"
         test = "sodium_init" />
 
     <use project = "libcurl"
