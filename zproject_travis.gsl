@@ -663,17 +663,20 @@ if \
  sudo apt-get install $(string.replace (use.project, "_|-"))-dev -y || exit \$? 
 .         endif
 .else
-. if defined (use.repository)
-.    if defined (use.release)
- FOLDER_NAME="$(use.project)-$(use.release)"
-.    else
- FOLDER_NAME="$(use.project)"
-.    endif
 
- if [ -d "$FOLDER_NAME" ]; then
+.   if defined (use.repository)
+.       if defined (use.release)
+    FOLDER_NAME="$(use.project)-$(use.release)"
+.       else
+    FOLDER_NAME="$(use.project)"
+.       endif
+.   endif
+
+.   if defined (use.repository)
+if [ -d "$FOLDER_NAME" ]; then
     echo "$FOLDER_NAME already exist. Skipped." >&2
- else
-. endif
+else
+.   endif
     echo ""
 .    if ! defined (use.repository) & ! defined (use.tarball)
     echo "WARNING: Can not build prerequisite '$(use.project)'" >&2
@@ -706,7 +709,8 @@ if \
         fi
     fi  
 .            endif
-    cd "./$FOLDER_NAME"
+    echo "Entering in ${PWD}/${FOLDER_NAME}"
+    cd "./${FOLDER_NAME}"
 .        endif
 .        if defined (use.builddir)
     cd ./$(use.builddir)
@@ -756,18 +760,20 @@ if \
 .        endif
     $CI_TIME make -j4
     $CI_TIME make install
+    echo "Leaving from ${PWD}"
     cd "${BASE_PWD}"
+    echo "Now in ${PWD}"
 .        if use.optional
     CONFIG_OPTS+=("--with-$(use.libname)=yes")
 .        endif
 .    endif
+. if defined (use.repository)
+fi
+. endif
 .    if use.optional
 else
     CONFIG_OPTS+=("--with-$(use.libname)=yes")
 .    endif
-. if defined (use.repository)
-fi
-. endif
 .endif
 fi
 
