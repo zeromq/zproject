@@ -686,8 +686,8 @@ Model is described in `zproject_known_projects.xml` file:
 
     <use project = "libsodium" prefix = "sodium"
         repository = "https://github.com/jedisct1/libsodium.git"
-        release = "stable"
         test = "sodium_init" />
+    <!-- 42ity removed due to travis_recursive_dependencies : release = "stable" -->
 
     <use project = "libcurl"
         prefix = "curl"
