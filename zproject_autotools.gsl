@@ -2089,17 +2089,17 @@ debug: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(to
 
 debug-verbose: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute gdb -q \\
-\t\t$\(builddir)/src/$(project.prefix)_selftest -v
+\t\t--args $\(builddir)/src/$(project.prefix)_selftest -v
 \t$\(MAKE) check-empty-selftest-rw
 
 .for class
 debug-$(class.c_name): src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute gdb -q \\
-\t\t$\(builddir)/src/$(project.prefix)_selftest -t $(class.c_name)
+\t\t--args $\(builddir)/src/$(project.prefix)_selftest -t $(class.c_name)
 \t$\(MAKE) check-empty-selftest-rw
 debug-$(class.c_name)-verbose: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute gdb -q \\
-\t\t$\(builddir)/src/$(project.prefix)_selftest -v -t $(class.c_name)
+\t\t--args $\(builddir)/src/$(project.prefix)_selftest -v -t $(class.c_name)
 \t$\(MAKE) check-empty-selftest-rw
 .endfor
 
