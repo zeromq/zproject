@@ -1439,6 +1439,7 @@ echo
 echo Configure complete! Now proceed with:
 echo "    - 'make'               compile the project"
 echo "    - 'make check'         run the project's selftest"
+echo "    - 'make check-<test-name>'    run the project's selftest"
 echo "    - 'make install'       install the project to $prefix"
 echo "    - 'make bindings       install enabled language bindings (Python, etc)"
 echo
@@ -1455,7 +1456,7 @@ echo "    - 'make coverage'      generate project's selftest coverage report"
 echo "                           expects --with-gcov option for configure"
 echo "    - 'make clang-format-check'   check if project sources conform"
 echo "                           to style requirements"
-echo "    - 'make clang-format'         modify project sources to conform"
+echo "    - 'make clang-format'  modify project sources to conform"
 echo "                           to style requirements"
 echo "    - 'make clang-format-diff'    modify as above and print 'git diff'"
 echo
@@ -2010,6 +2011,16 @@ check-verbose: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_R
 \t$\(LIBTOOL) --mode=execute $\(builddir)/src/$(project.prefix)_selftest -v
 \t$\(MAKE) check-empty-selftest-rw
 
+.for class
+check-$(class.c_name): src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
+\t$\(LIBTOOL) --mode=execute $\(builddir)/src/$(project.prefix)_selftest -t $(class.c_name)
+\t$\(MAKE) check-empty-selftest-rw
+check-$(class.c_name)-verbose: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
+\t$\(LIBTOOL) --mode=execute $\(builddir)/src/$(project.prefix)_selftest -v -t $(class.c_name)
+\t$\(MAKE) check-empty-selftest-rw
+
+.endfor
+
 # Run the selftest binary under valgrind to check for memory leaks
 memcheck: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute valgrind --tool=memcheck \\
@@ -2027,6 +2038,23 @@ memcheck-verbose: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DI
 \t\t$\(builddir)/src/$(project.prefix)_selftest -v
 \t$\(MAKE) check-empty-selftest-rw
 
+.for class
+memcheck-$(class.c_name): src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
+\t$\(LIBTOOL) --mode=execute valgrind --tool=memcheck \\
+\t\t--leak-check=full --show-reachable=yes --error-exitcode=1 \\
+\t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
+\t\t$\(VALGRIND_OPTIONS) \\
+\t\t$\(builddir)/src/$(project.prefix)_selftest -t $(class.c_name)
+\t$\(MAKE) check-empty-selftest-rw
+memcheck-$(class.c_name)-verbose: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
+\t$\(LIBTOOL) --mode=execute valgrind --tool=memcheck \\
+\t\t--leak-check=full --show-reachable=yes --error-exitcode=1 \\
+\t\t--suppressions=$\(srcdir)/src/.valgrind.supp \\
+\t\t$\(VALGRIND_OPTIONS) \\
+\t\t$\(builddir)/src/$(project.prefix)_selftest -v -t $(class.c_name)
+\t$\(MAKE) check-empty-selftest-rw
+.endfor
+
 # Run the selftest binary under valgrind to check for performance leaks
 callcheck: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute valgrind --tool=callgrind \\
@@ -2040,6 +2068,19 @@ callcheck-verbose: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_D
 \t\t$\(builddir)/src/$(project.prefix)_selftest -v
 \t$\(MAKE) check-empty-selftest-rw
 
+.for class
+callcheck-$(class.c_name): src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
+\t$\(LIBTOOL) --mode=execute valgrind --tool=callgrind \\
+\t\t$\(VALGRIND_OPTIONS) \\
+\t\t$\(builddir)/src/$(project.prefix)_selftest -t $(class.c_name)
+\t$\(MAKE) check-empty-selftest-rw
+callcheck-$(class.c_name)-verbose: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
+\t$\(LIBTOOL) --mode=execute valgrind --tool=callgrind \\
+\t\t$\(VALGRIND_OPTIONS) \\
+\t\t$\(builddir)/src/$(project.prefix)_selftest -v -t $(class.c_name)
+\t$\(MAKE) check-empty-selftest-rw
+.endfor
+
 # Run the selftest binary under gdb for debugging
 debug: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute gdb -q \\
@@ -2048,8 +2089,19 @@ debug: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(to
 
 debug-verbose: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
 \t$\(LIBTOOL) --mode=execute gdb -q \\
-\t\t$\(builddir)/src/$(project.prefix)_selftest -v
+\t\t--args $\(builddir)/src/$(project.prefix)_selftest -v
 \t$\(MAKE) check-empty-selftest-rw
+
+.for class
+debug-$(class.c_name): src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
+\t$\(LIBTOOL) --mode=execute gdb -q \\
+\t\t--args $\(builddir)/src/$(project.prefix)_selftest -t $(class.c_name)
+\t$\(MAKE) check-empty-selftest-rw
+debug-$(class.c_name)-verbose: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
+\t$\(LIBTOOL) --mode=execute gdb -q \\
+\t\t--args $\(builddir)/src/$(project.prefix)_selftest -v -t $(class.c_name)
+\t$\(MAKE) check-empty-selftest-rw
+.endfor
 
 # Run the selftest binary with verbose switch for tracing
 animate: src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
