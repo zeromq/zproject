@@ -530,7 +530,7 @@ IF (ENABLE_DRAFTS)
 ENDIF (ENABLE_DRAFTS)
 
 .endif
-.if count (class)
+.if count (class, private ?<> 0)
 IF (ENABLE_DRAFTS)
     list (APPEND TEST_CLASSES
     private_classes
