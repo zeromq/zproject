@@ -14,53 +14,57 @@ register_target ("docker", "packaging for Docker")
 
 .macro generate_docker_file ()
 .output "Dockerfile"
-FROM ubuntu:trusty
+FROM ubuntu:latest
 MAINTAINER $(project.name) Developers <$(project.email)>
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update -y -q
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y -q --force-yes build-essential git-core libtool autotools-dev autoconf automake pkg-config unzip libkrb5-dev cmake
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y -q --force-yes \\
+.for use where !optional & defined (use.debian_name) & use.draft ?<> 1
+     $(use.debian_name)$(last ()?? ""? " \\")
+.endfor
 
 RUN useradd -d /home/zmq -m -s /bin/bash zmq
-RUN echo "zmq ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/zmq
-RUN chmod 0440 /etc/sudoers.d/zmq
+RUN echo "zmq ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-USER zmq
-
-.for use where !optional & defined (use.tarball)
-WORKDIR /home/zmq/tmp-deps
+.for use where !optional & defined (use.tarball) & !defined (use.debian_name) & use.draft ?<> 1
+WORKDIR /tmp
 RUN wget $(use.tarball)
 RUN tar -xzf \$(basename "$(use.tarball)")
 RUN rm \$(basename "$(use.tarball)")
-WORKDIR /home/zmq/tmp-deps/\$(basename "$(use.tarball)" .tar.gz)
+WORKDIR /tmp/\$(basename "$(use.tarball)" .tar.gz)
 RUN ./configure --quiet --without-docs
 RUN make
-RUN sudo make install
-RUN sudo ldconfig
+RUN make install
+RUN ldconfig
 
 .endfor
-.for use where !optional & !defined (use.tarball)
-WORKDIR /home/zmq/tmp-deps
+.for use where (!optional & !defined (use.tarball) & !defined (use.debian_name)) | (!optional & use.draft = 1)
+WORKDIR /tmp
 RUN git clone --quiet $(use.repository) $(use.project)
-WORKDIR /home/zmq/tmp-deps/$(use.project)
+WORKDIR /tmp/$(use.project)
 RUN ./autogen.sh 2> /dev/null
 RUN ./configure --quiet --without-docs
 RUN make
-RUN sudo make install
-RUN sudo ldconfig
+RUN make install
+RUN ldconfig
 
 .endfor
-WORKDIR /home/zmq
+WORKDIR /tmp
 RUN git clone --quiet $(project.repository) $(project.name:c)
-WORKDIR /home/zmq/$(project.name:c)
+WORKDIR /tmp/$(project.name:c)
 RUN ./autogen.sh 2> /dev/null
 RUN ./configure --quiet --without-docs
 RUN make
-RUN sudo make install
-RUN sudo ldconfig
+RUN make install
+RUN ldconfig
+
 .if file.exists ("Dockerfile.in")
 
 $(file.slurp ("Dockerfile.in"))
 .endif
+
+USER zmq
 .endmacro
 
 function target_docker
