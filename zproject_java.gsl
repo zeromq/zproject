@@ -760,7 +760,7 @@ make $MAKE_OPTIONS
 
 echo "********  Building jar for $TOOLCHAIN_ABI"
 #   Copy class files into org/zeromq/etc.
-unzip -q ../../build/libs/$(project.prefix)-jni-$(->version.major).$(->version.minor).$(->version.patch)*.jar
+find ../../build/libs/ -type f -name '$(project.prefix)-jni-*.jar' ! -name '*javadoc.jar' ! -name '*sources.jar' -exec unzip -q {} +
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
 unzip -qo '../../../../../$(use.project)/bindings/jni/android/$(use.project)-android*.jar'
