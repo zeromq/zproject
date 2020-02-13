@@ -134,7 +134,7 @@ plugins {
     id 'com.google.osdetector' version '1.6.2'
 }
 
-wrapper.gradleVersion = '5.6.2'
+wrapper.gradleVersion = '6.1.1'
 
 subprojects {
     apply plugin: 'java'
@@ -548,34 +548,26 @@ This calls javah to build the headers in src/native/include, and then compiles t
 
 ## Building the JNI Layer for Android
 
-See bindings/jni/android/build.sh.
+Please read the prerequisites section of the [README](../../builds/android/README.md) in the android build directory.
 
-You need the Android Native Development Kit (NDK) installed.
+You only need to set the environment variables.
 
-Set these environment variables, e.g:
+Then in the jni's android directory ($(project.prefix)-jni/android), run:
 
-    ANDROID_NDK_ROOT=$HOME/android-ndk-r11c
-    TOOLCHAIN_VERSION=4.9
-    TOOLCHAIN_HOST=arm-linux-androideabi
-    TOOLCHAIN_NAME=$TOOLCHAIN_HOST-$TOOLCHAIN_VERSION
-    TOOLCHAIN_ARCH=arm
-    TOOLCHAIN_PATH=$ANDROID_NDK_ROOT/toolchains/$TOOLCHAIN_NAME/prebuilt/linux-x86_64/bin
-
-Then in the android directory, run:
-
-    ./build.sh
+    ./build.sh [ arm | arm64 | x86 | x86_64 ]
 
 This does the following:
 
-* It compiles the $(project.name:) C sources for Android, into a native library $(project.libname).so in builds/android/
-* It compiles the JNI Java classes into a jar file $(project.prefix)-jni-$(->version.major).$(->version.minor).$(->version.patch).jar in bindings/jni/build/libs
+* It compiles the $(project.name:) C sources for Android, into a native library $(project.libname).so in /tmp/android_build/<architecture>/lib
+* It compiles the JNI Java classes into a jar file $(project.prefix)-jni-$(->version.major).$(->version.minor).$(->version.patch).jar in bindings/jni/$(project.prefix)-jni/build/libs
 * It compiles the JNI C sources for Android, into a native library $(project.libname)jni.so.
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-* It takes $(use.project)-jni-*.jar, which must already be built in ../$(use.project)/bindings/jni/build/libs/
+* It takes $(use.project)-jni-*.jar, which must already be built in ../$(use.project)/bindings/jni/$(use.prefix)-jni/build/libs/
 .   endif
 .endfor
-* It combines all these into $(project.prefix)-android.jar, which you can use in your Android projects.
+* It combines all these into jar file for the built architecture, which you can use in your Android projects.
+* It merges the jar files built for the different architectures into one jar file.
 
 ## Building the JNI Layer for Windows
 
@@ -689,29 +681,48 @@ $(project.libname)jni.so
 #!/bin/bash
 $(project.GENERATED_WARNING_HEADER:)
 #   Build JNI interface for Android
-#   Targets Android API level 8, ARM architecture (see below)
 #
 #   Requires these environment variables be set, e.g.:
 #
-#     ANDROID_NDK_ROOT=$HOME/android-ndk-r11c
-#     TOOLCHAIN_NAME=arm-linux-androideabi-4.9
-#     TOOLCHAIN_VERSION=4.9
-#     TOOLCHAIN_HOST=arm-linux-androideabi
-#     TOOLCHAIN_ARCH=arm
-#     TOOLCHAIN_PATH=$ANDROID_NDK_ROOT/toolchains/$TOOLCHAIN_NAME/prebuilt/linux-x86_64/bin
+#     ANDROID_NDK_ROOT=$HOME/android-ndk-r20
 #
 #   Exit if any step fails
 set -e
-set -x
 
-export ANDROID_API_LEVEL=android-8
-export ANDROID_SYS_ROOT=$ANDROID_NDK_ROOT/platforms/$ANDROID_API_LEVEL/arch-$TOOLCHAIN_ARCH
-if [ "$1" = "-d" ]; then
-    MAKE_OPTIONS=VERBOSE=1
+# Set this to enable verbose profiling
+[ -n "${CI_TIME-}" ] || CI_TIME=""
+case "$CI_TIME" in
+    [Yy][Ee][Ss]|[Oo][Nn]|[Tt][Rr][Uu][Ee])
+        CI_TIME="time -p " ;;
+    [Nn][Oo]|[Oo][Ff][Ff]|[Ff][Aa][Ll][Ss][Ee])
+        CI_TIME="" ;;
+esac
+
+# Set this to enable verbose tracing
+[ -n "${CI_TRACE-}" ] || CI_TRACE="no"
+case "$CI_TRACE" in
+    [Nn][Oo]|[Oo][Ff][Ff]|[Ff][Aa][Ll][Ss][Ee])
+        set +x ;;
+    [Yy][Ee][Ss]|[Oo][Nn]|[Tt][Rr][Uu][Ee])
+        set -x
+        MAKE_OPTIONS=VERBOSE=1
+        ;;
+esac
+
+function usage {
+    echo "Usage ./build.sh [ arm | arm64 | x86 | x86_64 ]"
+}
+
+BUILD_ARCH=$1
+if [ -z $BUILD_ARCH ]; then
+    usage
+    exit 1
 fi
 
 source ../../../../builds/android/android_build_helper.sh
-android_build_env
+
+export MIN_SDK_VERSION=21
+export ANDROID_BUILD_DIR=/tmp/android_build
 
 #   Build any dependent libraries
 .for project.use
@@ -722,7 +733,7 @@ android_build_env
 
 #   Ensure we've built dependencies for Android
 echo "********  Building $(project.name:) Android native libraries"
-( cd ../../../../builds/android && ./build.sh )
+( cd ../../../../builds/android && ./build.sh $BUILD_ARCH )
 
 #   Ensure we've built JNI interface
 echo "********  Building $(project.name:) JNI interface & classes"
@@ -730,8 +741,15 @@ echo "********  Building $(project.name:) JNI interface & classes"
 
 echo "********  Building $(project.name:) JNI for Android"
 rm -rf build && mkdir build && cd build
-export ANDROID_BUILD_PREFIX=$ANDROID_BUILD_PREFIX
-cmake -v -DCMAKE_TOOLCHAIN_FILE=../android_toolchain.cmake ..
+# Export android build's environment variables for cmake
+android_build_set_env $BUILD_ARCH
+cmake -v \\
+    -DANDROID_ABI=$TOOLCHAIN_ABI \\
+    -DANDROID_PLATFORM=$MIN_SDK_VERSION \\
+    -DANDROID_STL=c++_shared \\
+    -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake \\
+    -DCMAKE_FIND_ROOT_PATH=$ANDROID_BUILD_PREFIX \\
+    ..
 
 #   CMake wrongly searches current directory and then toolchain path instead
 #   of lib path for these files, so make them available temporarily
@@ -740,23 +758,32 @@ ln -s $ANDROID_SYS_ROOT/usr/lib/crtbegin_so.o
 
 make $MAKE_OPTIONS
 
-echo "********  Building $(project.name:c).jar for Android"
+echo "********  Building jar for $TOOLCHAIN_ABI"
 #   Copy class files into org/zeromq/etc.
 unzip -q ../../build/libs/$(project.prefix)-jni-$(->version.major).$(->version.minor).$(->version.patch)*.jar
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-unzip -q -o ../../../../../tmp-deps/$(use.project)/bindings/jni/android/$(use.project)-android.jar
+unzip -qo '../../../../../$(use.project)/bindings/jni/android/$(use.project)-android*.jar'
 .   endif
 .endfor
 
-#   Copy native libraries into lib/armeabi
-mkdir -p lib/armeabi
-mv $(project.libname)jni.so lib/armeabi
-cp ../../../../../builds/android/prefix/*/lib/*.so lib/armeabi
+#   Copy native libraries into lib/$TOOLCHAIN_ABI
+mkdir -p lib/$TOOLCHAIN_ABI
+cp $(project.libname)jni.so lib/$TOOLCHAIN_ABI
+cp $ANDROID_BUILD_PREFIX/lib/*.so lib/$TOOLCHAIN_ABI
+cp $ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/libs/$TOOLCHAIN_ABI/libc++_shared.so lib/$TOOLCHAIN_ABI
 
-cp $ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/$TOOLCHAIN_VERSION/libs/armeabi/libgnustl_shared.so lib/armeabi
+#   Build android jar
+zip -r -m ../$(project.prefix)-android-$TOOLCHAIN_ABI-$(->version.major).$(->version.minor).$(->version.patch).jar lib/ org/ META-INF/
+cd ..
+rm -rf build
 
-zip -r -m ../$(project.prefix)-android.jar lib/ org/ META-INF/
+echo "********  Merging ABI jars"
+mkdir build && cd build
+#   Copy contents from all ABI jar - overwriting class files and manifest
+unzip -qo '../$(project.prefix)-android-*$(->version.major).$(->version.minor).$(->version.patch).jar'
+#   Build merged jar
+zip -r -m ../$(project.prefix)-android-$(->version.major).$(->version.minor).$(->version.patch).jar lib/ org/ META-INF/
 cd ..
 rm -rf build
 
@@ -765,20 +792,14 @@ echo "********  Complete"
 .
 .output "$(topdir)/$(project.prefix:c)-jni/android/CMakeLists.txt"
 $(project.GENERATED_WARNING_HEADER:)
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.6)
 
 project ($(project.name:c)jni CXX)
 enable_language (C)
 
 # Search for Find*.cmake files in the following locations
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../..")
-
-########################################################################
-# JNI dependency
-########################################################################
-find_package (JNI REQUIRED)
-include_directories (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} ../src/native/include)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../../..")
 .for use where use.optional = 0
 
 ########################################################################
@@ -804,6 +825,8 @@ ELSE ($(PROJECT.PREFIX)_FOUND)
     message( FATAL_ERROR "$(project.prefix) not found." )
 ENDIF ($(PROJECT.PREFIX)_FOUND)
 
+include_directories(../src/native/include)
+
 set ($(project.prefix)jni_sources
 .for project.class where class.okay
     ../src/main/c/$(namespace:c)_$(class.name:pascal).c
@@ -820,63 +843,14 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
 target_link_libraries ($(project.prefix)jni ${MORE_LIBRARIES})
 .
-.output "$(topdir)/$(project.prefix:c)-jni/android/android_toolchain.cmake"
-$(project.GENERATED_WARNING_HEADER:)
-#   CMake toolchain script
-#
-#   Targets Android 8, ARM
-#   Called from build.sh via cmake
-
-set (CMAKE_SYSTEM_NAME Linux)  # Tell CMake we're cross-compiling
-set (ANDROID True)
-set (BUILD_ANDROID True)
-
-include (CMakeForceCompiler)
-include (FindPkgConfig)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../../..")
-
-# Where is the target environment
-set (ANDROID_NDK_ROOT $ENV{ANDROID_NDK_ROOT})
-set (ANDROID_SYS_ROOT $ENV{ANDROID_SYS_ROOT})
-set (ANDROID_API_LEVEL $ENV{ANDROID_API_LEVEL})
-set (TOOLCHAIN_PATH $ENV{TOOLCHAIN_PATH})
-set (TOOLCHAIN_HOST $ENV{TOOLCHAIN_HOST})
-set (TOOLCHAIN_ARCH $ENV{TOOLCHAIN_ARCH})
-set (LIBRARIES_BUILD_PREFIX $ENV{ANDROID_BUILD_PREFIX})
-
-# Here is the target environment located
-set (CMAKE_INSTALL_PREFIX "${LIBRARIES_BUILD_PREFIX}")
-set (CMAKE_FIND_ROOT_PATH
-    "${TOOLCHAIN_PATH}"
-    "${LIBRARIES_BUILD_PREFIX}"
-    "${LIBRARIES_BUILD_PREFIX}/share")
-
-# pkg_config should not search for packages of the host system,
-# but for the target system. To do this, there is the environment variable
-# PKG_CONFIG_LIBDIR, which was added to pkg_config explicitely for crosscompiling.
-# So set this here to point inside the CMAKE_FIND_ROOT_PATH so it can find
-# only packages for the target system when crosscompiling.
-set(pkgconfigLibDir)
-foreach(currentFindRoot ${CMAKE_FIND_ROOT_PATH})
-    set(pkgconfigLibDir "${pkgconfigLibDir}:${currentFindRoot}/lib/pkgconfig")
-endforeach(currentFindRoot)
-set(ENV{PKG_CONFIG_LIBDIR} "${pkgconfigLibDir}")
-set(ENV{PKG_CONFIG_PATH} "")
-
-# Prefix detection only works with compiler id "GNU"
-# CMake will look for prefixed g++, cpp, ld, etc. automatically
-CMAKE_FORCE_C_COMPILER (${TOOLCHAIN_PATH}/arm-linux-androideabi-gcc GNU)
-
-cmake_policy (SET CMP0015 NEW)   #  Use relative paths in link_directories
-
-include_directories (${ANDROID_SYS_ROOT}/usr/include)
-link_directories (${ANDROID_SYS_ROOT}/usr/lib)
+.# File has been removed in favor of NDKs android_toolchain.cmake. The delete
+.# statement can be removed at some point in the future when users had time to
+.# apply the changes.
+.file.delete ("$(topdir)/$(project.prefix:c)-jni/android/android_toolchain.cmake")
 .
 .output "$(topdir)/ci_build.sh"
 #!/usr/bin/env bash
-
-set -e
+$(project.GENERATED_WARNING_HEADER:)
 
 # Set this to enable verbose profiling
 [ -n "${CI_TIME-}" ] || CI_TIME=""
@@ -901,6 +875,8 @@ esac
 ########################################################################
 
 BUILD_PREFIX=/tmp
+$(PROJECT.PREFIX)_JNI_ROOT=${PWD}
+$(PROJECT.PREFIX)_ROOT=${PWD}/../..
 
 CONFIG_OPTS=()
 CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include")
@@ -914,107 +890,97 @@ if [ -z "${CI_CONFIG_QUIET-}" ] || [ "${CI_CONFIG_QUIET-}" = yes ] || [ "${CI_CO
     CONFIG_OPTS+=("--quiet")
 fi
 
-pushd ../../..
-rm -rf tmp-deps
-mkdir -p tmp-deps
+rm -rf /tmp/tmp-deps
+mkdir -p /tmp/tmp-deps
 
 # Clone and build dependencies
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
-.   for use where defined (use.tarball)
-BASE_PWD=${PWD}
-cd tmp-deps
+.for use where defined (use.tarball)
+export $(USE.PROJECT)_ROOT="/tmp/tmp-deps/$(use.project)"
 wget $(use.tarball)
 tar -xzf \$(basename "$(use.tarball)")
-cd \$(basename "$(use.tarball)" .tar.gz)
-.       if count(use.add_config_opts) > 0
-( # Custom additional options for $(use.project)
-.           for use.add_config_opts as add_cfgopt
-  CONFIG_OPTS+=("$(add_cfgopt)")
-.           endfor
-  $CI_TIME ./configure "${CONFIG_OPTS[@]}"
-)
-.       else
-$CI_TIME ./configure "${CONFIG_OPTS[@]}"
-.       endif
-$CI_TIME make -j4
-$CI_TIME make install
-cd ${BASE_PWD}
-.   endfor
-.   for use where defined (use.repository) & ! defined (use.tarball)
-BASE_PWD=${PWD}
-cd tmp-deps
-.      if defined (use.release)
-$CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
-.      else
-$CI_TIME git clone --quiet --depth 1 $(use.repository) $(use.project)
-.      endif
-cd $(use.project)
-git --no-pager log --oneline -n1
-if [ -e autogen.sh ]; then
-    $CI_TIME ./autogen.sh 2> /dev/null
-fi
-if [ -e buildconf ]; then
-    $CI_TIME ./buildconf 2> /dev/null
-fi
-if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
-    $CI_TIME libtoolize --copy --force && \\
-    $CI_TIME aclocal -I . && \\
-    $CI_TIME autoheader && \\
-    $CI_TIME automake --add-missing --copy && \\
-    $CI_TIME autoconf || \\
-    $CI_TIME autoreconf -fiv
-fi
-.       if count(use.add_config_opts) > 0
-( # Custom additional options for $(use.project)
-.           for use.add_config_opts as add_cfgopt
-  CONFIG_OPTS+=("$(add_cfgopt)")
-.           endfor
-  $CI_TIME ./configure "${CONFIG_OPTS[@]}"
-)
-.       else
-$CI_TIME ./configure "${CONFIG_OPTS[@]}"
-.       endif
-$CI_TIME make -j4
-$CI_TIME make install
+mv \$(basename "$(use.tarball)" .tar.gz) \$$(USE.PROJECT)_ROOT
+cd \$$(USE.PROJECT)_ROOT
+.       generate_compile_script (use, "tarball")
+
+.endfor
+.for use where defined (use.repository) & ! defined (use.tarball)
+export $(USE.PROJECT)_ROOT="/tmp/tmp-deps/$(use.project)"
+.   if defined (use.release)
+$CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $$(USE.PROJECT)_ROOT
+.   else
+$CI_TIME git clone --quiet --depth 1 $(use.repository) $$(USE.PROJECT)_ROOT
+.   endif
+
+cd \$$(USE.PROJECT)_ROOT
+.   generate_compile_script (use, "git")
+
 .       if count (project->dependencies.class, class.project = use.project) > 0
 # Build jni dependency
 ( cd bindings/jni && TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./gradlew publishToMavenLocal )
 .       endif
-cd ${BASE_PWD}
 
-.   endfor
-popd
-pushd ../..
-
+.endfor
+cd \$$(PROJECT.PREFIX)_ROOT
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of currently tested project..."
-.       if count(add_config_opts) > 0
+.generate_compile_script (project, "git")
+.if count (add_config_opts) > 0
 # Custom additional options for this project
-.           for add_config_opts as add_cfgopt
+.   for add_config_opts as add_cfgopt
 CONFIG_OPTS+=("$(add_cfgopt)")
-.           endfor
-.       endif
+.   endfor
+.endif
 $CI_TIME ./autogen.sh 2> /dev/null
 $CI_TIME ./configure "${CONFIG_OPTS[@]}"
 $CI_TIME make -j4
 $CI_TIME make install
 [ -z "$CI_TIME" ] || echo "`date`: Build completed without fatal errors!"
 
-popd
+cd ${$(PROJECT.PREFIX)_JNI_ROOT}
+IS_RELEASE=false
+[ -z "$TRAVIS_TAG" ] || IS_RELEASE=true
 
-TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./gradlew build jar --info
+TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./gradlew build jar -PisRelease=$IS_RELEASE --info
+TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./gradlew bintrayUpload -PisRelease=$IS_RELEASE --info
 TERM=dumb $CI_TIME ./gradlew clean
 
 ########################################################################
 #  Build and check the jni android binding
 ########################################################################
 
-if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$BINDING_OPTS" == "android" ]; then
     pushd ../../builds/android
-        \. ./ci_build.sh
+        export NDK_VERSION=android-ndk-r20
+        export ANDROID_NDK_ROOT="/tmp/${NDK_VERSION}"
+
+		case \$(uname | tr '[:upper:]' '[:lower:]') in
+		  linux*)
+			HOST_PLATFORM=linux-x86_64
+			;;
+		  darwin*)
+			HOST_PLATFORM=darwin-x86_64
+			;;
+		  *)
+			echo "Unsupported platform"
+			exit 1
+			;;
+		esac
+
+        if [ ! -d "${ANDROID_NDK_ROOT}" ]; then
+            export FILENAME=$NDK_VERSION-$HOST_PLATFORM.zip
+
+            (cd '/tmp' \\
+                && wget http://dl.google.com/android/repository/$FILENAME -O $FILENAME &> /dev/null \\
+                && unzip -q $FILENAME) || exit 1
+            unset FILENAME
+        fi
     popd
 
-    pushd $(project.prefix:c)-jni/android
-        TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./build.sh
+    pushd czmq-jni/android
+        TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./build.sh "arm"
+        TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./build.sh "arm64"
+        TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./build.sh "x86"
+        TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./build.sh "x86_64"
     popd
 fi
 .close
@@ -1375,6 +1341,38 @@ public class $(my.class.name:pascal)Test {
     }
 
 }
+.endmacro
+
+.macro generate_compile_script (use, target)
+.   if my.target = "git"
+git --no-pager log --oneline -n1
+if [ -e autogen.sh ]; then
+    $CI_TIME ./autogen.sh 2> /dev/null
+fi
+if [ -e buildconf ]; then
+    $CI_TIME ./buildconf 2> /dev/null
+fi
+if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
+    $CI_TIME libtoolize --copy --force && \\
+    $CI_TIME aclocal -I . && \\
+    $CI_TIME autoheader && \\
+    $CI_TIME automake --add-missing --copy && \\
+    $CI_TIME autoconf || \\
+    $CI_TIME autoreconf -fiv
+fi
+.   endif
+.   if count(my.use.add_config_opts) > 0
+( # Custom additional options for $(my.use.project)
+.           for my.use.add_config_opts as add_cfgopt
+  CONFIG_OPTS+=("$(add_cfgopt)")
+.           endfor
+  $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+)
+.       else
+$CI_TIME ./configure "${CONFIG_OPTS[@]}"
+.       endif
+$CI_TIME make -j4
+$CI_TIME make install
 .endmacro
 
     project.namespace ?= switches.namespace? "org.zeromq.$(project.prefix)"
