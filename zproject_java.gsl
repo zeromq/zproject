@@ -727,7 +727,7 @@ export ANDROID_BUILD_DIR=/tmp/android_build
 #   Build any dependent libraries
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-( cd ../../../../tmp-deps/$(use.project)/bindings/jni/android; ./build.sh )
+( cd ../../../../../$(use.project)/bindings/jni/$(use.prefix)-jni/android; ./build.sh $BUILD_ARCH )
 .   endif
 .endfor
 
@@ -760,10 +760,10 @@ make $MAKE_OPTIONS
 
 echo "********  Building jar for $TOOLCHAIN_ABI"
 #   Copy class files into org/zeromq/etc.
-unzip -q ../../build/libs/$(project.prefix)-jni-$(->version.major).$(->version.minor).$(->version.patch)*.jar
+find ../../build/libs/ -type f -name '$(project.prefix)-jni-*.jar' ! -name '*javadoc.jar' ! -name '*sources.jar' -exec unzip -q {} +
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-unzip -qo '../../../../../$(use.project)/bindings/jni/android/$(use.project)-android*.jar'
+unzip -qo "../../../../../../$(use.project)/bindings/jni/$(use.project)-jni/android/$(use.project)-android*$TOOLCHAIN_ABI*.jar"
 .   endif
 .endfor
 
