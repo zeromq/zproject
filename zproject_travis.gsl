@@ -653,14 +653,14 @@ if \
 .         if defined (use.debian_name)
 .             if !(use.debian_name = '')
  echo "INFO: Get '$(use.project)' using apt-get $(use.debian_name)" >&2
- sudo apt-get install $(use.debian_name) -y || exit \$? 
+ sudo apt-get install $(use.debian_name) -y || exit \$?
 .             endif
 .         elsif defined (use.libname)
  echo "INFO: Get '$(use.project)' using apt-get $(string.replace (use.libname, "_|-"):lower)-dev" >&2
- sudo apt-get install $(string.replace (use.libname, "_|-"):lower)-dev -y || exit \$? 
+ sudo apt-get install $(string.replace (use.libname, "_|-"):lower)-dev -y || exit \$?
 .         else
  echo "INFO: Get '$(use.project)' using apt-get $(string.replace (use.project, "_|-"))-dev" >&2
- sudo apt-get install $(string.replace (use.project, "_|-"))-dev -y || exit \$? 
+ sudo apt-get install $(string.replace (use.project, "_|-"))-dev -y || exit \$?
 .         endif
 .else
 
@@ -707,7 +707,7 @@ else
             echo "git clone $(use.repository) $FOLDER_NAME"
             $CI_TIME git clone --quiet --depth 1 $(use.repository) $FOLDER_NAME
         fi
-    fi  
+    fi
 .            endif
     echo "Entering in ${PWD}/${FOLDER_NAME}"
     cd "./${FOLDER_NAME}"
@@ -823,7 +823,7 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
         rm -rf ./tmp
     fi
     mkdir -p tmp
-. if !defined (project.travis_recursive_dependencies) | ! (project.travis_recursive_dependencies ?= "true")   
+. if !defined (project.travis_recursive_dependencies) | ! (project.travis_recursive_dependencies ?= "true")
     if [ -d "./tmp-deps" ]; then
         # Checkout/unpack and build area for dependencies
         rm -rf ./tmp-deps
@@ -976,7 +976,7 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
     else
       PROPAGATED_BRANCH="$GLOBAL_RELEASE"
     fi
-    
+
     DEFAULT_BRANCH="`git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'`"
     if [ "x$PROPAGATED_BRANCH" = "x$DEFAULT_BRANCH" ]; then
         [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any) using ./ci_dependencies.sh..."
@@ -1338,8 +1338,8 @@ if [ "$BUILD_TYPE" == "default" ]; then
     cd -
 elif [ "$BUILD_TYPE" == "bindings" ] && [ "$BINDING" == "jni" ]; then
     ( cd bindings/jni && TERM=dumb PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./gradlew clean bintrayUpload )
-    cp bindings/jni/android/$(project.name:c)-android.jar $(project.name:c)-android-$(->version.major).$(->version.minor).$(->version.patch).jar
-    export $(PROJECT.NAME:c)_DEPLOYMENT=$(project.name:c)-android-$(->version.major).$(->version.minor).$(->version.patch).jar
+    cp bindings/jni/android/$(project.name:c)-android.jar $(project.name:c)-android*.jar
+    export $(PROJECT.NAME:c)_DEPLOYMENT=$(project.name:c)-android*.jar
 else
     export $(PROJECT.NAME:c)_DEPLOYMENT=""
 fi
