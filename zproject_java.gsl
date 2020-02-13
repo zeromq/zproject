@@ -727,7 +727,7 @@ export ANDROID_BUILD_DIR=/tmp/android_build
 #   Build any dependent libraries
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-( cd ../../../../tmp-deps/$(use.project)/bindings/jni/android; ./build.sh )
+( cd ../../../../../$(use.project)/bindings/jni/$(use.prefix)-jni/android; ./build.sh $BUILD_ARCH )
 .   endif
 .endfor
 
