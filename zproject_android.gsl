@@ -142,9 +142,7 @@ fi
 
     (bash ${$(USE.PROJECT)_ROOT}/builds/android/build.sh $BUILD_ARCH) || exit 1
     UPSTREAM_PREFIX=${$(USE.PROJECT)_ROOT}/builds/android/prefix/${TOOLCHAIN_ARCH}
-    cp -r ${UPSTREAM_PREFIX}/* ${ANDROID_BUILD_PREFIX}
-    # Remove copied *.la files as the contain absolute paths to $UPSTREAM_PREFIX
-    find ${ANDROID_BUILD_PREFIX} -name '*.la' -exec rm {} +
+    cp -rn ${UPSTREAM_PREFIX}/* ${ANDROID_BUILD_PREFIX}
 }
 
 .endfor
@@ -159,6 +157,9 @@ fi
     rm -rf "${cache}/$(project.name)"
     (cp -r ../.. "${cache}/$(project.name)" && cd "${cache}/$(project.name)" \\
         && make clean && rm -f configure config.status)
+
+    # Remove *.la files as they might cause errors with cross compiled libraries
+    find ${ANDROID_BUILD_PREFIX} -name '*.la' -exec rm {} +
 
     export LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
 
