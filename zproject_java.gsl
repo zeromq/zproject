@@ -180,8 +180,9 @@ bintrayPublish.enabled = false
 $(project.GENERATED_WARNING_HEADER:)
 */
 
-ext {
-    jni_dependencies_version = hasProperty('isRelease') ? 'latest.release' : 'latest.integration'
+ext.jni_dependencies_version = project.hasProperty('isRelease') ? 'latest.release' : 'latest.integration'
+ext.hasNotEmptyProperty = { propertyName ->
+    return project.hasProperty(propertyName) ? project[propertyName]?.trim() : false
 }
 
 dependencies {
@@ -215,10 +216,17 @@ task generateJniHeaders(type: Exec, dependsOn: 'classes') {
 
 tasks.withType(Test) {
     def defaultJavaLibraryPath = System.getProperty("java.library.path")
+    def extraJavaLibraryPath = hasNotEmptyProperty('buildPrefix') ? "$project.buildPrefix/lib" : ''
     if (osdetector.os == 'windows') {
-        systemProperty "java.library.path", "${projectDir}/build/Release${File.pathSeparator}${defaultJavaLibraryPath}"
+        systemProperty "java.library.path", "${projectDir}/build/Release${File.pathSeparator}" +
+                                            "${defaultJavaLibraryPath}${File.pathSeparator}" +
+                                            "${extraJavaLibraryPath}"
     } else {
-        systemProperty "java.library.path", "${projectDir}${File.pathSeparator}${defaultJavaLibraryPath}${File.pathSeparator}/usr/local/lib${File.pathSeparator}/tmp/lib"
+        systemProperty "java.library.path", "${projectDir}${File.pathSeparator}" +
+                                            "${defaultJavaLibraryPath}${File.pathSeparator}" +
+                                            "/usr/local/lib${File.pathSeparator}" +
+                                            "/tmp/lib${File.pathSeparator}" +
+                                            "${extraJavaLibraryPath}"
     }
 }
 
@@ -234,7 +242,8 @@ task initCMake(type: Exec, dependsOn: 'generateJniHeaders') {
                     '-D', "CMAKE_INCLUDE_PATH=\\"${includePath}\\"",
                     '..'
     } else {
-        commandLine 'cmake', '.'
+        def findRootPathOpt = hasNotEmptyProperty('buildPrefix') ? "-DCMAKE_FIND_ROOT_PATH=$project.buildPrefix" : ''
+        commandLine 'cmake', "$findRootPathOpt", '.'
     }
 }
 
@@ -742,7 +751,7 @@ echo "********  Building $(project.name:) Android native libraries"
 
 #   Ensure we've built JNI interface
 echo "********  Building $(project.name:) JNI interface & classes"
-( cd ../.. && ./gradlew build jar --info )
+( cd ../.. && TERM=dumb ./gradlew build jar -PbuildPrefix=$BUILD_PREFIX --info )
 
 echo "********  Building $(project.name:) JNI for Android"
 rm -rf build && mkdir build && cd build
@@ -879,7 +888,7 @@ esac
 # Build and check the jni binding
 ########################################################################
 
-BUILD_PREFIX=/tmp
+export BUILD_PREFIX=/tmp/jni_build
 $(PROJECT.PREFIX)_JNI_ROOT=${PWD}
 $(PROJECT.PREFIX)_ROOT=${PWD}/../..
 
@@ -922,7 +931,7 @@ cd \$$(USE.PROJECT)_ROOT
 
 .       if count (project->dependencies.class, class.project = use.project) > 0
 # Build jni dependency
-( cd bindings/jni && TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./gradlew publishToMavenLocal )
+( cd bindings/jni && TERM=dumb $CI_TIME ./gradlew publishToMavenLocal -PbuildPrefix=$BUILD_PREFIX --info )
 .       endif
 
 .endfor
@@ -945,8 +954,8 @@ cd ${$(PROJECT.PREFIX)_JNI_ROOT}
 IS_RELEASE=false
 [ -z "$TRAVIS_TAG" ] || IS_RELEASE=true
 
-TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./gradlew build jar -PisRelease=$IS_RELEASE --info
-TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./gradlew bintrayUpload -PisRelease=$IS_RELEASE --info
+TERM=dumb $CI_TIME ./gradlew build jar -PbuildPrefix=$BUILD_PREFIX $IS_RELEASE --info
+TERM=dumb $CI_TIME ./gradlew bintrayUpload -PbuildPrefix=$BUILD_PREFIX $IS_RELEASE --info
 TERM=dumb $CI_TIME ./gradlew clean
 
 ########################################################################
