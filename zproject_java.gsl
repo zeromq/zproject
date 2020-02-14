@@ -180,10 +180,14 @@ bintrayPublish.enabled = false
 $(project.GENERATED_WARNING_HEADER:)
 */
 
+ext {
+    jni_dependencies_version = hasProperty('isRelease') ? 'latest.release' : 'latest.integration'
+}
+
 dependencies {
 .   for project.use
 .       if count (project->dependencies.class, class.project = use.project) > 0
-    compile 'org.zeromq.$(use.project):$(use.project)-jni:latest.release'
+    compile "org.zeromq.$(use.project):$(use.project)-jni:$jni_dependencies_version"
 .       endif
 .   endfor
     compile 'org.scijava:native-lib-loader:2.3.4'
