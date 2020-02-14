@@ -46,9 +46,9 @@ if !file.exists (".gitignore")
     >core
     >
     ># Distcheck workspace and archives
-    >$(project.name)-*/
-    >$(project.name)-*.tar.gz
-    >$(project.name)-*.zip
+    >/$(project.name)-*/
+    >/$(project.name)-*.tar.gz
+    >/$(project.name)-*.zip
     >
     ># Man pages
     >doc/*.1
