@@ -180,10 +180,14 @@ bintrayPublish.enabled = false
 $(project.GENERATED_WARNING_HEADER:)
 */
 
+ext {
+    jni_dependencies_version = hasProperty('isRelease') ? 'latest.release' : 'latest.integration'
+}
+
 dependencies {
 .   for project.use
 .       if count (project->dependencies.class, class.project = use.project) > 0
-    compile 'org.zeromq.$(use.project):$(use.project)-jni:latest.release'
+    compile "org.zeromq.$(use.project):$(use.project)-jni:$jni_dependencies_version"
 .       endif
 .   endfor
     compile 'org.scijava:native-lib-loader:2.3.4'
@@ -977,10 +981,10 @@ if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$BINDING_OPTS" == "android" ]; then
     popd
 
     pushd $(project.prefix)-jni/android
-        TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./build.sh "arm"
-        TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./build.sh "arm64"
-        TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./build.sh "x86"
-        TERM=dumb PKG_CONFIG_PATH=$BUILD_PREFIX/lib/pkgconfig $CI_TIME ./build.sh "x86_64"
+        $CI_TIME ./build.sh "arm"
+        $CI_TIME ./build.sh "arm64"
+        $CI_TIME ./build.sh "x86"
+        $CI_TIME ./build.sh "x86_64"
     popd
 fi
 .close
