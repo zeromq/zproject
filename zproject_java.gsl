@@ -944,8 +944,7 @@ cd \$$(PROJECT.PREFIX)_ROOT
 [ -z "$CI_TIME" ] || echo "`date`: Build completed without fatal errors!"
 
 cd ${$(PROJECT.PREFIX)_JNI_ROOT}
-IS_RELEASE=false
-[ -z "$TRAVIS_TAG" ] || IS_RELEASE=true
+[ -z "$TRAVIS_TAG" ] || IS_RELEASE="-PisRelease"
 
 TERM=dumb $CI_TIME ./gradlew build jar -PbuildPrefix=$BUILD_PREFIX $IS_RELEASE --info
 TERM=dumb $CI_TIME ./gradlew bintrayUpload -PbuildPrefix=$BUILD_PREFIX $IS_RELEASE --info
