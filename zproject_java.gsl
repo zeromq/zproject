@@ -941,16 +941,6 @@ cd \$$(USE.PROJECT)_ROOT
 cd \$$(PROJECT.PREFIX)_ROOT
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of currently tested project..."
 .generate_compile_script (project, "git")
-.if count (add_config_opts) > 0
-# Custom additional options for this project
-.   for add_config_opts as add_cfgopt
-CONFIG_OPTS+=("$(add_cfgopt)")
-.   endfor
-.endif
-$CI_TIME ./autogen.sh 2> /dev/null
-$CI_TIME ./configure "${CONFIG_OPTS[@]}"
-$CI_TIME make -j4
-$CI_TIME make install
 [ -z "$CI_TIME" ] || echo "`date`: Build completed without fatal errors!"
 
 cd ${$(PROJECT.PREFIX)_JNI_ROOT}
