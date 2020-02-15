@@ -947,7 +947,6 @@ cd ${$(PROJECT.PREFIX)_JNI_ROOT}
 [ -z "$TRAVIS_TAG" ] || IS_RELEASE="-PisRelease"
 
 TERM=dumb $CI_TIME ./gradlew build jar -PbuildPrefix=$BUILD_PREFIX $IS_RELEASE --info
-TERM=dumb $CI_TIME ./gradlew bintrayUpload -PbuildPrefix=$BUILD_PREFIX $IS_RELEASE --info
 TERM=dumb $CI_TIME ./gradlew clean
 
 ########################################################################
