@@ -18,7 +18,6 @@ if("${CLANG_FORMAT}" STREQUAL "")
   set(CLANG_FORMAT "clang-format")
 endif()
 
-# only create custom targets if they don't exist already (add_subdirectory)
 if (NOT TARGET clang-format)
     add_custom_target(
         clang-format
@@ -50,6 +49,7 @@ if (NOT TARGET clang-format-check-CI)
         COMMENT "Checking correct formatting according to .clang-format file using ${CLANG_FORMAT}"
     )
 endif()
+
 
 if (NOT TARGET clang-format-diff)
     add_custom_target(
