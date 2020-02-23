@@ -539,15 +539,19 @@ ENDIF (ENABLE_DRAFTS)
 
 .endif
 
-add_custom_target(
-    copy-selftest-ro ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/src/selftest-ro ${PROJECT_BINARY_DIR}/src/selftest-ro
-)
+if (NOT TARGET copy-selftest-ro)
+    add_custom_target(
+        copy-selftest-ro ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/src/selftest-ro ${PROJECT_BINARY_DIR}/src/selftest-ro
+    )
+endif()
 
-add_custom_target(
-    make-selftest-rw ALL
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/src/selftest-rw
-)
+if (NOT TARGET make-selftest-rw)
+    add_custom_target(
+        make-selftest-rw ALL
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/src/selftest-rw
+    )
+endif()
 
 set_directory_properties(
     PROPERTIES
@@ -574,7 +578,9 @@ include(CTest)
 ########################################################################
 # cleanup
 ########################################################################
-add_custom_target (distclean @echo Cleaning for source distribution)
+if (NOT TARGET distclean)
+    add_custom_target (distclean @echo Cleaning for source distribution)
+endif()
 
 set(cmake_generated ${PROJECT_BINARY_DIR}/CMakeCache.txt
                     ${PROJECT_BINARY_DIR}/cmake_install.cmake
@@ -1007,10 +1013,12 @@ if("${CLANG_FORMAT}" STREQUAL "")
   set(CLANG_FORMAT "clang-format")
 endif()
 
-add_custom_target(
+if (NOT TARGET clang-format)
+    add_custom_target(
         clang-format
         COMMAND ${CLANG_FORMAT} -style=file -i ${ALL_SOURCE_FILES}
-)
+    )
+endif()
 
 function(JOIN VALUES GLUE OUTPUT)
   string (REPLACE ";" "${GLUE}" _TMP_STR "${VALUES}")
@@ -1019,26 +1027,34 @@ endfunction()
 
 configure_file(builds/cmake/clang-format-check.sh.in clang-format-check.sh @ONLY)
 
-add_custom_target(
+if (NOT TARGET clang-format-check)
+    add_custom_target(
         clang-format-check
         COMMAND chmod +x clang-format-check.sh
         COMMAND ./clang-format-check.sh
         COMMENT "Checking correct formatting according to .clang-format file using ${CLANG_FORMAT}"
-)
+    )
+endif()
 
-add_custom_target(
+if (NOT TARGET clang-format-check-CI)
+    add_custom_target(
         clang-format-check-CI
         COMMAND chmod +x clang-format-check.sh
         COMMAND ./clang-format-check.sh --CI
         COMMENT "Checking correct formatting according to .clang-format file using ${CLANG_FORMAT}"
-)
+    )
+endif()
 
-add_custom_target(
+
+if (NOT TARGET clang-format-diff)
+    add_custom_target(
         clang-format-diff
         COMMAND ${CLANG_FORMAT} -style=file -i ${ALL_SOURCE_FILES}
         COMMAND git diff ${ALL_SOURCE_FILES}
         COMMENT "Formatting with clang-format (using ${CLANG_FORMAT}) and showing differences with latest commit"
-)
+    )
+endif()
+
 .close
 .output "builds/cmake/clang-format-check.sh.in"
 #!/bin/sh
