@@ -845,8 +845,10 @@ windows)
 
 	cd $(project.name)
 	cd bindings/jni
-	ls $BUILD_PREFIX/bin
-	ls $BUILD_PREFIX/lib
+    # Build will fail if processes are still running at the end of the script.
+    # Gradle by default starts a daemon so consequtive builds are faster.
+    # Therefore instruct gradle not to use its daemon.
+    export GRADLE_OPTS=-Dorg.gradle.daemon=false
 	./gradlew build jar -PbuildPrefix=$BUILD_PREFIX -x test --info
 	./gradlew publishToMavenLocal -PbuildPrefix=$BUILD_PREFIX --info
 
