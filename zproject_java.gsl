@@ -216,35 +216,26 @@ task generateJniHeaders(type: Exec, dependsOn: 'classes') {
 
 tasks.withType(Test) {
     def defaultJavaLibraryPath = System.getProperty("java.library.path")
-    def extraJavaLibraryPath = hasNotEmptyProperty('buildPrefix') ? "$project.buildPrefix/lib" : ''
     if (osdetector.os == 'windows') {
-        systemProperty "java.library.path", "${projectDir}/build/Release${File.pathSeparator}" +
-                                            "${defaultJavaLibraryPath}${File.pathSeparator}" +
-                                            "${extraJavaLibraryPath}"
+         def extraJavaLibraryPath = hasNotEmptyProperty('buildPrefix') ? "$project.buildPrefix\\\\bin;$project.buildPrefix\\\\lib" : ''
+         extraJavaLibraryPath = extraJavaLibraryPath.replace("/", "\\\\")
+         systemProperty "java.library.path", "${projectDir}\\\\build\\\\Release${File.pathSeparator}" +
+                                             "${extraJavaLibraryPath}${File.pathSeparator}" +
+                                             "${defaultJavaLibraryPath}"
     } else {
-        systemProperty "java.library.path", "${projectDir}${File.pathSeparator}" +
-                                            "${defaultJavaLibraryPath}${File.pathSeparator}" +
+        def extraJavaLibraryPath = hasNotEmptyProperty('buildPrefix') ? "$project.buildPrefix/lib" : ''
+        systemProperty "java.library.path", "${projectDir}/build${File.pathSeparator}" +
                                             "/usr/local/lib${File.pathSeparator}" +
                                             "/tmp/lib${File.pathSeparator}" +
-                                            "${extraJavaLibraryPath}"
+                                            "${extraJavaLibraryPath}${File.pathSeparator}" +
+                                            "${defaultJavaLibraryPath}"
     }
 }
 
 task initCMake(type: Exec, dependsOn: 'generateJniHeaders') {
-    if (osdetector.os == 'windows') {
-        def includePath = "${rootDir}/../../include"
-.   for project.use
-        includePath += "${File.pathSeparator}${rootDir}/../../../$(use.project)/include"
-.   endfor
-        workingDir  'build'
-        commandLine 'cmake',
-                    '-G', vsGenerator,
-                    '-D', "CMAKE_INCLUDE_PATH=\\"${includePath}\\"",
-                    '..'
-    } else {
-        def findRootPathOpt = hasNotEmptyProperty('buildPrefix') ? "-DCMAKE_FIND_ROOT_PATH=$project.buildPrefix" : ''
-        commandLine 'cmake', "$findRootPathOpt", '.'
-    }
+    workingDir  'build'
+    def prefixPath = hasNotEmptyProperty('buildPrefix') ? "-DCMAKE_PREFIX_PATH=$project.buildPrefix" : ''
+    commandLine 'cmake', "$prefixPath", '..'
 }
 
 task buildNative(type: Exec, dependsOn: 'initCMake') {
@@ -255,7 +246,8 @@ task buildNative(type: Exec, dependsOn: 'initCMake') {
                     '--target', '$(project.prefix)jni',
                     '--', '-verbosity:Minimal',  '-maxcpucount'
     } else {
-        commandLine 'make'
+        commandLine 'cmake',
+                    '--build',  'build'
     }
 }
 
@@ -442,8 +434,18 @@ dependencies {
 task copyLibs(type: Copy) {
     def libraryPaths = System.getProperty('java.library.path').split(File.pathSeparator).toList()
     libraryPaths.add('/usr/local/lib')
-    libraryPaths.add("${rootDir}/$(project.prefix:c)-jni")
-    libraryPaths.add("${rootDir}/$(project.prefix:c)-jni/build/Release")
+    if (osdetector.os == 'windows') {
+        libraryPaths.add("${rootDir}/$(project.prefix:c)-jni/build/Release")
+    } else {
+        libraryPaths.add("${rootDir}/$(project.prefix:c)-jni/build")
+    }
+    if (project.hasProperty('buildPrefix')) {
+        if (osdetector.os == 'windows') {
+            // DLLs are installed to the bin directory by cmake
+            libraryPaths.add("${project.buildPrefix}/bin")
+        }
+        libraryPaths.add("${project.buildPrefix}/lib")
+    }
 
     libraryPaths.each { path ->
         from path
@@ -597,22 +599,23 @@ Prerequisites:
 * Java JDK 8 or later is installed
 
 Environment Variables:
-* Add MSBuild.exe to the PATH, e.g. C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin
-* Set JAVA_HOME to the installation location, e.g. C:\\Program Files\\Java\\jdk1.8.0_66.
+* Add MSBuild.exe to the PATH (e.g. `C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin`)
+* Set JAVA_HOME to the installation location (e.g. `C:\\Program Files\\Java\\jdk1.8.0_66`).
 
-1. Check out all dependent projects from github, at the same level as this project. E.g.: libzmq, czmq.
-2. Follow the dependent projects instructions to build their '.dll' and '.lib' file.
-3. Copy a dependent '.dll' and '.lib' files to a folder
-4. Add this library folder to the path, e.g.:
+1. Check out all dependent projects from github, at the same level as this project (e.g. libzmq, czmq).
+2. Follow the dependent projects instructions to build their `.dll` and `.lib` file.
 
-	PATH %PATH%;C:\\projects\\libs
+If you used cmake to install the dependencies you can skip the following steps.
+
+3. Create a folder where to place the dlls and libs (e.g. `C:\\tmp\\deps`).
+4. Copy all dependent `.dll` files to the `bin` subfolder (e.g. `C:\\tmp\\deps\\bin`)
+5. Copy all dependent `.lib` files to the `lib` subfolder (e.g. `C:\\tmp\\deps\\lib`)
+6. Copy all dependent `.h` files to the `include` subfolder (e.g. `C:\\tmp\deps\\include`)
 
 Now run:
 
-	gradlew build jar "-PvsGenerator=Visual Studio 16 2019"
-	gradlew test "-PvsGenerator=Visual Studio 16 2019"
-
-Change the vsGenerator parameter to the version of MS Visual Studio you have installed.
+    gradlew build jar -PbuildPrefix=C:\\tmp\\deps
+    gradlew test -PbuildPrefix=C:\\tmp\\deps
 
 ## Installing the JNI Layer
 
@@ -971,18 +974,18 @@ if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$BINDING_OPTS" == "android" ]; then
         export NDK_VERSION=android-ndk-r20
         export ANDROID_NDK_ROOT="/tmp/${NDK_VERSION}"
 
-		case \$(uname | tr '[:upper:]' '[:lower:]') in
-		  linux*)
-			HOST_PLATFORM=linux-x86_64
-			;;
-		  darwin*)
-			HOST_PLATFORM=darwin-x86_64
-			;;
-		  *)
-			echo "Unsupported platform"
-			exit 1
-			;;
-		esac
+        case \$(uname | tr '[:upper:]' '[:lower:]') in
+          linux*)
+            HOST_PLATFORM=linux-x86_64
+            ;;
+          darwin*)
+            HOST_PLATFORM=darwin-x86_64
+            ;;
+          *)
+            echo "Unsupported platform"
+            exit 1
+            ;;
+        esac
 
         if [ ! -d "${ANDROID_NDK_ROOT}" ]; then
             export FILENAME=$NDK_VERSION-$HOST_PLATFORM.zip
