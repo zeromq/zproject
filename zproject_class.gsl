@@ -65,10 +65,10 @@ $(project.GENERATED_WARNING_HEADER:)
 .# TODO: Fix up GSL to only reference same macro once (e.g. if variants are
 .# defined for OS packages named vastly different in various distros, like lua)
 #if defined (HAVE_$(USE.AM_LIB_MACRO))
-#include <$(use.header)>
+#include <$(use.header:)>
 #endif
 .    else
-#include <$(use.header)>
+#include <$(use.header:)>
 .    endif
 .endfor
 
