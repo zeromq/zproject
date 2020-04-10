@@ -135,6 +135,8 @@ function resolve_project_dependency (use)
             move implied_use before my.use as use
             implied_use.implied = "1"
             resolve_project_dependency (implied_use)
+        else 
+            echo "[WARNING] Ignoring implied use definition '$(implied_use.project)' at '$(my.use.project)' because there is a non-implied definition."
         endif
     endfor
 endfunction
