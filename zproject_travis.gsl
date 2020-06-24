@@ -1129,10 +1129,20 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
             $CI_TIME ./configure "${CONFIG_OPTS[@]}"
         )
 .           else
-        $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+        if [ -e ./configure ]; then
+            $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+        else
+            mkdir build
+            cd build
+            $CI_TIME cmake .. -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_PREFIX_PATH=$BUILD_PREFIX
+        fi
 .           endif
-        $CI_TIME make -j4
-        $CI_TIME make install
+        if [ -e ./configure ]; then
+            $CI_TIME make -j4
+            $CI_TIME make install
+        else
+            $CI_TIME cmake --build . --config Release --target install
+        fi
         cd "${BASE_PWD}"
 .           if use.optional
         CONFIG_OPTS+=("--with-$(use.libname)=yes")
