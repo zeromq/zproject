@@ -690,7 +690,7 @@ endif (NOT MSVC)
 
 find_path (
     $(USE.PROJECT)_INCLUDE_DIRS
-    NAMES $(use.header)
+    NAMES $(use.header:)
     HINTS ${PC_$(USE.PROJECT)_INCLUDE_HINTS}
 )
 
