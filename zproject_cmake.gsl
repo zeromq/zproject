@@ -808,14 +808,29 @@ case "$CI_TIME" in
         CI_TIME="" ;;
 esac
 
-# Set this to enable verbose tracing
-[ -n "${CI_TRACE-}" ] || CI_TRACE="no"
-case "$CI_TRACE" in
-    [Nn][Oo]|[Oo][Ff][Ff]|[Ff][Aa][Ll][Ss][Ee])
-        set +x ;;
-    [Yy][Ee][Ss]|[Oo][Nn]|[Tt][Rr][Uu][Ee])
-        set -x ;;
-esac
+configure_tracing() {
+	# Set this to enable verbose tracing
+	[ -n "${CI_TRACE-}" ] || CI_TRACE="no"
+	case "$CI_TRACE" in
+		[Nn][Oo]|[Oo][Ff][Ff]|[Ff][Aa][Ll][Ss][Ee])
+			set +x ;;
+		[Yy][Ee][Ss]|[Oo][Nn]|[Tt][Rr][Uu][Ee])
+			set -x ;;
+	esac
+}
+configure_tracing
+
+fold_start() {
+  set +x
+  echo -e "travis_fold:start:$1\\033[33;1m$2\\033[0m"
+  configure_tracing
+}
+
+fold_end() {
+  set +x
+  echo -e "\\ntravis_fold:end:$1\\r"
+  configure_tracing
+}
 
 LANG=C
 LC_ALL=C
@@ -858,9 +873,12 @@ if [ "$CLANG_FORMAT" != "" ] ; then
     CMAKE_OPTS+=("-DCLANG_FORMAT=${CLANG_FORMAT}")
 fi
 
-# Clone and build dependencies
+# Clone and build dependencies, if not yet installed to Travis env as DEBs
+# or MacOS packages; other OSes are not currently supported by Travis cloud
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
 .for use where defined (use.tarball)
+# Start of recipe for dependency: $(use.project)
+fold_start dependency.$(use.project) "Install dependency $(use.project)"
 if \
 .   if defined (use.debian_name)
 .       if !(use.debian_name = '')
@@ -911,8 +929,12 @@ if \
     $CI_TIME make install
     cd "${BASE_PWD}"
 fi
+fold_end dependency.$(use.project)
+
 .endfor
 .for use where defined (use.repository) & ! defined (use.tarball)
+# Start of recipe for dependency: $(use.project)
+fold_start dependency.$(use.project) "Install dependency $(use.project)"
 .   if defined (use.debian_name)
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
 .   elsif defined (use.libname)
@@ -964,6 +986,8 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)
     $CI_TIME make install
     cd "${BASE_PWD}"
 fi
+fold_end dependency.$(use.project)
+
 .endfor
 
 cd ../..
@@ -971,14 +995,17 @@ cd ../..
 # always install custom builds from dist if the autotools chain exists
 # to make sure that `make dist` doesn't omit any files required to build & test
 if [ -z "$DO_CLANG_FORMAT_CHECK" -a -f configure.ac ]; then
+    fold_start check.clang_format_check "Do clang format check"
     $CI_TIME ./autogen.sh
     $CI_TIME ./configure "${CONFIG_OPTS[@]}"
     $CI_TIME make -j5 dist-gzip
     $CI_TIME tar -xzf $(project.name)-$(->version.major).$(->version.minor).$(->version.patch).tar.gz
     cd $(project.name)-$(->version.major).$(->version.minor).$(->version.patch)
+    fold_end check.clang_format_check
 fi
 
 # Build and check this project
+fold_start build.project "Build and check this project"
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of currently tested project..."
 .if count(add_config_opts) > 0
 # Custom additional options for this project
@@ -1002,6 +1029,7 @@ fi
 echo "=== Are GitIgnores good after making the project '$BUILD_TYPE'? (should have no output below)"
 git status -s || true
 echo "==="
+fold_end build.project
 .close
 .chmod_x ("builds/cmake/ci_build.sh")
 .directory.create ('builds/cmake/Modules')
