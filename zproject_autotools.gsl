@@ -605,7 +605,7 @@ PKGCFG_NAMES_PRIVATE=""
 PREVIOUS_CFLAGS="${CFLAGS}"
 PREVIOUS_LIBS="${LIBS}"
 
-.for use
+.for use where !(implied & private)
 .# Far below, if the dependency search was not for a library, it will be done
 .# for a program.
 .# Debugging for using either a list of variants or a single name per legacy
@@ -1566,7 +1566,7 @@ AM_CXXFLAGS = \\
 .endif
 
 AM_CPPFLAGS = \\
-.for use where use.libname ?<> ""
+.for use where use.libname ?<> "" & !(implied & private)
     \${$(use.project:c)_CFLAGS} \\
 .endfor
 .if project.use_cxx
@@ -1575,7 +1575,7 @@ AM_CPPFLAGS = \\
     -I\$(srcdir)/include
 
 .libs = ""
-.for use where use.libname ?<> ""
+.for use where use.libname ?<> "" & !(implied & private)
 .   libs += " \${$(use.project:c)_LIBS}"
 .endfor
 project_libs =$(libs:)
@@ -1599,7 +1599,7 @@ DISTCLEANFILES =
 
 if ENABLE_DIST_CMAKEFILES
 EXTRA_DIST += \\
-.for use
+.for use where !(implied & private)
     Find$(use.project:c).cmake \\
 .endfor
 .if file.exists ("src/CMakeLists-local.txt")
