@@ -1229,7 +1229,7 @@ set -ex
 # Note: certain zproject scripts that deal with deeper dependencies expect that
 # such checkouts are directly in the same parent directory as "this" project.
 cd "$REPO_DIR/.."
-.for project.use where !optional & defined (use.repository)
+.for project.use where !optional & defined (use.repository) & !private
 .   if defined (use.release)
 git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
 .   else

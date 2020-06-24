@@ -60,7 +60,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .endif
 
 //  External dependencies
-.for use where !defined (implied)
+.for use where !implied & !private
 .    if (use.optional = 1)
 .# TODO: Fix up GSL to only reference same macro once (e.g. if variants are
 .# defined for OS packages named vastly different in various distros, like lua)
@@ -514,6 +514,17 @@ $(project.GENERATED_WARNING_HEADER:)
 
 //  External API
 #include "../include/$(project.header:)"
+
+//  Private external dependencies
+.for use where !implied & private
+.    if (use.optional = 1)
+#if defined (HAVE_$(USE.AM_LIB_MACRO))
+#include <$(use.header:)>
+#endif
+.    else
+#include <$(use.header:)>
+.    endif
+.endfor
 
 //  Opaque class structures to allow forward references
 .for class where scope = "private"

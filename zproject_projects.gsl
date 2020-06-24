@@ -82,6 +82,8 @@ function resolve_project_dependency (use)
     my.use.pkgconfig ?= my.use.libname
     my.use.am_lib_macro ?= my.use.libname
     my.use.optional ?= 0
+    my.use.implied ?= 0
+    my.use.private ?= 0
     my.use.draft ?= 0
     my.use.min_major ?= 0
     my.use.min_minor ?= 0
@@ -135,7 +137,7 @@ function resolve_project_dependency (use)
             move implied_use before my.use as use
             implied_use.implied = "1"
             resolve_project_dependency (implied_use)
-        else 
+        else
             echo "[WARNING] Ignoring implied use definition '$(implied_use.project)' at '$(my.use.project)' because there is a non-implied definition."
         endif
     endfor
