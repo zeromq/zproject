@@ -26,11 +26,11 @@ endfunction
 function add_step_definitions (target)
     for my.target.step_defs
         new project.class
-            define class.name = "$(step_defs.name)"
+            define class.name = "$(step_defs.name)_step_defs"
             define class.private = "1"
         endnew
         new project.main
-            define main.name = "$(step_defs.name)"
+            define main.name = "$(step_defs.name)_step_defs"
             define main.private = "1"
         endnew
     endfor
@@ -99,9 +99,13 @@ int main (int argc, char *argv [])
     zclock_sleep (250);
     zlist_t *step_runners = zlist_new ();
 
-.#  TODO loop for each step def actors
-    CREATE_STEP_RUNNER_ACTOR(dafka_consumer, consumer_protocol_state_new, consumer_protocol_state_destroy)
-    zlist_append (step_runners, dafka_consumer_steps_runner);
+.   for project.target where target.name = "cucumber"
+.       for target.step_defs
+    CREATE_STEP_RUNNER_ACTOR($(step_defs.name), consumer_protocol_state_new, consumer_protocol_state_destroy)
+    zlist_append (step_runners, $(step_defs.name)_steps_runner);
+
+.       endfor
+.   endfor
 
     const char *filename = zargs_first (args);
     cucumber_feature_runner_t *feature_runner = cucumber_feature_runner_new (filename);
