@@ -81,8 +81,8 @@ fi
 
 # Start of recipe for dependency: gsl
 fold_start dependency.gsl "Install dependency gsl"
-if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list generator-scripting-language >/dev/null 2>&1) || \
-       (command -v brew >/dev/null 2>&1 && brew ls --versions gsl >/dev/null 2>&1)); then
+if ! ((command -v dpkg >/dev/null 2>&1 && dpkg -s generator-scripting-language >/dev/null 2>&1) || \
+      (command -v brew >/dev/null 2>&1 && brew ls --versions gsl >/dev/null 2>&1)); then
     BASE_PWD=${PWD}
     cd tmp-deps
     $CI_TIME git clone --quiet --depth 1 https://github.com/zeromq/gsl.git gsl

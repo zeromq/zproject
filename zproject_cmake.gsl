@@ -882,14 +882,14 @@ fold_start dependency.$(use.project) "Install dependency $(use.project)"
 if \
 .   if defined (use.debian_name)
 .       if !(use.debian_name = '')
-\! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
+\! ((command -v dpkg >/dev/null 2>&1 && dpkg -s $(use.debian_name) >/dev/null 2>&1) || \\
 .       endif
 .   elsif defined (use.libname)
-\! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)-dev >/dev/null 2>&1) || \\
+\! ((command -v dpkg >/dev/null 2>&1 && dpkg -s $(use.libname)-dev >/dev/null 2>&1) || \\
 .   else
-\! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
+\! ((command -v dpkg >/dev/null 2>&1 && dpkg -s $(use.project)-dev >/dev/null 2>&1) || \\
 .   endif
-       (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1) \\
+    (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)) \\
 ; then
     BASE_PWD=${PWD}
     cd tmp-deps
@@ -950,13 +950,13 @@ fold_end dependency.$(use.project)
 # Start of recipe for dependency: $(use.project)
 fold_start dependency.$(use.project) "Install dependency $(use.project)"
 .   if defined (use.debian_name)
-if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.debian_name) >/dev/null 2>&1) || \\
+if ! ((command -v dpkg >/dev/null 2>&1 && dpkg -s $(use.debian_name) >/dev/null 2>&1) || \\
 .   elsif defined (use.libname)
-if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.libname)-dev >/dev/null 2>&1) || \\
+if ! ((command -v dpkg >/dev/null 2>&1 && dpkg -s $(use.libname)-dev >/dev/null 2>&1) || \\
 .   else
-if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list $(use.project)-dev >/dev/null 2>&1) || \\
+if ! ((command -v dpkg >/dev/null 2>&1 && dpkg -s $(use.project)-dev >/dev/null 2>&1) || \\
 .   endif
-       (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
+      (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)); then
     BASE_PWD=${PWD}
     cd tmp-deps
 .   if defined (use.release)
