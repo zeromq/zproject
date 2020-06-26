@@ -22,6 +22,7 @@ dist_bin_SCRIPTS = \
     zproject_android.gsl \
     zproject_autotools.gsl \
     zproject_cmake.gsl \
+    zproject_cucumber.gsl \
     zproject_cygwin.gsl \
     zproject_debian.gsl \
     zproject_delphi.gsl \

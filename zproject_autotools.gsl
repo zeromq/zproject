@@ -1697,8 +1697,6 @@ include_HEADERS += \\
 endif
 .endif
 
-.insert_snippet ("Makemodule")
-
 $(project.GENERATED_WARNING_HEADER:)
 .close
 .- Here, close "if count(class)"

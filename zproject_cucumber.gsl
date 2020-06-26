@@ -1,0 +1,132 @@
+#   Generates cucumber glue by adding
+#     * dependencies
+#     * selftest
+#     * make targets
+#     * CI integration
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/zeromq/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+register_target ("cucumber", "Cucumber integration with cucumber-c")
+
+function add_selftest ()
+    new project.main
+        define main.name = "$(project.prefix)_cucumber_selftest"
+        define main.private = "1"
+    endnew
+endfunction
+
+function add_step_definitions (target)
+    for my.target.step_defs
+        new project.class
+            define class.name = "$(step_defs.name)"
+            define class.private = "1"
+        endnew
+        new project.main
+            define main.name = "$(step_defs.name)"
+            define main.private = "1"
+        endnew
+    endfor
+endfunction
+
+function add_cucumber_c_dependency ()
+    new project.use
+        use.project = "cucumber"
+        use.optional = "1"
+        use.implied = "1"
+    endnew
+endfunction
+
+for project.target where target.name = "cucumber"
+    add_step_definitions (target)
+    add_selftest ()
+    add_cucumber_c_dependency ()
+endfor
+
+if count (project.target, target.name = "cucumber")
+    register_snippet("Makemodule", "cucumber")
+    register_snippet("CMakeLists_custom_targets", "cucumber")
+endif
+function snippet_makemodule_cucumber ()
+    >check-cucumber: src/$(project.prefix)_cucumber_selftest
+    >\t\$(LIBTOOL) --mode=execute \$(builddir)/src/$(project.prefix)_cucumber_selftest \$(builddir)/features
+endfunction
+
+function snippet_cmakelists_custom_targets_cucumber ()
+    >if (NOT TARGET test-cucumber)
+    >    add_custom_target (
+    >       test-cucumber
+    >       COMMAND ${PROJECT_BINARY_DIR}/$(project.prefix)_cucumber_selftest ${PROJECT_SOURCE_DIR}/features
+    >    )
+    >endif ()
+endfunction
+
+.macro generate_cucumber_selftest
+.#
+.#  Build the project cucumber selftest program
+.#
+.output "src/$(project.prefix)_cucumber_selftest.$(project.source_ext)"
+/*  =========================================================================
+    $(project.prefix)_cucumber_selftest.c - run cucumber selftests
+
+    Runs cucumber steps servers and cucumber feature runner in one process
+
+    -------------------------------------------------------------------------
+.   for project.license
+    $(string.trim (license.):block                                         )
+.   endfor
+
+$(project.GENERATED_WARNING_HEADER:)
+    =========================================================================
+*/
+
+#include "$(project.prefix)_classes.$(project.header_ext)"
+#if defined (HAVE_CUCUMBER)
+#include <cucumber_c.h>
+
+int main (int argc, char *argv [])
+{
+    zargs_t *args = zargs_new (argc, argv);
+    zsock_t *client = zsock_new_dealer (">tcp://127.0.0.1:8888");
+    assert (client);
+    zclock_sleep (250);
+    zlist_t *step_runners = zlist_new ();
+
+.#  TODO loop for each step def actors
+    CREATE_STEP_RUNNER_ACTOR(dafka_consumer, consumer_protocol_state_new, consumer_protocol_state_destroy)
+    zlist_append (step_runners, dafka_consumer_steps_runner);
+
+    const char *filename = zargs_first (args);
+    cucumber_feature_runner_t *feature_runner = cucumber_feature_runner_new (filename);
+    bool rc = cucumber_feature_runner_run (feature_runner, client);
+
+    zactor_t *step_runner = (zactor_t *) zlist_first (step_runners);
+    while (step_runner != NULL) {
+        zstr_send (step_runner, "$TERM");
+        zactor_destroy (&step_runner);
+    }
+
+    zargs_destroy (&args);
+    zlist_destroy (&step_runners);;
+    zsock_destroy (&client);
+    cucumber_feature_runner_destroy (&feature_runner);
+    return rc ? 0 : 1;
+}
+/*
+$(project.GENERATED_WARNING_HEADER:)
+*/
+#endif
+.endmacro
+
+function target_cucumber
+    if count (project.target, target.name = "cucumber")
+        generate_cucumber_selftest ()
+    endif
+endfunction

@@ -161,6 +161,7 @@ if (NOT TARGET make-selftest-rw)
     )
 endif()
 
+
 set_directory_properties(
     PROPERTIES
     ADDITIONAL_MAKE_CLEAN_FILES "${PROJECT_BINARY_DIR}/src/selftest-ro;${PROJECT_BINARY_DIR}/src/selftest-rw"
