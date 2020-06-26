@@ -86,6 +86,25 @@
     <!-- Various known third-party projects
         (If you're unsure of where a project belongs, add it here) -->
 
+    <use project = "cucumber"
+         header = "cucumber_c.h"
+         test = "cucumber_new"
+         repository = "https://github.com/sappo/cucumber-c">
+        <use project = "gherkin" private = "1" />
+        <use project = "cJSON" private = "1" />
+    </use>
+
+    <use project = "gherkin"
+         header = "compiler.h"
+         repository = "https://github.com/cucumber/gherkin-c"
+         test = "Compiler_new" />
+
+    <use project = "cJSON"
+         debian_name = "libcjson-dev"
+         header = "cjson/cJSON.h"
+         repository = "https://github.com/DaveGamble/cJSON"
+         test = "cJSON_Parse" />
+
     <use project = "libsodium" prefix = "sodium"
         repository = "https://github.com/jedisct1/libsodium.git"
         release = "stable"

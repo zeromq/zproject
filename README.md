@@ -182,6 +182,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         cmake               CMake build system (default)
 
         android             Native shared library for Android
+        cucumber            Integration with cucumber-c
         cygwin              Cygwin build system
         debian              packaging for Debian
         delphi              Delphi binding
@@ -368,6 +369,15 @@ zproject's `project.xml` contains an extensive description of the available conf
     <target name = "obs" />
     <target name = "debian" />
     <target name = "redhat" />
+
+    <!-- Cucumber target
+    <target name = "cucumber">
+        A step_defs tag point to the source file where the cucumer step
+        definitions are defined. With this information the
+        project's cucumber_selftest is generated appropriately.
+        <step_defs name = "my_step_definitions" />
+    </target>
+    -->
 
     <!-- Note: zproject itself uses a customized CI-testing routine
          on Travis CI, not a generated one, so DO NOT ENABLE this one:
@@ -558,6 +568,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_android.gsl" />
     <bin name = "zproject_autotools.gsl" />
     <bin name = "zproject_cmake.gsl" />
+    <bin name = "zproject_cucumber.gsl" />
     <bin name = "zproject_cygwin.gsl" />
     <bin name = "zproject_debian.gsl" />
     <bin name = "zproject_delphi.gsl" />
@@ -683,6 +694,25 @@ Model is described in `zproject_known_projects.xml` file:
 
     <!-- Various known third-party projects
         (If you're unsure of where a project belongs, add it here) -->
+
+    <use project = "cucumber"
+         header = "cucumber_c.h"
+         test = "cucumber_new"
+         repository = "https://github.com/sappo/cucumber-c">
+        <use project = "gherkin" private = "1" />
+        <use project = "cJSON" private = "1" />
+    </use>
+
+    <use project = "gherkin"
+         header = "compiler.h"
+         repository = "https://github.com/cucumber/gherkin-c"
+         test = "Compiler_new" />
+
+    <use project = "cJSON"
+         debian_name = "libcjson-dev"
+         header = "cjson/cJSON.h"
+         repository = "https://github.com/DaveGamble/cJSON"
+         test = "cJSON_Parse" />
 
     <use project = "libsodium" prefix = "sodium"
         repository = "https://github.com/jedisct1/libsodium.git"

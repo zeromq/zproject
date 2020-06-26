@@ -559,6 +559,8 @@ if (NOT TARGET make-selftest-rw)
     )
 endif()
 
+.insert_snippet ("CMakeLists_custom_targets")
+
 set_directory_properties(
     PROPERTIES
     ADDITIONAL_MAKE_CLEAN_FILES "${PROJECT_BINARY_DIR}/src/selftest-ro;${PROJECT_BINARY_DIR}/src/selftest-rw"
@@ -1049,6 +1051,9 @@ else
     PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig $CI_TIME cmake "${CMAKE_OPTS[@]}" .
     $CI_TIME make all VERBOSE=1 -j4
     $CI_TIME ctest -V
+.   if count (project.target, target.name = "cucumber")
+    make test-cucumber
+.   endif
     $CI_TIME make install
 fi
 [ -z "$CI_TIME" ] || echo "`date`: Builds completed without fatal errors!"

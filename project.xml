@@ -5,6 +5,7 @@
         cmake               CMake build system (default)
 
         android             Native shared library for Android
+        cucumber            Integration with cucumber-c
         cygwin              Cygwin build system
         debian              packaging for Debian
         delphi              Delphi binding
@@ -191,6 +192,15 @@
     <target name = "obs" />
     <target name = "debian" />
     <target name = "redhat" />
+
+    <!-- Cucumber target
+    <target name = "cucumber">
+        A step_defs tag point to the source file where the cucumer step
+        definitions are defined. With this information the
+        project's cucumber_selftest is generated appropriately.
+        <step_defs name = "my_step_definitions" />
+    </target>
+    -->
 
     <!-- Note: zproject itself uses a customized CI-testing routine
          on Travis CI, not a generated one, so DO NOT ENABLE this one:
@@ -381,6 +391,7 @@
     <bin name = "zproject_android.gsl" />
     <bin name = "zproject_autotools.gsl" />
     <bin name = "zproject_cmake.gsl" />
+    <bin name = "zproject_cucumber.gsl" />
     <bin name = "zproject_cygwin.gsl" />
     <bin name = "zproject_debian.gsl" />
     <bin name = "zproject_delphi.gsl" />

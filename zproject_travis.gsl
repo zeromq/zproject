@@ -1209,6 +1209,9 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
         $CI_TIME make VERBOSE=1 DISTCHECK_CONFIGURE_FLAGS="$DISTCHECK_CONFIGURE_FLAGS" distcheck || exit $?
     )
     fi
+.   if count (project.target, target.name = "cucumber")
+    make check-cucumber
+.   endif
 
     echo "=== Are GitIgnores good after 'make (dist)check' with drafts?"
     make check-gitignore
