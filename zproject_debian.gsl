@@ -21,7 +21,7 @@ register_target ("debian", "packaging for Debian")
 .endfor
 .directory.create ('packaging/debian')
 .output "packaging/debian/changelog"
-$(project.name:lower) ($(->version.major).$(->version.minor).$(->version.patch)) UNRELEASED; urgency=low
+$(project.name:lower) ($(->version.major).$(->version.minor).$(->version.patch)-0.1) UNRELEASED; urgency=low
 
   * Initial packaging.
 
@@ -416,7 +416,7 @@ debian/tmp/usr/share/man/man7/*
 Format: 3.0 (quilt)
 Binary: $(project.name)
 Source: $(project.name)
-Version: $(->version.major).$(->version.minor).$(->version.patch)
+Version: $(->version.major).$(->version.minor).$(->version.patch)-0.1
 Maintainer: $(project.name) Developers <$(project.email)>
 Architecture: any
 Build-Depends: debhelper (>= 9),
