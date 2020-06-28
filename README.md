@@ -372,10 +372,11 @@ zproject's `project.xml` contains an extensive description of the available conf
 
     <!-- Cucumber target
     <target name = "cucumber">
-        A step_defs tag point to the source file where the cucumer step
-        definitions are defined. With this information the
-        project's cucumber_selftest is generated appropriately.
-        <step_defs name = "my_step_definitions" />
+        For each step_defs a cucumber steps runner will be registered
+        in the build scripts and the project's cucumber_selftest is
+        generated appropriately. Points the the source file
+        $(step_defs.name)_step_defs.c
+        <step_defs name = "brilliant_ideas" />
     </target>
     -->
 
