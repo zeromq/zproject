@@ -247,7 +247,7 @@ typedef struct {
 
 static test_item_t
 all_tests [] = {
-.for class where selftest & private ?= 1
+.for class where selftest & private ?= 1 & (!defined (type) | type <> "cucumber")
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 // Tests for stable/draft private classes:
@@ -460,14 +460,14 @@ $(project.GENERATED_WARNING_HEADER:)
 void
 $(project.prefix)_private_selftest (bool verbose, const char *subtest)
 {
-.for class where !draft & selftest & private ?= 1
+.for class where !draft & selftest & private ?= 1 & (!defined (type) | type <> "cucumber")
 .   if first ()
 // Tests for stable private classes:
 .   endif
     if (streq (subtest, "$ALL") || streq (subtest, "$(class.c_name)_test"))
         $(class.c_name)_test (verbose);
 .endfor
-.for class where draft & selftest & private ?= 1
+.for class where draft & selftest & private ?= 1 & (!defined (type) | type <> "cucumber")
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
 // Tests for draft private classes:
