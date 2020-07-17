@@ -125,7 +125,7 @@ if [[ $ANDROID_BUILD_CLEAN ]]; then
     rm -rf "${ANDROID_BUILD_PREFIX}"/*
 fi
 
-.for use where !defined (use.implied)
+.for use where use.implied = 0
 ##
 # Make sure $(use.project) is built and copy the prefix
 
@@ -150,7 +150,7 @@ fi
 [ -z "$CI_TIME" ] || echo "`date`: Build $(project.name) from local source"
 
 (android_build_verify_so "$(project.libname).so"\
-.for use where !defined (use.implied)
+.for use where use.implied = 0
  "$(use.libname).so"\
 .endfor
  &> /dev/null) || {
@@ -172,11 +172,11 @@ fi
 ##
 # Verify shared libraries in prefix
 
-.for use where !defined (use.implied)
+.for use where use.implied = 0
 android_build_verify_so "$(use.libname).so"
 .endfor
 android_build_verify_so "$(project.libname).so"\
-.for use where !defined (use.implied)
+.for use where use.implied = 0
  "$(use.libname).so"\
 .endfor
 
