@@ -1042,6 +1042,13 @@ AC_TYPE_UINT32_T
 AC_C_VOLATILE
 AC_C_BIGENDIAN
 
+.for project.check_symbol_exists
+.if first()
+# Check for symbols (function, variable, or macro)
+.endif
+AC_CHECK_DECLS([$(symbol:)], [], [], [[#include <$(header:)>]])
+.endfor
+
 AM_CONDITIONAL(ENABLE_SHARED, test "x$enable_shared" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$$(project.name:c)_on_mingw32" = "xyes")
 AM_CONDITIONAL(ON_CYGWIN, test "x$$(project.name:c)_on_cygwin" = "xyes")

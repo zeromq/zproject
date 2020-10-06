@@ -265,6 +265,22 @@ zproject's `project.xml` contains an extensive description of the available conf
     -->
 
     <!--
+        Check that the <symbol> is available after including a given <header>
+        and store the result in a macro HAVE_DECL_SYMBOL. When the symbol is
+        declared, HAVE_DECL_SYMBOL is defined to '1' otherwise '0'. Use
+        HAVE_DECL_SYMBOL in #if:
+
+          #if HAVE_DECL_SYMBOL
+            // Do something with the symbol
+          #endif
+
+          #if !HAVE_DECL_SYMBOL
+            // Alternative action without the symbol
+          #endif
+    <check_symbol_exists symbol = AI_V4MAPPED"" header = "netdb.h" />
+    -->
+
+    <!--
         Specify which other projects this depends on.
         These projects must be known by zproject, and the list of
         known projects is maintained in the zproject_known_projects.xml model.
