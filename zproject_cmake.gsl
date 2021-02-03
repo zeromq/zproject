@@ -166,15 +166,15 @@ set(OPTIONAL_LIBRARIES_STATIC)
 ########################################################################
 .if use.optional = 0
 find_package($(use.project) REQUIRED)
-IF ($(USE.PROJECT)_FOUND)
+IF ($(use.project)_FOUND)
 .else
 find_package($(use.project))
 option($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) "Build $(project.linkname) with $(use.project)" ${$(USE.PROJECT)_FOUND})
-IF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(USE.PROJECT)_FOUND)
+IF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(use.project)_FOUND)
 .endif
 .if use.libname ?<> ""
-    include_directories(${$(USE.PROJECT)_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
+    include_directories(${$(use.project)_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${$(use.project)_LIBRARIES})
   IF (PC_$(USE.PROJECT)_FOUND)
       set(pkg_config_names_private "${pkg_config_names_private} $(use.libname)\
 .  if (use.min_version <> '0.0.0')
@@ -198,18 +198,18 @@ IF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(USE.PROJECT)_FOUND)
   ENDIF (PC_$(USE.PROJECT)_FOUND)
 .if use.optional = 1
     add_definitions(-DHAVE_$(USE.LIBNAME))
-    list(APPEND OPTIONAL_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
+    list(APPEND OPTIONAL_LIBRARIES ${$(use.project)_LIBRARIES})
 .endif
 .endif
 .   if defined (use.description)
     set_feature_info($(use.project) "$(use.description:)")
 .   endif
 .if use.optional = 0
-ELSE ($(USE.PROJECT)_FOUND)
+ELSE ($(use.project)_FOUND)
     message( FATAL_ERROR "$(use.project) not found." )
-ENDIF ($(USE.PROJECT)_FOUND)
+ENDIF ($(use.project)_FOUND)
 .else
-ENDIF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(USE.PROJECT)_FOUND)
+ENDIF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(use.project)_FOUND)
 .endif
 .endfor
 
