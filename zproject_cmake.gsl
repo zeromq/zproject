@@ -166,15 +166,15 @@ set(OPTIONAL_LIBRARIES_STATIC)
 ########################################################################
 .if use.optional = 0
 find_package($(use.project) REQUIRED)
-IF ($(USE.PROJECT)_FOUND)
+IF ($(use.project)_FOUND)
 .else
 find_package($(use.project))
 option($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) "Build $(project.linkname) with $(use.project)" ${$(USE.PROJECT)_FOUND})
-IF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(USE.PROJECT)_FOUND)
+IF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(use.project)_FOUND)
 .endif
 .if use.libname ?<> ""
-    include_directories(${$(USE.PROJECT)_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
+    include_directories(${$(use.project)_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${$(use.project)_LIBRARIES})
   IF (PC_$(USE.PROJECT)_FOUND)
       set(pkg_config_names_private "${pkg_config_names_private} $(use.libname)\
 .  if (use.min_version <> '0.0.0')
@@ -198,18 +198,18 @@ IF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(USE.PROJECT)_FOUND)
   ENDIF (PC_$(USE.PROJECT)_FOUND)
 .if use.optional = 1
     add_definitions(-DHAVE_$(USE.LIBNAME))
-    list(APPEND OPTIONAL_LIBRARIES ${$(USE.PROJECT)_LIBRARIES})
+    list(APPEND OPTIONAL_LIBRARIES ${$(use.project)_LIBRARIES})
 .endif
 .endif
 .   if defined (use.description)
     set_feature_info($(use.project) "$(use.description:)")
 .   endif
 .if use.optional = 0
-ELSE ($(USE.PROJECT)_FOUND)
+ELSE ($(use.project)_FOUND)
     message( FATAL_ERROR "$(use.project) not found." )
-ENDIF ($(USE.PROJECT)_FOUND)
+ENDIF ($(use.project)_FOUND)
 .else
-ENDIF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(USE.PROJECT)_FOUND)
+ENDIF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(use.project)_FOUND)
 .endif
 .endfor
 
@@ -689,7 +689,7 @@ $(project.GENERATED_WARNING_HEADER:)
 
 .   if use.libname ?<> ""
 if (NOT MSVC)
-    include(FindPkgConfig)
+    find_package(PkgConfig)
     pkg_check_modules(PC_$(USE.PROJECT) "$(use.libname)")
     if (PC_$(USE.PROJECT)_FOUND)
         # add CFLAGS from pkg-config file, e.g. draft api.
@@ -703,7 +703,7 @@ if (NOT MSVC)
 endif (NOT MSVC)
 
 find_path (
-    $(USE.PROJECT)_INCLUDE_DIRS
+    ${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIRS
     NAMES $(use.header:)
     HINTS ${PC_$(USE.PROJECT)_INCLUDE_HINTS}
 )
@@ -720,7 +720,7 @@ if (MSVC)
     endif ()
 
     # Retrieve ZeroMQ version number from zmq.h
-    file(STRINGS "${LIBZMQ_INCLUDE_DIRS}/zmq.h" zmq_version_defines
+    file(STRINGS "${${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIRS}/zmq.h" zmq_version_defines
         REGEX "#define ZMQ_VERSION_(MAJOR|MINOR|PATCH)")
     foreach(ver ${zmq_version_defines})
         if(ver MATCHES "#define ZMQ_VERSION_(MAJOR|MINOR|PATCH) +([^ ]+)$")
@@ -744,28 +744,28 @@ if (MSVC)
         "libzmq-mt-s-${_zmq_version}" # Release|RelWithDebInfo|MinSizeRel, BUILD_STATIC
     )
 
-    find_library (LIBZMQ_LIBRARY_DEBUG
+    find_library (${CMAKE_FIND_PACKAGE_NAME}_LIBRARY_DEBUG
         NAMES ${_zmq_debug_names}
     )
 
-    find_library (LIBZMQ_LIBRARY_RELEASE
+    find_library (${CMAKE_FIND_PACKAGE_NAME}_LIBRARY_RELEASE
         NAMES ${_zmq_release_names}
     )
 
     include(SelectLibraryConfigurations)
-    select_library_configurations(LIBZMQ)
+    select_library_configurations(${CMAKE_FIND_PACKAGE_NAME})
 endif ()
 
-if (NOT LIBZMQ_LIBRARIES)
+if (NOT ${CMAKE_FIND_PACKAGE_NAME}_LIBRARIES)
     find_library (
-        LIBZMQ_LIBRARIES
+        ${CMAKE_FIND_PACKAGE_NAME}_LIBRARIES
         NAMES libzmq zmq
         HINTS ${PC_LIBZMQ_LIBRARY_HINTS}
     )
 endif ()
 .       else
 find_library (
-    $(USE.PROJECT)_LIBRARIES
+    ${CMAKE_FIND_PACKAGE_NAME}_LIBRARIES
 .           if use.libname ?<> use.linkname
     NAMES $(use.libname) $(use.linkname)
 .           else
@@ -778,12 +778,12 @@ find_library (
 include(FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(
-    $(USE.PROJECT)
-    REQUIRED_VARS $(USE.PROJECT)_LIBRARIES $(USE.PROJECT)_INCLUDE_DIRS
+    ${CMAKE_FIND_PACKAGE_NAME}
+    REQUIRED_VARS ${CMAKE_FIND_PACKAGE_NAME}_LIBRARIES ${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIRS
 )
 mark_as_advanced(
-    $(USE.PROJECT)_FOUND
-    $(USE.PROJECT)_LIBRARIES $(USE.PROJECT)_INCLUDE_DIRS
+    ${CMAKE_FIND_PACKAGE_NAME}_FOUND
+    ${CMAKE_FIND_PACKAGE_NAME}_LIBRARIES ${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIRS
 )
 
 .   else
