@@ -25,7 +25,7 @@ Name:           zproject
 Version:        1.1.0
 Release:        1
 Summary:        project
-License:        MPLv2
+License:        MPL-2.0
 URL:            https://github.com/zeromq/zproject
 Source0:        %{name}-%{version}.tar.gz
 Group:          System/Libraries
