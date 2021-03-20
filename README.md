@@ -232,7 +232,7 @@ zproject's `project.xml` contains an extensive description of the available conf
 -->
 <project script = "zproject.gsl" name = "zproject"
     email = "zeromq-dev@lists.zeromq.org"
-    license = "MPLv2"
+    license = "MPL-2.0"
     check_license_years = "0"
     url = "https://github.com/zeromq/zproject"
     repository = "https://github.com/zeromq/zproject">
