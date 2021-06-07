@@ -129,12 +129,12 @@ $(project.GENERATED_WARNING_HEADER:)
 plugins {
     id 'java'
     id 'maven-publish'
-    id 'com.jfrog.artifactory' version '4.9.9'
-    id 'com.jfrog.bintray' version '1.8.4'
-    id 'com.google.osdetector' version '1.6.2'
+    id 'com.jfrog.artifactory' version '4.21.0'
+    id 'com.jfrog.bintray' version '1.8.5'
+    id 'com.google.osdetector' version '1.7.0'
 }
 
-wrapper.gradleVersion = '6.5.1'
+wrapper.gradleVersion = '7.0.2'
 
 subprojects {
     apply plugin: 'java'
@@ -191,7 +191,7 @@ dependencies {
     compile "org.zeromq.$(use.project):$(use.project)-jni:$jni_dependencies_version"
 .       endif
 .   endfor
-    compile 'org.scijava:native-lib-loader:2.3.4'
+    compile 'org.scijava:native-lib-loader:2.3.5'
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-all:1.3'
 }
@@ -975,7 +975,7 @@ TERM=dumb $CI_TIME ./gradlew clean
 
 if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$BINDING_OPTS" == "android" ]; then
     pushd ../../builds/android
-        export NDK_VERSION=android-ndk-r21d
+        export NDK_VERSION=android-ndk-r21e
         export ANDROID_NDK_ROOT="/tmp/${NDK_VERSION}"
 
         case \$(uname | tr '[:upper:]' '[:lower:]') in
