@@ -15,6 +15,7 @@ register_target ("vs2012", "Microsoft Visual Studio 2012")
 register_target ("vs2013", "Microsoft Visual Studio 2013")
 register_target ("vs2015", "Microsoft Visual Studio 2015")
 register_target ("vs2017", "Microsoft Visual Studio 2017")
+register_target ("vs2019", "Microsoft Visual Studio 2019")
 
 .macro generate_vs20xx_main (path)
 .directory.create (my.path)
@@ -680,6 +681,7 @@ SET version=$(my.level)
 SET log=build.log
 SET tools=Microsoft Visual Studio %version%.0\\VC\\vcvarsall.bat
 if "%version%" == "15" SET tools=Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat
+if "%version%" == "16" SET tools=Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat
 SET environment="%programfiles(x86)%\\%tools%"
 IF NOT EXIST %environment% SET environment="%programfiles%\\%tools%"
 IF NOT EXIST %environment% GOTO no_tools
@@ -1064,4 +1066,10 @@ function target_vs2017
     generate_vs20xx_main ("builds/msvc")
     generate_vs20xx_props ("builds/msvc/properties")
     generate_vs20xx_build ("builds/msvc/vs2017", "15", "141")
+endfunction
+
+function target_vs2019
+    generate_vs20xx_main ("builds/msvc")
+    generate_vs20xx_props ("builds/msvc/properties")
+    generate_vs20xx_build ("builds/msvc/vs2019", "16", "142")
 endfunction
