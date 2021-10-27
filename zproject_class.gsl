@@ -616,7 +616,11 @@ $(VISIBILITY) $(c_method_signature (method):)\
 
 //  *** Draft constants, defined for internal use only ***
 .      endif
-#define $(CLASS.NAME:c)_$(NAME:c) $(value)  // $(constant.description:no,block)
+
+.      if ("$(constant.description)" <> "")
+// $(constant.description:no,block)
+.      endif
+#define $(CLASS.NAME:c)_$(NAME:c) $(value)
 .   endfor
 .   for class.callback_type where draft = 1
 .      if first ()
@@ -673,7 +677,11 @@ $(PROJECT.PREFIX)_PRIVATE void
 .      visibility = "$(PROJECT.PREFIX)_EXPORT"
 .   endif
 .   for class.constant where draft = my.draft
-#define $(CLASS.NAME:c)_$(NAME:c) $(value:)  // $(constant.description:no,block)
+
+.      if ("$(constant.description)" <> "")
+// $(constant.description:no,block)
+.      endif
+#define $(CLASS.NAME:c)_$(NAME:c) $(value:)
 .   if last ()
 
 .   endif
