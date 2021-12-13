@@ -273,13 +273,18 @@ function build_target_in_scope (target, detail)
     delete root->project_copy
 endfunction
 
+function show_valid_targets_and_abort() 
+    for project.handler by handler
+        echo "    $(handler.target)\
+                $(handler.detail:)"
+    endfor
+    abort "End of target list."
+endfunction
+
 function build_target (target)
     if my.target = "?"
         echo "Valid targets are:"
-        for project.handler by target
-            echo "    $(target)\
-                    $(detail:)"
-        endfor
+        show_valid_targets_and_abort()
     elsif my.target = "-"   # No targets
         echo "Building without targets"
     elsif my.target = "*"   # All targets
@@ -293,10 +298,7 @@ function build_target (target)
             build_target_in_scope (handler.target, detail)
         else
             echo "$(my.target) is not a valid target; valid targets are:"
-            for project.handler by target
-                echo "    $(target)\
-                    $(detail:)"
-            endfor
+            show_valid_targets_and_abort()
         endfor
     endif
 endfunction
