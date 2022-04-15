@@ -71,7 +71,6 @@ Build-Depends: debhelper (>= 9),
 .if python_cffi ?= 1
 .- NOTE: after support for Debian 7 and Ubuntu 12.04 is dropped, <!nopython> can be added to each of the following
     dh-python,
-    python-all-dev, python-cffi, python-setuptools,
     python3-all-dev, python3-cffi, python3-setuptools,
 .endif
 .- NOTE: after support for Debian 7 and Ubuntu 12.04 is dropped, <!nodoc> can be added to each of the following
@@ -178,21 +177,6 @@ Description: $(project.name) debugging symbols
  $(project.description).
 .if python_cffi ?= 1
 
-Package: python-$(string.replace (project.name, "_|-"):lower)-cffi
-Architecture: any
-.- NOTE: after support for Debian 7 and Ubuntu 12.04 is dropped, Build-Profiles: <!nopython> can be added
-Section: python
-Depends:
-.if defined (project->abi)
-    $(string.replace (project.libname, "_|-"))$(project->abi.current - project->abi.age) (= ${binary:Version}),
-.else
-    $(string.replace (project.libname, "_|-"))0 (= ${binary:Version}),
-.endif
-    ${misc:Depends}, ${shlibs:Depends},
-    ${python:Depends}, python-cffi,
-Description: Python CFFI bindings for $(project.name)
- This package contains Python CFFI bindings for $(project.name).
-
 Package: python3-$(string.replace (project.name, "_|-"):lower)-cffi
 Architecture: any
 Section: python
@@ -243,7 +227,7 @@ ifneq ("\$(shell grep drafts \$(OBS_BUILD_CFG))","")
 DRAFTS=yes
 endif
 .if python_cffi ?= 1
-ifneq ("\$(shell grep python_cffi \$(OBS_BUILD_CFG))","")
+ifneq ("\$(shell grep python3_cffi \$(OBS_BUILD_CFG))","")
 PYTHON_CFFI=yes
 endif
 .endif
@@ -267,7 +251,7 @@ ifneq (,\$(findstring python_cffi,\$(DEB_BUILD_OPTIONS)))
 ifeq (,\$(findstring nopython,\$(DEB_BUILD_OPTIONS)))
 ifeq (,\$(findstring nopython,\$(DEB_BUILD_PROFILES)))
 PYTHON_CFFI=yes
-WITH_PYTHON = --with=python2,python3
+WITH_PYTHON = --with=python3
 endif
 endif
 endif
@@ -297,7 +281,6 @@ override_dh_auto_clean:
 else
 WITH_PYTHON =
 # This tells debhelper to avoid building the python CFFI packages
-DH_OPTIONS += -Npython-$(string.replace (project.name, "_|-"):lower)-cffi
 DH_OPTIONS += -Npython3-$(string.replace (project.name, "_|-"):lower)-cffi
 export DH_OPTIONS
 endif
@@ -444,7 +427,6 @@ Build-Depends: debhelper (>= 9),
 .endif
 .if python_cffi ?= 1
     dh-python,
-    python-all-dev, python-cffi, python-setuptools,
     python3-all-dev, python3-cffi, python3-setuptools,
 .endif
     asciidoc-base | asciidoc, xmlto,
