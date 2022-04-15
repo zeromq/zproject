@@ -69,9 +69,8 @@ Build-Depends: debhelper (>= 9),
     dh-systemd,
 .endif
 .if python_cffi ?= 1
-.- NOTE: after support for Debian 7 and Ubuntu 12.04 is dropped, <!nopython> can be added to each of the following
-    dh-python,
-    python3-all-dev, python3-cffi, python3-setuptools,
+    dh-python <!nopython>,
+    python3-all-dev <!nopython>, python3-cffi <!nopython>, python3-setuptools <!nopython>,
 .endif
 .- NOTE: after support for Debian 7 and Ubuntu 12.04 is dropped, <!nodoc> can be added to each of the following
     asciidoc-base | asciidoc, xmlto,
@@ -426,8 +425,8 @@ Build-Depends: debhelper (>= 9),
     dh-systemd,
 .endif
 .if python_cffi ?= 1
-    dh-python,
-    python3-all-dev, python3-cffi, python3-setuptools,
+    dh-python <!nopython>,
+    python3-all-dev <!nopython>, python3-cffi <!nopython>, python3-setuptools <!nopython>,
 .endif
     asciidoc-base | asciidoc, xmlto,
     dh-autoreconf
