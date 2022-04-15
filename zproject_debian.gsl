@@ -285,8 +285,6 @@ export DH_OPTIONS
 endif
 .endif
 
-# Workaround for automake < 1.14 bug
-\$(shell dpkg --compare-versions `dpkg-query -W -f='\$${Version}\\n' automake` lt 1:1.14 && mkdir -p config)
 \$(shell test -f src/Makemodule-local.am || touch src/Makemodule-local.am)
 
 override_dh_strip:
