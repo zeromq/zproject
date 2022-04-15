@@ -391,7 +391,7 @@ debian/tmp/usr/share/man/man3/*
 debian/tmp/usr/share/man/man7/*
 .   endif
 .endif
-.output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).dsc.obs")
+.output ("packaging/debian/$(string.replace (project.name, "_|-"):lower).dsc")
 Format: 3.0 (quilt)
 Binary: $(project.name)
 Source: $(project.name)

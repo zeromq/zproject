@@ -17,7 +17,7 @@ register_target ("obs", "service for Open Build Service")
 .directory.create ('packaging/obs')
 .output "packaging/obs/_service"
 <services>
-  <service name="tar_scm">
+  <service name="obs_scm">
     <param name="url">$(project.repository)</param>
     <param name="scm">git</param>
     <!-- delete to build from latest master on each refresh -->
@@ -29,86 +29,78 @@ register_target ("obs", "service for Open Build Service")
     <param name="exclude">.git</param>
     <param name="changesgenerate">enable</param>
     <param name="filename">$(string.replace (project.name, "_|-"):lower)</param>
+    <param name="extract">packaging/debian/$(project.name).dsc</param>
+    <param name="extract">packaging/redhat/$(project.name).spec</param>
   </service>
 
-  <!-- extract redhat packaging -->
-  <service name="extract_file">
-    <param name="archive">*.tar</param>
-    <param name="files">*/packaging/redhat/$(project.name).spec</param>
-    <param name="outfilename">$(project.name).spec</param>
-  </service>
+  <service name="tar" mode="buildtime"/>
 
   <!-- extract debian packaging -->
-  <service name="extract_file">
+  <service name="extract_file" mode="buildtime">
     <param name="archive">*.tar</param>
-    <param name="files">*/packaging/debian/$(string.replace (project.name, "_|-"):lower).dsc.obs</param>
-    <param name="outfilename">$(string.replace (project.name, "_|-"):lower).dsc</param>
-  </service>
-  <service name="extract_file">
-    <param name="archive">*.tar</param>
-  	<param name="files">*/packaging/debian/changelog</param>
+    <param name="files">*/packaging/debian/changelog</param>
     <param name="outfilename">debian.changelog</param>
   </service>
-  <service name="extract_file">
+  <service name="extract_file" mode="buildtime">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/compat</param>
     <param name="outfilename">debian.compat</param>
   </service>
-  <service name="extract_file">
+  <service name="extract_file" mode="buildtime">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/control</param>
     <param name="outfilename">debian.control</param>
   </service>
-  <service name="extract_file">
+  <service name="extract_file" mode="buildtime">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/copyright</param>
     <param name="outfilename">debian.copyright</param>
   </service>
 .   if project.has_main | project.has_bin
-  <service name="extract_file">
+  <service name="extract_file" mode="buildtime">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/$(string.replace (project.name, "_|-"):lower).install</param>
     <param name="outfilename">debian.$(string.replace (project.name, "_|-"):lower).install</param>
   </service>
-  <service name="extract_file">
+  <service name="extract_file" mode="buildtime">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/$(string.replace (project.name, "_|-"):lower).manpages</param>
     <param name="outfilename">debian.$(string.replace (project.name, "_|-"):lower).manpages</param>
   </service>
 .   endif
-  <service name="extract_file">
+  <service name="extract_file" mode="buildtime">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/format</param>
     <param name="outfilename">debian.format</param>
   </service>
 .   if project.exports_classes
-  <service name="extract_file">
+  <service name="extract_file" mode="buildtime">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/$(string.replace (project.libname, "_|-"))$(project->version.major).install</param>
     <param name="outfilename">debian.$(string.replace (project.libname, "_|-"))$(project->version.major).install</param>
   </service>
-  <service name="extract_file">
+  <service name="extract_file" mode="buildtime">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/$(string.replace (project.libname, "_|-"))-dev.install</param>
     <param name="outfilename">debian.$(string.replace (project.libname, "_|-"))-dev.install</param>
   </service>
-  <service name="extract_file">
+  <service name="extract_file" mode="buildtime">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/$(string.replace (project.libname, "_|-"))-dev.manpages</param>
     <param name="outfilename">debian.$(string.replace (project.libname, "_|-"))-dev.manpages</param>
   </service>
 .   endif
-  <service name="extract_file">
+  <service name="extract_file" mode="buildtime">
     <param name="archive">*.tar</param>
     <param name="files">*/packaging/debian/rules</param>
     <param name="outfilename">debian.rules</param>
   </service>
 
-  <service name="set_version">
+  <service name="set_version" mode="buildtime">
     <param name="basename">$(string.replace (project.name, "_|-"):lower)</param>
   </service>
 
-  <service name="recompress">
+  <service name="recompress" mode="buildtime">
     <param name="file">*.tar</param>
     <param name="compression">gz</param>
   </service>
