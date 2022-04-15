@@ -281,6 +281,15 @@ WITH_PYTHON =
 # This tells debhelper to avoid building the python CFFI packages
 DH_OPTIONS += -Npython3-$(string.replace (project.name, "_|-"):lower)-cffi
 export DH_OPTIONS
+
+override_dh_auto_build:
+	dh_auto_build -O--buildsystem=autoconf
+
+override_dh_auto_install:
+	dh_auto_install -O--buildsystem=autoconf
+
+override_dh_auto_clean:
+	dh_auto_clean -O--buildsystem=autoconf
 endif
 .endif
 
