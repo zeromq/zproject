@@ -984,6 +984,11 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
     if [ -z "${CI_CONFIG_QUIET-}" ] || [ "${CI_CONFIG_QUIET-}" = yes ] || [ "${CI_CONFIG_QUIET-}" = true ]; then
         CONFIG_OPTS+=("--quiet")
     fi
+    if [ -z "${CI_SELFTEST-}" ] || [ "${CI_SELFTEST-}" = yes ] || [ "${CI_SELFTEST-}" = true ]; then
+        CONFIG_OPTS+=("--enable-$(project.name)_selftest")
+    else
+        CONFIG_OPTS+=("--disable-$(project.name)_selftest")
+    fi
 
     if [ "$HAVE_CCACHE" = yes ] && [ "${COMPILER_FAMILY}" = GCC ]; then
         PATH="/usr/lib/ccache:$PATH"

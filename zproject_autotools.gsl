@@ -1088,6 +1088,10 @@ AC_ARG_ENABLE([$(name)],
 AM_CONDITIONAL([ENABLE_$(NAME:c)], [test x$enable_$(name:c) != xno])
 AM_COND_IF([ENABLE_$(NAME:c)], [AC_MSG_NOTICE([ENABLE_$(NAME:c) defined])])
 
+.else
+AM_CONDITIONAL([ENABLE_$(PROJECT.NAME:c)_SELFTEST], [test x$enable_$(project.name:c)_selftest != xno])
+AM_COND_IF([ENABLE_$(PROJECT.NAME:c)_SELFTEST], [AC_MSG_NOTICE([ENABLE_$(PROJECT.NAME:c)_SELFTEST defined])])
+
 .endfor
 # Checks for library functions.
 AC_TYPE_SIGNAL
