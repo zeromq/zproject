@@ -197,6 +197,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         qt                  Qt binding
         redhat              Packaging for RedHat
         ruby                Ruby binding
+        gh_actions          Github Actions configuration (same options as travis)
         travis              Travis CI scripts
             <option name="dist" value="trusty" /> Select a Linux distribution to use by default on Travis CI, also impacts the OBS-served repository of ZMQ-family packages to use (if not building from source all the time per use_pkg_deps_prereqs_source below). By default it would be "xenial" as of now.
             <option name="distcheck" value="0" /> "0" will disable run of make distcheck in Travis CI, "2" will enable it as a special testcase allowed to fail (default: 1 to enable and require to pass)
@@ -590,6 +591,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_debian.gsl" />
     <bin name = "zproject_delphi.gsl" />
     <bin name = "zproject_docker.gsl" />
+    <bin name = "zproject_gh_actions.gsl" />
     <bin name = "zproject_gyp.gsl" />
     <bin name = "zproject_java.gsl" />
     <bin name = "zproject_java_lib.gsl" />

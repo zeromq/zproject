@@ -1,0 +1,229 @@
+#   Generate continuous integration test files
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/zeromq/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+register_target ("gh_actions", "Github Actions scripts")
+
+.macro target_gh_actions
+.if !file.exists (".github/workflows/CI.yaml")
+.   echo "Generating skeleton .github/workflows/CI.yaml script"
+.   directory.create ('.github/workflows')
+.   output ".github/workflows/CI.yaml"
+# Github Actions CI script
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
+
+name: CI
+on:
+  push:
+  pull_request:
+.
+.- Prerequisite packages provided by OS distro and used "as is"
+.      packages = "git"
+.      packages_brew = ""
+.      for use
+.       if ! defined (use.repository) & ! defined (use.tarball)
+.         if defined (use.debian_name)
+.             if !(use.debian_name = '')
+.                 packages += " " + use.debian_name
+.             else
+.                 echo "WARNING: debian_name=='' for $(use.project) - not added to .github/workflows/CI.yml"
+.             endif
+.         elsif defined (use.libname)
+.             packages += " " + string.replace (use.libname, "_|-") + "-dev"
+.         else
+.             packages += " " + string.replace (use.project, "_|-") + "-dev"
+.         endif
+.         if defined (use.brew_name)
+.             packages_brew += " " + use.brew_name
+.         endif
+.       endif
+.      endfor
+
+.- Prerequisite packages that may be built from source or used from
+.- prebuilt packages of that source (usually not from an OS distro)
+.if project.gh_actions_use_pkg_deps_prereqs_source ?= 0
+.    echo "NOTE: Our forks are checked out and built without pkg dependencies in use"
+.else
+.    for use
+.        if defined (use.repository) | defined (use.tarball)
+.            if defined (use.debian_name)
+.                if !(use.debian_name = '')
+.                    packages += " " + use.debian_name
+.                else
+.                    echo "WARNING: debian_name=='' for $(use.project) - not added to .github/workflows/CI.yml"
+.                endif
+.            elsif defined (use.libname)
+.                packages += " " + string.replace (use.libname, "_|-") + "-dev"
+.            else
+.                packages += " " + string.replace (use.project, "_|-") + "-dev"
+.            endif
+.            if defined (use.brew_name)
+.                packages_brew += " " + use.brew_name
+.            endif
+.        endif
+.    endfor
+.endif
+.
+.if defined(project.gh_actions_check_zproject) & !(project.gh_actions_check_zproject ?= 0)
+.- NOTE: Currently the shell script does support use of packages or checkout
+.- of latest github code for these tools - but only from zeromq org repos,
+.- no forks/branches.
+.    packages_zproject = "generator-scripting-language zproject"
+.else
+.    packages_zproject = ""
+.endif
+.packages_doctools = "asciidoc xmlto"
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            BUILD_TYPE: default
+            DRAFT: enabled
+            CLANG_FORMAT: clang-format-11
+            PACKAGES: automake autoconf clang-format-11 $(packages) $(packages_doctools)
+          - os: ubuntu-latest
+            BUILD_TYPE: default
+            DRAFT: disabled
+            CLANG_FORMAT: clang-format-11
+            PACKAGES: automake autoconf clang-format-11 $(packages)
+          - os: ubuntu-latest
+            BUILD_TYPE: valgrind
+            DRAFT: enabled
+            PACKAGES: automake autoconf valgrind $(packages)
+          - os: ubuntu-latest
+            BUILD_TYPE: cmake
+            DRAFT: enabled
+            PACKAGES: cmake $(packages)
+          - os: macos-latest
+            BUILD_TYPE: default
+            PACKAGES: automake autoconf $(packages_brew)
+            DRAFT: enabled
+          - os: macos-latest
+            BUILD_TYPE: default
+            DRAFT: disabled
+            PACKAGES: automake autoconf $(packages_brew)
+.if project.gh_actions_clangformat_implem ?= "autotools" | ( !defined(project.gh_actions_clangformat_implem) & project.gh_actions_use_cmake ?= 0 )
+.   echo "GHA: CLANG-FORMAT: implementation: autotools"
+### Note: we don't use CMake
+          - os: ubuntu-latest
+            BUILD_TYPE: cmake
+            DO_CLANG_FORMAT_CHECK: 1
+            CLANG_FORMAT: clang-format-11
+            PACKAGES: cmake clang-format-11 $(packages)
+.endif
+# For non-cmake users, there is an autotools solution with a bit more overhead
+# to have dependencies ready and pass configure script before making this check).
+# Note that the autotools variant will also require dependencies preinstalled to
+# pass its configure script:
+.if project.gh_actions_clangformat_implem ?= "cmake" | ( !defined(project.gh_actions_clangformat_implem) & ( project.gh_actions_use_cmake ?= 1 | !defined(project.gh_actions_use_cmake) ) )
+.   echo "GHA: CLANG-FORMAT: implementation: cmake"
+          - os: ubuntu-latest
+            BUILD_TYPE: cmake
+            DO_CLANG_FORMAT_CHECK: 1
+            CLANG_FORMAT: clang-format-11
+            PACKAGES: cmake clang-format-11 $(packages)
+.endif
+.if project.gh_actions_check_abi_compliance ?= 1
+.   if project.exports_classes
+# Note: the ABI compliance checker script currently assumes that:
+# 1) Your project sources have a "latest_release" branch or tag
+#    to check out and compare the current commit's ABI to;
+# 2) Prerequisites are available as packages - no custom rebuilds.
+          - os: ubuntu-latest
+            BUILD_TYPE: abi-compliance-checker
+            PACKAGES: universal-ctags abi-dumper abi-compliance-checker $(packages)
+.   endif
+.endif
+.if defined(project.gh_actions_check_zproject) & !(project.gh_actions_check_zproject ?= 0)
+          - os: ubuntu-latest
+            BUILD_TYPE: check_zproject
+            PACKAGES: $(packages) $(packages_zproject)
+.endif
+    env:
+# Set CI_TIME: true to enable build-step profiling
+# Set CI_TRACE: true to enable shell script tracing
+# Set CI_CONFIG_QUIET: true to enable "configure --quiet" (only report stderr)
+# Set CI_REQUIRE_GOOD_GITIGNORE: false to NOT fail if "git status -s" is not clean
+# Set CI_REQUIRE_GOOD_CLANG_FORMAT: true to fail if "clang-format" check is not clean
+      CI_TIME: false
+      CI_TRACE: false
+      CI_CONFIG_QUIET: true
+      CI_REQUIRE_GOOD_GITIGNORE: \
+.if project.gh_actions_require_gitignore ?= 1
+true
+.else
+false
+.endif
+      CI_REQUIRE_GOOD_CLANG_FORMAT: \
+.if defined(project.gh_actions_clangformat_require_good)
+.   echo "GHA: CLANG-FORMAT: require-good: " + project.gh_actions_clangformat_require_good
+.   if project.gh_actions_clangformat_require_good ?= 1
+true
+.   else
+false
+.   endif
+.else
+.   if project.gh_actions_clangformat_allow_failures ?= 1
+.   echo "GHA: CLANG-FORMAT: require-good: " + 1 + " (default from allow_failed)"
+true
+.   else
+.   echo "GHA: CLANG-FORMAT: require-good: " + 0 + " (default from allow_failed)"
+false
+.   endif
+.endif
+      CI_TEST_DISTCHECK: \
+.if !defined(project.gh_actions_distcheck) | project.gh_actions_distcheck ?= 1
+.# 1 = required, is default if nothing is set
+true
+.else
+.# 0 = skip, 2 = allowed fail (in a special test case, skip in others)
+false
+.endif
+      platform: ${{ matrix.platform }}
+      configuration: ${{ matrix.configuration }}
+      ENABLE_DRAFTS: ${{ matrix.ENABLE_DRAFTS }}
+      BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+      DRAFT: ${{ matrix.DRAFT }}
+      DO_CLANG_FORMAT_CHECK: ${{ matrix.DO_CLANG_FORMAT_CHECK }}
+      CLANG_FORMAT: ${{ matrix.CLANG_FORMAT }}
+      CI_SELFTEST: ${{ matrix.CI_SELFTEST }}
+    steps:
+    - name: Add debian packages
+      if: matrix.os == 'ubuntu-latest'
+      uses: myci-actions/add-deb-repo@10
+      with:
+        repo-name: obs
+        repo: deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_20.04/ ./
+        keys-asc: https://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_20.04/Release.key
+        install: ${{ matrix.PACKAGES }}
+    - name: Add brew packages
+      if: matrix.os == 'macos-latest'
+      shell: bash
+      run: brew install ${{ matrix.PACKAGES }}
+    - uses: actions/checkout@v2
+      with:
+        path: $(project.name)
+    - name: build
+      if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+      shell: bash
+      working-directory: $(project.name)
+      run: ./ci_build.sh
+.   close
+.else
+.   echo "NOT regenerating an existing .github/workflows/CI.yaml file; you might want to move yours out of the way and re-generate the project again to get updated settings"
+.endif
+.endmacro

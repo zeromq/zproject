@@ -27,6 +27,7 @@ dist_bin_SCRIPTS = \
     zproject_debian.gsl \
     zproject_delphi.gsl \
     zproject_docker.gsl \
+    zproject_gh_actions.gsl \
     zproject_gyp.gsl \
     zproject_java.gsl \
     zproject_java_lib.gsl \
@@ -53,6 +54,7 @@ dist_bin_SCRIPTS = \
     zproject_known_projects.xml
 
 
+if ENABLE_ZPROJECT_SELFTEST
 # Directories with test fixtures optionally provided by the project,
 # and with volatile RW data possibly created by a selftest program.
 # It is up to the project authors to populate the RO directory with
@@ -193,6 +195,7 @@ coverage: src/zproject_selftest
 	@echo "call make clean && configure --with-gcov to enable code coverage"
 	@exit 1
 endif
+endif #ENABLE_ZPROJECT_SELFTEST
 
 bindings: python-bindings
 
@@ -350,10 +353,12 @@ check-gitignore:
 	     echo "SKIP: $@ (no git)"; exit 0 ; \
 	   fi )
 
+if ENABLE_ZPROJECT_SELFTEST
 # This calls the recipe above after building the project products and
 # the selftest binary, and preparing the workspace for self-testing:
 check-gitignore-all: all src/zproject_selftest $(top_builddir)/$(SELFTEST_DIR_RW) $(top_builddir)/$(SELFTEST_DIR_RO)
 	$@$(MAKE) check-gitignore
+endif #ENABLE_ZPROJECT_SELFTEST
 
 
 ################################################################################
