@@ -659,7 +659,7 @@ Model is described in `zproject_known_projects.xml` file:
         </use>
     -->
 
-    <use project = "libzmq" prefix = "zmq" debian_name = "libzmq3-dev" redhat_name = "zeromq-devel"
+    <use project = "libzmq" prefix = "zmq" debian_name = "libzmq3-dev" redhat_name = "zeromq-devel" brew_name = "zeromq"
         repository = "https://github.com/zeromq/libzmq.git"
         test = "zmq_init" />
 
@@ -740,10 +740,12 @@ Model is described in `zproject_known_projects.xml` file:
         prefix = "curl"
         repository = "https://github.com/curl/curl.git"
         debian_name = "libcurl4-nss-dev"
+        brew_name = "curl"
         test = "curl_easy_init"
         header = "curl/curl.h" />
 
     <use project = "libmicrohttpd"
+         brew_name = "libmicrohttpd"
          prefix = "microhttpd"
          repository = "https://gnunet.org/git/libmicrohttpd.git"
          test = "MHD_start_daemon" />
@@ -772,6 +774,7 @@ Model is described in `zproject_known_projects.xml` file:
     <use project = "uuid"
         test = "uuid_generate"
         header = "uuid/uuid.h"
+        brew_name = "ossp-uuid"
         redhat_name = "libuuid-devel"
         debian_name = "uuid-dev" />
 

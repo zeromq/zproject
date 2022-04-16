@@ -641,7 +641,11 @@ if \
 .   else
 \! ((command -v dpkg >/dev/null 2>&1 && dpkg -s $(use.project)-dev >/dev/null 2>&1) || \\
 .   endif
+.   if defined (use.brew_name)
+    (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.brew_name) >/dev/null 2>&1)) || \\
+.   else
     (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)) || \\
+.   endif
        ([ -e "$(use.project)" ]) \\
 ; then
 .if ! defined (use.repository) & ! defined (use.tarball)
@@ -1070,7 +1074,11 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
 .      else
 \! ((command -v dpkg >/dev/null 2>&1 && dpkg -s $(use.project)-dev >/dev/null 2>&1) || \\
 .      endif
+.      if defined (use.brew_name)
+          (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.brew_name) >/dev/null 2>&1)) \\
+.      else
           (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)) \\
+.      endif
     ; then
         echo ""
 .       if ! defined (use.repository) & ! defined (use.tarball)
