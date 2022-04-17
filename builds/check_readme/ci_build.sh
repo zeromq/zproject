@@ -36,7 +36,7 @@ mkdir -p ~/bin
 && ( cd tmp-deps/gitdown && ./install-wrapper ~/bin ) || exit $?
 PATH="$PATH:~/bin"
 export PATH
-which gitdown
+command -v gitdown >/dev/null 2>&1
 
 echo "=== Configure zproject to get a Makefile"
 $CI_TIME ./autogen.sh && \
