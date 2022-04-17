@@ -1945,6 +1945,7 @@ code:
 .   endif
 .endfor
 
+if ENABLE_$(PROJECT.NAME)_SELFTEST
 # Directories with test fixtures optionally provided by the project,
 # and with volatile RW data possibly created by a selftest program.
 # It is up to the project authors to populate the RO directory with
@@ -2136,6 +2137,7 @@ coverage: src/$(project.prefix)_selftest
 \t@echo "call make clean && configure --with-gcov to enable code coverage"
 \t@exit 1
 endif
+endif #ENABLE_$(PROJECT.NAME)_SELFTEST
 
 bindings: python-bindings
 
@@ -2297,10 +2299,12 @@ check-gitignore:
 \t    echo "SKIP: $@ (no git)"; exit 0 ; \\
 \t  fi )
 
+if ENABLE_$(PROJECT.NAME)_SELFTEST
 # This calls the recipe above after building the project products and
 # the selftest binary, and preparing the workspace for self-testing:
 check-gitignore-all: all src/$(project.prefix)_selftest $\(top_builddir)/$\(SELFTEST_DIR_RW) $\(top_builddir)/$\(SELFTEST_DIR_RO)
 \t$@\$(MAKE) check-gitignore
+endif #ENABLE_$(PROJECT.NAME)_SELFTEST
 
 .insert_snippet ("Makemodule")
 
