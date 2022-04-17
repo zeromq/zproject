@@ -1,0 +1,50 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            BUILD_TYPE: default
+            PACKAGES: generator-scripting-language time
+          - os: ubuntu-latest
+            BUILD_TYPE: distcheck
+            PACKAGES: generator-scripting-language time
+          - os: ubuntu-latest
+            BUILD_TYPE: check_readme
+            PACKAGES: generator-scripting-language time openjdk-8-jre imagemagick
+    env:
+# Set CI_TIME: true to enable build-step profiling
+# Set CI_TRACE: true to enable shell script tracing
+# Set CI_CONFIG_QUIET: true to enable "configure --quiet" (only report stderr)
+# Set CI_REQUIRE_GOOD_GITIGNORE: false to NOT fail if "git status -s" is not clean
+# Set CI_REQUIRE_GOOD_CLANG_FORMAT: true to fail if "clang-format" check is not clean
+      CI_TIME: true
+      CI_TRACE: false
+      CI_CONFIG_QUIET: true
+      CI_REQUIRE_GOOD_GITIGNORE: false
+      platform: ${{ matrix.platform }}
+      configuration: ${{ matrix.configuration }}
+      BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+    steps:
+    - name: Add debian packages
+      uses: myci-actions/add-deb-repo@10
+      with:
+        repo-name: obs
+        repo: deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_20.04/ ./
+        keys-asc: https://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_20.04/Release.key
+        install: ${{ matrix.PACKAGES }}
+    - uses: actions/checkout@v2
+      with:
+        path: zproject
+    - name: build
+      shell: bash
+      working-directory: zproject
+      run: ./ci_build.sh
