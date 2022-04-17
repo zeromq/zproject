@@ -358,6 +358,9 @@ fi
      AC_MSG_RESULT([$enable_dist_cmakefiles])])
 AM_CONDITIONAL(ENABLE_DIST_CMAKEFILES, test "x$enable_dist_cmakefiles" = "xyes")
 
+AM_CONDITIONAL([ENABLE_ZPROJECT_SELFTEST], [test x$enable_zproject_selftest != xno])
+AM_COND_IF([ENABLE_ZPROJECT_SELFTEST], [AC_MSG_NOTICE([ENABLE_ZPROJECT_SELFTEST defined])])
+
 # Checks for library functions.
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset getifaddrs)

@@ -197,6 +197,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         qt                  Qt binding
         redhat              Packaging for RedHat
         ruby                Ruby binding
+        gh_actions          Github Actions configuration (same options as travis)
         travis              Travis CI scripts
             <option name="dist" value="trusty" /> Select a Linux distribution to use by default on Travis CI, also impacts the OBS-served repository of ZMQ-family packages to use (if not building from source all the time per use_pkg_deps_prereqs_source below). By default it would be "xenial" as of now.
             <option name="distcheck" value="0" /> "0" will disable run of make distcheck in Travis CI, "2" will enable it as a special testcase allowed to fail (default: 1 to enable and require to pass)
@@ -590,6 +591,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_debian.gsl" />
     <bin name = "zproject_delphi.gsl" />
     <bin name = "zproject_docker.gsl" />
+    <bin name = "zproject_gh_actions.gsl" />
     <bin name = "zproject_gyp.gsl" />
     <bin name = "zproject_java.gsl" />
     <bin name = "zproject_java_lib.gsl" />
@@ -659,7 +661,7 @@ Model is described in `zproject_known_projects.xml` file:
         </use>
     -->
 
-    <use project = "libzmq" prefix = "zmq" debian_name = "libzmq3-dev" redhat_name = "zeromq-devel"
+    <use project = "libzmq" prefix = "zmq" debian_name = "libzmq3-dev" redhat_name = "zeromq-devel" brew_name = "zeromq"
         repository = "https://github.com/zeromq/libzmq.git"
         test = "zmq_init" />
 
@@ -740,10 +742,12 @@ Model is described in `zproject_known_projects.xml` file:
         prefix = "curl"
         repository = "https://github.com/curl/curl.git"
         debian_name = "libcurl4-nss-dev"
+        brew_name = "curl"
         test = "curl_easy_init"
         header = "curl/curl.h" />
 
     <use project = "libmicrohttpd"
+         brew_name = "libmicrohttpd"
          prefix = "microhttpd"
          repository = "https://gnunet.org/git/libmicrohttpd.git"
          test = "MHD_start_daemon" />
@@ -772,6 +776,7 @@ Model is described in `zproject_known_projects.xml` file:
     <use project = "uuid"
         test = "uuid_generate"
         header = "uuid/uuid.h"
+        brew_name = "ossp-uuid"
         redhat_name = "libuuid-devel"
         debian_name = "uuid-dev" />
 

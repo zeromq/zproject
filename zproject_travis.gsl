@@ -120,13 +120,9 @@ true
 .# 0 = skip, 2 = allowed fail (in a special test case, skip in others)
 false
 .endif
-    # tokens to deploy releases on OBS.
-    # 1) Create 2 OBS tokens with osc token --create network:messaging:zeromq:release-<stable|draft> <project>
-    #    encrypt them with travis encrypt --org -r <org>/<repo> OBS_<STABLE|DRAFT>_TOKEN="<token>"
-    # 2) Uncomment the three "secure" lines and paste the three generated hashed
-    #    strings, which include each token's name, as parameters
-    #- secure:
-    #- secure:
+    # 1) Create the GH token
+    # 2) Uncomment the "secure" line and paste the generated hashed
+    #    string, which include the token's name, as parameter
     #- secure:
   matrix:
     - BUILD_TYPE=default
@@ -594,7 +590,7 @@ before_install:
 
 # Hand off to generated script for each BUILD_TYPE
 script: ./ci_build.sh
-before_deploy: . ./ci_deploy.sh && ./ci_deploy_obs.sh
+before_deploy: . ./ci_deploy.sh
 deploy:
   provider: releases
   api_key:
@@ -645,7 +641,11 @@ if \
 .   else
 \! ((command -v dpkg >/dev/null 2>&1 && dpkg -s $(use.project)-dev >/dev/null 2>&1) || \\
 .   endif
+.   if defined (use.brew_name)
+    (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.brew_name) >/dev/null 2>&1)) || \\
+.   else
     (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)) || \\
+.   endif
        ([ -e "$(use.project)" ]) \\
 ; then
 .if ! defined (use.repository) & ! defined (use.tarball)
@@ -984,6 +984,11 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
     if [ -z "${CI_CONFIG_QUIET-}" ] || [ "${CI_CONFIG_QUIET-}" = yes ] || [ "${CI_CONFIG_QUIET-}" = true ]; then
         CONFIG_OPTS+=("--quiet")
     fi
+    if [ -z "${CI_SELFTEST-}" ] || [ "${CI_SELFTEST-}" = yes ] || [ "${CI_SELFTEST-}" = true ]; then
+        CONFIG_OPTS+=("--enable-$(project.name)_selftest")
+    else
+        CONFIG_OPTS+=("--disable-$(project.name)_selftest")
+    fi
 
     if [ "$HAVE_CCACHE" = yes ] && [ "${COMPILER_FAMILY}" = GCC ]; then
         PATH="/usr/lib/ccache:$PATH"
@@ -1074,7 +1079,11 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
 .      else
 \! ((command -v dpkg >/dev/null 2>&1 && dpkg -s $(use.project)-dev >/dev/null 2>&1) || \\
 .      endif
+.      if defined (use.brew_name)
+          (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.brew_name) >/dev/null 2>&1)) \\
+.      else
           (command -v brew >/dev/null 2>&1 && brew ls --versions $(use.project) >/dev/null 2>&1)) \\
+.      endif
     ; then
         echo ""
 .       if ! defined (use.repository) & ! defined (use.tarball)
@@ -1444,24 +1453,4 @@ else
 fi
 .close
 .chmod_x ("ci_deploy.sh")
-.
-.output "ci_deploy_obs.sh"
-#!/usr/bin/env bash
-
-$(project.GENERATED_WARNING_HEADER)
-
-# do NOT set -x or it will log the secret tokens!
-set -e
-
-if [ "$BUILD_TYPE" == "default" ] && [ -n "${OBS_STABLE_TOKEN}" -o -n "${OBS_DRAFT_TOKEN}" ]; then
-    # Trigger source run on new tag on OBS. The latest tag will be fetched.
-    if [ -n "${OBS_STABLE_TOKEN}" ]; then
-        curl -H "Authorization: Token ${OBS_STABLE_TOKEN}" -X POST https://api.opensuse.org/trigger/runservice
-    fi
-    if [ -n "${OBS_DRAFT_TOKEN}" ]; then
-        curl -H "Authorization: Token ${OBS_DRAFT_TOKEN}" -X POST https://api.opensuse.org/trigger/runservice
-    fi
-fi
-.close
-.chmod_x ("ci_deploy_obs.sh")
 .endmacro

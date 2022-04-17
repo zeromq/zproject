@@ -82,6 +82,7 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/zproject_debian.gsl
 %{_bindir}/zproject_delphi.gsl
 %{_bindir}/zproject_docker.gsl
+%{_bindir}/zproject_gh_actions.gsl
 %{_bindir}/zproject_gyp.gsl
 %{_bindir}/zproject_java.gsl
 %{_bindir}/zproject_java_lib.gsl
