@@ -23,12 +23,12 @@ register_target ("android", "Native shared library for Android")
 You need the Android Native Development Kit (NDK) installed. See
 [here](https://developer.android.com/ndk) to download it.
 
-This project is tested against Android NDK version r22b.
+This project is tested against Android NDK version r24.
 
-If you installed version r22b all you have to do is to expose the NDK root
+If you installed version r24 all you have to do is to expose the NDK root
 directory as environment variable, e.g:
 
-    export ANDROID_NDK_ROOT=$HOME/android-ndk-r22b
+    export ANDROID_NDK_ROOT=$HOME/android-ndk-r24
 
 If you installed another version you have to expose the NDK root directory as
 well as the NDK version, e.g:
@@ -104,8 +104,9 @@ case \$(uname | tr '[:upper:]' '[:lower:]') in
 esac
 
 # Set default values used in ci builds
-export NDK_VERSION=${NDK_VERSION:-android-ndk-r22b}
-# With NDK r22b, the minimum SDK version range is [16, 29].
+export NDK_VERSION=${NDK_VERSION:-android-ndk-r24}
+# With NDK r22b, the minimum SDK version range is [16, 31].
+# Since NDK r24, the minimum SDK version range is [19, 31].
 # SDK version 21 is the minimum version for 64-bit builds.
 export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
 
@@ -189,15 +190,15 @@ $(project.GENERATED_WARNING_HEADER:)
 #!/usr/bin/env bash
 $(project.GENERATED_WARNING_HEADER:)
 
-export NDK_VERSION=android-ndk-r22b
+export NDK_VERSION=android-ndk-r24
 export ANDROID_NDK_ROOT="/tmp/${NDK_VERSION}"
 
 case \$(uname | tr '[:upper:]' '[:lower:]') in
   linux*)
-    HOST_PLATFORM=linux-x86_64
+    HOST_PLATFORM=linux
     ;;
   darwin*)
-    HOST_PLATFORM=darwin-x86_64
+    HOST_PLATFORM=darwin
     ;;
   *)
     echo "Unsupported platform"
@@ -324,12 +325,12 @@ function android_build_env {
 
     if [ -z "$ANDROID_NDK_ROOT" ]; then
         ANDROID_BUILD_FAIL+=("Please set the ANDROID_NDK_ROOT environment variable")
-        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r22b\")")
+        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r24\")")
     fi
 
     if [ -z "$TOOLCHAIN_PATH" ]; then
         ANDROID_BUILD_FAIL+=("Please set the TOOLCHAIN_PATH environment variable")
-        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r22b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin\")")
+        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r24/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin\")")
     fi
 
     if [ -z "$TOOLCHAIN_HOST" ]; then
@@ -393,10 +394,22 @@ function _android_build_opts_process_binaries {
     else
        local LD="${TOOLCHAIN_PATH}/ld"
     fi
-    local AS="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-as"
-    local AR="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar"
-    local RANLIB="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ranlib"
-    local STRIP="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-strip"
+    # Since NDK r24 this binary was removed due to LLVM being now the default
+    if [ ! -x "${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-as" ]; then
+        local AS="${TOOLCHAIN_PATH}/llvm-as"
+    else
+        local AS="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-as"
+    fi
+    # Since NDK r23 those binaries were removed due to LLVM being now the default
+    if [ ! -x "${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar" ]; then
+        local AR="${TOOLCHAIN_PATH}/llvm-ar"
+        local RANLIB="${TOOLCHAIN_PATH}/llvm-ranlib"
+        local STRIP="${TOOLCHAIN_PATH}/llvm-strip"
+    else
+        local AR="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar"
+        local RANLIB="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ranlib"
+        local STRIP="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-strip"
+    fi
 
     if [ ! -x "${CC}" ]; then
         ANDROID_BUILD_FAIL+=("The CC binary does not exist or is not executable")
@@ -451,7 +464,12 @@ function android_build_opts {
 
     _android_build_opts_process_binaries
 
-    local LIBS="-lc -lgcc -ldl -lm -llog -lc++_shared"
+    # Since NDK r23 we don't need -lgcc due to LLVM being now the default
+    if [ ! -x "${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar" ]; then
+        local LIBS="-lc -ldl -lm -llog -lc++_shared"
+    else
+        local LIBS="-lc -lgcc -ldl -lm -llog -lc++_shared"
+    fi
     local LDFLAGS="-L${ANDROID_BUILD_PREFIX}/lib"
     LDFLAGS+=" -L${ANDROID_NDK_ROOT}/sources/cxx-stl/llvm-libc++/libs/${TOOLCHAIN_ABI}"
     CFLAGS+=" -D_GNU_SOURCE -D_REENTRANT -D_THREAD_SAFE"
