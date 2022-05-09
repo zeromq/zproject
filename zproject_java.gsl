@@ -188,12 +188,12 @@ ext.hasNotEmptyProperty = { propertyName ->
 dependencies {
 .   for project.use
 .       if count (project->dependencies.class, class.project = use.project) > 0
-    compile "org.zeromq.$(use.project):$(use.project)-jni:$jni_dependencies_version"
+    implementation "org.zeromq.$(use.project):$(use.project)-jni:$jni_dependencies_version"
 .       endif
 .   endfor
-    compile 'org.scijava:native-lib-loader:2.3.5'
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.hamcrest:hamcrest-all:1.3'
+    implementation 'org.scijava:native-lib-loader:2.4.0'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
 }
 
 //  ------------------------------------------------------------------
@@ -201,7 +201,7 @@ dependencies {
 
 task generateJniHeaders(type: Exec, dependsOn: 'classes') {
     def classpath = sourceSets.main.output.classesDirs
-    def appclasspath = configurations.runtime.files*.getAbsolutePath().join(File.pathSeparator)
+    def appclasspath = configurations.runtimeClasspath.files*.getAbsolutePath().join(File.pathSeparator)
     def nativeIncludes = 'src/native/include'
     def jniClasses = [
 .   for project.class where class.okay
@@ -344,13 +344,13 @@ $(project.GENERATED_WARNING_HEADER:)
 */
 
 dependencies {
-    compile project(':$(project.prefix:c)-jni')
+    implementation project(':$(project.prefix:c)-jni')
     runtimeOnly "$(project.namespace):$(project.prefix:c)-jni-linux-x86_64:${project.version}"
     runtimeOnly "$(project.namespace):$(project.prefix:c)-jni-osx-x86_64:${project.version}"
     runtimeOnly "$(project.namespace):$(project.prefix:c)-jni-windows-x86_64:${project.version}"
 .   for project.use
 .       if count (project->dependencies.class, class.project = use.project) > 0
-    compile 'org.zeromq.$(use.project):$(use.project)-jni:latest.release'
+    implementation 'org.zeromq.$(use.project):$(use.project)-jni:latest.release'
     runtimeOnly 'org.zeromq.$(use.project):$(use.project)-jni-all:latest.release'
 .       endif
 .   endfor
@@ -420,7 +420,7 @@ $(project.GENERATED_WARNING_HEADER:)
 */
 
 dependencies {
-    compile project(':$(project.prefix:c)-jni')
+    implementation project(':$(project.prefix:c)-jni')
 .   for project.use
 .       if count (project->dependencies.class, class.project = use.project) > 0
     runtimeOnly "org.zeromq.$(use.project):$(use.project)-jni-${osdetector.classifier}:latest.release"
