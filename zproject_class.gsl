@@ -161,17 +161,25 @@ typedef struct _$(class.c_name:)_t $(class.c_name:)_t;
 .endfor
 .if count (constant, scope = "public")
 //  Public constants
+
 .endif
 .for constant where scope = "public" & !draft
-#define $(CONSTANT.NAME)\
-                            $(constant.value)  //  $(constant.?'')
+.  if ("$(constant.description)" <> "")
+// $(constant.description:no,block)
+.  endif
+#define $(CONSTANT.NAME:c)\t$(constant.value)
+
 .endfor
 .for constant where scope = "public" & draft
 .   if first ()
 #ifdef $(PROJECT.PREFIX)_BUILD_DRAFT_API
+
 .   endif
-#define $(CONSTANT.NAME)\
-                            $(constant.value)  //  $(constant.?'')
+.  if ("$(constant.description)" <> "")
+// $(constant.description:no,block)
+.  endif
+#define $(CONSTANT.NAME:c)\t$(constant.value)
+
 .   if last ()
 #endif // $(PROJECT.PREFIX)_BUILD_DRAFT_API
 .   endif
@@ -607,8 +615,11 @@ $(VISIBILITY) $(c_method_signature (method):)\
 
 //  *** Draft global constants, defined for internal use only ***
 .   endif
-#define $(CONSTANT.NAME)\
-                            $(constant.value)  //  $(constant.?'')
+.   if ("$(constant.description)" <> "")
+// $(constant.description:no,block)
+.   endif
+#define $(CONSTANT.NAME:c)\t$(constant.value)
+
 .endfor
 .for class where draft = 0
 .   for constant where draft = 1
@@ -657,8 +668,13 @@ $(PROJECT.PREFIX)_PRIVATE void
 .for constant where scope = "private"
 .   if first ()
 //  Private constants
+
 .   endif
-#define $(CONSTANT.NAME)\t$(constant.value) //  $(constant.?'')
+.   if ("$(constant.description)" <> "")
+// $(constant.description:no,block)
+.   endif
+#define $(CONSTANT.NAME:c)\t$(constant.value)
+
 .endfor
 #endif
 .close
