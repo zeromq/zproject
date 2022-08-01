@@ -1,0 +1,126 @@
+#   Genre iOS build system files
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/zeromq/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#   This file is part of zproject.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+register_target ("ios", "Native library for iOS")
+
+.macro target_ios
+.directory.create ("builds/ios")
+.
+.output "builds/ios/README.md"
+# iOS Build
+
+## Prerequisites
+
+The build script require to be run on MacOs with XCode and the developer SDK installed.
+
+This project is tested against SDK 15.5.
+
+If you want to specify another version you need to set the environment variable below:
+
+    export SDK_VERSION=15.5
+
+You can list all the versions of the SDK installed on your Mac using the command below:
+
+    xcodebuild -showsdks
+
+## Build
+
+In the ios directory, run:
+    \./build.sh [ iPhoneOS armv7 | iPhoneOS armv7s | iPhoneOS arm64 | iPhoneSimulator i386 | iPhoneSimulator x86_64 ]
+
+Note that certain target architectures may or may not be available depending on your target SDK Version. For example, iOS 10 is the maximum deployment target for 32-bit targets.
+
+[This website](https://docs.elementscompiler.com/Platforms/Cocoa/CpuArchitectures/) can help you choose which architecture you need to target depending on your SDK version.
+.close
+.
+.output "builds/ios/build.sh"
+#!/usr/bin/env bash
+$(project.GENERATED_WARNING_HEADER:)
+
+set -e
+
+function usage {
+    echo "Usage ./build.sh [ iPhoneOS armv7 | iPhoneOS armv7s | iPhoneOS arm64 | iPhoneSimulator i386 | iPhoneSimulator x86_64 ]"
+}
+
+PLATFORM=$1
+if [ -z PLATFORM ]; then
+    usage
+    exit 1
+fi
+
+if [[ $PLATFORM == "iPhoneOS" ]]; then
+    SDK="iphoneos"
+elif [[ $PLATFORM == "iPhoneSimulator" ]]; then
+    SDK="iphonesimulator"
+else
+    echo "Unknown platform '$PLATFORM'"
+    usage
+    exit 1
+fi
+
+TARGET=$2
+if [ -z $TARGET ]; then
+    usage
+    exit 1
+fi
+
+if [[ $TARGET == "x86_64" ]]; then
+    HOST="i386"
+elif [[ $TARGET == "arm64" ]]; then
+    HOST="arm"
+else
+    HOST=$TARGET
+fi
+
+export SDK_VERSION=${SDK_VERSION:-"15.5"}
+
+PLATFORM_PATH="/Applications/Xcode.app/Contents/Developer/Platforms"
+TOOLCHAIN_PATH="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin"
+SYSROOT=$PLATFORM_PATH/$PLATFORM.platform/Developer/SDKs/$PLATFORM$SDK_VERSION.sdk
+OUTPUT_DIR=output/$PLATFORM/$TARGET
+PWD="\$(pwd)"
+
+export CC="\$(xcrun -sdk $SDK -find clang)"
+export CPP="$CC -E"
+export AR="\$(xcrun -sdk $SDK -find ar)"
+export RANLIB="\$(xcrun -sdk $SDK -find ranlib)"
+export CFLAGS="-arch $TARGET -isysroot $SYSROOT -miphoneos-version-min=$SDK_VERSION -fembed-bitcode"
+export CPPFLAGS="-arch $TARGET -isysroot $SYSROOT -miphoneos-version-min=$SDK_VERSION -fembed-bitcode"
+export LDFLAGS="-arch $TARGET -isysroot $SYSROOT"
+
+cd ../../
+mkdir -p $OUTPUT_DIR
+\./autogen.sh
+\./configure --prefix="$PWD/$OUTPUT_DIR" --host=$HOST-apple-darwin
+make
+make install
+
+echo "$PLATFORM $TARGET build successful"
+$(project.GENERATED_WARNING_HEADER:)
+.close
+.chmod_x ("builds/ios/build.sh")
+.#
+.output "builds/ios/ci_build.sh"
+#!/usr/bin/env bash
+$(project.GENERATED_WARNING_HEADER:)
+
+#\./build.sh "iPhoneOS" "armv7" # Only available with SDK_VERSION <= 10
+#\./build.sh "iPhoneOS" "armv7s" # Only available with SDK_VERSION <= 10
+\./build.sh "iPhoneOS" "arm64"
+#\./build.sh "iPhoneSimulator" "i386" # Only available with SDK_VERSION <= 10
+\./build.sh "iPhoneSimulator" "x86_64"
+
+$(project.GENERATED_WARNING_HEADER:)
+.close
+.chmod_x ("builds/ios/ci_build.sh")
+.endmacro

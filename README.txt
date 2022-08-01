@@ -32,6 +32,7 @@ At least the following build environments are currently supported:
 * CMake
 * Mingw32
 * Android
+* iOS
 * Visual Studio
 
 Thanks to the ZeroMQ community, you can do all the heavy lifting in C and then easily generate bindings in the following languages:

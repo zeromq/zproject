@@ -79,6 +79,7 @@ At least the following build environments are currently supported:
 * CMake
 * Mingw32
 * Android
+* iOS
 * Visual Studio
 
 Thanks to the ZeroMQ community, you can do all the heavy lifting in C and then easily generate bindings in the following languages:
@@ -187,6 +188,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         debian              packaging for Debian
         delphi              Delphi binding
         docker              packaging for Docker
+        ios                 Native library for iOS
         java                Java JNI binding
         java-msvc           MSVC builds for Java JNI binding
         jenkins             Jenkins pipeline build
@@ -593,6 +595,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_docker.gsl" />
     <bin name = "zproject_gh_actions.gsl" />
     <bin name = "zproject_gyp.gsl" />
+    <bin name = "zproject_ios.gsl" />
     <bin name = "zproject_java.gsl" />
     <bin name = "zproject_java_lib.gsl" />
     <bin name = "zproject_java_msvc.gsl" />

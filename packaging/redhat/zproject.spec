@@ -84,6 +84,7 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/zproject_docker.gsl
 %{_bindir}/zproject_gh_actions.gsl
 %{_bindir}/zproject_gyp.gsl
+%{_bindir}/zproject_ios.gsl
 %{_bindir}/zproject_java.gsl
 %{_bindir}/zproject_java_lib.gsl
 %{_bindir}/zproject_java_msvc.gsl
