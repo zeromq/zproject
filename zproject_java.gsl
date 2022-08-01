@@ -78,7 +78,7 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
 target_link_libraries ($(project.prefix)jni ${MORE_LIBRARIES})
 .
-.output "$(topdir)/$(project.prefix:c)-jni/Find$(project.name:c).cmake"
+.output "$(topdir)/$(project.prefix:c)-jni/Find$(project.prefix:c).cmake"
 $(project.GENERATED_WARNING_HEADER:)
 
 if (NOT MSVC)
