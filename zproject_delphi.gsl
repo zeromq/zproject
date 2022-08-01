@@ -705,14 +705,20 @@ function target_delphi
     endfor
   endfunction
 
-  function generate_c_const(class)
-    if count(my.class.constant) > 0
+  function generate_project_const()
+    for project.constant
       >
-      for my.class.constant
-        >  // $(constant.description:no,block)
-        >  $(project.name:UPPER)_$(my.class.name:UPPER)_$(CONSTANT.NAME:c) = $(constant.value);
-      endfor
-    endif
+      >  // $(constant.description:no,block)
+      >  $(PROJECT.NAME:c)_$(CONSTANT.NAME:c) = $(constant.value);
+    endfor
+  endfunction
+
+  function generate_c_const(class)
+    for my.class.constant
+      >
+      >  // $(constant.description:no,block)
+      >  $(PROJECT.NAME:c)_$(my.class.name:UPPER)_$(CONSTANT.NAME:c) = $(constant.value);
+    endfor
   endfunction
 
   function generate_c_binding()
@@ -744,6 +750,7 @@ function target_delphi
     >
     >const
     >  lib_$(project.name:c) = 'lib$(project.name:c).dll';
+    generate_project_const()
     for project.class where scope = "public" & !draft
       generate_c_const(class)
     endfor
