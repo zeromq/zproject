@@ -29,6 +29,7 @@ dist_bin_SCRIPTS = \
     zproject_docker.gsl \
     zproject_gh_actions.gsl \
     zproject_gyp.gsl \
+    zproject_ios.gsl \
     zproject_java.gsl \
     zproject_java_lib.gsl \
     zproject_java_msvc.gsl \

@@ -16,6 +16,7 @@ usr/bin/zproject_delphi.gsl
 usr/bin/zproject_docker.gsl
 usr/bin/zproject_gh_actions.gsl
 usr/bin/zproject_gyp.gsl
+usr/bin/zproject_ios.gsl
 usr/bin/zproject_java.gsl
 usr/bin/zproject_java_lib.gsl
 usr/bin/zproject_java_msvc.gsl
