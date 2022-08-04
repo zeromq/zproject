@@ -165,10 +165,14 @@ set(OPTIONAL_LIBRARIES_STATIC)
 # $(USE.PROJECT) dependency
 ########################################################################
 .if use.optional = 0
-find_package($(use.project) REQUIRED)
+IF (NOT $(use.project)_FOUND)
+    find_package($(use.project) REQUIRED)
+ENDIF(NOT $(use.project)_FOUND)
 IF ($(use.project)_FOUND)
 .else
-find_package($(use.project))
+IF (NOT $(use.project)_FOUND)
+    find_package($(use.project))
+ENDIF(NOT $(use.project)_FOUND)
 option($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) "Build $(project.linkname) with $(use.project)" ${$(USE.PROJECT)_FOUND})
 IF ($(PROJECT.PREFIX)_WITH_$(USE.PROJECT) AND $(use.project)_FOUND)
 .endif
