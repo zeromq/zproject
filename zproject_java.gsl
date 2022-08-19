@@ -134,7 +134,7 @@ plugins {
     id 'com.google.osdetector' version '1.7.0'
 }
 
-wrapper.gradleVersion = '7.0.2'
+wrapper.gradleVersion = '7.5.1'
 
 subprojects {
     apply plugin: 'java'
@@ -717,7 +717,7 @@ $(project.GENERATED_WARNING_HEADER:)
 #
 #   Requires these environment variables be set, e.g.:
 #
-#     ANDROID_NDK_ROOT=$HOME/android-ndk-r24
+#     ANDROID_NDK_ROOT=$HOME/android-ndk-r25
 #
 #   Exit if any step fails
 set -e
@@ -751,6 +751,19 @@ if [ -z $BUILD_ARCH ]; then
     usage
     exit 1
 fi
+
+case \$(uname | tr '[:upper:]' '[:lower:]') in
+  linux*)
+    export HOST_PLATFORM=linux-x86_64
+    ;;
+  darwin*)
+    export HOST_PLATFORM=darwin-x86_64
+    ;;
+  *)
+    echo "Unsupported platform"
+    exit 1
+    ;;
+esac
 
 source ../../../../builds/android/android_build_helper.sh
 
@@ -805,7 +818,11 @@ unzip -qo "${$(USE.PROJECT)_ROOT:-../../../../../../$(use.project)}/bindings/jni
 mkdir -p lib/$TOOLCHAIN_ABI
 cp $(project.libname)jni.so lib/$TOOLCHAIN_ABI
 cp $ANDROID_BUILD_PREFIX/lib/*.so lib/$TOOLCHAIN_ABI
-cp $ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/libs/$TOOLCHAIN_ABI/libc++_shared.so lib/$TOOLCHAIN_ABI
+if [ ! -x $ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/libs/$TOOLCHAIN_ABI/libc++_shared.so ]; then
+    cp $ANDROID_BUILD_SYSROOT/usr/lib/$TOOLCHAIN_HOST/libc++_shared.so lib/$TOOLCHAIN_ABI
+else
+    cp $ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/libs/$TOOLCHAIN_ABI/libc++_shared.so lib/$TOOLCHAIN_ABI
+fi
 
 #   Build android jar
 zip -r -m ../$(project.prefix)-android-$TOOLCHAIN_ABI-$(->version.major).$(->version.minor).$(->version.patch).jar lib/ org/ META-INF/
@@ -975,7 +992,7 @@ TERM=dumb $CI_TIME ./gradlew clean
 
 if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$BINDING_OPTS" == "android" ]; then
     pushd ../../builds/android
-        export NDK_VERSION=android-ndk-r24
+        export NDK_VERSION=android-ndk-r25
         export ANDROID_NDK_ROOT="/tmp/${NDK_VERSION}"
 
         case \$(uname | tr '[:upper:]' '[:lower:]') in
