@@ -23,12 +23,12 @@ register_target ("android", "Native shared library for Android")
 You need the Android Native Development Kit (NDK) installed. See
 [here](https://developer.android.com/ndk) to download it.
 
-This project is tested against Android NDK version r24.
+This project is tested against Android NDK version r25.
 
-If you installed version r24 all you have to do is to expose the NDK root
+If you installed version r25 all you have to do is to expose the NDK root
 directory as environment variable, e.g:
 
-    export ANDROID_NDK_ROOT=$HOME/android-ndk-r24
+    export ANDROID_NDK_ROOT=$HOME/android-ndk-r25
 
 If you installed another version you have to expose the NDK root directory as
 well as the NDK version, e.g:
@@ -104,7 +104,7 @@ case \$(uname | tr '[:upper:]' '[:lower:]') in
 esac
 
 # Set default values used in ci builds
-export NDK_VERSION=${NDK_VERSION:-android-ndk-r24}
+export NDK_VERSION=${NDK_VERSION:-android-ndk-r25}
 # With NDK r22b, the minimum SDK version range is [16, 31].
 # Since NDK r24, the minimum SDK version range is [19, 31].
 # SDK version 21 is the minimum version for 64-bit builds.
@@ -190,7 +190,7 @@ $(project.GENERATED_WARNING_HEADER:)
 #!/usr/bin/env bash
 $(project.GENERATED_WARNING_HEADER:)
 
-export NDK_VERSION=android-ndk-r24
+export NDK_VERSION=android-ndk-r25
 export ANDROID_NDK_ROOT="/tmp/${NDK_VERSION}"
 
 case \$(uname | tr '[:upper:]' '[:lower:]') in
@@ -325,12 +325,12 @@ function android_build_env {
 
     if [ -z "$ANDROID_NDK_ROOT" ]; then
         ANDROID_BUILD_FAIL+=("Please set the ANDROID_NDK_ROOT environment variable")
-        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r24\")")
+        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r25\")")
     fi
 
     if [ -z "$TOOLCHAIN_PATH" ]; then
         ANDROID_BUILD_FAIL+=("Please set the TOOLCHAIN_PATH environment variable")
-        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r24/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin\")")
+        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r25/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin\")")
     fi
 
     if [ -z "$TOOLCHAIN_HOST" ]; then
