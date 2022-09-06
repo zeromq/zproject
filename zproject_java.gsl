@@ -1284,7 +1284,7 @@ $(jni_shim_signature_c:))
 .   endfor
 .#
 .   if name = "new"
-.     if project.has_czmq
+.     if project.has_czmq | project.prefix = "czmq"
     //  Disable CZMQ signal handling; allow Java to deal with it
     zsys_handler_set (NULL);
 .     endif
