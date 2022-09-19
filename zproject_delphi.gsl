@@ -299,7 +299,9 @@ function target_delphi
 
   function generate_class_method_interface(method)
     >
-    >    // $(method.description:no,block)
+    if method.description <> ""
+      >    // $(method.description:no,block)
+    endif
     if count(method.return, return.type ?<> "nothing")
       for method.return as return
       >    function $(check_reserved(method.name))$(generate_arguments(method)): $(generate_data_type(return, 0));
@@ -311,13 +313,17 @@ function target_delphi
 
   function generate_class_constructor_interface(method)
     >
-    >    // $(method.description:no,block)
+    if method.description <> ""
+      >    // $(method.description:no,block)
+    endif
     >    constructor $(method.name:Pascal)$(generate_arguments(my.method));
   endfunction
 
   function generate_class_destructor_interface(method)
     >
-    >    // $(method.description:no,block)
+    if method.description <> ""
+      >    // $(method.description:no,block)
+    endif
     >    destructor Destroy; override;
   endfunction
 
@@ -341,7 +347,9 @@ function target_delphi
   function generate_interface(class)
     if have_interface(class)
       >
-      >  // $(class.description:no,block)
+      if class.description <> ""
+        >  // $(class.description:no,block)
+      endif
       >  I$(class.name:Pascal) = interface
       for my.class.method where singleton ?<> "1"
         generate_class_method_interface(method)
@@ -352,7 +360,9 @@ function target_delphi
 
   function generate_static_method_interface(method)
     >
-    >    // $(method.description:no,block)
+    if method.description <> ""
+      >    // $(method.description:no,block)
+    endif
     if count(method.return, return.type ?<> "nothing")
       for method.return as return
       >    class function $(check_reserved(method.name))$(generate_arguments(method)): $(generate_data_type(return, 0));
@@ -364,7 +374,9 @@ function target_delphi
 
   function generate_callback_c(class, method)
     >
-    >  // $(method.description:no,block)
+    if method.description <> ""
+      >  // $(method.description:no,block)
+    endif
     if count(method.return, return.type ?<> "nothing")
       for method.return as return
       >  T$(class.name:Pascal)$(method.name:Pascal) = function$(generate_arguments_c(method)): $(generate_data_type(return, 1)); stdcall;
@@ -377,7 +389,9 @@ function target_delphi
 
   function generate_class_interface(class)
     >
-    >  // $(class.description:no,block)
+    if class.description <> ""
+      >  // $(class.description:no,block)
+    endif
     if have_interface(my.class)
     >  T$(class.name:Pascal) = class(TInterfacedObject, I$(class.name:Pascal))
     >  public
@@ -661,7 +675,9 @@ function target_delphi
 
   function generate_c_api_method(class, method)
     >
-    >  // $(my.method.description:no,block)
+    if my.method.description <> ""
+      >  // $(my.method.description:no,block)
+    endif
     if count(method.return, return.type ?<> "nothing")
       for method.return as return
       >  function $(class.name:c)_$(method.name:c)$(generate_arguments_api_c(my.class, my.method)): $(generate_data_type(return, 1))$(generate_modifier(method))$(generate_external());
@@ -673,20 +689,26 @@ function target_delphi
 
   function generate_c_api_constructor(class, method)
     >
-    >  // $(my.method.description:no,block)
+    if my.method.description <> ""
+      >  // $(my.method.description:no,block)
+    endif
     >  function $(class.name:c)_$(method.name:c)$(generate_arguments_c(method)): P$(class.name:Pascal)$(generate_modifier(method))$(generate_external());
   endfunction
 
   function generate_c_api_destructor(class, method)
     >
-    >  // $(my.method.description:no,block)
+    if my.method.description <> ""
+      >  // $(my.method.description:no,block)
+    endif
     >  procedure $(class.name:c)_destroy(var self: P$(class.name:Pascal))$(generate_modifier(method))$(generate_external());
   endfunction
 
   function generate_c_api(class)
     >
     >(* $(class.name:Pascal,block) *)
-    >(* $(class.description:no,block) *)
+    if class.description <> ""
+      >(* $(class.description:no,block) *)
+    endif
     if count(my.class.callback_type) > 0
       >
       >type
@@ -708,7 +730,9 @@ function target_delphi
   function generate_project_const()
     for project.constant
       >
-      >  // $(constant.description:no,block)
+      if constant.description <> ""
+        >  // $(constant.description:no,block)
+      endif
       >  $(PROJECT.NAME:c)_$(CONSTANT.NAME:c) = $(constant.value);
     endfor
   endfunction
@@ -716,7 +740,9 @@ function target_delphi
   function generate_c_const(class)
     for my.class.constant
       >
-      >  // $(constant.description:no,block)
+      if constant.description <> ""
+        >  // $(constant.description:no,block)
+      endif
       >  $(PROJECT.NAME:c)_$(my.class.name:UPPER)_$(CONSTANT.NAME:c) = $(constant.value);
     endfor
   endfunction
@@ -726,7 +752,9 @@ function target_delphi
     >(*
     >$(project.GENERATED_WARNING_HEADER:)
     >
-    > $(project.description:no,block)
+    if project.description <> ""
+      > $(project.description:no,block)
+    endif
     >*)
     >
     >unit lib$(project.name:c);
