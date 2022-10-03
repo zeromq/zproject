@@ -160,7 +160,7 @@ fi
  &> /dev/null) || {
     rm -rf "${cache}/$(project.name)"
     (cp -r ../.. "${cache}/$(project.name)" && cd "${cache}/$(project.name)" \\
-        && make clean && rm -f configure config.status)
+        && ( make clean || : ) && rm -f configure config.status)
 
     # Remove *.la files as they might cause errors with cross compiled libraries
     find ${ANDROID_BUILD_PREFIX} -name '*.la' -exec rm {} +
