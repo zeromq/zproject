@@ -54,6 +54,9 @@ In the android directory, run:
 .output "builds/android/build.sh"
 #!/usr/bin/env bash
 $(project.GENERATED_WARNING_HEADER:)
+#
+#   Exit if any step fails
+set -e
 
 # Set this to enable verbose profiling
 [ -n "${CI_TIME-}" ] || CI_TIME=""
@@ -189,6 +192,9 @@ $(project.GENERATED_WARNING_HEADER:)
 .output "builds/android/ci_build.sh"
 #!/usr/bin/env bash
 $(project.GENERATED_WARNING_HEADER:)
+#
+#   Exit if any step fails
+set -e
 
 export NDK_VERSION=android-ndk-r25
 export ANDROID_NDK_ROOT="/tmp/${NDK_VERSION}"
