@@ -916,6 +916,10 @@ $(project.GENERATED_WARNING_HEADER:)
 #   Exit if any step fails
 set -e
 
+.for use where defined (use.repository)
+export $(USE.PROJECT)_ROOT="${$(USE.PROJECT)_ROOT:-/tmp/tmp-deps/$(use.project)}"
+.endfor
+
 # Set this to enable verbose profiling
 [ -n "${CI_TIME-}" ] || CI_TIME=""
 case "$CI_TIME" in
@@ -960,22 +964,34 @@ mkdir -p /tmp/tmp-deps
 # Clone and build dependencies
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
 .for use where defined (use.tarball)
-export $(USE.PROJECT)_ROOT="/tmp/tmp-deps/$(use.project)"
-wget $(use.tarball)
-tar -xzf \$(basename "$(use.tarball)")
-mv \$(basename "$(use.tarball)" .tar.gz) \$$(USE.PROJECT)_ROOT
+if [ -d "${$(USE.PROJECT)_ROOT}" ] ; then
+    echo "$(PROJECT.PREFIX) - Cleaning $(USE.LIBNAME) folder '${$(USE.PROJECT)_ROOT}' ..."
+    ( cd "${$(USE.PROJECT)_ROOT}" && ( make clean || : ))
+else
+    echo "$(PROJECT.PREFIX) - Downloading $(USE.LIBNAME) from '$(use.tarball)' ..."
+    rm -f \$(basename "$(use.tarball)")
+    wget $(use.tarball)
+    tar -xzf \$(basename "$(use.tarball)")
+    mv \$(basename "$(use.tarball)" .tar.gz) \$$(USE.PROJECT)_ROOT
+    echo "$(PROJECT.PREFIX) - $(USE.LIBNAME) extracted under under '${$(USE.PROJECT)_ROOT}'."
+fi
 cd \$$(USE.PROJECT)_ROOT
 .       generate_compile_script (use, "tarball")
 
 .endfor
 .for use where defined (use.repository) & ! defined (use.tarball)
-export $(USE.PROJECT)_ROOT="/tmp/tmp-deps/$(use.project)"
+if [ -d "${$(USE.PROJECT)_ROOT}" ] ; then
+    echo "$(PROJECT.PREFIX) - Cleaning $(USE.LIBNAME) folder '${$(USE.PROJECT)_ROOT}' ..."
+    ( cd "${$(USE.PROJECT)_ROOT}" && ( make clean || : ))
+else
 .   if defined (use.release)
-$CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $$(USE.PROJECT)_ROOT
+    echo "$(PROJECT.PREFIX) - Cloning '$(use.repository)' (branch '$(use.release)') under '${$(USE.PROJECT)_ROOT}' ..."
+    $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $$(USE.PROJECT)_ROOT
 .   else
-$CI_TIME git clone --quiet --depth 1 $(use.repository) $$(USE.PROJECT)_ROOT
+    echo "$(PROJECT.PREFIX) - Cloning '$(use.repository)' (default branch) under '${$(USE.PROJECT)_ROOT}' ..."
+    $CI_TIME git clone --quiet --depth 1 $(use.repository) $$(USE.PROJECT)_ROOT
 .   endif
-
+fi
 cd \$$(USE.PROJECT)_ROOT
 .   generate_compile_script (use, "git")
 
@@ -1417,14 +1433,14 @@ fi
 .   endif
 .   if count(my.use.add_config_opts) > 0
 ( # Custom additional options for $(my.use.project)
-.           for my.use.add_config_opts as add_cfgopt
+.       for my.use.add_config_opts as add_cfgopt
   CONFIG_OPTS+=("$(add_cfgopt)")
-.           endfor
+.       endfor
   $CI_TIME ./configure "${CONFIG_OPTS[@]}"
 )
-.       else
+.   else
 $CI_TIME ./configure "${CONFIG_OPTS[@]}"
-.       endif
+.   endif
 $CI_TIME make -j4
 $CI_TIME make install
 .endmacro

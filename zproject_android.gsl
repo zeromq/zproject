@@ -207,6 +207,10 @@ set -e
 export NDK_VERSION=android-ndk-r25
 export ANDROID_NDK_ROOT="/tmp/${NDK_VERSION}"
 
+.for use where defined (use.repository)
+export $(USE.PROJECT)_ROOT="${$(USE.PROJECT)_ROOT:-/tmp/tmp-deps/$(use.project)}"
+.endfor
+
 case \$(uname | tr '[:upper:]' '[:lower:]') in
   linux*)
     HOST_PLATFORM=linux
@@ -233,20 +237,33 @@ rm -rf /tmp/tmp-deps
 mkdir -p /tmp/tmp-deps
 
 .for use where defined (use.tarball)
-export $(USE.PROJECT)_ROOT="/tmp/tmp-deps/$(use.project)"
-rm -f \$(basename "$(use.tarball)")
-wget $(use.tarball)
-tar -xzf \$(basename "$(use.tarball)")
-mv \$(basename "$(use.tarball)" .tar.gz) \$$(USE.PROJECT)_ROOT
+if [ -d "${$(USE.PROJECT)_root}" ] ; then
+    echo "$(PROJECT.PREFIX) - Cleaning $(USE.LIBNAME) folder '${$(USE.PROJECT)_ROOT}' ..."
+    ( cd "${$(USE.PROJECT)_ROOT}" && ( make clean || : ))
+else
+    echo "$(PROJECT.PREFIX) - Downloading $(USE.LIBNAME) from '$(use.tarball)' ..."
+    rm -f \$(basename "$(use.tarball)")
+    wget $(use.tarball)
+    tar -xzf \$(basename "$(use.tarball)")
+    mv \$(basename "$(use.tarball)" .tar.gz) \$$(USE.PROJECT)_ROOT
+    echo "$(PROJECT.PREFIX) - $(USE.LIBNAME) extracted under under '${$(USE.PROJECT)_ROOT}' ..."
+fi
 
 .endfor
 .for use where defined (use.repository) & ! defined (use.tarball)
-export $(USE.PROJECT)_ROOT="/tmp/tmp-deps/$(use.project)"
+if [ -d "${$(USE.PROJECT)_ROOT}" ] ; then
+    echo "$(PROJECT.PREFIX) - Cleaning $(USE.LIBNAME) folder '${$(USE.PROJECT)_ROOT}' ..."
+    ( cd "${$(USE.PROJECT)_ROOT}" && ( make clean || : ))
+else
 .   if defined (use.release)
-git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $$(USE.PROJECT)_ROOT
+    echo "$(PROJECT.PREFIX) - Cloning '$(use.repository)' (branch '$(use.release)') under '${$(USE.PROJECT)_ROOT}' ..."
+    git clone --quiet --depth 1 -b $(use.release:) $(use.repository) "${$(USE.PROJECT)_ROOT}"
 .   else
-git clone --quiet --depth 1 $(use.repository) $$(USE.PROJECT)_ROOT
+    echo "$(PROJECT.PREFIX) - Cloning '$(use.repository)' (default branch) under '${$(USE.PROJECT)_ROOT}' ..."
+    git clone --quiet --depth 1 $(use.repository) "${$(USE.PROJECT)_ROOT}"
 .   endif
+    ( cd ${$(USE.PROJECT)_ROOT} && git log --oneline -n 1 )
+fi
 
 .endfor
 \./build.sh "arm"
