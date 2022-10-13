@@ -175,8 +175,20 @@ fi
 
     export LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
 
-    (cd "${cache}/$(project.name)" && $CI_TIME ./autogen.sh 2> /dev/null \\
-        && $CI_TIME ./configure --quiet "${ANDROID_BUILD_OPTS[@]}" --without-docs \\
+    (
+        CONFIG_OPTS=()
+        CONFIG_OPTS+=("--quiet")
+        CONFIG_OPTS+=("${ANDROID_BUILD_OPTS[@]}")
+        CONFIG_OPTS+=("--without-docs")
+
+        cd "${cache}/$(project.name)" \\
+        && $CI_TIME ./autogen.sh 2> /dev/null \\
+.if defined (use.libname?)
+        && android_show_configure_opts "$(USE.LIBNAME)" "${CONFIG_OPTS[@]}" \\
+.else
+        && android_show_configure_opts "$(PROJECT.LIBNAME)" "${CONFIG_OPTS[@]}" \\
+.endif
+        && $CI_TIME ./configure "${CONFIG_OPTS[@]}" \\
         && $CI_TIME make -j 4 \\
         && $CI_TIME make install) || exit 1
 }
@@ -587,6 +599,16 @@ function android_build_verify_so {
 }
 
 .endliteral
+function android_show_configure_opts {
+    local tag=$1
+    shift
+    echo "$(PROJECT.PREFIX) (${BUILD_ARCH}) - ./configure options to build '${tag}':"
+    for opt in "$@"; do
+        echo "  > ${opt}"
+    done
+    echo ""
+}
+
 $(project.GENERATED_WARNING_HEADER:)
 .close
 .chmod_x ("builds/android/android_build_helper.sh")
