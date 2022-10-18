@@ -194,7 +194,8 @@ fi
 .endif
         && $CI_TIME ./configure "${CONFIG_OPTS[@]}" \\
         && $CI_TIME make -j 4 \\
-        && $CI_TIME make install) || exit 1
+        && $CI_TIME make install
+    ) || exit 1
 }
 
 ##
@@ -253,7 +254,7 @@ rm -rf /tmp/tmp-deps
 mkdir -p /tmp/tmp-deps
 
 .for use where defined (use.tarball)
-if [ -d "${$(USE.PROJECT)_root}" ] ; then
+if [ -d "${$(USE.PROJECT)_ROOT}" ] ; then
     echo "$(PROJECT.PREFIX) - Cleaning $(USE.LIBNAME) folder '${$(USE.PROJECT)_ROOT}' ..."
     ( cd "${$(USE.PROJECT)_ROOT}" && ( make clean || : ))
 else
@@ -261,6 +262,7 @@ else
     rm -f \$(basename "$(use.tarball)")
     wget $(use.tarball)
     tar -xzf \$(basename "$(use.tarball)")
+    mkdir -p "\$(dirname "${$(USE.PROJECT)_ROOT}")"
     mv \$(basename "$(use.tarball)" .tar.gz) \$$(USE.PROJECT)_ROOT
     echo "$(PROJECT.PREFIX) - $(USE.LIBNAME) extracted under under '${$(USE.PROJECT)_ROOT}' ..."
 fi
@@ -271,6 +273,7 @@ if [ -d "${$(USE.PROJECT)_ROOT}" ] ; then
     echo "$(PROJECT.PREFIX) - Cleaning $(USE.LIBNAME) folder '${$(USE.PROJECT)_ROOT}' ..."
     ( cd "${$(USE.PROJECT)_ROOT}" && ( make clean || : ))
 else
+    mkdir -p "\$(dirname "${$(USE.PROJECT)_ROOT}")"
 .   if defined (use.release)
     echo "$(PROJECT.PREFIX) - Cloning '$(use.repository)' (branch '$(use.release)') under '${$(USE.PROJECT)_ROOT}' ..."
     git clone --quiet --depth 1 -b $(use.release:) $(use.repository) "${$(USE.PROJECT)_ROOT}"
