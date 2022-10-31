@@ -149,7 +149,11 @@ subprojects {
     repositories {
         mavenLocal()
         mavenCentral()
-        jcenter()
+        // BINTRAY no more responding.
+        // JFROG announced JCENTER & BINTRAY shutdown in 2021.
+        // - What to do for the JFROG plugin ?
+        // - Is the README still valid ?
+        /* jcenter() */
     }
 
     group = '$(project.namespace)'
