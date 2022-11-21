@@ -121,7 +121,8 @@
     <use project = "libmicrohttpd"
          brew_name = "libmicrohttpd"
          prefix = "microhttpd"
-         repository = "https://gnunet.org/git/libmicrohttpd.git"
+         repository = "https://git.gnunet.org/libmicrohttpd.git"
+         tarball = "http://ftp.gnu.org/gnu/libmicrohttpd/libmicrohttpd-0.9.44.tar.gz"
          test = "MHD_start_daemon" />
 
     <use project = "editline"
