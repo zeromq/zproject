@@ -9,7 +9,7 @@
 
         Proposed solution: project name should always be git repo
         name; prefix and libname should always be specified. For
-        compatibility we can define aliases. E.g.:
+        compatibility, we can define aliases. E.g.:
 
         Also, 'cmake name' is target specific and must go.
 

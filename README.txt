@@ -160,7 +160,7 @@ Default value :
 * pretty-print : substitute_non_alpha_to_make_c_identifier (c option)
 * header-extension : h
 * source-extension : c (unless a cc file is present, then cc)
-* use-cxx : true if a cc file is present, false otherwhise
+* use-cxx : true if a cc file is present, false otherwise
 * use-cxx-gcc-4-9 : false by default, older GCC versions still suffice for many C++11 features
 
 ### Targets
@@ -264,7 +264,7 @@ file:
 
 This model will cause the following `@interface` to be generated inside of
 `include/myclass.h`. Note that if `include/myclass.h` has other handwritten
-content outside of the `@interface` section this content will be retained. If
+content outside the `@interface` section this content will be retained. If
 the header file does not exist zproject will create it.
 
 ```c
@@ -421,7 +421,7 @@ The tool can't distinguish methods which allocates new object. It does print a c
 
 zproject lets you mark classes and methods as 'draft' so that they are not installed by default in stable builds. This lets you deliver draft APIs to your users, and change them later.
 
-By default all classes and methods are draft, unless you specify otherwise. To mark the state of a class or method, specify in the project.xml:
+By default, all classes and methods are draft, unless you specify otherwise. To mark the state of a class or method, specify in the project.xml:
 
 ```
 <class name = "classname" state = "stable" />
@@ -488,7 +488,7 @@ $\(sysconfdir)/$\(project.name)/$\(name).
 
 ### Snippets
 
-If you write a new target or extend one you might be in the situtation where you
+If you write a new target or extend one you might be in the situation where you
 need to put code fragments into files which are not specific to your target. For
 example the `systemd` target has to extend files from the `autotools`, `debian`
 and `redhat` targets. In order to keep those files as maintainable as possible
