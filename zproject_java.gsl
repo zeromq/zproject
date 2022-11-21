@@ -550,9 +550,26 @@ clean.doFirst {
 .output "$(topdir)/README.md"
 # $(project.prefix)-jni
 
-[ ![Download](https://api.bintray.com/packages/zeromq/maven/$(project.prefix)-jni/images/download.svg) ](https://bintray.com/zeromq/maven/$(project.prefix)-jni/_latestVersion)
-
 JNI Binding for $(project.name:)
+
+## Preamble
+
+As stated in LIBZMQ documentation, Android build systems are still DRAFT.
+
+[ZActor & ZLoop](https://github.com/zeromq/czmq/issues/2214) are not (yet ?) supported.
+It's also probably the case for a few other features.
+
+This being said, CZMQ can already be used for Android.
+
+
+## Prerequisites
+
+GRADLE need to be installed on your system.
+
+Note also that GRADLE requires CMake 3.6. For old distributions, this
+may mean an upgrade of CMake. This can do done from sources and is rather
+easy to rebuild/install though (tested on CentOS 7, Fedora 24, ...)
+
 
 ## Building the JNI Layer for Linux and OSX
 
@@ -580,14 +597,19 @@ If libraries of dependent projects are not installed in any of the default locat
 
 ## Building the JNI Layer for Android
 
+### Manual build
+
 Before you start make sure that you've built the JNI Layer for your current OS.
 
-Please read the prerequisites section of the [README](../../builds/android/README.md) in the android build directory.
+Please read the preamble section of the [README](../../builds/android/README.md) in the android build directory.
 
 You only need to set the environment variables.
 
 Then in the jni's android directory ($(project.prefix)-jni/android), run:
 
+    export XXX=xxx
+    export YYY=yyy
+    cd <$(project.name:c)>/bindings/jni/$(project.prefix)-jni/android
     ./build.sh [ arm | arm64 | x86 | x86_64 ]
 
 This does the following:
@@ -602,6 +624,56 @@ This does the following:
 .endfor
 * It combines all these into jar file for the built architecture, which you can use in your Android projects.
 * It merges the jar files built for the different architectures into one jar file.
+
+
+### More automated build mecanism
+
+You may also use `bindings/jni/ci_build.sh`:
+
+    export XXX=xxx
+    export YYY=yyy
+    ./ci_build.sh
+
+Basically, this script builds the whole for JAVA and but also for Android,
+but generated libraries are available in a different place:
+
+* bindings/jni/.deps         # all required dependencies
+
+* bindings/jni/.build/       # all generated native libraries
+
+* bindings/jni/.build/prefix # all generated android libraries
+
+
+If you have your own `prebuilt` Android libraries, place them under
+
+* bindings/jni/.build/prefix/{arm,arm6,x86,x86_64}/lib/.
+
+They will be automatically packed in generated JAR files.
+
+
+### Compatibility
+
+This build system is tested on a few recent distributions:
+
+* CentOS 7 (see [PREREQUISITES](#prerequisites)
+
+* Fedora (24 to 37 and see [PREREQUISITES](#prerequisites)
+
+* Rocky Linux (8 & 9)
+
+* Debian (9 to 11)
+
+* Ubuntu (16, 18, 20 & 22.04)
+
+Both build systems (`build.sh` and `ci_build.sh`) are tested with NDK 19 to 25,
+with current default of `android-ndk-25`.
+
+
+### Configuration
+
+Both come with many different configuration possibilities.
+Again, refer to [builds/android/README](../../builds/android/README.md) for details.
+
 
 ## Building the JNI Layer for Windows
 
@@ -628,6 +700,7 @@ Now run:
     gradlew build jar -PbuildPrefix=C:\\tmp\\deps
     gradlew test -PbuildPrefix=C:\\tmp\\deps
 
+
 ## Installing the JNI Layer
 
 If you like to use this JNI Layer in another project you'll need to distribute it
@@ -642,15 +715,22 @@ like to build a release version you need the set the release switch:
 
     ./gradlew publishToMavenLocal -PisRelease
 
+
 ## Using the JNI API
 
 - to be written.
+
 
 ## License
 
 $(project->license.:)
 
 ## Information for maintainers
+
+BINTRAY is no more accepting PUBLISH. Hence, this chapter has to be reviewed.
+
+See [CZMQ issue #2249](https://github.com/zeromq/czmq/issues/2249) and probably a few others.
+
 
 ### Create or update the gradle wrapper
 
@@ -665,12 +745,14 @@ Now commit all generated files to the project. Yes the jar file as well! Users
 will now be able to call the gradle wrapper (gradlew) which will install gradle
 for them.
 
+
 ### Travis build
 
 Travis can build and check this jni layer there add the following line to your
 travis environment matrix
 
     - BUILD_TYPE=bindings BINDING=jni
+
 
 ### Deploy to bintray with Travis CI
 
@@ -724,13 +806,53 @@ $(project.GENERATED_WARNING_HEADER:)
 #
 #   Requires these environment variables be set, e.g.:
 #
-#     ANDROID_NDK_ROOT=$HOME/android-ndk-r25
+#     NDK_VERSION=android-ndk-r25
 #
 #   Exit if any step fails
 set -e
 
-# Set this to enable verbose profiling
-[ -n "${CI_TIME-}" ] || CI_TIME=""
+# Use directory of current script as the working directory
+cd "\$( dirname "${BASH_SOURCE[0]}" )"
+PROJECT_ROOT="\$(cd ../../../.. && pwd)"
+
+# Configuration
+export NDK_VERSION="${NDK_VERSION:-android-ndk-r25}"
+export ANDROID_NDK_ROOT="${ANDROID_NDK_ROOT:-/tmp/${NDK_VERSION}}"
+export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
+export ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-/tmp/android_build}"
+export ANDROID_DEPENDENCIES_DIR="${ANDROID_DEPENDENCIES_DIR:-/tmp/tmp-deps}"
+
+export CI_CONFIG_QUIET="${CI_CONFIG_QUIET:-yes}"
+export CI_TIME="${CI_TIME:-}"
+export CI_TRACE="${CI_TRACE:-no}"
+
+########################################################################
+# Utilities
+########################################################################
+# Get access to android_build functions and variables
+# Perform some sanity checks and calculate some variables.
+source "${PROJECT_ROOT}/builds/android/android_build_helper.sh"
+
+function usage {
+    echo "$(PROJECT.NAME) - Usage:"
+    echo "  export XXX=xxx"
+    echo "  ./build.sh [ arm | arm64 | x86 | x86_64 ]"
+    echo ""
+    echo "See this file (configuration & tuning options) for details"
+    echo "on variables XXX and their values xxx"
+    exit 1
+}
+
+########################################################################
+# Sanity checks
+########################################################################
+BUILD_ARCH="$1"
+[ -z "${BUILD_ARCH}" ] && usage
+
+# Export android build's environment variables for cmake
+android_build_set_env "${BUILD_ARCH}"
+android_download_ndk
+
 case "$CI_TIME" in
     [Yy][Ee][Ss]|[Oo][Nn]|[Tt][Rr][Uu][Ee])
         CI_TIME="time -p " ;;
@@ -738,8 +860,6 @@ case "$CI_TIME" in
         CI_TIME="" ;;
 esac
 
-# Set this to enable verbose tracing
-[ -n "${CI_TRACE-}" ] || CI_TRACE="no"
 case "$CI_TRACE" in
     [Nn][Oo]|[Oo][Ff][Ff]|[Ff][Aa][Ll][Ss][Ee])
         set +x ;;
@@ -749,58 +869,31 @@ case "$CI_TRACE" in
         ;;
 esac
 
-function usage {
-    echo "Usage ./build.sh [ arm | arm64 | x86 | x86_64 ]"
-}
-
-BUILD_ARCH=$1
-if [ -z $BUILD_ARCH ]; then
-    usage
-    exit 1
-fi
-
-case \$(uname | tr '[:upper:]' '[:lower:]') in
-  linux*)
-    export HOST_PLATFORM=linux-x86_64
-    ;;
-  darwin*)
-    export HOST_PLATFORM=darwin-x86_64
-    ;;
-  *)
-    echo "Unsupported platform"
-    exit 1
-    ;;
-esac
-
-source ../../../../builds/android/android_build_helper.sh
-
-export MIN_SDK_VERSION=21
-export ANDROID_BUILD_DIR=/tmp/android_build
-
+########################################################################
+# Compilation
+########################################################################
 GRADLEW_OPTS=()
 GRADLEW_OPTS+=("-PbuildPrefix=$BUILD_PREFIX")
 GRADLEW_OPTS+=("--info")
 
 #   Build any dependent libraries
-#   Use a default value assuming that dependent libraries sits alongside this one
+#   Use a default value assuming that dependent libraries sit alongside this one
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-( cd ${$(USE.PROJECT)_ROOT:-../../../../../$(use.project)}/bindings/jni/$(use.prefix)-jni/android; ./build.sh $BUILD_ARCH )
+( cd ${$(USE.LIBNAME)_ROOT:-../../../../../$(use.project)}/bindings/jni/$(use.prefix)-jni/android; ./build.sh $BUILD_ARCH )
 .   endif
 .endfor
 
 #   Ensure we've built dependencies for Android
-echo "********  Building $(project.name:) Android native libraries"
+android_build_trace "Building Android native libraries"
 ( cd ../../../../builds/android && ./build.sh $BUILD_ARCH )
 
 #   Ensure we've built JNI interface
-echo "********  Building $(project.name:) JNI interface & classes"
+android_build_trace "Building JNI interface & classes"
 ( cd ../.. && TERM=dumb ./gradlew build jar ${GRADLEW_OPTS[@]} ${$(PROJECT.PREFIX)_GRADLEW_OPTS} )
 
-echo "********  Building $(project.name:) JNI for Android"
+android_build_trace "Building JNI for Android"
 rm -rf build && mkdir build && cd build
-# Export android build's environment variables for cmake
-android_build_set_env $BUILD_ARCH
 (
     VERBOSE=1 \\
     cmake \\
@@ -819,12 +912,12 @@ ln -s $ANDROID_SYS_ROOT/usr/lib/crtbegin_so.o
 
 make $MAKE_OPTIONS
 
-echo "********  Building jar for $TOOLCHAIN_ABI"
+android_build_trace "Building jar for $TOOLCHAIN_ABI"
 #   Copy class files into org/zeromq/etc.
 find ../../build/libs/ -type f -name '$(project.prefix)-jni-*.jar' ! -name '*javadoc.jar' ! -name '*sources.jar' -exec unzip -q {} +
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-unzip -qo "${$(USE.PROJECT)_ROOT:-../../../../../../$(use.project)}/bindings/jni/$(use.project)-jni/android/$(use.project)-android*$TOOLCHAIN_ABI*.jar"
+unzip -qo "${$(USE.LIBNAME)_ROOT:-../../../../../../$(use.project)}/bindings/jni/$(use.project)-jni/android/$(use.project)-android*$TOOLCHAIN_ABI*.jar"
 .   endif
 .endfor
 
@@ -839,7 +932,7 @@ zip -r -m ../$(project.prefix)-android-$TOOLCHAIN_ABI-$(->version.major).$(->ver
 cd ..
 rm -rf build
 
-echo "********  Merging ABI jars"
+android_build_trace "Merging ABI jars"
 mkdir build && cd build
 #   Copy contents from all ABI jar - overwriting class files and manifest
 unzip -qo '../$(project.prefix)-android-*$(->version.major).$(->version.minor).$(->version.patch).jar'
@@ -848,7 +941,9 @@ zip -r -m ../$(project.prefix)-android-$(->version.major).$(->version.minor).$(-
 cd ..
 rm -rf build
 
-echo "********  Complete"
+android_build_trace "Android JNI build successful"
+
+$(project.GENERATED_WARNING_HEADER:)
 .chmod_x ("$(topdir)/$(project.prefix:c)-jni/android/build.sh")
 .
 .output "$(topdir)/$(project.prefix:c)-jni/android/CMakeLists.txt"
@@ -916,12 +1011,47 @@ $(project.GENERATED_WARNING_HEADER:)
 #   Exit if any step fails
 set -e
 
+# Use directory of current script as the working directory
+cd "\$( dirname "${BASH_SOURCE[0]}" )"
+PROJECT_ROOT="\$(cd ../.. && pwd)"
+PROJECT_JNI_ROOT="${PROJECT_ROOT}/bindings/jni"
+
+# Configuration
+export NDK_VERSION="${NDK_VERSION:-android-ndk-r25}"
+export ANDROID_NDK_ROOT="${ANDROID_NDK_ROOT:-/tmp/${NDK_VERSION}}"
+export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
+export ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-${PWD}/.build}"
+export ANDROID_DEPENDENCIES_DIR="${ANDROID_DEPENDENCIES_DIR:-${PWD}/.deps}"
+export BUILD_PREFIX="${BUILD_PREFIX:-/tmp/jni_build}"
+
+export TRAVIS_TAG="${TRAVIS_TAG:-no}"
+export TRAVIS_OS_NAME="${TRAVIS_OS_NAME:-}"
+export BINDING_OPTS="${BINDING_OPTS:-}"
+
+export CI_CONFIG_QUIET="${CI_CONFIG_QUIET:-yes}"
+export CI_TIME="${CI_TIME:-}"
+export CI_TRACE="${CI_TRACE:-no}"
+
+# By default, dependencies will be cloned to /tmp/tmp-deps.
+# If you have your own source tree for XXX, uncomment its
+# XXX_ROOT configuration line below, and provide its absolute tree:
 .for use where defined (use.repository)
-export $(USE.PROJECT)_ROOT="${$(USE.PROJECT)_ROOT:-/tmp/tmp-deps/$(use.project)}"
+#    export $(USE.LIBNAME)_ROOT="<absolute_path_to_$(USE.PROJECT)_source_tree>"
 .endfor
 
-# Set this to enable verbose profiling
-[ -n "${CI_TIME-}" ] || CI_TIME=""
+########################################################################
+# Preparation
+########################################################################
+# Get access to android_build functions and variables
+# Perform some sanity checks and calculate some variables.
+source "${PROJECT_ROOT}/builds/android/android_build_helper.sh"
+
+.for use where defined (use.repository)
+android_init_dependency_root "$(use.libname)"     # Check or initialize $(USE.LIBNAME)_ROOT
+.endfor
+
+android_download_ndk
+
 case "$CI_TIME" in
     [Yy][Ee][Ss]|[Oo][Nn]|[Tt][Rr][Uu][Ee])
         CI_TIME="time -p " ;;
@@ -929,22 +1059,12 @@ case "$CI_TIME" in
         CI_TIME="" ;;
 esac
 
-# Set this to enable verbose tracing
-[ -n "${CI_TRACE-}" ] || CI_TRACE="no"
 case "$CI_TRACE" in
     [Nn][Oo]|[Oo][Ff][Ff]|[Ff][Aa][Ll][Ss][Ee])
         set +x ;;
     [Yy][Ee][Ss]|[Oo][Nn]|[Tt][Rr][Uu][Ee])
         set -x ;;
 esac
-
-########################################################################
-# Build and check the jni binding
-########################################################################
-
-export BUILD_PREFIX=/tmp/jni_build
-$(PROJECT.PREFIX)_JNI_ROOT=${PWD}
-$(PROJECT.PREFIX)_ROOT=${PWD}/../..
 
 CONFIG_OPTS=()
 CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include")
@@ -954,9 +1074,7 @@ CONFIG_OPTS+=("LDFLAGS=-L${BUILD_PREFIX}/lib")
 CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
 CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
 CONFIG_OPTS+=("--with-docs=no")
-if [ -z "${CI_CONFIG_QUIET-}" ] || [ "${CI_CONFIG_QUIET-}" = yes ] || [ "${CI_CONFIG_QUIET-}" = true ]; then
-    CONFIG_OPTS+=("--quiet")
-fi
+[ "${CI_CONFIG_QUIET}" = "yes" ] && CONFIG_OPTS+=("--quiet")
 
 GRADLEW_OPTS=()
 GRADLEW_OPTS+=("-PbuildPrefix=$BUILD_PREFIX")
@@ -965,91 +1083,67 @@ GRADLEW_OPTS+=("--info")
 rm -rf /tmp/tmp-deps
 mkdir -p /tmp/tmp-deps
 
-# Clone and build dependencies
+########################################################################
+# Clone and build native dependencies
+########################################################################
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
-.for use where defined (use.tarball)
-if [ -d "${$(USE.PROJECT)_ROOT}" ] ; then
-    echo "$(PROJECT.PREFIX) - Cleaning $(USE.LIBNAME) folder '${$(USE.PROJECT)_ROOT}' ..."
-    ( cd "${$(USE.PROJECT)_ROOT}" && ( make clean || : ))
-else
-    echo "$(PROJECT.PREFIX) - Downloading $(USE.LIBNAME) from '$(use.tarball)' ..."
-    rm -f \$(basename "$(use.tarball)")
-    wget $(use.tarball)
-    tar -xzf \$(basename "$(use.tarball)")
-    mkdir -p "\$(dirname "${$(USE.PROJECT)_ROOT}")"
-    mv \$(basename "$(use.tarball)" .tar.gz) \$$(USE.PROJECT)_ROOT
-    echo "$(PROJECT.PREFIX) - $(USE.LIBNAME) extracted under under '${$(USE.PROJECT)_ROOT}'."
-fi
-cd \$$(USE.PROJECT)_ROOT
-.       generate_compile_script (use, "tarball")
 
-.endfor
-.for use where defined (use.repository) & ! defined (use.tarball)
-if [ -d "${$(USE.PROJECT)_ROOT}" ] ; then
-    echo "$(PROJECT.PREFIX) - Cleaning $(USE.LIBNAME) folder '${$(USE.PROJECT)_ROOT}' ..."
-    ( cd "${$(USE.PROJECT)_ROOT}" && ( make clean || : ))
-else
-    mkdir -p "\$(dirname "${$(USE.PROJECT)_ROOT}")"
-.   if defined (use.release)
-    echo "$(PROJECT.PREFIX) - Cloning '$(use.repository)' (branch '$(use.release)') under '${$(USE.PROJECT)_ROOT}' ..."
-    $CI_TIME git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $$(USE.PROJECT)_ROOT
-.   else
-    echo "$(PROJECT.PREFIX) - Cloning '$(use.repository)' (default branch) under '${$(USE.PROJECT)_ROOT}' ..."
-    $CI_TIME git clone --quiet --depth 1 $(use.repository) $$(USE.PROJECT)_ROOT
+.for use where defined (use.repository)
+######################
+#  Build native '$(use.libname).so'
+if [ ! -d "${$(USE.LIBNAME)_ROOT}" ] ; then
+.    if defined (use.tarball)
+    android_download_library "$(USE.PROJECT)" "${$(USE.LIBNAME)_ROOT}" "$(use.tarball)"
+.    else
+    android_clone_library "$(USE.PROJECT)" "${$(USE.LIBNAME)_ROOT}" "$(use.repository)" "$(use.release?)"
+.    endif
+fi
+
+(
+.   if count(use.add_config_opts) > 0
+    # Custom additional options for $(use.project)
+.       for use.add_config_opts as add_cfgopt
+    CONFIG_OPTS+=("$(add_cfgopt)")
+.       endfor
+
 .   endif
-fi
-cd \$$(USE.PROJECT)_ROOT
-.   generate_compile_script (use, "git")
+    android_build_library "$(USE.PROJECT)" "${$(USE.LIBNAME)_ROOT}"
+)
 
-.       if count (project->dependencies.class, class.project = use.project) > 0
+.   if count (project->dependencies.class, class.project = use.project) > 0
 # Build jni dependency
-( cd bindings/jni && TERM=dumb $CI_TIME ./gradlew publishToMavenLocal ${GRADLEW_OPTS[@]} ${$(USE.PREFIX)_GRADLEW_OPTS} )
-.       endif
+( cd ${$(USE.LIBNAME)_ROOT}/bindings/jni && TERM=dumb $CI_TIME ./gradlew publishToMavenLocal ${GRADLEW_OPTS[@]} ${$(USE.PREFIX)_GRADLEW_OPTS} )
+.   endif
 
 .endfor
-cd \$$(PROJECT.PREFIX)_ROOT
+######################
+# Build native '$(project.libname).so'
+cd "${PROJECT_ROOT}"
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of currently tested project..."
-.generate_compile_script (project, "git")
+
+(
+.   if count(project.add_config_opts) > 0
+    # Custom additional options for $(my.use.project)
+.       for project.add_config_opts as add_cfgopt
+    CONFIG_OPTS+=("$(add_cfgopt)")
+.       endfor
+
+.   endif
+    android_build_library "$(PROJECT.LIBNAME)" "${PROJECT_ROOT}"
+)
+
 [ -z "$CI_TIME" ] || echo "`date`: Build completed without fatal errors!"
-
-cd ${$(PROJECT.PREFIX)_JNI_ROOT}
-[ -z "$TRAVIS_TAG" ] || IS_RELEASE="-PisRelease"
-
-TERM=dumb $CI_TIME ./gradlew build jar ${GRADLEW_OPTS[@]} ${$(PROJECT.PREFIX)_GRADLEW_OPTS} $IS_RELEASE
-TERM=dumb $CI_TIME ./gradlew clean
 
 ########################################################################
 #  Build and check the jni android binding
 ########################################################################
+cd "${PROJECT_JNI_ROOT}"
+[ "${TRAVIS_TAG}" = "yes" ] && IS_RELEASE="-PisRelease"
+
+TERM=dumb $CI_TIME ./gradlew build jar ${GRADLEW_OPTS[@]} ${$(PROJECT.PREFIX)_GRADLEW_OPTS} $IS_RELEASE
+TERM=dumb $CI_TIME ./gradlew clean
 
 if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$BINDING_OPTS" == "android" ]; then
-    pushd ../../builds/android
-        export NDK_VERSION=android-ndk-r25
-        export ANDROID_NDK_ROOT="/tmp/${NDK_VERSION}"
-
-        case \$(uname | tr '[:upper:]' '[:lower:]') in
-          linux*)
-            HOST_PLATFORM=linux
-            ;;
-          darwin*)
-            HOST_PLATFORM=darwin
-            ;;
-          *)
-            echo "Unsupported platform"
-            exit 1
-            ;;
-        esac
-
-        if [ ! -d "${ANDROID_NDK_ROOT}" ]; then
-            export FILENAME=$NDK_VERSION-$HOST_PLATFORM.zip
-
-            (cd '/tmp' \\
-                && wget http://dl.google.com/android/repository/$FILENAME -O $FILENAME &> /dev/null \\
-                && unzip -q $FILENAME) || exit 1
-            unset FILENAME
-        fi
-    popd
-
     pushd $(project.prefix)-jni/android
         $CI_TIME ./build.sh "arm"
         $CI_TIME ./build.sh "arm64"
@@ -1057,6 +1151,8 @@ if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$BINDING_OPTS" == "android" ]; then
         $CI_TIME ./build.sh "x86_64"
     popd
 fi
+
+$(project.GENERATED_WARNING_HEADER:)
 .close
 .chmod_x ("$(topdir)/ci_build.sh")
 .if ! file.exists ("$(topdir)/gradle/wrapper/gradle-wrapper.jar")
@@ -1417,38 +1513,6 @@ public class $(my.class.name:pascal)Test {
     }
 
 }
-.endmacro
-
-.macro generate_compile_script (use, target)
-.   if my.target = "git"
-git --no-pager log --oneline -n1
-if [ -e autogen.sh ]; then
-    $CI_TIME ./autogen.sh 2> /dev/null
-fi
-if [ -e buildconf ]; then
-    $CI_TIME ./buildconf 2> /dev/null
-fi
-if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
-    $CI_TIME libtoolize --copy --force && \\
-    $CI_TIME aclocal -I . && \\
-    $CI_TIME autoheader && \\
-    $CI_TIME automake --add-missing --copy && \\
-    $CI_TIME autoconf || \\
-    $CI_TIME autoreconf -fiv
-fi
-.   endif
-.   if count(my.use.add_config_opts) > 0
-( # Custom additional options for $(my.use.project)
-.       for my.use.add_config_opts as add_cfgopt
-  CONFIG_OPTS+=("$(add_cfgopt)")
-.       endfor
-  $CI_TIME ./configure "${CONFIG_OPTS[@]}"
-)
-.   else
-$CI_TIME ./configure "${CONFIG_OPTS[@]}"
-.   endif
-$CI_TIME make -j4
-$CI_TIME make install
 .endmacro
 
     project.namespace ?= switches.namespace? "org.zeromq.$(project.prefix)"
