@@ -287,7 +287,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         Specify which other projects this depends on.
         These projects must be known by zproject, and the list of
         known projects is maintained in the zproject_known_projects.xml model.
-        You need not specify subdependencies if they are implied.
+        You need not specify sub-dependencies if they are implied.
         Dependencies that support the autotools build system are automatically
         built by travis ci if you supply a git repository or a tarball URI.
         Set type to "runtime" to have the packages install-depend on it rather
@@ -405,14 +405,14 @@ zproject's `project.xml` contains an extensive description of the available conf
     -->
 
     <!-- Jenkins target creates jenkins pipeline
-         Pipeline file is not overwriten if it exists.
+         Pipeline file is not overwritten if it exists.
 
          Your projects can build under a docker container OR agents
          matched by a label OR under an "any" agent by default.
          If you specify a complex label expression, be sure to use
-         XML escaping of the amperesand character (&amp;) if some of
+         XML escaping of the ampersand character (&amp;) if some of
          your tooling expects project.xml to be valid XML (the GSL
-         parser accepts a verbatim amperesand character as well).
+         parser accepts a verbatim ampersand character as well).
 
          The agent_single option is a flag that enables parallel
          builds of this component on several agents (specified by
@@ -420,8 +420,8 @@ zproject's `project.xml` contains an extensive description of the available conf
 
          Similarly, a check_sequential option can be defined so that
          self-testing stages would run sequentially. This can be needed
-         at early stages of a project's evolution, where hardcoding is
-         prevalent so parallel runs in same operating environemnt cause
+         at early stages of a project's evolution, where hard-coding is
+         prevalent so parallel runs in same operating environment cause
          conflicts to each other. Ultimately a project should remove
          this flag ;)
 
@@ -464,7 +464,7 @@ zproject's `project.xml` contains an extensive description of the available conf
          except it is off by default to avoid churning CPUs with no tools.
          A further dist_docs enables preparation of a "dist" tarball from
          the workspace configured with docs, so you can forward it to the
-         publishing helper job and avoid rebuilding manpages for packaging.
+         publishing helper job and avoid rebuilding man pages for packaging.
 
          Similarly, a test_check_clang_format requires an external tool,
          the clang-format-5.0 (or newer) to process the codebase and decide
@@ -887,7 +887,7 @@ Default value :
 * pretty-print : substitute_non_alpha_to_make_c_identifier (c option)
 * header-extension : h
 * source-extension : c (unless a cc file is present, then cc)
-* use-cxx : true if a cc file is present, false otherwhise
+* use-cxx : true if a cc file is present, false otherwise
 * use-cxx-gcc-4-9 : false by default, older GCC versions still suffice for many C++11 features
 
 ### Targets
@@ -1169,7 +1169,7 @@ file:
 
 This model will cause the following `@interface` to be generated inside of
 `include/myclass.h`. Note that if `include/myclass.h` has other handwritten
-content outside of the `@interface` section this content will be retained. If
+content outside the `@interface` section this content will be retained. If
 the header file does not exist zproject will create it.
 
 ```c
@@ -1326,7 +1326,7 @@ The tool can't distinguish methods which allocates new object. It does print a c
 
 zproject lets you mark classes and methods as 'draft' so that they are not installed by default in stable builds. This lets you deliver draft APIs to your users, and change them later.
 
-By default all classes and methods are draft, unless you specify otherwise. To mark the state of a class or method, specify in the project.xml:
+By default, all classes and methods are draft, unless you specify otherwise. To mark the state of a class or method, specify in the project.xml:
 
 ```
 <class name = "classname" state = "stable" />
@@ -1393,7 +1393,7 @@ $\(sysconfdir)/$\(project.name)/$\(name).
 
 ### Snippets
 
-If you write a new target or extend one you might be in the situtation where you
+If you write a new target or extend one you might be in the situation where you
 need to put code fragments into files which are not specific to your target. For
 example the `systemd` target has to extend files from the `autotools`, `debian`
 and `redhat` targets. In order to keep those files as maintainable as possible
