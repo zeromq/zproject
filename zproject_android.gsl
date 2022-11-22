@@ -65,7 +65,7 @@ to its default:
 
 To specify the minimum SDK version set the environment variable below:
 
-    export MIN_SDK_VERSION=$(project.android_min_sdk_version)   # Default value if unset
+    export MIN_SDK_VERSION=$(project.android_min_sdk_version)\ \ \ # Default value if unset
 
 To specify the build directory set the environment variable below:
 
