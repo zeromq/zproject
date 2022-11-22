@@ -222,8 +222,18 @@ function usage {
 BUILD_ARCH="$1"
 [ -z "${BUILD_ARCH}" ] && usage
 
+# Initialize our dependency _ROOT variables:
 .    for use where defined (use.repository)
 android_init_dependency_root "$(use.project)"     # Check or initialize $(USE.PROJECT)_ROOT
+.    endfor
+
+# Fetch required dependencies:
+.    for use where defined (use.repository)
+.        if defined (use.tarball)
+[ ! -d "${$(USE.PROJECT)_ROOT}" ]   && android_download_library "$(USE.PROJECT)" "${$(USE.PROJECT)_ROOT}" "$(use.tarball)"
+.        else
+[ ! -d "${$(USE.PROJECT)_ROOT}" ]   && android_clone_library "$(USE.PROJECT)" "${$(USE.PROJECT)_ROOT}" "$(use.repository)" "$(use.release?)"
+.        endif
 .    endfor
 
 case "$CI_TIME" in
@@ -272,14 +282,6 @@ DEPENDENCIES=()
 
 DEPENDENCIES+=("$(use.libname).so")
 (android_build_verify_so "$(use.libname).so" &> /dev/null) || {
-    if [ ! -d "${$(USE.PROJECT)_ROOT}" ] ; then
-.   if defined (use.tarball)
-        android_download_library "$(USE.PROJECT)" "${$(USE.PROJECT)_ROOT}" "$(use.tarball)"
-.   else
-        android_clone_library "$(USE.PROJECT)" "${$(USE.PROJECT)_ROOT}" "$(use.repository)" "$(use.release?)"
-.   endif
-    fi
-
     if [ -f "${$(USE.PROJECT)_ROOT}/builds/android/build.sh" ] ; then
         (
             bash "${$(USE.PROJECT)_ROOT}/builds/android/build.sh" "${BUILD_ARCH}"

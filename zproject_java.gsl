@@ -880,7 +880,7 @@ GRADLEW_OPTS+=("--info")
 #   Use a default value assuming that dependent libraries sit alongside this one
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-( cd ${$(USE.PROJECT)_ROOT:-../../../../../$(use.project)}/bindings/jni/$(use.prefix)-jni/android; ./build.sh $BUILD_ARCH )
+( cd ${$(USE.PROJECT)_ROOT}/bindings/jni/$(use.prefix)-jni/android; ./build.sh $BUILD_ARCH )
 .   endif
 .endfor
 
@@ -917,7 +917,7 @@ android_build_trace "Building jar for $TOOLCHAIN_ABI"
 find ../../build/libs/ -type f -name '$(project.prefix)-jni-*.jar' ! -name '*javadoc.jar' ! -name '*sources.jar' -exec unzip -q {} +
 .for project.use
 .   if count (project->dependencies.class, class.project = use.project) > 0
-unzip -qo "${$(USE.PROJECT)_ROOT:-../../../../../../$(use.project)}/bindings/jni/$(use.project)-jni/android/$(use.project)-android*$TOOLCHAIN_ABI*.jar"
+unzip -qo "${$(USE.PROJECT)_ROOT}/bindings/jni/$(use.project)-jni/android/$(use.project)-android*$TOOLCHAIN_ABI*.jar"
 .   endif
 .endfor
 
@@ -1046,9 +1046,19 @@ export CI_TRACE="${CI_TRACE:-no}"
 # Perform some sanity checks and calculate some variables.
 source "${PROJECT_ROOT}/builds/android/android_build_helper.sh"
 
-.for use where defined (use.repository)
+# Initialize our dependency _ROOT variables:
+.    for use where defined (use.repository)
 android_init_dependency_root "$(use.project)"     # Check or initialize $(USE.PROJECT)_ROOT
-.endfor
+.    endfor
+
+# Fetch required dependencies:
+.    for use where defined (use.repository)
+.        if defined (use.tarball)
+[ ! -d "${$(USE.PROJECT)_ROOT}" ]   && android_download_library "$(USE.PROJECT)" "${$(USE.PROJECT)_ROOT}" "$(use.tarball)"
+.        else
+[ ! -d "${$(USE.PROJECT)_ROOT}" ]   && android_clone_library "$(USE.PROJECT)" "${$(USE.PROJECT)_ROOT}" "$(use.repository)" "$(use.release?)"
+.        endif
+.    endfor
 
 android_download_ndk
 
@@ -1091,14 +1101,6 @@ mkdir -p /tmp/tmp-deps
 .for use where defined (use.repository)
 ######################
 #  Build native '$(use.libname).so'
-if [ ! -d "${$(USE.PROJECT)_ROOT}" ] ; then
-.    if defined (use.tarball)
-    android_download_library "$(USE.PROJECT)" "${$(USE.PROJECT)_ROOT}" "$(use.tarball)"
-.    else
-    android_clone_library "$(USE.PROJECT)" "${$(USE.PROJECT)_ROOT}" "$(use.repository)" "$(use.release?)"
-.    endif
-fi
-
 (
 .   if count(use.add_config_opts) > 0
     # Custom additional options for $(use.project)
