@@ -223,7 +223,7 @@ BUILD_ARCH="$1"
 [ -z "${BUILD_ARCH}" ] && usage
 
 .    for use where defined (use.repository)
-android_init_dependency_root "$(use.libname)"     # Check or initialize $(USE.LIBNAME)_ROOT
+android_init_dependency_root "$(use.project)"     # Check or initialize $(USE.PROJECT)_ROOT
 .    endfor
 
 case "$CI_TIME" in
