@@ -806,7 +806,7 @@ $(project.GENERATED_WARNING_HEADER:)
 #
 #   Requires these environment variables be set, e.g.:
 #
-#     NDK_VERSION=android-ndk-r25
+#     NDK_VERSION=$(project.android_ndk_version)
 #
 #   Exit if any step fails
 set -e
@@ -816,9 +816,9 @@ cd "\$( dirname "${BASH_SOURCE[0]}" )"
 PROJECT_ROOT="\$(cd ../../../.. && pwd)"
 
 # Configuration
-export NDK_VERSION="${NDK_VERSION:-android-ndk-r25}"
+export NDK_VERSION="${NDK_VERSION:-$(project.android_ndk_version)}"
 export ANDROID_NDK_ROOT="${ANDROID_NDK_ROOT:-/tmp/${NDK_VERSION}}"
-export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
+export MIN_SDK_VERSION=${MIN_SDK_VERSION:-$(project.android_min_sdk_version)}
 export ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-/tmp/android_build}"
 export ANDROID_DEPENDENCIES_DIR="${ANDROID_DEPENDENCIES_DIR:-/tmp/tmp-deps}"
 
@@ -1017,9 +1017,9 @@ PROJECT_ROOT="\$(cd ../.. && pwd)"
 PROJECT_JNI_ROOT="${PROJECT_ROOT}/bindings/jni"
 
 # Configuration
-export NDK_VERSION="${NDK_VERSION:-android-ndk-r25}"
+export NDK_VERSION="${NDK_VERSION:-$(project.android_ndk_version)}"
 export ANDROID_NDK_ROOT="${ANDROID_NDK_ROOT:-/tmp/${NDK_VERSION}}"
-export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
+export MIN_SDK_VERSION=${MIN_SDK_VERSION:-$(project.android_min_sdk_version)}
 export ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-${PWD}/.build}"
 export ANDROID_DEPENDENCIES_DIR="${ANDROID_DEPENDENCIES_DIR:-${PWD}/.deps}"
 export BUILD_PREFIX="${BUILD_PREFIX:-/tmp/jni_build}"

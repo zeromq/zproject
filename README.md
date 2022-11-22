@@ -18,6 +18,7 @@
 *  [Optional : Class filename configuration](#optional--class-filename-configuration)
 *  [Targets](#targets)
 &emsp;[Target Options](#target-options)
+&emsp;[Android target options](#android-target-options)
 &emsp;[Target Scopes](#target-scopes)
 *  [Modifying generated files in an already existent project](#modifying-generated-files-in-an-already-existent-project)
 
@@ -640,7 +641,7 @@ Model is described in `zproject_known_projects.xml` file:
 
         Proposed solution: project name should always be git repo
         name; prefix and libname should always be specified. For
-        compatibility we can define aliases. E.g.:
+        compatibility, we can define aliases. E.g.:
 
         Also, 'cmake name' is target specific and must go.
 
@@ -941,6 +942,31 @@ project.nuget_id = "czmq_vc120"
 project.nuget_dependency.name = "libzmq_vc120"
 project.nuget_dependency.value = "4.2.0.0"
 ```
+
+##### Android target options
+
+The target `android` accepts the following options:
+
+```
+<target name = "android" >
+    <option name = "ndk_version" value = "nnn" />
+    <option name = "min_sdk_version" value = "sss" />
+</target>
+```
+
+Generated files will have their default values like:
+
+```
+project.android_ndk_version = "nnn"
+project.android_min_sdk_version = "sss"
+```
+
+Note: these 2 default values can be overridden via the `export` mechanism
+as explained in generated `builds/android/README.md` and
+`bindings/jni/README.md`.
+
+If these options are not provided, default hard-coded values are applied
+from `zproject_android.gsl` code.
 
 #### Target Scopes
 

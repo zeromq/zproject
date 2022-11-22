@@ -44,7 +44,7 @@ Provided build scripts can mainly be used like
 
 $(PROJECT.NAME) is tested against Android NDK versions r19 to r25.
 
-By default, $(PROJECT.NAME) uses NDK `android-ndk-r25`, but you can specify
+By default, $(PROJECT.NAME) uses NDK `$(project.android_ndk_version)`, but you can specify
 a different one:
 
     export NDK_VERSION=android-ndk-r23c
@@ -65,7 +65,7 @@ to its default:
 
 To specify the minimum SDK version set the environment variable below:
 
-    export MIN_SDK_VERSION=21   # Default value if unset
+    export MIN_SDK_VERSION=$(project.android_min_sdk_version)   # Default value if unset
 
 To specify the build directory set the environment variable below:
 
@@ -162,7 +162,7 @@ PROJECT_ROOT="\$(cd ../.. && pwd)"
 # Configuration & tuning options.
 ########################################################################
 # Set default values used in ci builds
-export NDK_VERSION="${NDK_VERSION:-android-ndk-r25}"
+export NDK_VERSION="${NDK_VERSION:-$(project.android_ndk_version)}"
 
 # Set default path to find Android NDK.
 # Must be of the form <path>/${NDK_VERSION} !!
@@ -171,7 +171,7 @@ export ANDROID_NDK_ROOT="${ANDROID_NDK_ROOT:-/tmp/${NDK_VERSION}}"
 # With NDK r22b, the minimum SDK version range is [16, 31].
 # Since NDK r24, the minimum SDK version range is [19, 31].
 # SDK version 21 is the minimum version for 64-bit builds.
-export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
+export MIN_SDK_VERSION=${MIN_SDK_VERSION:-$(project.android_min_sdk_version)}
 
 # Where to download our dependencies: default to /tmp/tmp-deps
 export ANDROID_DEPENDENCIES_DIR="${ANDROID_DEPENDENCIES_DIR:-/tmp/tmp-deps}"
@@ -350,9 +350,9 @@ set -e
 cd "\$( dirname "${BASH_SOURCE[0]}" )"
 
 # Configuration
-export NDK_VERSION="${NDK_VERSION:-android-ndk-r25}"
+export NDK_VERSION="${NDK_VERSION:-$(project.android_ndk_version)}"
 export ANDROID_NDK_ROOT="${ANDROID_NDK_ROOT:-/tmp/${NDK_VERSION}}"
-export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
+export MIN_SDK_VERSION=${MIN_SDK_VERSION:-$(project.android_min_sdk_version)}
 export ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-${PWD}/.build}"
 export ANDROID_BUILD_CLEAN="${ANDROID_BUILD_CLEAN:-yes}"
 export ANDROID_DEPENDENCIES_DIR="${ANDROID_DEPENDENCIES_DIR:-${PWD}/.deps}"
@@ -546,21 +546,23 @@ function android_build_env {
     ##
     # Check that necessary environment variables are set
 
+.endliteral
     if [ -z "$ANDROID_NDK_ROOT" ]; then
         ANDROID_BUILD_FAIL+=("Please set the ANDROID_NDK_ROOT environment variable")
-        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r25\")")
+        ANDROID_BUILD_FAIL+=("  (eg. \\"/home/user/android/$(project.android_ndk_version)\\")")
     fi
 
     if [ -z "$ANDROID_BUILD_TOOLCHAIN" ]; then
         ANDROID_BUILD_FAIL+=("Please set the ANDROID_BUILD_TOOLCHAIN environment variable")
-        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r25/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64\")")
+        ANDROID_BUILD_FAIL+=("  (eg. \\"/home/user/android/$(project.android_ndk_version)/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64\\")")
     fi
 
     if [ -z "$TOOLCHAIN_PATH" ]; then
         ANDROID_BUILD_FAIL+=("Please set the TOOLCHAIN_PATH environment variable")
-        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r25/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin\")")
+        ANDROID_BUILD_FAIL+=("  (eg. \\"/home/user/android/$(project.android_ndk_version)/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin\\")")
     fi
 
+.literal << .endliteral
     if [ -z "$TOOLCHAIN_HOST" ]; then
         ANDROID_BUILD_FAIL+=("Please set the TOOLCHAIN_HOST environment variable")
         ANDROID_BUILD_FAIL+=("  (eg. \"arm-linux-androideabi\")")
@@ -987,3 +989,7 @@ $(project.GENERATED_WARNING_HEADER:)
 .close
 .chmod_x ("builds/android/android_build_helper.sh")
 .endmacro
+
+# Set default NDK and min SDK.
+project.android_ndk_version ?= "android-ndk-r25"
+project.android_min_sdk_version ?= 21
