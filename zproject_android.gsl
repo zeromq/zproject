@@ -196,7 +196,7 @@ export CI_TRACE="${CI_TRACE:-no}"
 # If you have your own source tree for XXX, uncomment its
 # XXX_ROOT configuration line below, and provide its absolute tree:
 .for use where defined (use.repository)
-#    export $(USE.PROJECT)_ROOT="<absolute_path_to_$(USE.PROJECT)_source_tree>"
+#    export $(USE.LIBNAME)_ROOT="<absolute_path_to_$(USE.PROJECT)_source_tree>"
 .endfor
 
 ########################################################################
@@ -272,17 +272,17 @@ DEPENDENCIES=()
 
 DEPENDENCIES+=("$(use.libname).so")
 (android_build_verify_so "$(use.libname).so" &> /dev/null) || {
-    if [ ! -d "${$(USE.PROJECT)_ROOT}" ] ; then
+    if [ ! -d "${$(USE.LIBNAME)_ROOT}" ] ; then
 .   if defined (use.tarball)
-        android_download_library "$(USE.PROJECT)" "${$(USE.PROJECT)_ROOT}" "$(use.tarball)"
+        android_download_library "$(USE.PROJECT)" "${$(USE.LIBNAME)_ROOT}" "$(use.tarball)"
 .   else
-        android_clone_library "$(USE.PROJECT)" "${$(USE.PROJECT)_ROOT}" "$(use.repository)" "$(use.release?)"
+        android_clone_library "$(USE.PROJECT)" "${$(USE.LIBNAME)_ROOT}" "$(use.repository)" "$(use.release?)"
 .   endif
     fi
 
-    if [ -f "${$(USE.PROJECT)_ROOT}/builds/android/build.sh" ] ; then
+    if [ -f "${$(USE.LIBNAME)_ROOT}/builds/android/build.sh" ] ; then
         (
-            bash "${$(USE.PROJECT)_ROOT}/builds/android/build.sh" "${BUILD_ARCH}"
+            bash "${$(USE.LIBNAME)_ROOT}/builds/android/build.sh" "${BUILD_ARCH}"
         ) || exit 1
     else
         (
@@ -297,11 +297,11 @@ DEPENDENCIES+=("$(use.libname).so")
 .       endfor
 .   endif
 
-            android_build_library "$(USE.PROJECT)" "${$(USE.PROJECT)_ROOT}"
+            android_build_library "$(USE.PROJECT)" "${$(USE.LIBNAME)_ROOT}"
         ) || exit 1
     fi
 
-    UPSTREAM_PREFIX="${$(USE.PROJECT)_ROOT}/builds/android/prefix/${TOOLCHAIN_ARCH}"
+    UPSTREAM_PREFIX="${$(USE.LIBNAME)_ROOT}/builds/android/prefix/${TOOLCHAIN_ARCH}"
     cp -rn "${UPSTREAM_PREFIX}"/* "${ANDROID_BUILD_PREFIX}" || :
 }
 
