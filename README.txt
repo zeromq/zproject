@@ -215,6 +215,31 @@ project.nuget_dependency.name = "libzmq_vc120"
 project.nuget_dependency.value = "4.2.0.0"
 ```
 
+##### Android target options
+
+The target `android` accepts the following options:
+
+```
+<target name = "android" >
+    <option name = "ndk_version" value = "nnn" />
+    <option name = "min_sdk_version" value = "sss" />
+</target>
+```
+
+Generated files will have their default values like:
+
+```
+project.android_ndk_version = "nnn"
+project.android_min_sdk_version = "sss"
+```
+
+Note: these 2 default values can be overridden via the `export` mechanism
+as explained in generated `builds/android/README.md` and
+`bindings/jni/README.md`.
+
+If these options are not provided, default hard-coded values are applied
+from `zproject_android.gsl` code.
+
 #### Target Scopes
 
 Each target works in its own copy of 'project'. It can therefore modify and extend 'project' as wanted, without affecting other targets.
