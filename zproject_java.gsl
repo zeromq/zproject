@@ -25,7 +25,7 @@ gsl from "zproject_java_lib.gsl"
 $(project.GENERATED_WARNING_HEADER:)
 cmake_minimum_required (VERSION 2.8)
 
-project ($(project.prefix)jni CXX)
+project ($(project.linkname)jni CXX)
 enable_language (C)
 
 # Search for Find*.cmake files in the following locations
@@ -62,13 +62,13 @@ ELSE ($(PROJECT.PREFIX)_FOUND)
     message( FATAL_ERROR "$(project.prefix) not found." )
 ENDIF ($(PROJECT.PREFIX)_FOUND)
 
-set ($(project.prefix)jni_sources
+set ($(project.linkname)jni_sources
 .for project.class where class.okay
     src/main/c/$(namespace:c)_$(class.name:pascal).c
 .endfor
 )
 
-add_library ($(project.prefix)jni SHARED ${$(project.prefix)jni_sources})
+add_library ($(project.linkname)jni SHARED ${$(project.linkname)jni_sources})
 add_definitions (-D$(PROJECT.PREFIX)_BUILD_DRAFT_API)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -O2")
@@ -76,7 +76,7 @@ set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
-target_link_libraries ($(project.prefix)jni ${MORE_LIBRARIES})
+target_link_libraries ($(project.linkname)jni ${MORE_LIBRARIES})
 .
 .output "$(topdir)/$(project.prefix:c)-jni/Find$(project.prefix:c).cmake"
 $(project.GENERATED_WARNING_HEADER:)
@@ -104,7 +104,7 @@ find_path (
 
 find_library (
     ${CMAKE_FIND_PACKAGE_NAME}_LIBRARIES
-    NAMES $(project.prefix)
+    NAMES $(project.linkname)
     HINTS ${PC_$(PROJECT.NAME)_LIBRARY_HINTS}
 )
 
@@ -243,7 +243,7 @@ task buildNative(type: Exec, dependsOn: 'initCMake') {
         commandLine 'cmake',
                     '--build',  'build',
                     '--config', 'Release',
-                    '--target', '$(project.prefix)jni',
+                    '--target', '$(project.linkname)jni',
                     '--', '-verbosity:Minimal',  '-maxcpucount'
     } else {
         commandLine 'cmake',
@@ -457,14 +457,14 @@ task copyLibs(type: Copy) {
         from path
             include '$(project.libname)jni.so'
             include '$(project.libname)jni.dylib'
-            include '*$(project.prefix:c)jni*.dll'
+            include '*$(project.linkname)jni*.dll'
             include '$(project.libname).so'
             include '$(project.libname).dylib'
-            include '*$(project.prefix:c)*.dll'
+            include '*$(project.linkname)*.dll'
 .   for project.use
             include '$(use.libname).so'
             include '$(use.libname).dylib'
-            include '*$(use.prefix:c)*.dll'
+            include '*$(use.linkname)*.dll'
 .   endfor
         into 'build/natives'
     }
@@ -983,13 +983,13 @@ ENDIF ($(PROJECT.PREFIX)_FOUND)
 
 include_directories(../src/native/include)
 
-set ($(project.prefix)jni_sources
+set ($(project.linkname)jni_sources
 .for project.class where class.okay
     ../src/main/c/$(namespace:c)_$(class.name:pascal).c
 .endfor
 )
 
-add_library ($(project.prefix)jni SHARED ${$(project.prefix)jni_sources})
+add_library ($(project.linkname)jni SHARED ${$(project.linkname)jni_sources})
 add_definitions (-D$(PROJECT.PREFIX)_BUILD_DRAFT_API)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -O2")
@@ -997,7 +997,7 @@ set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
-target_link_libraries ($(project.prefix)jni ${MORE_LIBRARIES})
+target_link_libraries ($(project.linkname)jni ${MORE_LIBRARIES})
 .
 .# File has been removed in favor of NDKs android_toolchain.cmake. The delete
 .# statement can be removed at some point in the future when users had time to
@@ -1330,10 +1330,10 @@ implements AutoCloseable \
     static {
         Map<String, Boolean> libraries = new LinkedHashMap<>();
 .       for project.use
-        libraries.put("$(use.prefix:c)", $(use.optional ?? 'true' ? 'false'));
+        libraries.put("$(use.linkname:c)", $(use.optional ?? 'true' ? 'false'));
 .       endfor
-        libraries.put("$(project.prefix:c)", false);
-        libraries.put("$(project.prefix:c)jni", false);
+        libraries.put("$(project.linkname)", false);
+        libraries.put("$(project.linkname)jni", false);
         ZmqNativeLoader.loadLibraries(libraries);
     }
     public long self;
