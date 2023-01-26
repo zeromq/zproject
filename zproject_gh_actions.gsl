@@ -90,21 +90,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             BUILD_TYPE: default
             DRAFT: enabled
             CLANG_FORMAT: clang-format-11
             PACKAGES: automake autoconf clang-format-11 $(packages) $(packages_doctools)
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             BUILD_TYPE: default
             DRAFT: disabled
             CLANG_FORMAT: clang-format-11
             PACKAGES: automake autoconf clang-format-11 $(packages)
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             BUILD_TYPE: valgrind
             DRAFT: enabled
             PACKAGES: automake autoconf valgrind $(packages)
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             BUILD_TYPE: cmake
             DRAFT: enabled
             PACKAGES: cmake $(packages)
@@ -119,7 +119,7 @@ jobs:
 .if project.gh_actions_clangformat_implem ?= "autotools" | ( !defined(project.gh_actions_clangformat_implem) & project.gh_actions_use_cmake ?= 0 )
 .   echo "GHA: CLANG-FORMAT: implementation: autotools"
 ### Note: we don't use CMake
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             BUILD_TYPE: cmake
             DO_CLANG_FORMAT_CHECK: 1
             CLANG_FORMAT: clang-format-11
@@ -131,7 +131,7 @@ jobs:
 # pass its configure script:
 .if project.gh_actions_clangformat_implem ?= "cmake" | ( !defined(project.gh_actions_clangformat_implem) & ( project.gh_actions_use_cmake ?= 1 | !defined(project.gh_actions_use_cmake) ) )
 .   echo "GHA: CLANG-FORMAT: implementation: cmake"
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             BUILD_TYPE: cmake
             DO_CLANG_FORMAT_CHECK: 1
             CLANG_FORMAT: clang-format-11
@@ -143,13 +143,13 @@ jobs:
 # 1) Your project sources have a "latest_release" branch or tag
 #    to check out and compare the current commit's ABI to;
 # 2) Prerequisites are available as packages - no custom rebuilds.
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             BUILD_TYPE: abi-compliance-checker
             PACKAGES: universal-ctags abi-dumper abi-compliance-checker $(packages)
 .   endif
 .endif
 .if defined(project.gh_actions_check_zproject) & !(project.gh_actions_check_zproject ?= 0)
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             BUILD_TYPE: check_zproject
             PACKAGES: $(packages) $(packages_zproject)
 .endif
@@ -203,7 +203,7 @@ false
       CI_SELFTEST: ${{ matrix.CI_SELFTEST }}
     steps:
     - name: Add debian packages
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-20.04'
       uses: myci-actions/add-deb-repo@10
       with:
         repo-name: obs
@@ -218,7 +218,7 @@ false
       with:
         path: $(project.name)
     - name: build
-      if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+      if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-latest'
       shell: bash
       working-directory: $(project.name)
       run: ./ci_build.sh
