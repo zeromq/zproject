@@ -82,6 +82,7 @@ At least the following build environments are currently supported:
 * Android
 * iOS
 * Visual Studio
+* Zig
 
 Thanks to the ZeroMQ community, you can do all the heavy lifting in C and then easily generate bindings in the following languages:
 
@@ -91,6 +92,7 @@ Thanks to the ZeroMQ community, you can do all the heavy lifting in C and then e
 * QML
 * Qt
 * Ruby
+* Ziglang
 
 The language bindings are minimal, meant to be wrapped in a handwritten idiomatic layer later.
 
@@ -219,6 +221,7 @@ zproject's `project.xml` contains an extensive description of the available conf
         vs2012              Microsoft Visual Studio 2012
         vs2013              Microsoft Visual Studio 2013
         vs2015              Microsoft Visual Studio 2015
+	zig		    Zig binding and build system
 
     Classes are automatically added to all build environments. Further as you
     add new classes to your project you can generate skeleton header and source
@@ -619,6 +622,7 @@ zproject's `project.xml` contains an extensive description of the available conf
     <bin name = "zproject_vs2008.gsl" />
     <bin name = "zproject_vs20xx.gsl" />
     <bin name = "zproject_vs20xx_props.gsl" />
+    <bin name = "zproject_zig.gsl" />
 
     <bin name = "zproject_known_projects.xml" />
 </project>
