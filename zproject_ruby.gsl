@@ -376,8 +376,9 @@ module $(project.RubyName:)
       # @param ptr [::FFI::Pointer]
       # @return [Proc]
       def self.create_finalizer_for(ptr)
+        ptr_ptr = ::FFI::MemoryPointer.new :pointer
+
         Proc.new do
-          ptr_ptr = ::FFI::MemoryPointer.new :pointer
           ptr_ptr.write_pointer ptr
           ::$(project.RubyName:)::FFI.$(class.c_name)_$(destructor.c_name) ptr_ptr
         end
