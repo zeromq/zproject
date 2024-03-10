@@ -110,3 +110,5 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/zproject_known_projects.xml
 
 %changelog
+* Wed Dec 31 2014 zproject Developers <zeromq-dev@lists.zeromq.org
+- Initial packaging.
