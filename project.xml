@@ -40,6 +40,7 @@
         vs2012              Microsoft Visual Studio 2012
         vs2013              Microsoft Visual Studio 2013
         vs2015              Microsoft Visual Studio 2015
+        zig                 Zig binding and build system
 
     Classes are automatically added to all build environments. Further as you
     add new classes to your project you can generate skeleton header and source
@@ -440,6 +441,7 @@
     <bin name = "zproject_vs2008.gsl" />
     <bin name = "zproject_vs20xx.gsl" />
     <bin name = "zproject_vs20xx_props.gsl" />
+    <bin name = "zproject_zig.gsl" />
 
     <bin name = "zproject_known_projects.xml" />
 </project>
