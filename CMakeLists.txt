@@ -101,11 +101,13 @@ set(OPTIONAL_LIBRARIES_STATIC)
 ########################################################################
 # GSL dependency
 ########################################################################
-find_package(gsl REQUIRED)
-IF (GSL_FOUND)
-ELSE (GSL_FOUND)
+IF (NOT gsl_FOUND)
+    find_package(gsl REQUIRED)
+ENDIF(NOT gsl_FOUND)
+IF (gsl_FOUND)
+ELSE (gsl_FOUND)
     message( FATAL_ERROR "gsl not found." )
-ENDIF (GSL_FOUND)
+ENDIF (gsl_FOUND)
 
 ########################################################################
 # version
