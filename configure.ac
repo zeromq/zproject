@@ -75,7 +75,7 @@ AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
                   [With GCC Code Coverage reporting])],
                   [ZPROJECT_GCOV="$withval"])
 
-if test "x${ZPROJECT_GCOV}" == "xyes"; then
+if test "x${ZPROJECT_GCOV}" = "xyes"; then
     CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
 
     if test "x${ZPROJECT_ORIG_CFLAGS}" != "xnone"; then
@@ -94,7 +94,7 @@ AC_ARG_ENABLE(address-sanitizer, [AS_HELP_STRING([--enable-address-sanitizer=yes
                   [Build with GCC Address Sanitizer instrumentation])],
                   [ZPROJECT_ASAN="$enableval"])
 
-if test "x${ZPROJECT_ASAN}" == "xyes"; then
+if test "x${ZPROJECT_ASAN}" = "xyes"; then
     CFLAGS="${CFLAGS} -fsanitize=address"
     CXXFLAGS="${CXXFLAGS} -fsanitize=address"
 
@@ -114,7 +114,7 @@ AC_ARG_ENABLE([bindings-python],
     [ZPROJECT_BINDINGS_PYTHON=$enableval],
     [ZPROJECT_BINDINGS_PYTHON=no])
 
-if test "x$ZPROJECT_BINDINGS_PYTHON" == "xyes"; then
+if test "x$ZPROJECT_BINDINGS_PYTHON" = "xyes"; then
     AM_CONDITIONAL(ENABLE_BINDINGS_PYTHON, true)
     AC_MSG_RESULT([yes])
 else
