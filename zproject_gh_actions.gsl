@@ -110,12 +110,12 @@ jobs:
             PACKAGES: cmake $(packages)
           - os: macos-latest
             BUILD_TYPE: default
-            PACKAGES: automake autoconf $(packages_brew)
+            PACKAGES: automake autoconf libtool $(packages_brew)
             DRAFT: enabled
           - os: macos-latest
             BUILD_TYPE: default
             DRAFT: disabled
-            PACKAGES: automake autoconf $(packages_brew)
+            PACKAGES: automake autoconf libtool $(packages_brew)
 .if project.gh_actions_clangformat_implem ?= "autotools" | ( !defined(project.gh_actions_clangformat_implem) & project.gh_actions_use_cmake ?= 0 )
 .   echo "GHA: CLANG-FORMAT: implementation: autotools"
 ### Note: we don't use CMake
