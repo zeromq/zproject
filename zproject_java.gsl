@@ -126,10 +126,18 @@ $(project.GENERATED_WARNING_HEADER:)
 $(project.GENERATED_WARNING_HEADER:)
 */
 
+buildscript {
+    configurations.all {
+        resolutionStrategy {
+            force 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+        }
+    }
+}
+
 plugins {
     id 'java'
     id 'maven-publish'
-    id 'com.jfrog.artifactory' version '4.21.0'
+    id 'com.jfrog.artifactory' version '4.29.4'
     id 'com.jfrog.bintray' version '1.8.5'
     id 'com.google.osdetector' version '1.7.0'
 }
