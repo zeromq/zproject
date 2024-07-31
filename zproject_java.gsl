@@ -142,7 +142,7 @@ plugins {
     id 'com.google.osdetector' version '1.7.0'
 }
 
-wrapper.gradleVersion = '7.5.1'
+wrapper.gradleVersion = '8.9'
 
 subprojects {
     apply plugin: 'java'
@@ -266,12 +266,12 @@ test.dependsOn buildNative
 //  Install and Publish section
 
 task sourcesJar(type: Jar, dependsOn: 'classes') {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
 task javadocJar(type: Jar, dependsOn: 'javadoc') {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
@@ -479,7 +479,7 @@ task copyLibs(type: Copy) {
     duplicatesStrategy = oldStrategy
 }
 
-jar.baseName = "$(project.prefix:c)-jni-${osdetector.classifier}"
+jar.archiveBaseName = "$(project.prefix:c)-jni-${osdetector.classifier}"
 jar.dependsOn copyLibs
 
 jar {
