@@ -131,15 +131,16 @@ buildscript {
         resolutionStrategy {
             force 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
         }
+        exclude group: 'xerces', module: 'xercesImpl'
     }
 }
 
 plugins {
     id 'java'
     id 'maven-publish'
-    id 'com.jfrog.artifactory' version '4.29.4'
+    id 'com.jfrog.artifactory' version '5.2.3'
     id 'com.jfrog.bintray' version '1.8.5'
-    id 'com.google.osdetector' version '1.7.0'
+    id 'com.google.osdetector' version '1.7.3'
 }
 
 wrapper.gradleVersion = '8.9'
@@ -176,7 +177,6 @@ artifactory {
             repoKey = 'oss-snapshot-local'
             username = System.getenv('ARTIFACTORY_USERNAME')
             password = System.getenv('ARTIFACTORY_PASSWORD')
-            maven = true
         }
     }
 }
@@ -199,9 +199,9 @@ dependencies {
     implementation "org.zeromq.$(use.project):$(use.project)-jni:$jni_dependencies_version"
 .       endif
 .   endfor
-    implementation 'org.scijava:native-lib-loader:2.4.0'
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.hamcrest:hamcrest-all:1.3'
+    implementation 'org.scijava:native-lib-loader:2.5.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.hamcrest:hamcrest:2.2'
 }
 
 //  ------------------------------------------------------------------
