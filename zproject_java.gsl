@@ -127,7 +127,7 @@ $(project.GENERATED_WARNING_HEADER:)
 */
 
 buildscript {
-    configurations.all {
+    configurations.configureEach {
         resolutionStrategy {
             force 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
         }
@@ -207,7 +207,7 @@ dependencies {
 //  ------------------------------------------------------------------
 //  Build section
 
-task generateJniHeaders(type: Exec, dependsOn: 'classes') {
+tasks.register('generateJniHeaders', type: Exec, dependsOn: 'classes') {
     def classpath = sourceSets.main.output.classesDirs
     def appclasspath = configurations.runtimeClasspath.files*.getAbsolutePath().join(File.pathSeparator)
     def nativeIncludes = 'src/native/include'
@@ -222,14 +222,14 @@ task generateJniHeaders(type: Exec, dependsOn: 'classes') {
     commandLine("javac", "-h", "$nativeIncludes", "-classpath", "$classpath${File.pathSeparator}$appclasspath", *jniClasses, *utilityClasses)
 }
 
-tasks.withType(Test) {
+tasks.withType(Test).configureEach {
     def defaultJavaLibraryPath = System.getProperty("java.library.path")
     if (osdetector.os == 'windows') {
-         def extraJavaLibraryPath = hasNotEmptyProperty('buildPrefix') ? "$project.buildPrefix\\\\bin;$project.buildPrefix\\\\lib" : ''
-         extraJavaLibraryPath = extraJavaLibraryPath.replace("/", "\\\\")
-         systemProperty "java.library.path", "${projectDir}\\\\build\\\\Release${File.pathSeparator}" +
-                                             "${extraJavaLibraryPath}${File.pathSeparator}" +
-                                             "${defaultJavaLibraryPath}"
+        def extraJavaLibraryPath = hasNotEmptyProperty('buildPrefix') ? "$project.buildPrefix\\\\bin;$project.buildPrefix\\\\lib" : ''
+        extraJavaLibraryPath = extraJavaLibraryPath.replace("/", "\\\\")
+        systemProperty "java.library.path", "${projectDir}\\\\build\\\\Release${File.pathSeparator}" +
+                                            "${extraJavaLibraryPath}${File.pathSeparator}" +
+                                            "${defaultJavaLibraryPath}"
     } else {
         def extraJavaLibraryPath = hasNotEmptyProperty('buildPrefix') ? "$project.buildPrefix/lib" : ''
         systemProperty "java.library.path", "${projectDir}/build${File.pathSeparator}" +
@@ -240,22 +240,22 @@ tasks.withType(Test) {
     }
 }
 
-task initCMake(type: Exec, dependsOn: 'generateJniHeaders') {
-    workingDir  'build'
+tasks.register('initCMake', type: Exec, dependsOn: 'generateJniHeaders') {
+    workingDir 'build'
     def prefixPath = hasNotEmptyProperty('buildPrefix') ? "-DCMAKE_PREFIX_PATH=$project.buildPrefix" : ''
     commandLine 'cmake', "$prefixPath", '..'
 }
 
-task buildNative(type: Exec, dependsOn: 'initCMake') {
+tasks.register('buildNative', type: Exec, dependsOn: 'initCMake') {
     if (osdetector.os == 'windows') {
         commandLine 'cmake',
-                    '--build',  'build',
+                    '--build', 'build',
                     '--config', 'Release',
                     '--target', '$(project.linkname)jni',
-                    '--', '-verbosity:Minimal',  '-maxcpucount'
+                    '--', '-verbosity:Minimal', '-maxcpucount'
     } else {
         commandLine 'cmake',
-                    '--build',  'build'
+                    '--build', 'build'
     }
 }
 
@@ -265,12 +265,12 @@ test.dependsOn buildNative
 //  ------------------------------------------------------------------
 //  Install and Publish section
 
-task sourcesJar(type: Jar, dependsOn: 'classes') {
+tasks.register('sourcesJar', type: Jar, dependsOn: 'classes') {
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
-task javadocJar(type: Jar, dependsOn: 'javadoc') {
+tasks.register('javadocJar', type: Jar, dependsOn: 'javadoc') {
     archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
@@ -306,7 +306,6 @@ publishing {
 artifactoryPublish {
     publications ('mavenJava')
 }
-
 
 bintray {
     user = System.getenv('BINTRAY_USER')
@@ -397,7 +396,6 @@ artifactoryPublish {
     publications ('mavenJava')
 }
 
-
 bintray {
     user = System.getenv('BINTRAY_USER')
     key = System.getenv('BINTRAY_KEY')
@@ -439,7 +437,7 @@ dependencies {
 //  ------------------------------------------------------------------
 //  Build section
 
-task copyLibs(type: Copy) {
+tasks.register('copyLibs', type: Copy) {
     def libraryPaths = []
     if (project.hasProperty('buildPrefix')) {
         if (osdetector.os == 'windows') {
@@ -450,7 +448,7 @@ task copyLibs(type: Copy) {
     }
 
     def javaLibraryPaths = System.getProperty('java.library.path').split(File.pathSeparator).toList()
-    libraryPaths.addAll (javaLibraryPaths)
+    libraryPaths.addAll(javaLibraryPaths)
 
     libraryPaths.add('/usr/local/lib')
     if (osdetector.os == 'windows') {
