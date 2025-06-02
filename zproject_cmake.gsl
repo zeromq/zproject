@@ -28,6 +28,8 @@ enable_language(C)
 .endif
 enable_testing()
 
+include(GNUInstallDirs)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 # Select flags
 if(MSVC)
@@ -270,7 +272,7 @@ ENDIF (ENABLE_DRAFTS)
 .   endif
 
 source_group ("Header Files" FILES ${$(project.prefix)_headers})
-install(FILES ${$(project.prefix)_headers} DESTINATION include)
+install(FILES ${$(project.prefix)_headers} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 .if count (project.class)
 ########################################################################
@@ -364,15 +366,12 @@ if ($(PROJECT.PREFIX)_BUILD_SHARED)
 
   install(TARGETS $(project.linkname)
     EXPORT $(project.linkname)-targets
-    LIBRARY DESTINATION "lib${LIB_SUFFIX}" # .so file
-    ARCHIVE DESTINATION "lib${LIB_SUFFIX}" # .lib file
-    RUNTIME DESTINATION bin                # .dll file
   )
 
   target_include_directories($(project.linkname)
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-      $<INSTALL_INTERFACE:include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
 endif()
 
@@ -401,15 +400,12 @@ if ($(PROJECT.PREFIX)_BUILD_STATIC)
 
   install(TARGETS $(project.linkname)-static
     EXPORT $(project.linkname)-targets
-    LIBRARY DESTINATION "lib${LIB_SUFFIX}" # .so file
-    ARCHIVE DESTINATION "lib${LIB_SUFFIX}" # .lib file
-    RUNTIME DESTINATION bin                # .dll file
   )
 
   target_include_directories($(project.linkname)-static
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-      $<INSTALL_INTERFACE:include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
   target_compile_definitions($(project.linkname)-static
     PUBLIC $(PROJECT.PREFIX)_STATIC
@@ -428,8 +424,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists-local.txt) # Optional project
 set (VERSION "$(->version.major).$(->version.minor).$(->version.patch)")
 set (prefix "${CMAKE_INSTALL_PREFIX}")
 set (exec_prefix "\\${prefix}")
-set (libdir "\\${prefix}/lib${LIB_SUFFIX}")
-set (includedir "\\${prefix}/include")
+set (libdir "\\${prefix}/${CMAKE_INSTALL_LIBDIR}")
+set (includedir "\\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
 IF (ENABLE_DRAFTS)
     set (pkg_config_defines "-D$(PROJECT.PREFIX)_BUILD_DRAFT_API=1")
 ELSE (ENABLE_DRAFTS)
@@ -442,7 +438,7 @@ configure_file(
 
 install(
     FILES "${PROJECT_SOURCE_DIR}/src/$(project.libname).pc"
-    DESTINATION "lib${LIB_SUFFIX}/pkgconfig"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
 )
 
 ########################################################################
@@ -452,8 +448,7 @@ include(CMakePackageConfigHelpers)
 if (WIN32)
   set(CMAKECONFIG_INSTALL_DIR "CMake" CACHE STRING "install path for $(project.linkname)Config.cmake")
 else()
-  # GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
-  set(CMAKECONFIG_INSTALL_DIR "share/cmake/$(project.linkname)" CACHE STRING "install path for $(project.linkname)Config.cmake")
+  set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/$(project.linkname)" CACHE STRING "install path for $(project.linkname)Config.cmake")
 endif()
 
 if (NOT CMAKE_VERSION VERSION_LESS 3.0)
@@ -516,9 +511,7 @@ target_link_libraries(
 )
 endif()
 .   if main.scope = "public"
-install(TARGETS $(main.name)
-    RUNTIME DESTINATION bin
-)
+install(TARGETS $(main.name))
 .   endif
 .endfor
 
