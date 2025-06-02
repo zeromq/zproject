@@ -28,7 +28,6 @@ enable_language(C)
 .endif
 enable_testing()
 
-set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 # Select flags
 if(MSVC)
@@ -48,7 +47,7 @@ set(pkg_config_names_private "")
 ########################################################################
 .if project.stable
 if (NOT CMAKE_BUILD_TYPE)
-    if (EXISTS "${SOURCE_DIR}/.git")
+    if (EXISTS "${PROJECT_SOURCE_DIR}/.git")
         set (CMAKE_BUILD_TYPE Debug)
     else ()
 # http://xit0.org/2013/04/cmake-use-git-branch-and-commit-details-in-project/
@@ -106,7 +105,7 @@ check_symbol_exists($(symbol:) "$(header:)" HAVE_DECL_$(SYMBOL:c))
 
 .  endif
 .endfor
-file(REMOVE "${SOURCE_DIR}/src/platform.h")
+file(REMOVE "${PROJECT_SOURCE_DIR}/src/platform.h")
 
 file(WRITE "${PROJECT_BINARY_DIR}/platform.h.in" "
 #cmakedefine HAVE_LINUX_WIRELESS_H
@@ -127,9 +126,9 @@ if (WIN32)
     if (MSVC AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
         enable_language(CXX)
 .       if project.use_cxx
-        file(GLOB sources "${SOURCE_DIR}/src/*.$(project.source_ext)")
+        file(GLOB sources "${PROJECT_SOURCE_DIR}/src/*.$(project.source_ext)")
 .       else
-        file(GLOB sources "${SOURCE_DIR}/src/*.$(project.source_ext)")
+        file(GLOB sources "${PROJECT_SOURCE_DIR}/src/*.$(project.source_ext)")
 .       endif
         set_source_files_properties(
             ${sources}
@@ -156,7 +155,7 @@ if (CYGWIN)
     set(MORE_LIBRARIES)
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${SOURCE_DIR}")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 set(OPTIONAL_LIBRARIES)
 set(OPTIONAL_LIBRARIES_STATIC)
 .for use where !(implied & private)
@@ -279,7 +278,7 @@ install(FILES ${$(project.prefix)_headers} DESTINATION include)
 ########################################################################
 
 
-include_directories("${SOURCE_DIR}/src" "${SOURCE_DIR}/include" "${PROJECT_BINARY_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/include" "${PROJECT_BINARY_DIR}")
 set ($(project.linkname)_sources
 .for class where !draft
 .   if project.use_cxx
@@ -437,12 +436,12 @@ ELSE (ENABLE_DRAFTS)
     set (pkg_config_defines "")
 ENDIF (ENABLE_DRAFTS)
 configure_file(
-    "${SOURCE_DIR}/src/$(project.libname).pc.in"
-    "${SOURCE_DIR}/src/$(project.libname).pc"
+    "${PROJECT_SOURCE_DIR}/src/$(project.libname).pc.in"
+    "${PROJECT_SOURCE_DIR}/src/$(project.libname).pc"
 @ONLY)
 
 install(
-    FILES "${SOURCE_DIR}/src/$(project.libname).pc"
+    FILES "${PROJECT_SOURCE_DIR}/src/$(project.libname).pc"
     DESTINATION "lib${LIB_SUFFIX}/pkgconfig"
 )
 
@@ -482,9 +481,9 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/$(project.linkname)Config.cmake
 add_executable(
     $(main.name)
 .   if project.use_cxx
-    "${SOURCE_DIR}/src/$(name).$(project.source_ext)"
+    "${PROJECT_SOURCE_DIR}/src/$(name).$(project.source_ext)"
 .   else
-    "${SOURCE_DIR}/src/$(name).$(project.source_ext)"
+    "${PROJECT_SOURCE_DIR}/src/$(name).$(project.source_ext)"
 .   endif
 )
 if (TARGET $(project.linkname))
