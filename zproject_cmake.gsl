@@ -619,9 +619,9 @@ if (NOT TARGET distclean)
                         ${PROJECT_BINARY_DIR}/src/$(project.libname).pc
                         ${PROJECT_BINARY_DIR}/src/$(project.libname).so
                         ${PROJECT_BINARY_DIR}/src/$(project.name)_selftest
-    .for project.main
+.   for project.main
                         ${PROJECT_BINARY_DIR}/src/$(main.name)
-    .endfor
+.   endfor
     )
     add_custom_target(distclean
         COMMAND ${rm_command} CMakeTmp ${cmake_generated}
