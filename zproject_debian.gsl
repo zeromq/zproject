@@ -301,6 +301,7 @@ override_dh_auto_configure:
 	dh_auto_configure -- \\
 .if systemd ?= 1
 		--with-systemd-units \\
+		--with-systemdsystemunitdir=/lib/systemd/system \\
 .endif
 .for project.use where use.optional
 		--with-$(use.libname)=yes \\
