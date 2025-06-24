@@ -90,21 +90,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-24.04
             BUILD_TYPE: default
             DRAFT: enabled
-            CLANG_FORMAT: clang-format-11
-            PACKAGES: automake autoconf clang-format-11 $(packages) $(packages_doctools)
-          - os: ubuntu-20.04
+            CLANG_FORMAT: clang-format-18
+            PACKAGES: automake autoconf clang-format-18 $(packages) $(packages_doctools)
+          - os: ubuntu-24.04
             BUILD_TYPE: default
             DRAFT: disabled
-            CLANG_FORMAT: clang-format-11
-            PACKAGES: automake autoconf clang-format-11 $(packages)
-          - os: ubuntu-20.04
+            CLANG_FORMAT: clang-format-18
+            PACKAGES: automake autoconf clang-format-18 $(packages)
+          - os: ubuntu-24.04
             BUILD_TYPE: valgrind
             DRAFT: enabled
             PACKAGES: automake autoconf valgrind $(packages)
-          - os: ubuntu-20.04
+          - os: ubuntu-24.04
             BUILD_TYPE: cmake
             DRAFT: enabled
             PACKAGES: cmake $(packages)
@@ -119,11 +119,11 @@ jobs:
 .if project.gh_actions_clangformat_implem ?= "autotools" | ( !defined(project.gh_actions_clangformat_implem) & project.gh_actions_use_cmake ?= 0 )
 .   echo "GHA: CLANG-FORMAT: implementation: autotools"
 ### Note: we don't use CMake
-          - os: ubuntu-20.04
+          - os: ubuntu-24.04
             BUILD_TYPE: cmake
             DO_CLANG_FORMAT_CHECK: 1
-            CLANG_FORMAT: clang-format-11
-            PACKAGES: cmake clang-format-11 $(packages)
+            CLANG_FORMAT: clang-format-18
+            PACKAGES: cmake clang-format-18 $(packages)
 .endif
 # For non-cmake users, there is an autotools solution with a bit more overhead
 # to have dependencies ready and pass configure script before making this check).
@@ -131,11 +131,11 @@ jobs:
 # pass its configure script:
 .if project.gh_actions_clangformat_implem ?= "cmake" | ( !defined(project.gh_actions_clangformat_implem) & ( project.gh_actions_use_cmake ?= 1 | !defined(project.gh_actions_use_cmake) ) )
 .   echo "GHA: CLANG-FORMAT: implementation: cmake"
-          - os: ubuntu-20.04
+          - os: ubuntu-24.04
             BUILD_TYPE: cmake
             DO_CLANG_FORMAT_CHECK: 1
-            CLANG_FORMAT: clang-format-11
-            PACKAGES: cmake clang-format-11 $(packages)
+            CLANG_FORMAT: clang-format-18
+            PACKAGES: cmake clang-format-18 $(packages)
 .endif
 .if project.gh_actions_check_abi_compliance ?= 1
 .   if project.exports_classes
@@ -143,13 +143,13 @@ jobs:
 # 1) Your project sources have a "latest_release" branch or tag
 #    to check out and compare the current commit's ABI to;
 # 2) Prerequisites are available as packages - no custom rebuilds.
-          - os: ubuntu-20.04
+          - os: ubuntu-24.04
             BUILD_TYPE: abi-compliance-checker
             PACKAGES: universal-ctags abi-dumper abi-compliance-checker $(packages)
 .   endif
 .endif
 .if defined(project.gh_actions_check_zproject) & !(project.gh_actions_check_zproject ?= 0)
-          - os: ubuntu-20.04
+          - os: ubuntu-24.04
             BUILD_TYPE: check_zproject
             PACKAGES: $(packages) $(packages_zproject)
 .endif
@@ -203,12 +203,12 @@ false
       CI_SELFTEST: ${{ matrix.CI_SELFTEST }}
     steps:
     - name: Add debian packages
-      if: matrix.os == 'ubuntu-20.04'
+      if: matrix.os == 'ubuntu-24.04'
       uses: myci-actions/add-deb-repo@10
       with:
         repo-name: obs
-        repo: deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_20.04/ ./
-        keys-asc: https://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_20.04/Release.key
+        repo: deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_24.04/ ./
+        keys-asc: https://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_24.04/Release.key
         install: ${{ matrix.PACKAGES }}
     - name: Add brew packages
       if: matrix.os == 'macos-latest'
@@ -218,7 +218,7 @@ false
       with:
         path: $(project.name)
     - name: build
-      if: matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-latest'
+      if: matrix.os == 'ubuntu-24.04' || matrix.os == 'macos-latest'
       shell: bash
       working-directory: $(project.name)
       run: ./ci_build.sh
