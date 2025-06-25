@@ -14,11 +14,10 @@ Section:        net
 Priority:       optional
 Maintainer:     zproject Developers <zeromq-dev@lists.zeromq.org>
 Standards-Version: 4.0.1.0
-Build-Depends: debhelper (>= 9),
-    pkg-config,
+Build-Depends: debhelper-compat (= 12),
+    pkgconf | pkg-config,
     generator-scripting-language,
-    asciidoc-base | asciidoc, xmlto,
-    dh-autoreconf
+    asciidoc-base <!nodoc>, xmlto <!nodoc>,
 
 Package: zproject
 Architecture: any

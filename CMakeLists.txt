@@ -6,12 +6,13 @@
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8...4.0)
 project(zproject)
 enable_language(C)
 enable_testing()
 
-set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+include(GNUInstallDirs)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 # Select flags
 if(MSVC)
@@ -51,7 +52,7 @@ if (NOT HAVE_NET_IF_H)
     CHECK_INCLUDE_FILE("net/if.h" HAVE_NET_IF_H)
 endif()
 
-file(REMOVE "${SOURCE_DIR}/src/platform.h")
+file(REMOVE "${PROJECT_SOURCE_DIR}/src/platform.h")
 
 file(WRITE "${PROJECT_BINARY_DIR}/platform.h.in" "
 #cmakedefine HAVE_LINUX_WIRELESS_H
@@ -68,7 +69,7 @@ if (WIN32)
     #so the sources have to be compiled as c++
     if (MSVC AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
         enable_language(CXX)
-        file(GLOB sources "${SOURCE_DIR}/src/*.c")
+        file(GLOB sources "${PROJECT_SOURCE_DIR}/src/*.c")
         set_source_files_properties(
             ${sources}
             PROPERTIES LANGUAGE CXX
@@ -94,7 +95,7 @@ if (CYGWIN)
     set(MORE_LIBRARIES)
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${SOURCE_DIR}")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 set(OPTIONAL_LIBRARIES)
 set(OPTIONAL_LIBRARIES_STATIC)
 
@@ -126,7 +127,7 @@ set (zproject_headers
 )
 
 source_group ("Header Files" FILES ${zproject_headers})
-install(FILES ${zproject_headers} DESTINATION include)
+install(FILES ${zproject_headers} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 ########################################################################
 # executables
@@ -197,30 +198,29 @@ include(CTest)
 # cleanup
 ########################################################################
 if (NOT TARGET distclean)
-    add_custom_target (distclean @echo Cleaning for source distribution)
+    if (CMAKE_VERSION VERSION_LESS 3.17)
+        set(rm_command rm -rf)
+    else()
+        set(rm_command ${CMAKE_COMMAND} -E rm -rf --)
+    endif()
+    set(cmake_generated ${PROJECT_BINARY_DIR}/CMakeCache.txt
+                        ${PROJECT_BINARY_DIR}/cmake_install.cmake
+                        ${PROJECT_BINARY_DIR}/Makefile
+                        ${PROJECT_BINARY_DIR}/CMakeFiles
+                        ${PROJECT_BINARY_DIR}/CTestTestfile.cmake
+                        ${PROJECT_BINARY_DIR}/DartConfiguration.tcl
+                        ${PROJECT_BINARY_DIR}/Testing
+                        ${PROJECT_BINARY_DIR}/compile_commands.json
+                        ${PROJECT_BINARY_DIR}/platform.h
+                        ${PROJECT_BINARY_DIR}/src/libzproject.pc
+                        ${PROJECT_BINARY_DIR}/src/libzproject.so
+                        ${PROJECT_BINARY_DIR}/src/zproject_selftest
+    )
+    add_custom_target(distclean
+        COMMAND ${rm_command} CMakeTmp ${cmake_generated}
+        COMMENT Cleaning for source distribution
+    )
 endif()
-
-set(cmake_generated ${PROJECT_BINARY_DIR}/CMakeCache.txt
-                    ${PROJECT_BINARY_DIR}/cmake_install.cmake
-                    ${PROJECT_BINARY_DIR}/Makefile
-                    ${PROJECT_BINARY_DIR}/CMakeFiles
-                    ${PROJECT_BINARY_DIR}/CTestTestfile.cmake
-                    ${PROJECT_BINARY_DIR}/DartConfiguration.tcl
-                    ${PROJECT_BINARY_DIR}/Testing
-                    ${PROJECT_BINARY_DIR}/compile_commands.json
-                    ${PROJECT_BINARY_DIR}/platform.h
-                    ${PROJECT_BINARY_DIR}/src/libzproject.pc
-                    ${PROJECT_BINARY_DIR}/src/libzproject.so
-                    ${PROJECT_BINARY_DIR}/src/zproject_selftest
-)
-
-add_custom_command(
-    DEPENDS clean
-    COMMENT "distribution clean"
-    COMMAND rm
-    ARGS    -rf CMakeTmp ${cmake_generated}
-    TARGET  distclean
-)
 
 include(ClangFormat OPTIONAL)
 

@@ -26,8 +26,6 @@ $(project.name:lower) ($(->version.major).$(->version.minor).$(->version.patch)-
   * Initial packaging.
 
  -- $(project.name) Developers <$(project.email)>  Wed, 31 Dec 2014 00:00:00 +0000
-.output "packaging/debian/compat"
-10
 .output "packaging/debian/control"
 #
 #    $(project.name) - $(project.description?'':)
@@ -41,8 +39,8 @@ Section:        net
 Priority:       optional
 Maintainer:     $(project.name) Developers <$(project.email)>
 Standards-Version: 4.0.1.0
-Build-Depends: debhelper (>= 9),
-    pkg-config,
+Build-Depends: debhelper-compat (= 12),
+    pkgconf | pkg-config,
 .for project.use
 .if defined(use.debian_name)
 .   if !(use.debian_name = '')
@@ -65,15 +63,13 @@ Build-Depends: debhelper (>= 9),
 .endif
 .if systemd ?= 1
 .# necessary for systemd.pc to get unit install path
-    systemd,
+    systemd-dev | systemd,
 .endif
 .if python_cffi ?= 1
     dh-python <!nopython>,
     python3-all-dev <!nopython>, python3-cffi <!nopython>, python3-setuptools <!nopython>,
 .endif
-.- NOTE: after support for Debian 7 and Ubuntu 12.04 is dropped, <!nodoc> can be added to each of the following
-    asciidoc-base | asciidoc, xmlto,
-    dh-autoreconf
+    asciidoc-base <!nodoc>, xmlto <!nodoc>,
 .if project.exports_classes | ( project.has_classes & project.has_main )
 .# NOTE: Now for at least some compilers the symbol visibility seems to
 .# be managed in the shared library files, not the "exportedness" - so
@@ -305,6 +301,7 @@ override_dh_auto_configure:
 	dh_auto_configure -- \\
 .if systemd ?= 1
 		--with-systemd-units \\
+		--with-systemdsystemunitdir=/lib/systemd/system \\
 .endif
 .for project.use where use.optional
 		--with-$(use.libname)=yes \\
@@ -314,9 +311,6 @@ override_dh_auto_configure:
 
 %:
 	dh $@ \\
-.if systemd ?= 1
-		--with systemd \\
-.endif
 .if python_cffi ?= 1
 		\$(WITH_PYTHON) \\
 .endif
@@ -407,8 +401,8 @@ Source: $(project.name)
 Version: $(->version.major).$(->version.minor).$(->version.patch)-0.1
 Maintainer: $(project.name) Developers <$(project.email)>
 Architecture: any
-Build-Depends: debhelper (>= 9),
-    pkg-config,
+Build-Depends: debhelper-compat (= 12),
+    pkgconf | pkg-config,
 .for project.use
 .if defined(use.debian_name)
 .   if !(use.debian_name = '')
@@ -427,14 +421,13 @@ Build-Depends: debhelper (>= 9),
 ,
 .endfor
 .if systemd ?= 1
-    systemd,
+    systemd-dev | systemd,
 .endif
 .if python_cffi ?= 1
     dh-python <!nopython>,
     python3-all-dev <!nopython>, python3-cffi <!nopython>, python3-setuptools <!nopython>,
 .endif
-    asciidoc-base | asciidoc, xmlto,
-    dh-autoreconf
+    asciidoc-base <!nodoc>, xmlto <!nodoc>,
 
 Files:
  7697688bf65a35bc33ae2db51ebb0e3b 818110 $(string.replace (project.name, "_|-"):lower).tar.gz
