@@ -350,6 +350,7 @@ gsl from "zproject_vagrant.gsl"
 gsl from "zproject_vs2008.gsl"
 gsl from "zproject_vs20xx.gsl"
 gsl from "zproject_vs20xx_props.gsl"
+gsl from "zproject_zig.gsl"
 
 #   Build targets requested by project
 if defined (switches.target)
